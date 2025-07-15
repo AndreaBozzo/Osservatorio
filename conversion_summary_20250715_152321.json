@@ -1,0 +1,14 @@
+{
+  "conversion_timestamp": "2025-07-15T15:23:21.143752",
+  "total_datasets": 0,
+  "successful_conversions": 0,
+  "failed_conversions": 0,
+  "success_rate": "0%",
+  "successful_datasets": [],
+  "failed_datasets": [],
+  "files_generated": {
+    "csv_files": 0,
+    "excel_files": 0,
+    "json_files": 0
+  }
+}

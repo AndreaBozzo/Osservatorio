@@ -1,0 +1,120 @@
+{
+  "timestamp": "2025-07-15T14:41:51.596102",
+  "tests": {
+    "connectivity": [
+      {
+        "endpoint": "dataflow",
+        "url": "http://sdmx.istat.it/SDMXWS/rest/dataflow/IT1",
+        "status_code": 200,
+        "response_time": 0.77,
+        "success": true,
+        "data_length": 286179,
+        "content_type": "application/xml; version=2.1; charset=utf-8"
+      },
+      {
+        "endpoint": "codelist",
+        "url": "http://sdmx.istat.it/SDMXWS/rest/codelist/IT1",
+        "status_code": 200,
+        "response_time": 22.15,
+        "success": true,
+        "data_length": 31990000,
+        "content_type": "application/xml; version=2.1; charset=utf-8"
+      },
+      {
+        "endpoint": "datastructure",
+        "url": "http://sdmx.istat.it/SDMXWS/rest/datastructure/IT1",
+        "status_code": 200,
+        "response_time": 18.63,
+        "success": true,
+        "data_length": 14972952,
+        "content_type": "application/xml; version=2.1; charset=utf-8"
+      }
+    ],
+    "dataset_discovery": {
+      "total_found": 4,
+      "datasets": [
+        {
+          "id": "101_148",
+          "name": "Risultati economici delle aziende agricole",
+          "relevance_score": 1
+        },
+        {
+          "id": "124_1157",
+          "name": "Conto economico delle università, politecnici ed istituti di istruzione universitaria (euro)",
+          "relevance_score": 1
+        },
+        {
+          "id": "124_322",
+          "name": "Conto economico delle camere di commercio - euro",
+          "relevance_score": 1
+        },
+        {
+          "id": "124_722",
+          "name": "Conto economico delle Asl, aziende ospedaliere, aziende ospedaliere universitarie, policlinici e IRCCS (migliaia di euro)",
+          "relevance_score": 1
+        }
+      ]
+    },
+    "specific_datasets": [
+      {
+        "dataset_id": "101_148",
+        "dataset_name": "Risultati economici delle aziende agricole",
+        "timestamp": "2025-07-15T14:42:39.933318",
+        "structure_test": {
+          "success": false,
+          "status_code": 404,
+          "content_type": "text/plain"
+        },
+        "data_test": {
+          "success": true,
+          "status_code": 200,
+          "content_type": "application/xml; version=2.1; charset=utf-8",
+          "saved_file": "data_101_148.xml",
+          "data_size": 1578071,
+          "parse_error": "invalid predicate"
+        }
+      },
+      {
+        "dataset_id": "124_1157",
+        "dataset_name": "Conto economico delle università, politecnici ed istituti di istruzione universitaria (euro)",
+        "timestamp": "2025-07-15T14:42:48.217356",
+        "structure_test": {
+          "success": false,
+          "status_code": 404,
+          "content_type": "text/plain"
+        },
+        "data_test": {
+          "success": true,
+          "status_code": 200,
+          "content_type": "application/xml; version=2.1; charset=utf-8",
+          "saved_file": "data_124_1157.xml",
+          "data_size": 22640,
+          "parse_error": "invalid predicate"
+        }
+      },
+      {
+        "dataset_id": "124_322",
+        "dataset_name": "Conto economico delle camere di commercio - euro",
+        "timestamp": "2025-07-15T14:42:57.644069",
+        "structure_test": {
+          "success": false,
+          "status_code": 404,
+          "content_type": "text/plain"
+        },
+        "data_test": {
+          "success": true,
+          "status_code": 200,
+          "content_type": "application/xml; version=2.1; charset=utf-8",
+          "saved_file": "data_124_322.xml",
+          "data_size": 43711,
+          "parse_error": "invalid predicate"
+        }
+      }
+    ],
+    "popular_datasets": {
+      "successful_tests": 0,
+      "total_tests": 5
+    },
+    "data_quality": []
+  }
+}

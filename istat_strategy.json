@@ -1,0 +1,94 @@
+{
+  "timestamp": "2025-07-15T13:52:23.000252",
+  "server_capabilities": {
+    "web_authoring": true,
+    "flows_enabled": true,
+    "data_management": false,
+    "scheduling": true,
+    "extract_encryption": "disabled"
+  },
+  "recommended_connectors": [
+    {
+      "name": "Box",
+      "type": "box",
+      "oauth_support": true,
+      "use_case": "Condivisione file e collaborazione su dati"
+    },
+    {
+      "name": "Dropbox",
+      "type": "dropbox",
+      "oauth_support": false,
+      "use_case": "Condivisione file e collaborazione su dati"
+    },
+    {
+      "name": "OneDrive and SharePoint Online",
+      "type": "onedrivesharepoint",
+      "oauth_support": false,
+      "use_case": "Integrazione con Microsoft Office per report"
+    },
+    {
+      "name": "Google BigQuery",
+      "type": "bigquery",
+      "oauth_support": false,
+      "use_case": "Storage di grandi dataset storici ISTAT"
+    },
+    {
+      "name": "Google Sheets (deprecated)",
+      "type": "google-sheets",
+      "oauth_support": false,
+      "use_case": "Caricamento CSV ISTAT elaborati e condivisione"
+    },
+    {
+      "name": "Google BigQuery (JDBC)",
+      "type": "googlebigquery",
+      "oauth_support": false,
+      "use_case": "Storage di grandi dataset storici ISTAT"
+    }
+  ],
+  "data_sources": [
+    {
+      "source": "ISTAT I.Stat",
+      "url": "http://dati.istat.it",
+      "method": "API REST",
+      "description": "Database multidimensionale delle statistiche ISTAT"
+    },
+    {
+      "source": "ISTAT Open Data",
+      "url": "https://www.istat.it/it/dati-analisi-e-prodotti/banche-dati",
+      "method": "Download CSV",
+      "description": "Dataset aperti in formato CSV"
+    },
+    {
+      "source": "Tableau Public ISTAT",
+      "url": "https://public.tableau.com/search?q=istat",
+      "method": "Web Scraping",
+      "description": "Visualizzazioni pubbliche con dati ISTAT"
+    }
+  ],
+  "implementation_steps": [
+    {
+      "step": 1,
+      "action": "Configurare connettori",
+      "description": "Impostare Google Sheets e BigQuery per dati ISTAT",
+      "estimated_time": "1-2 ore"
+    },
+    {
+      "step": 2,
+      "action": "Creare flussi di dati",
+      "description": "Automatizzare il caricamento dati da ISTAT",
+      "estimated_time": "2-3 ore"
+    },
+    {
+      "step": 3,
+      "action": "Sviluppare dashboard",
+      "description": "Creare visualizzazioni per dati demografici/economici",
+      "estimated_time": "3-4 ore"
+    },
+    {
+      "step": 4,
+      "action": "Implementare governance",
+      "description": "Configurare refresh automatici e qualità dati",
+      "estimated_time": "1-2 ore"
+    }
+  ]
+}
