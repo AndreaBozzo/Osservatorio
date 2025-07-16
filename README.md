@@ -96,7 +96,21 @@ pytest
 
 # Test con coverage
 pytest --cov=src tests/
+
+# Test specifici
+pytest tests/unit/          # 89 unit tests
+pytest tests/integration/   # Integration tests
+pytest tests/performance/   # Performance tests
+
+# Coverage report HTML
+pytest --cov=src --cov-report=html tests/
 ```
+
+### Test Suite
+- **89 unit tests** con 49% code coverage
+- **Integration tests** per workflow completi
+- **Performance tests** per scalabilità
+- **Coverage report** in `htmlcov/index.html`
 
 ## 📊 Features
 

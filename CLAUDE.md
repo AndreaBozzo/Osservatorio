@@ -27,8 +27,10 @@ This is an Italian data processing system for ISTAT (Italian National Institute 
 ### Testing
 - `pytest` - Run all tests
 - `pytest --cov=src tests/` - Run tests with coverage
-- `pytest tests/unit/` - Run unit tests only
+- `pytest tests/unit/` - Run unit tests only (89 tests)
 - `pytest tests/integration/` - Run integration tests only
+- `pytest tests/performance/` - Run performance tests only
+- `pytest --cov=src --cov-report=html tests/` - Generate HTML coverage report
 
 ### Code Quality
 - `black .` - Format code with Black
@@ -73,7 +75,10 @@ This is an Italian data processing system for ISTAT (Italian National Institute 
   - `cache/` - Cached API responses
   - `reports/` - Analysis reports and summaries
 - `scripts/` - Automation scripts (PowerShell for data download)
-- `tests/` - Test suites (unit and integration)
+- `tests/` - Test suites (unit, integration, performance)
+  - `unit/` - Unit tests for individual components (89 tests)
+  - `integration/` - Integration tests for system components
+  - `performance/` - Performance and scalability tests
 
 ### Key Data Flow Categories
 The system categorizes ISTAT data into 6 main areas with priority scoring:
@@ -115,6 +120,42 @@ Required environment variables (optional, defaults provided):
 - `POWERBI_WORKSPACE_ID` - PowerBI workspace ID (optional)
 - `LOG_LEVEL` - Logging level (INFO, DEBUG, etc.)
 - `ENABLE_CACHE` - Enable data caching
+
+## Testing Infrastructure
+
+### Test Suite Overview
+The project includes a comprehensive test suite with 89 unit tests and performance benchmarks:
+
+- **Unit Tests**: 89 tests covering all core components (49% code coverage)
+- **Integration Tests**: End-to-end system integration testing
+- **Performance Tests**: Scalability and performance benchmarks
+- **Coverage**: HTML reports available in `htmlcov/` directory
+
+### Test Categories
+1. **Core Components** (89 tests passing):
+   - `test_config.py` - Configuration management
+   - `test_logger.py` - Logging system
+   - `test_dataflow_analyzer.py` - ISTAT dataflow analysis
+   - `test_istat_api.py` - ISTAT API connectivity
+   - `test_powerbi_api.py` - PowerBI API integration
+   - `test_tableau_scraper.py` - Tableau server analysis
+   - `test_converters.py` - Data format conversions
+
+2. **Performance Tests**:
+   - Scalability tests with 1000+ dataflows
+   - Concurrent API request handling
+   - Memory usage optimization
+   - File I/O performance benchmarks
+
+3. **Integration Tests**:
+   - Complete pipeline testing
+   - API integration workflows
+   - System component integration
+
+### Test Configuration
+- **pytest.ini** - Test configuration with performance markers
+- **conftest.py** - Shared test fixtures and setup
+- **Requirements**: `pytest`, `pytest-cov`, `pytest-mock`, `psutil`, `seaborn`, `matplotlib`
 
 ## Common Tasks
 

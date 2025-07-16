@@ -6,421 +6,509 @@ import time
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+
 class IstatAPITester:
     def __init__(self):
         """Inizializza il tester API ISTAT"""
         self.base_url = "http://sdmx.istat.it/SDMXWS/rest/"
         self.session = requests.Session()
-        self.session.headers.update({
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-            'Accept': 'application/xml, application/json'
-        })
+        self.session.headers.update(
+            {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+                "Accept": "application/xml, application/json",
+            }
+        )
         self.test_results = []
-    
+
     def test_api_connectivity(self):
         """Testa la connettività di base alle API ISTAT SDMX"""
         print("🔍 Test connettività API ISTAT SDMX...")
-        
+
         endpoints_to_test = [
-            {'name': 'dataflow', 'url': f"{self.base_url}dataflow/IT1"},
-            {'name': 'codelist', 'url': f"{self.base_url}codelist/IT1"},
-            {'name': 'datastructure', 'url': f"{self.base_url}datastructure/IT1"}
+            {"name": "dataflow", "url": f"{self.base_url}dataflow/IT1"},
+            {"name": "codelist", "url": f"{self.base_url}codelist/IT1"},
+            {"name": "datastructure", "url": f"{self.base_url}datastructure/IT1"},
         ]
-        
+
         connectivity_results = []
-        
+
         for endpoint in endpoints_to_test:
             try:
                 start_time = time.time()
-                response = self.session.get(endpoint['url'], timeout=30)
+                response = self.session.get(endpoint["url"], timeout=30)
                 response_time = time.time() - start_time
-                
+
                 result = {
-                    'endpoint': endpoint['name'],
-                    'url': endpoint['url'],
-                    'status_code': response.status_code,
-                    'response_time': round(response_time, 2),
-                    'success': response.status_code == 200,
-                    'data_length': len(response.content) if response.status_code == 200 else 0,
-                    'content_type': response.headers.get('content-type', 'unknown')
+                    "endpoint": endpoint["name"],
+                    "url": endpoint["url"],
+                    "status_code": response.status_code,
+                    "response_time": round(response_time, 2),
+                    "success": response.status_code == 200,
+                    "data_length": (
+                        len(response.content) if response.status_code == 200 else 0
+                    ),
+                    "content_type": response.headers.get("content-type", "unknown"),
                 }
-                
+
                 if response.status_code == 200:
-                    print(f"✅ {endpoint['name']}: OK ({response_time:.2f}s) - {result['content_type']}")
+                    print(
+                        f"✅ {endpoint['name']}: OK ({response_time:.2f}s) - {result['content_type']}"
+                    )
                 else:
                     print(f"❌ {endpoint['name']}: Error {response.status_code}")
-                
+
                 connectivity_results.append(result)
-                
+
             except Exception as e:
                 print(f"❌ {endpoint['name']}: Exception {str(e)}")
-                connectivity_results.append({
-                    'endpoint': endpoint['name'],
-                    'url': endpoint['url'],
-                    'success': False,
-                    'error': str(e)
-                })
-            
+                connectivity_results.append(
+                    {
+                        "endpoint": endpoint["name"],
+                        "url": endpoint["url"],
+                        "success": False,
+                        "error": str(e),
+                    }
+                )
+
             time.sleep(1)  # Rate limiting
-        
+
         return connectivity_results
-    
+
     def discover_available_datasets(self, limit=20):
         """Scopre i dataflow SDMX disponibili con focus su dati demografici/economici"""
         print(f"\n📊 Scoperta dataflow SDMX disponibili (limit: {limit})...")
-        
+
         try:
             response = self.session.get(f"{self.base_url}dataflow/IT1", timeout=30)
             if response.status_code != 200:
                 print(f"❌ Errore nel recupero dataflow: {response.status_code}")
                 return []
-            
-            print(f"✅ Dataflow recuperati - Content Type: {response.headers.get('content-type', 'unknown')}")
-            
+
+            print(
+                f"✅ Dataflow recuperati - Content Type: {response.headers.get('content-type', 'unknown')}"
+            )
+
             # Salva la risposta XML per debugging
-            with open('dataflow_response.xml', 'w', encoding='utf-8') as f:
+            with open("dataflow_response.xml", "w", encoding="utf-8") as f:
                 f.write(response.text)
             print(f"📁 Risposta XML salvata in: dataflow_response.xml")
-            
+
             # Parsing XML semplificato per estrarre ID e nomi
             import xml.etree.ElementTree as ET
-            
+
             root = ET.fromstring(response.content)
-            
+
             # Namespace SDMX (potrebbe variare)
             namespaces = {
-                'str': 'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/structure',
-                'com': 'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common'
+                "str": "http://www.sdmx.org/resources/sdmxml/schemas/v2_1/structure",
+                "com": "http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common",
             }
-            
+
             dataflows = []
-            
+
             # Cerca dataflow con diversi pattern
-            for dataflow in root.findall('.//str:Dataflow', namespaces):
-                dataflow_id = dataflow.get('id', '')
-                
+            for dataflow in root.findall(".//str:Dataflow", namespaces):
+                dataflow_id = dataflow.get("id", "")
+
                 # Cerca il nome
-                name_elem = dataflow.find('.//com:Name', namespaces)
+                name_elem = dataflow.find(".//com:Name", namespaces)
                 dataflow_name = name_elem.text if name_elem is not None else dataflow_id
-                
+
                 if dataflow_id:
-                    dataflows.append({
-                        'id': dataflow_id,
-                        'name': dataflow_name,
-                        'relevance_score': 1  # Base score
-                    })
-            
+                    dataflows.append(
+                        {
+                            "id": dataflow_id,
+                            "name": dataflow_name,
+                            "relevance_score": 1,  # Base score
+                        }
+                    )
+
             # Se non trova con namespace, prova senza
             if not dataflows:
-                for dataflow in root.findall('.//Dataflow'):
-                    dataflow_id = dataflow.get('id', '')
-                    name_elem = dataflow.find('.//Name')
-                    dataflow_name = name_elem.text if name_elem is not None else dataflow_id
-                    
+                for dataflow in root.findall(".//Dataflow"):
+                    dataflow_id = dataflow.get("id", "")
+                    name_elem = dataflow.find(".//Name")
+                    dataflow_name = (
+                        name_elem.text if name_elem is not None else dataflow_id
+                    )
+
                     if dataflow_id:
-                        dataflows.append({
-                            'id': dataflow_id,
-                            'name': dataflow_name,
-                            'relevance_score': 1
-                        })
-            
+                        dataflows.append(
+                            {
+                                "id": dataflow_id,
+                                "name": dataflow_name,
+                                "relevance_score": 1,
+                            }
+                        )
+
             # Filtra per rilevanza
             relevant_keywords = [
-                'popolazione', 'demographic', 'economia', 'lavoro', 'occupazione', 
-                'inflazione', 'pil', 'reddito', 'famiglia', 'nascite', 'morti',
-                'popres', 'demo', 'econ', 'employ', 'gdp', 'income'
+                "popolazione",
+                "demographic",
+                "economia",
+                "lavoro",
+                "occupazione",
+                "inflazione",
+                "pil",
+                "reddito",
+                "famiglia",
+                "nascite",
+                "morti",
+                "popres",
+                "demo",
+                "econ",
+                "employ",
+                "gdp",
+                "income",
             ]
-            
+
             relevant_dataflows = []
-            
+
             for dataflow in dataflows[:limit]:
-                name_lower = dataflow['name'].lower()
-                id_lower = dataflow['id'].lower()
-                
-                relevance = sum(1 for kw in relevant_keywords 
-                              if kw in name_lower or kw in id_lower)
-                
+                name_lower = dataflow["name"].lower()
+                id_lower = dataflow["id"].lower()
+
+                relevance = sum(
+                    1 for kw in relevant_keywords if kw in name_lower or kw in id_lower
+                )
+
                 if relevance > 0:
-                    dataflow['relevance_score'] = relevance
+                    dataflow["relevance_score"] = relevance
                     relevant_dataflows.append(dataflow)
-            
+
             # Ordina per rilevanza
-            relevant_dataflows.sort(key=lambda x: x['relevance_score'], reverse=True)
-            
-            print(f"✅ Trovati {len(dataflows)} dataflow totali, {len(relevant_dataflows)} rilevanti:")
+            relevant_dataflows.sort(key=lambda x: x["relevance_score"], reverse=True)
+
+            print(
+                f"✅ Trovati {len(dataflows)} dataflow totali, {len(relevant_dataflows)} rilevanti:"
+            )
             for i, dataflow in enumerate(relevant_dataflows[:10]):  # Top 10
-                print(f"  {i+1}. {dataflow['name']} (ID: {dataflow['id']}, Score: {dataflow['relevance_score']})")
-            
+                print(
+                    f"  {i+1}. {dataflow['name']} (ID: {dataflow['id']}, Score: {dataflow['relevance_score']})"
+                )
+
             return relevant_dataflows
-            
+
         except Exception as e:
             print(f"❌ Errore nella scoperta dataflow: {e}")
             return []
-    
+
     def test_specific_dataset(self, dataset_id, dataset_name="Unknown"):
         """Testa l'accesso a un dataflow SDMX specifico"""
         print(f"\n🔬 Test dataflow specifico: {dataset_name} ({dataset_id})")
-        
+
         test_result = {
-            'dataset_id': dataset_id,
-            'dataset_name': dataset_name,
-            'timestamp': datetime.now().isoformat()
+            "dataset_id": dataset_id,
+            "dataset_name": dataset_name,
+            "timestamp": datetime.now().isoformat(),
         }
-        
+
         try:
             # Test 1: Struttura dataflow (DSD - Data Structure Definition)
             structure_url = f"{self.base_url}datastructure/IT1/{dataset_id}"
             structure_response = self.session.get(structure_url, timeout=30)
-            
-            test_result['structure_test'] = {
-                'success': structure_response.status_code == 200,
-                'status_code': structure_response.status_code,
-                'content_type': structure_response.headers.get('content-type', 'unknown')
+
+            test_result["structure_test"] = {
+                "success": structure_response.status_code == 200,
+                "status_code": structure_response.status_code,
+                "content_type": structure_response.headers.get(
+                    "content-type", "unknown"
+                ),
             }
-            
+
             if structure_response.status_code == 200:
                 # Salva struttura per debugging
                 structure_filename = f"structure_{dataset_id}.xml"
-                with open(structure_filename, 'w', encoding='utf-8') as f:
+                with open(structure_filename, "w", encoding="utf-8") as f:
                     f.write(structure_response.text)
-                test_result['structure_test']['saved_file'] = structure_filename
+                test_result["structure_test"]["saved_file"] = structure_filename
                 print(f"  ✅ Struttura: OK - Salvata in {structure_filename}")
             else:
                 print(f"  ❌ Struttura: Error {structure_response.status_code}")
-            
+
             # Test 2: Dati campione (SDMX Data)
             data_url = f"{self.base_url}data/{dataset_id}"
             data_response = self.session.get(data_url, timeout=60)
-            
-            test_result['data_test'] = {
-                'success': data_response.status_code == 200,
-                'status_code': data_response.status_code,
-                'content_type': data_response.headers.get('content-type', 'unknown')
+
+            test_result["data_test"] = {
+                "success": data_response.status_code == 200,
+                "status_code": data_response.status_code,
+                "content_type": data_response.headers.get("content-type", "unknown"),
             }
-            
+
             if data_response.status_code == 200:
                 # Salva dati per debugging
                 data_filename = f"data_{dataset_id}.xml"
-                with open(data_filename, 'w', encoding='utf-8') as f:
+                with open(data_filename, "w", encoding="utf-8") as f:
                     f.write(data_response.text)
-                test_result['data_test']['saved_file'] = data_filename
-                test_result['data_test']['data_size'] = len(data_response.content)
-                print(f"  ✅ Dati: OK - {len(data_response.content)} bytes salvati in {data_filename}")
+                test_result["data_test"]["saved_file"] = data_filename
+                test_result["data_test"]["data_size"] = len(data_response.content)
+                print(
+                    f"  ✅ Dati: OK - {len(data_response.content)} bytes salvati in {data_filename}"
+                )
             else:
                 print(f"  ❌ Dati: Error {data_response.status_code}")
-            
+
             # Test 3: Prova parsing semplificato se ha dati
-            if test_result['data_test']['success']:
+            if test_result["data_test"]["success"]:
                 try:
                     import xml.etree.ElementTree as ET
+
                     root = ET.fromstring(data_response.content)
-                    
+
                     # Conta osservazioni (pattern comune SDMX)
                     observations = root.findall('.//*[local-name()="Obs"]')
                     if not observations:
                         observations = root.findall('.//*[local-name()="Observation"]')
-                    
-                    test_result['data_test']['observations_count'] = len(observations)
+
+                    test_result["data_test"]["observations_count"] = len(observations)
                     print(f"  📊 Osservazioni trovate: {len(observations)}")
-                    
+
                 except Exception as parse_error:
-                    test_result['data_test']['parse_error'] = str(parse_error)
+                    test_result["data_test"]["parse_error"] = str(parse_error)
                     print(f"  ⚠️  Errore parsing XML: {parse_error}")
-            
+
         except Exception as e:
-            test_result['error'] = str(e)
+            test_result["error"] = str(e)
             print(f"  ❌ Errore generale: {e}")
-        
+
         self.test_results.append(test_result)
         return test_result
-    
+
     def test_popular_datasets(self):
         """Testa accesso ai dataset più popolari/importanti"""
         print("\n📈 Test dataset popolari ISTAT...")
-        
+
         # Lista dataset noti/importanti
         popular_datasets = [
-            {'id': 'DCIS_POPRES1', 'name': 'Popolazione residente'},
-            {'id': 'DCIS_POPSTRRES1', 'name': 'Popolazione per struttura'},
-            {'id': 'DCIS_FECONDITA', 'name': 'Indicatori di fecondità'},
-            {'id': 'DCIS_MORTALITA1', 'name': 'Tavole di mortalità'},
-            {'id': 'DCIS_RICFAMILIARE1', 'name': 'Reddito delle famiglie'}
+            {"id": "DCIS_POPRES1", "name": "Popolazione residente"},
+            {"id": "DCIS_POPSTRRES1", "name": "Popolazione per struttura"},
+            {"id": "DCIS_FECONDITA", "name": "Indicatori di fecondità"},
+            {"id": "DCIS_MORTALITA1", "name": "Tavole di mortalità"},
+            {"id": "DCIS_RICFAMILIARE1", "name": "Reddito delle famiglie"},
         ]
-        
+
         successful_tests = 0
-        
+
         for dataset in popular_datasets:
-            result = self.test_specific_dataset(dataset['id'], dataset['name'])
-            if result.get('data_test', {}).get('success', False):
+            result = self.test_specific_dataset(dataset["id"], dataset["name"])
+            if result.get("data_test", {}).get("success", False):
                 successful_tests += 1
             time.sleep(2)  # Rate limiting
-        
-        print(f"\n📊 Risultati test dataset popolari: {successful_tests}/{len(popular_datasets)} successi")
+
+        print(
+            f"\n📊 Risultati test dataset popolari: {successful_tests}/{len(popular_datasets)} successi"
+        )
         return successful_tests
-    
+
     def validate_data_quality(self, dataset_id, sample_size=1000):
         """Valida la qualità dei dati di un dataset"""
         print(f"\n🔍 Validazione qualità dati per dataset {dataset_id}...")
-        
+
         try:
             # Recupera dati campione
             data_url = f"{self.base_url}data/{dataset_id}"
-            response = self.session.get(data_url, params={'limit': sample_size}, timeout=60)
-            
+            response = self.session.get(
+                data_url, params={"limit": sample_size}, timeout=60
+            )
+
             if response.status_code != 200:
                 print(f"❌ Impossibile recuperare dati: {response.status_code}")
                 return None
-            
+
             data = response.json()
-            observations = data.get('observations', [])
-            
+            observations = data.get("observations", [])
+
             if not observations:
                 print("❌ Nessun dato trovato")
                 return None
-            
+
             # Converte in DataFrame per analisi
             df = pd.json_normalize(observations)
-            
+
             quality_report = {
-                'dataset_id': dataset_id,
-                'total_records': len(df),
-                'total_columns': len(df.columns),
-                'missing_values': {},
-                'data_types': {},
-                'unique_values': {},
-                'quality_score': 0
+                "dataset_id": dataset_id,
+                "total_records": len(df),
+                "total_columns": len(df.columns),
+                "missing_values": {},
+                "data_types": {},
+                "unique_values": {},
+                "quality_score": 0,
             }
-            
+
             # Analisi per colonna
             for col in df.columns:
                 # Valori mancanti
                 missing_count = df[col].isnull().sum()
-                quality_report['missing_values'][col] = {
-                    'count': int(missing_count),
-                    'percentage': round((missing_count / len(df)) * 100, 2)
+                quality_report["missing_values"][col] = {
+                    "count": int(missing_count),
+                    "percentage": round((missing_count / len(df)) * 100, 2),
                 }
-                
+
                 # Tipo dati
-                quality_report['data_types'][col] = str(df[col].dtype)
-                
+                quality_report["data_types"][col] = str(df[col].dtype)
+
                 # Valori unici (se ragionevole)
                 if len(df) > 0:
                     unique_count = df[col].nunique()
-                    quality_report['unique_values'][col] = {
-                        'count': int(unique_count),
-                        'percentage': round((unique_count / len(df)) * 100, 2)
+                    quality_report["unique_values"][col] = {
+                        "count": int(unique_count),
+                        "percentage": round((unique_count / len(df)) * 100, 2),
                     }
-            
+
             # Calcola punteggio qualità
-            completeness_score = 100 - (sum(col['percentage'] for col in quality_report['missing_values'].values()) / len(df.columns))
-            quality_report['quality_score'] = max(0, min(100, completeness_score))
-            
+            completeness_score = 100 - (
+                sum(
+                    col["percentage"]
+                    for col in quality_report["missing_values"].values()
+                )
+                / len(df.columns)
+            )
+            quality_report["quality_score"] = max(0, min(100, completeness_score))
+
             print(f"✅ Qualità dati analizzata:")
             print(f"  📊 Record: {quality_report['total_records']}")
             print(f"  📋 Colonne: {quality_report['total_columns']}")
             print(f"  🎯 Punteggio qualità: {quality_report['quality_score']:.1f}/100")
-            
+
             # Salva report
             report_filename = f"quality_report_{dataset_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-            with open(report_filename, 'w', encoding='utf-8') as f:
+            with open(report_filename, "w", encoding="utf-8") as f:
                 json.dump(quality_report, f, ensure_ascii=False, indent=2)
-            
+
             print(f"  💾 Report salvato: {report_filename}")
-            
+
             return quality_report
-            
+
         except Exception as e:
             print(f"❌ Errore validazione qualità: {e}")
             return None
-    
+
     def create_data_preview_visualization(self, dataset_id, max_records=500):
         """Crea visualizzazioni di anteprima dei dati"""
         print(f"\n📊 Creazione visualizzazioni anteprima per {dataset_id}...")
-        
+
         try:
             # Recupera dati
             data_url = f"{self.base_url}data/{dataset_id}"
-            response = self.session.get(data_url, params={'limit': max_records}, timeout=60)
-            
+            response = self.session.get(
+                data_url, params={"limit": max_records}, timeout=60
+            )
+
             if response.status_code != 200:
                 print(f"❌ Errore recupero dati: {response.status_code}")
                 return False
-            
+
             data = response.json()
-            observations = data.get('observations', [])
-            
+            observations = data.get("observations", [])
+
             if not observations:
                 print("❌ Nessun dato per visualizzazioni")
                 return False
-            
+
             df = pd.json_normalize(observations)
-            
+
             # Configura stile grafici
-            plt.style.use('seaborn-v0_8')
+            plt.style.use("seaborn-v0_8")
             fig, axes = plt.subplots(2, 2, figsize=(15, 10))
-            fig.suptitle(f'Anteprima Dati ISTAT - Dataset {dataset_id}', fontsize=16, fontweight='bold')
-            
+            fig.suptitle(
+                f"Anteprima Dati ISTAT - Dataset {dataset_id}",
+                fontsize=16,
+                fontweight="bold",
+            )
+
             # Grafico 1: Distribuzione valori mancanti
             missing_data = df.isnull().sum()
             if missing_data.sum() > 0:
-                missing_data[missing_data > 0].plot(kind='bar', ax=axes[0, 0], color='coral')
-                axes[0, 0].set_title('Valori Mancanti per Colonna')
-                axes[0, 0].set_xlabel('Colonne')
-                axes[0, 0].set_ylabel('Conteggio')
-                axes[0, 0].tick_params(axis='x', rotation=45)
+                missing_data[missing_data > 0].plot(
+                    kind="bar", ax=axes[0, 0], color="coral"
+                )
+                axes[0, 0].set_title("Valori Mancanti per Colonna")
+                axes[0, 0].set_xlabel("Colonne")
+                axes[0, 0].set_ylabel("Conteggio")
+                axes[0, 0].tick_params(axis="x", rotation=45)
             else:
-                axes[0, 0].text(0.5, 0.5, 'Nessun valore mancante', 
-                              horizontalalignment='center', verticalalignment='center',
-                              transform=axes[0, 0].transAxes, fontsize=12)
-                axes[0, 0].set_title('Valori Mancanti per Colonna')
-            
+                axes[0, 0].text(
+                    0.5,
+                    0.5,
+                    "Nessun valore mancante",
+                    horizontalalignment="center",
+                    verticalalignment="center",
+                    transform=axes[0, 0].transAxes,
+                    fontsize=12,
+                )
+                axes[0, 0].set_title("Valori Mancanti per Colonna")
+
             # Grafico 2: Tipi di dati
             data_types = df.dtypes.value_counts()
-            cmap = plt.get_cmap('Set3')
+            cmap = plt.get_cmap("Set3")
             colors = [cmap(i) for i in range(len(data_types))]
-            axes[0, 1].pie(data_types.values, labels=data_types.index, autopct='%1.1f%%', colors=colors)
-            axes[0, 1].set_title('Distribuzione Tipi di Dati')
-            
+            axes[0, 1].pie(
+                data_types.values,
+                labels=data_types.index,
+                autopct="%1.1f%%",
+                colors=colors,
+            )
+            axes[0, 1].set_title("Distribuzione Tipi di Dati")
+
             # Grafico 3: Sample delle prime colonne numeriche
-            numeric_cols = df.select_dtypes(include=['number']).columns[:3]
+            numeric_cols = df.select_dtypes(include=["number"]).columns[:3]
             if len(numeric_cols) > 0:
                 df[numeric_cols].hist(ax=axes[1, 0], bins=20, alpha=0.7)
-                axes[1, 0].set_title('Distribuzione Valori Numerici (Sample)')
+                axes[1, 0].set_title("Distribuzione Valori Numerici (Sample)")
             else:
-                axes[1, 0].text(0.5, 0.5, 'Nessuna colonna numerica trovata', 
-                              horizontalalignment='center', verticalalignment='center',
-                              transform=axes[1, 0].transAxes, fontsize=12)
-                axes[1, 0].set_title('Distribuzione Valori Numerici')
-            
+                axes[1, 0].text(
+                    0.5,
+                    0.5,
+                    "Nessuna colonna numerica trovata",
+                    horizontalalignment="center",
+                    verticalalignment="center",
+                    transform=axes[1, 0].transAxes,
+                    fontsize=12,
+                )
+                axes[1, 0].set_title("Distribuzione Valori Numerici")
+
             # Grafico 4: Conteggio record per categoria (se applicabile)
-            categorical_cols = df.select_dtypes(include=['object']).columns
+            categorical_cols = df.select_dtypes(include=["object"]).columns
             if len(categorical_cols) > 0:
                 first_cat_col = categorical_cols[0]
                 value_counts = df[first_cat_col].value_counts().head(10)
-                value_counts.plot(kind='barh', ax=axes[1, 1], color='lightblue')
-                axes[1, 1].set_title(f'Top 10 Valori - {first_cat_col}')
-                axes[1, 1].set_xlabel('Conteggio')
+                value_counts.plot(kind="barh", ax=axes[1, 1], color="lightblue")
+                axes[1, 1].set_title(f"Top 10 Valori - {first_cat_col}")
+                axes[1, 1].set_xlabel("Conteggio")
             else:
-                axes[1, 1].text(0.5, 0.5, 'Nessuna colonna categorica trovata', 
-                              horizontalalignment='center', verticalalignment='center',
-                              transform=axes[1, 1].transAxes, fontsize=12)
-                axes[1, 1].set_title('Distribuzione Valori Categorici')
-            
+                axes[1, 1].text(
+                    0.5,
+                    0.5,
+                    "Nessuna colonna categorica trovata",
+                    horizontalalignment="center",
+                    verticalalignment="center",
+                    transform=axes[1, 1].transAxes,
+                    fontsize=12,
+                )
+                axes[1, 1].set_title("Distribuzione Valori Categorici")
+
             plt.tight_layout()
-            
+
             # Salva visualizzazione
-            viz_filename = f"preview_{dataset_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.png"
-            plt.savefig(viz_filename, dpi=300, bbox_inches='tight')
+            viz_filename = (
+                f"preview_{dataset_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.png"
+            )
+            plt.savefig(viz_filename, dpi=300, bbox_inches="tight")
             plt.close()
-            
+
             print(f"✅ Visualizzazione salvata: {viz_filename}")
-            
+
             # Crea anche summary statistico
-            summary_filename = f"summary_{dataset_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
-            with open(summary_filename, 'w', encoding='utf-8') as f:
+            summary_filename = (
+                f"summary_{dataset_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
+            )
+            with open(summary_filename, "w", encoding="utf-8") as f:
                 f.write(f"SUMMARY STATISTICO - Dataset ISTAT {dataset_id}\n")
                 f.write("=" * 50 + "\n\n")
-                f.write(f"Generato il: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
+                f.write(
+                    f"Generato il: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
+                )
                 f.write(f"Record totali: {len(df)}\n")
                 f.write(f"Colonne totali: {len(df.columns)}\n\n")
                 f.write("COLONNE:\n")
@@ -428,112 +516,118 @@ class IstatAPITester:
                     f.write(f"  • {col} ({df[col].dtype})\n")
                 f.write("\n")
                 f.write("STATISTICHE DESCRITTIVE:\n")
-                f.write(str(df.describe(include='all')))
-            
+                f.write(str(df.describe(include="all")))
+
             print(f"✅ Summary salvato: {summary_filename}")
-            
+
             return True
-            
+
         except Exception as e:
             print(f"❌ Errore creazione visualizzazioni: {e}")
             return False
-    
+
     def run_comprehensive_test(self):
         """Esegue test completo delle API ISTAT"""
         print("🚀 AVVIO TEST COMPLETO API ISTAT")
         print("=" * 50)
-        
-        test_report = {
-            'timestamp': datetime.now().isoformat(),
-            'tests': {}
-        }
-        
+
+        test_report = {"timestamp": datetime.now().isoformat(), "tests": {}}
+
         # Test 1: Connettività
         print("\n1️⃣ TEST CONNETTIVITÀ")
         connectivity_results = self.test_api_connectivity()
-        test_report['tests']['connectivity'] = connectivity_results
-        successful_endpoints = sum(1 for r in connectivity_results if r.get('success', False))
-        
+        test_report["tests"]["connectivity"] = connectivity_results
+        successful_endpoints = sum(
+            1 for r in connectivity_results if r.get("success", False)
+        )
+
         if successful_endpoints == 0:
             print("❌ ERRORE CRITICO: Nessun endpoint accessibile!")
             return test_report
-        
+
         # Test 2: Scoperta dataset
         print("\n2️⃣ SCOPERTA DATASET")
         relevant_datasets = self.discover_available_datasets(limit=50)
-        test_report['tests']['dataset_discovery'] = {
-            'total_found': len(relevant_datasets),
-            'datasets': relevant_datasets[:10]  # Top 10 per il report
+        test_report["tests"]["dataset_discovery"] = {
+            "total_found": len(relevant_datasets),
+            "datasets": relevant_datasets[:10],  # Top 10 per il report
         }
-        
+
         if not relevant_datasets:
             print("❌ Nessun dataset rilevante trovato!")
             return test_report
-        
+
         # Test 3: Test dataset specifici
         print("\n3️⃣ TEST DATASET SPECIFICI")
         dataset_test_results = []
-        
+
         # Testa i primi 3 dataset più rilevanti
         for i, dataset in enumerate(relevant_datasets[:3]):
             print(f"\nTest {i+1}/3: {dataset['name']}")
-            result = self.test_specific_dataset(dataset['id'], dataset['name'])
+            result = self.test_specific_dataset(dataset["id"], dataset["name"])
             dataset_test_results.append(result)
-            
+
             # Se il test è riuscito, crea visualizzazioni
-            if result.get('data_test', {}).get('success', False):
-                self.create_data_preview_visualization(dataset['id'])
-            
+            if result.get("data_test", {}).get("success", False):
+                self.create_data_preview_visualization(dataset["id"])
+
             time.sleep(3)  # Rate limiting più conservativo
-        
-        test_report['tests']['specific_datasets'] = dataset_test_results
-        
+
+        test_report["tests"]["specific_datasets"] = dataset_test_results
+
         # Test 4: Dataset popolari
         print("\n4️⃣ TEST DATASET POPOLARI")
         popular_success = self.test_popular_datasets()
-        test_report['tests']['popular_datasets'] = {
-            'successful_tests': popular_success,
-            'total_tests': 5
+        test_report["tests"]["popular_datasets"] = {
+            "successful_tests": popular_success,
+            "total_tests": 5,
         }
-        
+
         # Test 5: Validazione qualità
         print("\n5️⃣ VALIDAZIONE QUALITÀ DATI")
         quality_reports = []
-        
+
         for dataset in relevant_datasets[:2]:  # Primi 2 dataset
-            if any(r['dataset_id'] == dataset['id'] and r.get('data_test', {}).get('success', False) 
-                   for r in dataset_test_results):
-                quality_report = self.validate_data_quality(dataset['id'])
+            if any(
+                r["dataset_id"] == dataset["id"]
+                and r.get("data_test", {}).get("success", False)
+                for r in dataset_test_results
+            ):
+                quality_report = self.validate_data_quality(dataset["id"])
                 if quality_report:
                     quality_reports.append(quality_report)
-        
-        test_report['tests']['data_quality'] = quality_reports
-        
+
+        test_report["tests"]["data_quality"] = quality_reports
+
         # Genera report finale
         print("\n6️⃣ GENERAZIONE REPORT")
         self.generate_final_report(test_report)
-        
+
         print("\n" + "=" * 50)
         print("✅ TEST COMPLETO TERMINATO!")
-        print(f"📊 Endpoint funzionanti: {successful_endpoints}/{len(connectivity_results)}")
+        print(
+            f"📊 Endpoint funzionanti: {successful_endpoints}/{len(connectivity_results)}"
+        )
         print(f"📈 Dataset rilevanti trovati: {len(relevant_datasets)}")
-        print(f"🔬 Dataset testati con successo: {sum(1 for r in dataset_test_results if r.get('data_test', {}).get('success', False))}")
+        print(
+            f"🔬 Dataset testati con successo: {sum(1 for r in dataset_test_results if r.get('data_test', {}).get('success', False))}"
+        )
         print(f"📋 Report qualità generati: {len(quality_reports)}")
-        
+
         return test_report
-    
+
     def generate_final_report(self, test_report):
         """Genera report finale dei test"""
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+
         # Report JSON completo
         json_filename = f"istat_api_test_report_{timestamp}.json"
-        with open(json_filename, 'w', encoding='utf-8') as f:
+        with open(json_filename, "w", encoding="utf-8") as f:
             json.dump(test_report, f, ensure_ascii=False, indent=2)
-        
+
         # Report HTML user-friendly
         html_filename = f"istat_api_test_report_{timestamp}.html"
-        
+
         html_content = f"""
 <!DOCTYPE html>
 <html lang="it">
@@ -590,13 +684,21 @@ class IstatAPITester:
             <table>
                 <tr><th>Endpoint</th><th>Status</th><th>Tempo Risposta</th><th>Dimensione Dati</th></tr>
         """
-        
-        for conn in test_report.get('tests', {}).get('connectivity', []):
-            status_class = 'status-ok' if conn.get('success') else 'status-error'
-            status_text = '✅ OK' if conn.get('success') else f"❌ Error {conn.get('status_code', 'N/A')}"
-            response_time = f"{conn.get('response_time', 0)}s" if conn.get('success') else 'N/A'
-            data_size = f"{conn.get('data_length', 0)} bytes" if conn.get('success') else 'N/A'
-            
+
+        for conn in test_report.get("tests", {}).get("connectivity", []):
+            status_class = "status-ok" if conn.get("success") else "status-error"
+            status_text = (
+                "✅ OK"
+                if conn.get("success")
+                else f"❌ Error {conn.get('status_code', 'N/A')}"
+            )
+            response_time = (
+                f"{conn.get('response_time', 0)}s" if conn.get("success") else "N/A"
+            )
+            data_size = (
+                f"{conn.get('data_length', 0)} bytes" if conn.get("success") else "N/A"
+            )
+
             html_content += f"""
                 <tr class="{status_class}">
                     <td>{conn.get('endpoint', 'N/A')}</td>
@@ -605,7 +707,7 @@ class IstatAPITester:
                     <td>{data_size}</td>
                 </tr>
             """
-        
+
         html_content += """
             </table>
         </div>
@@ -613,8 +715,12 @@ class IstatAPITester:
         <div class="section">
             <h2>📈 Dataset Più Rilevanti</h2>
         """
-        
-        for dataset in test_report.get('tests', {}).get('dataset_discovery', {}).get('datasets', [])[:5]:
+
+        for dataset in (
+            test_report.get("tests", {})
+            .get("dataset_discovery", {})
+            .get("datasets", [])[:5]
+        ):
             html_content += f"""
             <div class="dataset-card">
                 <h4>{dataset.get('name', 'N/A')}</h4>
@@ -623,7 +729,7 @@ class IstatAPITester:
                 <p><strong>Punteggio Rilevanza:</strong> {dataset.get('relevance_score', 0)}/10</p>
             </div>
             """
-        
+
         html_content += f"""
         </div>
         
@@ -662,26 +768,28 @@ class IstatAPITester:
 </body>
 </html>
         """
-        
-        with open(html_filename, 'w', encoding='utf-8') as f:
+
+        with open(html_filename, "w", encoding="utf-8") as f:
             f.write(html_content)
-        
+
         print(f"✅ Report JSON: {json_filename}")
         print(f"✅ Report HTML: {html_filename}")
+
 
 def main():
     """Funzione principale per test API ISTAT"""
     print("🇮🇹 ISTAT API TESTER & VALIDATOR")
     print("Sviluppato per integrazione Tableau")
     print("=" * 50)
-    
+
     tester = IstatAPITester()
-    
+
     # Esegui test completo
     final_report = tester.run_comprehensive_test()
-    
+
     print("\n📁 TUTTI I FILE SONO STATI GENERATI NELLA DIRECTORY CORRENTE")
     print("🎯 Usa i risultati per configurare i connettori Tableau!")
+
 
 if __name__ == "__main__":
     main()
