@@ -13,6 +13,8 @@ This is an Italian data processing system for ISTAT (Italian National Institute 
 - `python istat_xml_to_powerbi.py` - Convert ISTAT XML data to PowerBI formats (CSV, Excel, Parquet, JSON)
 - `python src/api/istat_api.py` - Test ISTAT API connectivity and data access
 - `python src/api/powerbi_api.py` - Test PowerBI API connectivity and manage PowerBI resources
+- `python scripts/setup_powerbi_azure.py` - Guided setup for Azure AD and PowerBI configuration
+- `python scripts/test_powerbi_upload.py` - Test dataset upload to PowerBI Service
 - `python src/analyzers/dataflow_analyzer.py` - Analyze available ISTAT dataflows
 - `python src/scrapers/tableau_scraper.py` - Analyze Tableau server configuration
 - `powershell scripts/download_istat_data.ps1` - Download ISTAT datasets via PowerShell
@@ -121,4 +123,6 @@ Required environment variables (optional, defaults provided):
 - To test API connectivity: Run the ISTAT API tester with comprehensive reporting
 - To generate Tableau imports: The converter automatically creates import instructions and metadata
 - To generate PowerBI imports: Run `istat_xml_to_powerbi.py` to create optimized PowerBI formats with integration guide
+- To setup PowerBI integration: Run `python scripts/setup_powerbi_azure.py` for guided Azure AD configuration
 - To test PowerBI connectivity: Use `python src/api/powerbi_api.py` to verify authentication and workspace access
+- To test PowerBI upload: Run `python scripts/test_powerbi_upload.py` to test dataset upload to PowerBI Service
