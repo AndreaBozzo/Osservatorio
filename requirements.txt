@@ -1,32 +1,36 @@
-#Core dependencies
+# Core dependencies
 pandas>=2.0.0
 numpy>=1.24.0
 requests>=2.31.0
-#Data processing
+
+# Data processing
 lxml>=4.9.0
 beautifulsoup4>=4.12.0
 openpyxl>=3.1.0
-#API clients
+pyarrow>=13.0.0
+
+# API clients
 tableauserverclient>=0.25
-#Utilities
+msal>=1.24.0
+
+# Utilities
 python-dotenv>=1.0.0
 click>=8.1.0
 tqdm>=4.65.0
-#Testing
+loguru>=0.7.0
+
+# Testing
 pytest>=7.4.0
 pytest-cov>=4.1.0
 pytest-mock>=3.11.0
-#Development
+psutil>=5.9.0
+
+# Development
 black>=23.7.0
 flake8>=6.1.0
 isort>=5.12.0
 pre-commit>=3.3.0
-#Performance testing
-psutil>=5.9.0
+
+# Performance testing and visualization
 seaborn>=0.12.0
 matplotlib>=3.7.0
-#Logging
-loguru>=0.7.0
-#PowerBI integration
-msal>=1.24.0
-pyarrow>=13.0.0
