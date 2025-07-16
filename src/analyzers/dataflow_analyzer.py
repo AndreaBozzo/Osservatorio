@@ -410,10 +410,13 @@ class IstatDataflowAnalyzer:
     def _calculate_priority(self, dataflow):
         """Calcola priorità per Tableau"""
         base_score = dataflow["relevance_score"]
-        size_bonus = min(
-            5, dataflow["tests"]["data_access"]["size_bytes"] / (1024 * 1024) / 10
-        )
-        obs_bonus = min(5, dataflow["tests"].get("observations_count", 0) / 1000)
+
+        # Gestione sicura per tests che potrebbe non esistere
+        tests_data = dataflow.get("tests", {})
+        data_access = tests_data.get("data_access", {})
+
+        size_bonus = min(5, data_access.get("size_bytes", 0) / (1024 * 1024) / 10)
+        obs_bonus = min(5, tests_data.get("observations_count", 0) / 1000)
 
         return base_score + size_bonus + obs_bonus
 

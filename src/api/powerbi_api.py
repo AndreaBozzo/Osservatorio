@@ -30,6 +30,14 @@ class PowerBIAPIClient:
         self.access_token = None
         self.token_expires_at = None
 
+        # Controlla se le credenziali sono disponibili
+        if not all([self.client_id, self.client_secret, self.tenant_id]):
+            logger.warning(
+                "PowerBI credentials not configured. Set POWERBI_CLIENT_ID, POWERBI_CLIENT_SECRET, and POWERBI_TENANT_ID environment variables."
+            )
+            self.app = None
+            return
+
         # Configurazione MSAL
         self.authority = f"https://login.microsoftonline.com/{self.tenant_id}"
         self.scope = ["https://analysis.windows.net/powerbi/api/.default"]

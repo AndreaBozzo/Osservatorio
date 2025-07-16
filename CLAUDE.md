@@ -9,8 +9,8 @@ This is an Italian data processing system for ISTAT (Italian National Institute 
 ## Development Commands
 
 ### Core Commands
-- `python istat_xml_to_tableau.py` - Main conversion script to convert ISTAT XML data to Tableau formats
-- `python istat_xml_to_powerbi.py` - Convert ISTAT XML data to PowerBI formats (CSV, Excel, Parquet, JSON)
+- `python convert_to_tableau.py` - Main conversion script to convert ISTAT XML data to Tableau formats
+- `python convert_to_powerbi.py` - Convert ISTAT XML data to PowerBI formats (CSV, Excel, Parquet, JSON)
 - `python src/api/istat_api.py` - Test ISTAT API connectivity and data access
 - `python src/api/powerbi_api.py` - Test PowerBI API connectivity and manage PowerBI resources
 - `python scripts/setup_powerbi_azure.py` - Guided setup for Azure AD and PowerBI configuration
@@ -45,8 +45,10 @@ This is an Italian data processing system for ISTAT (Italian National Institute 
 1. **Data Pipeline Flow**:
    - `src/api/istat_api.py` - ISTAT SDMX API client and data fetcher
    - `src/analyzers/dataflow_analyzer.py` - Analyzes 509+ available ISTAT dataflows and categorizes them
-   - `istat_xml_to_tableau.py` - Main converter that transforms SDMX XML to CSV/Excel/JSON formats
-   - `istat_xml_to_powerbi.py` - PowerBI converter that transforms SDMX XML to PowerBI-optimized formats (CSV, Excel, Parquet, JSON)
+   - `src/converters/tableau_converter.py` - Main converter that transforms SDMX XML to CSV/Excel/JSON formats
+   - `src/converters/powerbi_converter.py` - PowerBI converter that transforms SDMX XML to PowerBI-optimized formats (CSV, Excel, Parquet, JSON)
+   - `convert_to_tableau.py` - Wrapper script for Tableau conversions
+   - `convert_to_powerbi.py` - Wrapper script for PowerBI conversions
    - `src/api/powerbi_api.py` - PowerBI REST API client for workspace and dataset management
    - `src/scrapers/tableau_scraper.py` - Tableau server integration and configuration analysis
 
@@ -63,8 +65,9 @@ This is an Italian data processing system for ISTAT (Italian National Institute 
 
 ### Directory Structure
 - `src/` - Source code modules
-  - `api/` - API clients (ISTAT, Tableau)
+  - `api/` - API clients (ISTAT, PowerBI, Tableau)
   - `analyzers/` - Data analysis and categorization
+  - `converters/` - Data format converters (Tableau, PowerBI)
   - `scrapers/` - Web scraping and data extraction
   - `utils/` - Configuration, logging, and utilities
 - `data/` - Data storage

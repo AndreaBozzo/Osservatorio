@@ -7,6 +7,11 @@ from pathlib import Path
 
 import pandas as pd
 
+from src.utils.config import Config
+from src.utils.logger import get_logger
+
+logger = get_logger(__name__)
+
 
 class IstatXMLtoTableauConverter:
     def __init__(self):
