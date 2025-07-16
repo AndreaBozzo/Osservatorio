@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is an Italian data processing system for ISTAT (Italian National Institute of Statistics) data with Tableau integration. The system fetches, processes, and converts ISTAT statistical data into Tableau-friendly formats for visualization and analysis.
+This is an Italian data processing system for ISTAT (Italian National Institute of Statistics) data with Tableau integration. The system fetches, processes, and converts ISTAT statistical data into Tableau/Power BI- friendly formats for visualization and analysis.
 
 ## Development Commands
 
@@ -49,8 +49,8 @@ This is an Italian data processing system for ISTAT (Italian National Institute 
 2. **Data Processing Architecture**:
    - Raw ISTAT data is fetched via SDMX API endpoints
    - XML data is parsed and categorized by topic (popolazione, economia, lavoro, territorio, istruzione, salute)
-   - Data is cleaned, standardized, and converted to multiple formats for Tableau import
-   - Automatic generation of Tableau import instructions and metadata
+   - Data is cleaned, standardized, and converted to multiple formats for Tableau/Power Bi import
+   - Automatic generation of Tableau/Power BI import instructions and metadata
 
 3. **Configuration System**:
    - `src/utils/config.py` - Centralized configuration management with environment variables
