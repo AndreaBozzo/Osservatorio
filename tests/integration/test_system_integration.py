@@ -96,8 +96,8 @@ class TestSystemIntegration:
             # Test report generation
             report = analyzer.generate_summary_report(categorized_data)
             assert "Total dataflows" in report
-            assert "popolazione" in report
-            assert "economia" in report
+            assert "popolazione" in report.lower()  # Case insensitive check
+            assert "economia" in report.lower()  # Case insensitive check
 
         finally:
             os.chdir(original_cwd)
@@ -366,11 +366,21 @@ class TestSystemIntegration:
                 "id": "pop_test",
                 "display_name": "Popolazione residente",
                 "description": "Dati popolazione italiana",
+                "relevance_score": 8.5,
+                "tests": {
+                    "data_access": {"size_bytes": 1024 * 1024 * 10},
+                    "observations_count": 1000,
+                },
             },
             {
                 "id": "econ_test",
                 "display_name": "PIL regionale",
                 "description": "Prodotto interno lordo regionale",
+                "relevance_score": 9.0,
+                "tests": {
+                    "data_access": {"size_bytes": 1024 * 1024 * 5},
+                    "observations_count": 500,
+                },
             },
         ]
 

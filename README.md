@@ -41,7 +41,7 @@ cp .env.example .env
 powershell scripts/download_istat_data.ps1
 
 # Converti per Tableau
-python istat_xml_to_tableau.py
+python convert_to_tableau.py
 ```
 
 ### Conversione Dati per PowerBI
@@ -50,7 +50,7 @@ python istat_xml_to_tableau.py
 powershell scripts/download_istat_data.ps1
 
 # Converti per PowerBI
-python istat_xml_to_powerbi.py
+python convert_to_powerbi.py
 ```
 
 ### Test API
@@ -72,8 +72,8 @@ src/
 │   └── tableau_api.py     # Client Tableau Server API
 ├── analyzers/             # Analisi e categorizzazione dati
 ├── scrapers/              # Web scraping
-├── utils/                 # Configurazione e logging
-└── converters/            # Convertitori dati
+├── utils/                 # Configurazione, logging e gestione file temporanei
+└── converters/            # Convertitori dati (spostati da root)
 
 data/
 ├── raw/                   # Dati ISTAT grezzi (XML)
@@ -83,9 +83,11 @@ data/
 ├── cache/                # Cache API responses
 └── reports/              # Report e analisi
 
-scripts/                  # Script PowerShell per download
-tests/                    # Test automatizzati
-docs/                     # Documentazione
+scripts/                  # Script PowerShell per download e gestione file
+tests/                    # Test automatizzati (123 tests)
+└── unit/                 # Unit tests (89 tests)
+└── integration/          # Integration tests
+└── performance/          # Performance tests
 ```
 
 ## 🧪 Testing
@@ -107,9 +109,9 @@ pytest --cov=src --cov-report=html tests/
 ```
 
 ### Test Suite
-- **89 unit tests** con 49% code coverage
-- **Integration tests** per workflow completi
-- **Performance tests** per scalabilità
+- **89 unit tests** con 49% code coverage - tutti passanti ✅
+- **Integration tests** per workflow completi end-to-end
+- **Performance tests** per scalabilità con 1000+ dataflows
 - **Coverage report** in `htmlcov/index.html`
 
 ## 📊 Features
@@ -132,6 +134,7 @@ pytest --cov=src --cov-report=html tests/
 - ✅ **Workflow completi**: Da XML a dashboard pronte
 - ✅ **Test connettività**: Validazione API e configurazioni
 - ✅ **Configurazione centralizzata**: Gestione credenziali e environment
+- ✅ **Gestione file temporanei**: Sistema automatico di pulizia e organizzazione
 
 ## 🔧 Configurazione
 
@@ -203,12 +206,38 @@ Distribuito sotto licenza MIT. Vedi LICENSE per maggiori informazioni.
 
 **Project Link**: [https://github.com/AndreaBozzo/Osservatorio](https://github.com/AndreaBozzo/Osservatorio)
 
+## 🧹 Gestione File Temporanei
+
+Il sistema include un gestore automatico per file temporanei:
+
+```bash
+# Statistiche file temporanei
+python scripts/cleanup_temp_files.py --stats
+
+# Pulizia file più vecchi di 24 ore
+python scripts/cleanup_temp_files.py --max-age 24
+
+# Organizzazione file dati
+python scripts/organize_data_files.py
+
+# Scheduling automatico (Windows/Linux)
+python scripts/schedule_cleanup.py --frequency daily
+```
+
+### Caratteristiche
+- ✅ **Gestione centralizzata**: Singleton pattern per TempFileManager
+- ✅ **Cleanup automatico**: Rimozione file vecchi schedulata
+- ✅ **Organizzazione automatica**: File XML, log e report in directory appropriate
+- ✅ **Gitignore aggiornato**: Esclusione automatica file temporanei
+- ✅ **Context managers**: Operazioni sicure su file temporanei
+
 ## 📚 Documentazione
 
 - **CLAUDE.md**: Guida per Claude Code AI
 - **Guide PowerBI**: `data/processed/powerbi/powerbi_integration_guide_*.md`
 - **Guide Tableau**: `data/processed/tableau/tableau_import_instructions_*.md`
 - **API Documentation**: Consultare i docstring nei file `src/api/`
+- **Script Management**: `scripts/` per automazione e cleanup
 
 ---
 

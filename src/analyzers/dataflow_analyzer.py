@@ -420,6 +420,29 @@ class IstatDataflowAnalyzer:
 
         return base_score + size_bonus + obs_bonus
 
+    def generate_summary_report(self, categorized_data):
+        """Generate a summary report of categorized data"""
+        total_dataflows = sum(len(datasets) for datasets in categorized_data.values())
+        report = f"""
+📊 ISTAT Data Analysis Summary
+{'='*50}
+Total dataflows analyzed: {total_dataflows}
+
+Category breakdown:
+"""
+        for category, datasets in categorized_data.items():
+            if datasets:
+                report += f"• {category.capitalize()}: {len(datasets)} datasets\n"
+
+        report += "\nTop datasets by category:\n"
+        for category, datasets in categorized_data.items():
+            if datasets:
+                report += f"\n{category.upper()}:\n"
+                for dataset in datasets[:3]:  # Show top 3
+                    report += f"  - {dataset.get('display_name', dataset.get('name', 'Unknown'))}\n"
+
+        return report
+
     def generate_tableau_implementation_guide(self, tableau_ready_datasets):
         """Genera guida implementazione per Tableau"""
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")

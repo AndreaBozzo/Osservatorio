@@ -1,0 +1,82 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "osservatorio-istat"
+version = "1.0.0"
+description = "Italian data processing system for ISTAT data with Tableau/PowerBI integration"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "pandas>=2.0.0",
+    "numpy>=1.24.0",
+    "requests>=2.31.0",
+    "lxml>=4.9.0",
+    "beautifulsoup4>=4.12.0",
+    "openpyxl>=3.1.0",
+    "pyarrow>=13.0.0",
+    "tableauserverclient>=0.25",
+    "msal>=1.24.0",
+    "python-dotenv>=1.0.0",
+    "click>=8.1.0",
+    "tqdm>=4.65.0",
+    "loguru>=0.7.0",
+    "psutil>=5.9.0",
+    "seaborn>=0.12.0",
+    "matplotlib>=3.7.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "pytest-mock>=3.11.0",
+    "black>=23.7.0",
+    "flake8>=6.1.0",
+    "isort>=5.12.0",
+    "pre-commit>=3.3.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
+markers = [
+    "integration: marks tests as integration tests",
+    "performance: marks tests as performance tests",
+    "slow: marks tests as slow running",
+]
+
+[tool.black]
+line-length = 88
+target-version = ['py39']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+ensure_newline_before_comments = true
+line_length = 88
+src_paths = ["src", "tests"]
+
+[tool.pylance]
+typeCheckingMode = "basic"

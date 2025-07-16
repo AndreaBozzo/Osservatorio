@@ -19,6 +19,14 @@ This is an Italian data processing system for ISTAT (Italian National Institute 
 - `python src/scrapers/tableau_scraper.py` - Analyze Tableau server configuration
 - `powershell scripts/download_istat_data.ps1` - Download ISTAT datasets via PowerShell
 
+### File Management Commands
+- `python scripts/cleanup_temp_files.py` - Clean up temporary files
+- `python scripts/cleanup_temp_files.py --stats` - Show temporary files statistics
+- `python scripts/cleanup_temp_files.py --max-age 48` - Clean files older than 48 hours
+- `python scripts/organize_data_files.py` - Organize data files according to best practices
+- `python scripts/organize_data_files.py --dry-run` - Preview file organization changes
+- `python scripts/schedule_cleanup.py` - Set up automatic cleanup scheduling
+
 ### Development Environment
 - `python -m venv venv` - Create virtual environment
 - `venv\Scripts\activate` (Windows) or `source venv/bin/activate` (Linux/Mac) - Activate virtual environment
@@ -108,6 +116,25 @@ The system categorizes ISTAT data into 6 main areas with priority scoring:
 - PowerShell scripts are optimized for Windows environments
 - Rate limiting is implemented for API calls (2-3 second delays)
 - Data validation includes completeness scoring and quality reports
+
+## File Management
+
+### Temporary Files
+- All temporary files are managed by `TempFileManager` class
+- Files are stored in system temp directory under `osservatorio_istat/`
+- Automatic cleanup on application exit
+- Manual cleanup available via `cleanup_temp_files.py` script
+
+### Directory Structure for Temporary Files
+- `temp/api_responses/` - API response files (dataflow_response.xml, data_DCIS_*.xml, structure_DCIS_*.xml)
+- `temp/samples/` - Sample data files
+- `temp/misc/` - Other temporary files
+
+### Best Practices
+- Temporary files are automatically organized and cleaned up
+- Use `--dry-run` flag to preview changes before applying
+- Schedule regular cleanup with `schedule_cleanup.py`
+- Monitor temp file usage with `--stats` option
 
 ## Environment Configuration
 

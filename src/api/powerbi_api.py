@@ -27,8 +27,8 @@ class PowerBIAPIClient:
         self.client_secret = Config.POWERBI_CLIENT_SECRET
         self.tenant_id = Config.POWERBI_TENANT_ID
         self.workspace_id = Config.POWERBI_WORKSPACE_ID
-        self.access_token = None
-        self.token_expires_at = None
+        self.access_token: Optional[str] = None
+        self.token_expires_at: Optional[datetime] = None
 
         # Controlla se le credenziali sono disponibili
         if not all([self.client_id, self.client_secret, self.tenant_id]):
@@ -61,6 +61,10 @@ class PowerBIAPIClient:
 
     def authenticate(self) -> bool:
         """Autentica con PowerBI usando credenziali service principal."""
+        if not self.app:
+            logger.error("PowerBI app not initialized - missing credentials")
+            return False
+
         try:
             # Acquisisce token usando client credentials flow
             result = self.app.acquire_token_silent(self.scope, account=None)
@@ -96,12 +100,16 @@ class PowerBIAPIClient:
 
     def _ensure_authenticated(self) -> bool:
         """Verifica che il client sia autenticato e rinnova il token se necessario."""
-        if not self.access_token or datetime.now() >= self.token_expires_at:
+        if (
+            not self.access_token
+            or not self.token_expires_at
+            or datetime.now() >= self.token_expires_at
+        ):
             logger.info("Token scaduto o mancante, rinnovo...")
             return self.authenticate()
         return True
 
-    def get_workspaces(self) -> List[Dict]:
+    def get_workspaces(self) -> List[Dict[str, Any]]:
         """Recupera lista dei workspace disponibili."""
         if not self._ensure_authenticated():
             return []
@@ -118,7 +126,7 @@ class PowerBIAPIClient:
             logger.error(f"Errore recupero workspace: {e}")
             return []
 
-    def get_datasets(self, workspace_id: Optional[str] = None) -> List[Dict]:
+    def get_datasets(self, workspace_id: Optional[str] = None) -> List[Dict[str, Any]]:
         """Recupera lista dei dataset nel workspace."""
         if not self._ensure_authenticated():
             return []
@@ -144,7 +152,7 @@ class PowerBIAPIClient:
             logger.error(f"Errore recupero dataset: {e}")
             return []
 
-    def get_reports(self, workspace_id: Optional[str] = None) -> List[Dict]:
+    def get_reports(self, workspace_id: Optional[str] = None) -> List[Dict[str, Any]]:
         """Recupera lista dei report nel workspace."""
         if not self._ensure_authenticated():
             return []
@@ -172,7 +180,7 @@ class PowerBIAPIClient:
 
     def create_dataset(
         self, dataset_definition: Dict, workspace_id: Optional[str] = None
-    ) -> Optional[Dict]:
+    ) -> Optional[Dict[str, Any]]:
         """Crea un nuovo dataset in PowerBI."""
         if not self._ensure_authenticated():
             return None
@@ -203,7 +211,7 @@ class PowerBIAPIClient:
         self,
         dataset_id: str,
         table_name: str,
-        data: List[Dict],
+        data: List[Dict[str, Any]],
         workspace_id: Optional[str] = None,
     ) -> bool:
         """Invia dati a un dataset esistente."""
@@ -261,7 +269,7 @@ class PowerBIAPIClient:
 
     def get_dataset_refresh_history(
         self, dataset_id: str, workspace_id: Optional[str] = None
-    ) -> List[Dict]:
+    ) -> List[Dict[str, Any]]:
         """Recupera cronologia refresh di un dataset."""
         if not self._ensure_authenticated():
             return []
@@ -289,7 +297,7 @@ class PowerBIAPIClient:
 
     def upload_pbix_file(
         self, file_path: str, dataset_name: str, workspace_id: Optional[str] = None
-    ) -> Optional[Dict]:
+    ) -> Optional[Dict[str, Any]]:
         """Carica un file PBIX nel workspace."""
         if not self._ensure_authenticated():
             return None

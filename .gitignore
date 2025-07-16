@@ -90,6 +90,21 @@ istat_prep_flow_*.json
 istat_strategy.json
 tableau_config.json
 
+# Temporary files - managed by TempFileManager
+data_DCIS_*.xml
+structure_DCIS_*.xml
+temp_*.xml
+temp_*.json
+temp_*.csv
+temp_*.txt
+*.tmp
+*.temp
+
+# Temporary directories
+temp/
+tmp/
+osservatorio_temp/
+
 # Archives
 *.zip
 *.tar.gz

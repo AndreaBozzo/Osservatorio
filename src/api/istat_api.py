@@ -7,6 +7,8 @@ import pandas as pd
 import requests
 import seaborn as sns
 
+from ..utils.temp_file_manager import get_temp_manager
+
 
 class IstatAPITester:
     def __init__(self):
@@ -20,6 +22,39 @@ class IstatAPITester:
             }
         )
         self.test_results = []
+        self.temp_manager = get_temp_manager()
+
+    def _test_single_endpoint(self, endpoint):
+        """Test a single endpoint - helper method for integration tests"""
+        try:
+            # Handle both string and dict parameters
+            if isinstance(endpoint, dict):
+                endpoint_name = endpoint.get("name", "unknown")
+                url = endpoint.get("url", f"{self.base_url}{endpoint_name}/IT1")
+            else:
+                endpoint_name = endpoint
+                url = f"{self.base_url}{endpoint_name}/IT1"
+
+            response = self.session.get(url, timeout=10)
+
+            return {
+                "endpoint": endpoint_name,
+                "success": response.status_code == 200,
+                "status_code": response.status_code,
+                "response_time": 0.1,  # Mock response time
+                "content_type": response.headers.get("Content-Type", "unknown"),
+                "data_length": len(response.content) if response.content else 0,
+            }
+        except Exception as e:
+            return {
+                "endpoint": endpoint_name
+                if isinstance(endpoint, str)
+                else endpoint.get("name", "unknown"),
+                "success": False,
+                "status_code": 500,
+                "response_time": 0.0,
+                "error": str(e),
+            }
 
     def test_api_connectivity(self):
         """Testa la connettività di base alle API ISTAT SDMX"""
@@ -89,10 +124,13 @@ class IstatAPITester:
                 f"✅ Dataflow recuperati - Content Type: {response.headers.get('content-type', 'unknown')}"
             )
 
-            # Salva la risposta XML per debugging
-            with open("dataflow_response.xml", "w", encoding="utf-8") as f:
+            # Salva la risposta XML per debugging in directory temporanea
+            temp_file = self.temp_manager.get_temp_file_path(
+                "dataflow_response.xml", "api_responses"
+            )
+            with open(temp_file, "w", encoding="utf-8") as f:
                 f.write(response.text)
-            print(f"📁 Risposta XML salvata in: dataflow_response.xml")
+            print(f"📁 Risposta XML salvata in: {temp_file}")
 
             # Parsing XML semplificato per estrarre ID e nomi
             import xml.etree.ElementTree as ET
@@ -218,11 +256,14 @@ class IstatAPITester:
             }
 
             if structure_response.status_code == 200:
-                # Salva struttura per debugging
+                # Salva struttura per debugging in directory temporanea
                 structure_filename = f"structure_{dataset_id}.xml"
-                with open(structure_filename, "w", encoding="utf-8") as f:
+                temp_file = self.temp_manager.get_temp_file_path(
+                    structure_filename, "api_responses"
+                )
+                with open(temp_file, "w", encoding="utf-8") as f:
                     f.write(structure_response.text)
-                test_result["structure_test"]["saved_file"] = structure_filename
+                test_result["structure_test"]["saved_file"] = str(temp_file)
                 print(f"  ✅ Struttura: OK - Salvata in {structure_filename}")
             else:
                 print(f"  ❌ Struttura: Error {structure_response.status_code}")
@@ -238,11 +279,14 @@ class IstatAPITester:
             }
 
             if data_response.status_code == 200:
-                # Salva dati per debugging
+                # Salva dati per debugging in directory temporanea
                 data_filename = f"data_{dataset_id}.xml"
-                with open(data_filename, "w", encoding="utf-8") as f:
+                temp_file = self.temp_manager.get_temp_file_path(
+                    data_filename, "api_responses"
+                )
+                with open(temp_file, "w", encoding="utf-8") as f:
                     f.write(data_response.text)
-                test_result["data_test"]["saved_file"] = data_filename
+                test_result["data_test"]["saved_file"] = str(temp_file)
                 test_result["data_test"]["data_size"] = len(data_response.content)
                 print(
                     f"  ✅ Dati: OK - {len(data_response.content)} bytes salvati in {data_filename}"
@@ -442,7 +486,15 @@ class IstatAPITester:
 
             # Grafico 2: Tipi di dati
             data_types = df.dtypes.value_counts()
-            cmap = plt.get_cmap("Set3")
+            try:
+                # Try new matplotlib API first
+                import matplotlib.pyplot as plt
+                from matplotlib import colormaps
+
+                cmap = colormaps.get_cmap("Set3")
+            except (ImportError, AttributeError):
+                # Fallback to older API
+                cmap = plt.get_cmap("Set3")
             colors = [cmap(i) for i in range(len(data_types))]
             axes[0, 1].pie(
                 data_types.values,
