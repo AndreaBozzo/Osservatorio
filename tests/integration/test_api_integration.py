@@ -2,14 +2,15 @@
 Integration tests for API connectivity and data fetching.
 """
 
+import time
+import xml.etree.ElementTree as ET
+from unittest.mock import Mock, patch
+
 import pytest
 import requests
-import time
-from unittest.mock import Mock, patch
-import xml.etree.ElementTree as ET
 
-from src.api.istat_api import IstatAPITester
 from src.analyzers.dataflow_analyzer import IstatDataflowAnalyzer
+from src.api.istat_api import IstatAPITester
 
 
 @pytest.mark.integration

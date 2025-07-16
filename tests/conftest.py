@@ -2,14 +2,19 @@
 Test configuration and fixtures for osservatorio scuola tests.
 """
 
-import pytest
-import tempfile
+import json
 import shutil
+import sys
+import tempfile
 import xml.etree.ElementTree as ET
 from pathlib import Path
 from unittest.mock import Mock, patch
-import json
+
 import pandas as pd
+import pytest
+
+# Add the project root to Python path
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.utils.config import Config
 

@@ -1,10 +1,11 @@
-import xml.etree.ElementTree as ET
-import pandas as pd
 import json
-import requests
-from datetime import datetime
 import re
 import time
+import xml.etree.ElementTree as ET
+from datetime import datetime
+
+import pandas as pd
+import requests
 
 
 class IstatDataflowAnalyzer:

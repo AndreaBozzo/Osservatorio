@@ -2,11 +2,12 @@
 Unit tests for PowerBI API client.
 """
 
-import pytest
 import json
-import requests
-from unittest.mock import Mock, patch, MagicMock
 from datetime import datetime, timedelta
+from unittest.mock import MagicMock, Mock, patch
+
+import pytest
+import requests
 
 from src.api.powerbi_api import PowerBIAPIClient
 
@@ -297,7 +298,6 @@ class TestPowerBIAPIClient:
                 client, "get_workspaces", return_value=[{"id": "ws1"}, {"id": "ws2"}]
             ):
                 with patch.object(client, "get_datasets", return_value=[{"id": "ds1"}]):
-
                     result = client.test_connection()
 
                     assert result["authentication"] == True

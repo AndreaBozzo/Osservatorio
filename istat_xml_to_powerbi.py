@@ -3,14 +3,15 @@ Convertitore ISTAT XML to PowerBI
 Converte dati ISTAT SDMX in formati compatibili con PowerBI
 """
 
-import xml.etree.ElementTree as ET
-import pandas as pd
 import json
 import os
-from datetime import datetime
 import re
+import xml.etree.ElementTree as ET
+from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Any
+from typing import Any, Dict, List, Optional
+
+import pandas as pd
 
 from src.utils.config import Config
 from src.utils.logger import get_logger
@@ -581,7 +582,7 @@ Generato il: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 2. Crea gerarchia temporale (Anno → Trimestre → Mese)
 3. Aggiungi colonne calcolate se necessario:
    ```dax
-   Variazione % = 
+   Variazione % =
    DIVIDE(
        [Value] - CALCULATE([Value], PREVIOUSQUARTER(Time[Date])),
        CALCULATE([Value], PREVIOUSQUARTER(Time[Date]))
@@ -636,24 +637,24 @@ Generato il: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 
 ```dax
 // Valore Corrente
-Valore Corrente = 
+Valore Corrente =
 CALCULATE(
     SUM(Data[Value]),
     LASTDATE(Data[Time])
 )
 
 // Variazione Anno su Anno
-Variazione YoY = 
+Variazione YoY =
 VAR CurrentValue = SUM(Data[Value])
 VAR PreviousValue = CALCULATE(
     SUM(Data[Value]),
     SAMEPERIODLASTYEAR(Data[Time])
 )
-RETURN 
+RETURN
 DIVIDE(CurrentValue - PreviousValue, PreviousValue)
 
 // Media Mobile 4 Periodi
-Media Mobile = 
+Media Mobile =
 AVERAGEX(
     LASTPERIODS(4, Data[Time]),
     SUM(Data[Value])

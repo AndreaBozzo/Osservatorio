@@ -1,9 +1,10 @@
-import requests
-import pandas as pd
 import json
-from datetime import datetime
 import time
+from datetime import datetime
+
 import matplotlib.pyplot as plt
+import pandas as pd
+import requests
 import seaborn as sns
 
 
@@ -184,7 +185,7 @@ class IstatAPITester:
             )
             for i, dataflow in enumerate(relevant_dataflows[:10]):  # Top 10
                 print(
-                    f"  {i+1}. {dataflow['name']} (ID: {dataflow['id']}, Score: {dataflow['relevance_score']})"
+                    f"  {i + 1}. {dataflow['name']} (ID: {dataflow['id']}, Score: {dataflow['relevance_score']})"
                 )
 
             return relevant_dataflows
@@ -563,7 +564,7 @@ class IstatAPITester:
 
         # Testa i primi 3 dataset più rilevanti
         for i, dataset in enumerate(relevant_datasets[:3]):
-            print(f"\nTest {i+1}/3: {dataset['name']}")
+            print(f"\nTest {i + 1}/3: {dataset['name']}")
             result = self.test_specific_dataset(dataset["id"], dataset["name"])
             dataset_test_results.append(result)
 
@@ -658,7 +659,7 @@ class IstatAPITester:
             <h1>🇮🇹 Report Test API ISTAT</h1>
             <p>Generato il: {datetime.now().strftime('%d/%m/%Y alle %H:%M:%S')}</p>
         </div>
-        
+
         <div class="section">
             <h2>📊 Panoramica Risultati</h2>
             <div class="metric">
@@ -678,7 +679,7 @@ class IstatAPITester:
                 <p>Report Qualità</p>
             </div>
         </div>
-        
+
         <div class="section">
             <h2>🔗 Test Connettività</h2>
             <table>
@@ -711,7 +712,7 @@ class IstatAPITester:
         html_content += """
             </table>
         </div>
-        
+
         <div class="section">
             <h2>📈 Dataset Più Rilevanti</h2>
         """
@@ -732,7 +733,7 @@ class IstatAPITester:
 
         html_content += f"""
         </div>
-        
+
         <div class="section">
             <h2>🎯 Raccomandazioni per Tableau</h2>
             <ul>
@@ -743,7 +744,7 @@ class IstatAPITester:
                 <li><strong>Performance:</strong> Utilizzare extract per dataset >100MB</li>
             </ul>
         </div>
-        
+
         <div class="section">
             <h2>📋 File Generati</h2>
             <ul>
@@ -753,7 +754,7 @@ class IstatAPITester:
                 <li>🔍 Report qualità: quality_report_*.json</li>
             </ul>
         </div>
-        
+
         <div class="section">
             <h2>🚀 Prossimi Passi</h2>
             <ol>

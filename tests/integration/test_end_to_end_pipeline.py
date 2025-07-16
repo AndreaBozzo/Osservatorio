@@ -2,13 +2,14 @@
 Integration tests for end-to-end data pipeline.
 """
 
-import pytest
 import json
-import tempfile
 import shutil
+import tempfile
 from pathlib import Path
-from unittest.mock import Mock, patch, mock_open
+from unittest.mock import Mock, mock_open, patch
+
 import pandas as pd
+import pytest
 
 from src.analyzers.dataflow_analyzer import IstatDataflowAnalyzer
 from src.api.istat_api import IstatAPITester

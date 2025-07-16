@@ -2,13 +2,14 @@
 PowerBI API Client per integrazione con Microsoft Power BI Service.
 """
 
-import requests
 import json
 from datetime import datetime, timedelta
-from typing import Optional, Dict, List, Any
 from pathlib import Path
-import pandas as pd
+from typing import Any, Dict, List, Optional
+
 import msal
+import pandas as pd
+import requests
 
 from ..utils.config import Config
 from ..utils.logger import get_logger
@@ -403,9 +404,7 @@ def main():
         f"Workspace accessibili: {'✅' if test_result['workspaces_accessible'] else '❌'}"
     )
     print(f"Numero workspace: {test_result['workspace_count']}")
-    print(
-        f"Dataset accessibili: {'✅' if test_result['datasets_accessible'] else '❌'}"
-    )
+    print(f"Dataset accessibili: {'✅' if test_result['datasets_accessible'] else '❌'}")
     print(f"Numero dataset: {test_result['dataset_count']}")
 
     if test_result["errors"]:

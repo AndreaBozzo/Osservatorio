@@ -2,11 +2,12 @@
 Unit tests for logger module.
 """
 
-import pytest
-from unittest.mock import patch, Mock
 import os
 import tempfile
 from pathlib import Path
+from unittest.mock import Mock, patch
+
+import pytest
 
 from src.utils.logger import get_logger
 

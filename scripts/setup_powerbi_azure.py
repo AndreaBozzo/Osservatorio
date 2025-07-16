@@ -3,12 +3,12 @@ Script di setup per configurazione Azure AD e PowerBI.
 Guida l'utente attraverso la configurazione completa.
 """
 
+import json
 import os
 import sys
-import json
 import webbrowser
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 from urllib.parse import urlparse
 
 # Aggiungi il path del progetto

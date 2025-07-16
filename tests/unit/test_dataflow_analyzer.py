@@ -2,11 +2,12 @@
 Unit tests for dataflow analyzer module.
 """
 
-import pytest
 import json
 import xml.etree.ElementTree as ET
-from unittest.mock import Mock, patch, mock_open
 from pathlib import Path
+from unittest.mock import Mock, mock_open, patch
+
+import pytest
 
 from src.analyzers.dataflow_analyzer import IstatDataflowAnalyzer
 

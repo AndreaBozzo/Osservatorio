@@ -1,10 +1,11 @@
-import xml.etree.ElementTree as ET
-import pandas as pd
 import json
 import os
-from datetime import datetime
 import re
+import xml.etree.ElementTree as ET
+from datetime import datetime
 from pathlib import Path
+
+import pandas as pd
 
 
 class IstatXMLtoTableauConverter:

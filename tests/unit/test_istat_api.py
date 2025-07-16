@@ -2,10 +2,11 @@
 Unit tests for ISTAT API module.
 """
 
+from pathlib import Path
+from unittest.mock import MagicMock, Mock, patch
+
 import pytest
 import requests
-from unittest.mock import Mock, patch, MagicMock
-from pathlib import Path
 
 from src.api.istat_api import IstatAPITester
 
@@ -211,7 +212,6 @@ class TestIstatAPITester:
         ) as mock_viz, patch.object(
             tester, "generate_final_report", return_value=True
         ) as mock_report:
-
             result = tester.run_comprehensive_test()
 
         # Verify connectivity was called (other methods may or may not be called depending on flow)

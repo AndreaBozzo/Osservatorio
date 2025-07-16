@@ -4,8 +4,9 @@ Script per migrare i file nella nuova struttura.
 """
 import shutil
 from pathlib import Path
-import click
 from typing import Dict, List
+
+import click
 
 # Mappatura vecchio → nuovo path
 FILE_MAPPING = {

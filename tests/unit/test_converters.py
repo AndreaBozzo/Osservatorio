@@ -2,14 +2,15 @@
 Unit tests for data conversion functionality.
 """
 
-import pytest
-import pandas as pd
-import xml.etree.ElementTree as ET
-from unittest.mock import Mock, patch, mock_open
-from pathlib import Path
 import json
-import tempfile
 import os
+import tempfile
+import xml.etree.ElementTree as ET
+from pathlib import Path
+from unittest.mock import Mock, mock_open, patch
+
+import pandas as pd
+import pytest
 
 # Since converters might be in main files, we'll import them differently
 # This is a test for the conversion logic that might be in the main scripts

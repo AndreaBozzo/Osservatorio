@@ -83,7 +83,7 @@ This is an Italian data processing system for ISTAT (Italian National Institute 
 ### Key Data Flow Categories
 The system categorizes ISTAT data into 6 main areas with priority scoring:
 1. **Popolazione** (Population) - Priority 10
-2. **Economia** (Economy) - Priority 9  
+2. **Economia** (Economy) - Priority 9
 3. **Lavoro** (Employment) - Priority 8
 4. **Territorio** (Territory) - Priority 7
 5. **Istruzione** (Education) - Priority 6
@@ -93,7 +93,7 @@ The system categorizes ISTAT data into 6 main areas with priority scoring:
 - **ISTAT SDMX API**: `http://sdmx.istat.it/SDMXWS/rest/` - Primary data source
 - **Tableau Server**: OAuth-enabled connections for BigQuery, Google Sheets, Box, Dropbox
 - **PowerBI Service**: REST API integration with Microsoft identity platform (MSAL)
-- **Output Formats**: 
+- **Output Formats**:
   - Tableau: CSV (direct import), Excel (with metadata), JSON (for APIs)
   - PowerBI: CSV, Excel, Parquet (optimized performance), JSON
 

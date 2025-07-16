@@ -2,11 +2,12 @@
 Unit tests for configuration module.
 """
 
-import pytest
 import os
 import tempfile
 from pathlib import Path
-from unittest.mock import patch, Mock
+from unittest.mock import Mock, patch
+
+import pytest
 
 from src.utils.config import Config
 
@@ -35,6 +36,7 @@ class TestConfig:
         """Test that environment variables override defaults."""
         # Reload config with new env vars
         from importlib import reload
+
         import src.utils.config
 
         reload(src.utils.config)
@@ -135,6 +137,7 @@ class TestConfig:
         with pytest.raises(ValueError):
             # This should raise ValueError during config loading
             from importlib import reload
+
             import src.utils.config
 
             reload(src.utils.config)

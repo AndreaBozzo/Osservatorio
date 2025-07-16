@@ -2,13 +2,14 @@
 Script per testare l'upload dei dataset ISTAT in PowerBI.
 """
 
+import json
 import os
 import sys
-import json
-import pandas as pd
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 from typing import Dict, List, Optional
+
+import pandas as pd
 
 # Aggiungi il path del progetto
 sys.path.insert(0, str(Path(__file__).parent.parent))
