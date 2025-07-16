@@ -33,6 +33,12 @@ class Config:
     TABLEAU_PASSWORD = os.getenv("TABLEAU_PASSWORD")
     TABLEAU_SITE_ID = os.getenv("TABLEAU_SITE_ID", "")
     
+    # PowerBI
+    POWERBI_CLIENT_ID = os.getenv("POWERBI_CLIENT_ID")
+    POWERBI_CLIENT_SECRET = os.getenv("POWERBI_CLIENT_SECRET")
+    POWERBI_TENANT_ID = os.getenv("POWERBI_TENANT_ID")
+    POWERBI_WORKSPACE_ID = os.getenv("POWERBI_WORKSPACE_ID")
+    
     # Logging
     LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
     LOG_FILE = os.getenv("LOG_FILE", str(LOGS_DIR / "osservatorio.log"))
@@ -52,6 +58,7 @@ class Config:
             cls.RAW_DATA_DIR / "istat",
             cls.RAW_DATA_DIR / "xml",
             cls.PROCESSED_DATA_DIR / "tableau",
+            cls.PROCESSED_DATA_DIR / "powerbi",
             cls.DATA_DIR / "reports"
         ]:
             directory.mkdir(parents=True, exist_ok=True)
