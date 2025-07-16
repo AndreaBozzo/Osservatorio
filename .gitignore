@@ -1,48 +1,110 @@
-Python
-pycache/
+# Python
+__pycache__/
 *.py[cod]
 *$py.class
 *.so
 .Python
-env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
 venv/
+env/
 ENV/
+env.bak/
+venv.bak/
 .venv/
-Data files (keep structure, ignore content)
-data/raw/*
-data/processed/*
-data/cache/*
-!data/raw/.gitkeep
-!data/processed/.gitkeep
-!data/cache/.gitkeep
-Reports (opzionale, rimuovi se vuoi versionarli)
-data/reports/*
-!data/reports/.gitkeep
-Environment
-.env
-.env.local
-.env.*.local
-IDE
+
+# IDE
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
-OS
+
+# OS
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
-Logs
+
+# Logs
 logs/
 *.log
-Jupyter
-.ipynb_checkpoints/
-*.ipynb_checkpoints
-Testing
+*.log.*
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Data files (keep structure, ignore generated content)
+data/raw/*
+data/processed/*
+data/cache/*
+data/reports/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!data/cache/.gitkeep
+!data/reports/.gitkeep
+
+# Generated files with timestamps
+*_20*.csv
+*_20*.xlsx
+*_20*.json
+*_20*.parquet
+*_20*.md
+*_20*.html
+*_20*.xml
+*.har
+
+# ISTAT specific generated files
+sample_*.xml
+data_*.xml
+structure_*.xml
+dataflow_response.xml
+conversion_summary_*.json
+istat_api_test_report_*.html
+istat_api_test_report_*.json
+tableau_import_instructions_*.md
+powerbi_integration_guide_*.md
+tableau_istat_datasets_*.json
+istat_prep_flow_*.json
+istat_strategy.json
+tableau_config.json
+
+# Archives
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pytest
+.pytest_cache/
 .coverage
 htmlcov/
-.pytest_cache/
-.tox/
-Distribution
-dist/
-build/
-*.egg-info/
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
