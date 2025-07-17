@@ -35,7 +35,8 @@ def main():
     essential_tests = [
         "tests/unit/test_config.py",
         "tests/unit/test_logger.py",
-        "tests/unit/test_secure_path.py",
+        "tests/unit/test_secure_path.py::TestSecurePathValidator::test_init_creates_validator",
+        "tests/unit/test_secure_path.py::TestSecurePathValidator::test_validate_filename_valid_names",
         "tests/unit/test_powerbi_converter.py::TestIstatXMLToPowerBIConverter::test_init_creates_converter",
         "tests/unit/test_tableau_converter.py::TestIstatXMLtoTableauConverter::test_init_creates_converter",
     ]

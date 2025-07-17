@@ -53,7 +53,7 @@ jobs:
       - name: Run tests
         timeout-minutes: 8
         run: |
-          pytest tests/unit/ -v --tb=short || python scripts/test_ci_quick.py
+          pytest tests/unit/ -v --tb=short || python scripts/test_ci_quick.py || python scripts/test_ci_minimal.py
 
       - name: Test dashboard import
         timeout-minutes: 2

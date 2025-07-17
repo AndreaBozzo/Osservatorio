@@ -24,6 +24,7 @@ Refer to PROJECT_STATE.md for developing context before making any change to the
 ### CI/CD Commands
 - `python scripts/generate_test_data.py` - Generate mock data for CI/CD testing
 - `python scripts/test_ci_quick.py` - Run essential tests for CI/CD fallback
+- `python scripts/test_ci_minimal.py` - Run minimal ultra-robust tests for CI/CD
 - `streamlit run dashboard/app.py` - Run dashboard locally
 
 ### File Management Commands
