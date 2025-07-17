@@ -89,6 +89,9 @@
 - **Import optimization**: Struttura import pulita
 - **Error handling**: Gestione errori robusta
 - **Performance**: Cache e ottimizzazioni
+- **CI/CD Optimization**: Fix workflow blocking issues
+- **Mock data generation**: Evita dipendenze API esterne
+- **Timeout management**: Granular timeout per ogni step
 
 ---
 
@@ -155,10 +158,15 @@
 - `dashboard/web/README.md` - Documentazione landing page
 - `.github/workflows/dashboard-deploy.yml` - CI/CD dashboard
 - `.github/workflows/deploy-landing-page.yml` - Deploy landing page
+- `scripts/generate_test_data.py` - Mock data per CI/CD
+- `scripts/test_ci_quick.py` - Test rapidi fallback
 
 ### File Aggiornati
 - `dashboard/app.py` - Formatting migliorato
 - `src/api/powerbi_api.py` - Code style fix
+- `.github/workflows/dashboard-deploy.yml` - Timeout e mock data
+- `PROJECT_STATE.md` - Aggiornato con fix workflow
+- `CLAUDE.md` - Aggiunti nuovi script CI/CD
 
 ---
 

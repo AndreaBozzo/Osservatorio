@@ -11,6 +11,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       contents: read
       pages: write
@@ -38,7 +39,7 @@ jobs:
 
       - name: Generate sitemap
         run: |
-          cat > _site/sitemap.xml << 'EOF'
+          cat > _site/sitemap.xml << EOF
           <?xml version="1.0" encoding="UTF-8"?>
           <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
             <url>
@@ -59,10 +60,11 @@ jobs:
           Sitemap: https://AndreaBozzo.github.io/Osservatorio/sitemap.xml
           EOF
 
-      - name: Update dashboard URL in landing page
+      - name: Verify landing page
         run: |
-          # Update the dashboard URL to point to Streamlit Cloud
-          sed -i 's|https://osservatorio-istat.streamlit.app|https://osservatorio-istat.streamlit.app|g' _site/index.html
+          echo "Landing page files:"
+          ls -la _site/
+          echo "HTML file size: $(wc -c < _site/index.html) bytes"
 
       - name: Validate HTML
         run: |

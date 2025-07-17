@@ -21,6 +21,11 @@ Refer to PROJECT_STATE.md for developing context before making any change to the
 - `python src/scrapers/tableau_scraper.py` - Analyze Tableau server configuration
 - `powershell scripts/download_istat_data.ps1` - Download ISTAT datasets via PowerShell
 
+### CI/CD Commands
+- `python scripts/generate_test_data.py` - Generate mock data for CI/CD testing
+- `python scripts/test_ci_quick.py` - Run essential tests for CI/CD fallback
+- `streamlit run dashboard/app.py` - Run dashboard locally
+
 ### File Management Commands
 - `python scripts/cleanup_temp_files.py` - Clean up temporary files
 - `python scripts/cleanup_temp_files.py --stats` - Show temporary files statistics
@@ -124,7 +129,7 @@ Refer to PROJECT_STATE.md for developing context before making any change to the
     - `powerbi/` - PowerBI-optimized files (CSV, Excel, Parquet, JSON)
   - `cache/` - Cached API responses
   - `reports/` - Analysis reports and summaries
-- `scripts/` - Automation scripts (PowerShell for data download)
+- `scripts/` - Automation scripts (PowerShell for data download, CI/CD utilities)
 - `tests/` - Test suites (unit, integration, performance)
   - `unit/` - Unit tests for individual components (139 tests)
   - `integration/` - Integration tests for system components (26 tests)
