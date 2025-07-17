@@ -3,6 +3,8 @@ from datetime import datetime
 
 import requests
 
+from ..utils.secure_path import SecurePathValidator
+
 
 class TableauServerAnalyzer:
     def __init__(self, json_data):
@@ -206,7 +208,9 @@ class TableauServerAnalyzer:
 # Esempio di utilizzo
 if __name__ == "__main__":
     # Carica il JSON (sostituisci con il tuo file)
-    with open("tableau_config.json", "r") as f:
+    path_validator = SecurePathValidator(".")
+    safe_file = path_validator.safe_open("tableau_config.json", "r")
+    with safe_file as f:
         tableau_data = json.load(f)
 
     analyzer = TableauServerAnalyzer(tableau_data)

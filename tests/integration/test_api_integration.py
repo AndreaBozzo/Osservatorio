@@ -350,9 +350,11 @@ class TestAPIIntegration:
         # Step 5: Generate comprehensive report
         full_report = {
             "connectivity": connectivity_result,  # Already a list
-            "dataset_discovery": discovery_result
-            if isinstance(discovery_result, list)
-            else discovery_result.get("datasets", []),
+            "dataset_discovery": (
+                discovery_result
+                if isinstance(discovery_result, list)
+                else discovery_result.get("datasets", [])
+            ),
             "dataset_tests": mock_dataset_tests,  # Use mock data since testing_result is int
             "tableau_ready": tableau_ready,
         }

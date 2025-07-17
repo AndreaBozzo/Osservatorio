@@ -3,6 +3,7 @@ PowerBI API Client per integrazione con Microsoft Power BI Service.
 """
 
 import json
+import os
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -13,6 +14,7 @@ import requests
 
 from ..utils.config import Config
 from ..utils.logger import get_logger
+from ..utils.secure_path import SecurePathValidator, create_secure_validator
 
 logger = get_logger(__name__)
 
@@ -56,6 +58,9 @@ class PowerBIAPIClient:
                 "User-Agent": "Osservatorio-PowerBI-Client/1.0",
             }
         )
+
+        # Initialize secure path validator
+        self.path_validator = create_secure_validator(os.getcwd())
 
         logger.info("PowerBI API Client inizializzato")
 
@@ -319,7 +324,8 @@ class PowerBIAPIClient:
                 "Content-Type": "application/octet-stream",
             }
 
-            with open(file_path, "rb") as file:
+            safe_file = self.path_validator.safe_open(file_path, "rb")
+            with safe_file as file:
                 response = requests.post(
                     f"{self.base_url}/groups/{workspace_id}/imports",
                     headers=headers,
@@ -431,7 +437,9 @@ def main():
     # Salva risultati test
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     test_file = f"powerbi_test_results_{timestamp}.json"
-    with open(test_file, "w", encoding="utf-8") as f:
+    path_validator = SecurePathValidator(".")
+    safe_file = path_validator.safe_open(test_file, "w", encoding="utf-8")
+    with safe_file as f:
         json.dump(test_result, f, indent=2, ensure_ascii=False)
 
     print(f"\n💾 Risultati salvati in: {test_file}")

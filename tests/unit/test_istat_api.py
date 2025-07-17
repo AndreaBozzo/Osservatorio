@@ -18,7 +18,7 @@ class TestIstatAPITester:
         """Test API tester initialization."""
         tester = IstatAPITester()
 
-        assert tester.base_url == "http://sdmx.istat.it/SDMXWS/rest/"
+        assert tester.base_url == "https://sdmx.istat.it/SDMXWS/rest/"
         assert tester.session is not None
         assert hasattr(tester, "test_results")
         assert isinstance(tester.test_results, list)
@@ -199,19 +199,26 @@ class TestIstatAPITester:
 
         # Mock all the methods that are called during comprehensive test
         mock_connectivity_result = [{"success": True, "endpoint": "test"}]
-        with patch.object(
-            tester, "test_api_connectivity", return_value=mock_connectivity_result
-        ) as mock_connectivity, patch.object(
-            tester, "discover_available_datasets", return_value=[]
-        ) as mock_discover, patch.object(
-            tester, "test_popular_datasets", return_value=[]
-        ) as mock_popular, patch.object(
-            tester, "validate_data_quality", return_value=True
-        ) as mock_quality, patch.object(
-            tester, "create_data_preview_visualization", return_value=True
-        ) as mock_viz, patch.object(
-            tester, "generate_final_report", return_value=True
-        ) as mock_report:
+        with (
+            patch.object(
+                tester, "test_api_connectivity", return_value=mock_connectivity_result
+            ) as mock_connectivity,
+            patch.object(
+                tester, "discover_available_datasets", return_value=[]
+            ) as mock_discover,
+            patch.object(
+                tester, "test_popular_datasets", return_value=[]
+            ) as mock_popular,
+            patch.object(
+                tester, "validate_data_quality", return_value=True
+            ) as mock_quality,
+            patch.object(
+                tester, "create_data_preview_visualization", return_value=True
+            ) as mock_viz,
+            patch.object(
+                tester, "generate_final_report", return_value=True
+            ) as mock_report,
+        ):
             result = tester.run_comprehensive_test()
 
         # Verify connectivity was called (other methods may or may not be called depending on flow)

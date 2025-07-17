@@ -5,6 +5,8 @@ from datetime import datetime
 import pandas as pd
 import requests
 
+from ..utils.secure_path import SecurePathValidator
+
 
 class TableauIstatScraper:
     def __init__(self, config_json):
@@ -13,6 +15,7 @@ class TableauIstatScraper:
         self.base_url = self._extract_base_url()
         self.session = requests.Session()
         self.user_info = config_json["result"]["user"]
+        self.path_validator = SecurePathValidator(".")
 
     def _extract_base_url(self):
         """Estrae l'URL base dal JSON di configurazione"""
@@ -296,7 +299,8 @@ class TableauIstatScraper:
 
     def export_strategy_to_json(self, strategy, filename="istat_strategy.json"):
         """Esporta la strategia in JSON"""
-        with open(filename, "w", encoding="utf-8") as f:
+        safe_file = self.path_validator.safe_open(filename, "w", encoding="utf-8")
+        with safe_file as f:
             json.dump(strategy, f, ensure_ascii=False, indent=2)
 
         print(f"Strategia esportata in {filename}")
@@ -305,7 +309,9 @@ class TableauIstatScraper:
 # Esempio di utilizzo
 if __name__ == "__main__":
     # Carica la configurazione Tableau
-    with open("tableau_config.json", "r") as f:
+    path_validator = SecurePathValidator(".")
+    safe_file = path_validator.safe_open("tableau_config.json", "r")
+    with safe_file as f:
         tableau_config = json.load(f)
 
     # Inizializza lo scraper

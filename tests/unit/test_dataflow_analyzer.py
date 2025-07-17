@@ -19,7 +19,7 @@ class TestIstatDataflowAnalyzer:
         """Test analyzer initialization."""
         analyzer = IstatDataflowAnalyzer()
 
-        assert analyzer.base_url == "http://sdmx.istat.it/SDMXWS/rest/"
+        assert analyzer.base_url == "https://sdmx.istat.it/SDMXWS/rest/"
         assert analyzer.session is not None
         assert "popolazione" in analyzer.category_keywords
         assert "economia" in analyzer.category_keywords
@@ -338,14 +338,20 @@ class TestIstatDataflowAnalyzer:
             }
         ]
 
-        result = analyzer.generate_tableau_implementation_guide(tableau_ready_datasets)
+        # Mock the safe_open to return the mocked file handle
+        with patch.object(
+            analyzer.path_validator, "safe_open", return_value=mock_file.return_value
+        ) as mock_safe_open:
+            result = analyzer.generate_tableau_implementation_guide(
+                tableau_ready_datasets
+            )
 
         assert "config_file" in result
         assert "powershell_script" in result
         assert "prep_flow" in result
 
         # Check that files were written
-        assert mock_file.call_count >= 3  # At least 3 files should be written
+        assert mock_safe_open.call_count >= 3  # At least 3 files should be written
         assert mock_json_dump.call_count >= 2  # At least 2 JSON files
 
     def test_generate_powershell_script(self):
@@ -360,7 +366,7 @@ class TestIstatDataflowAnalyzer:
         script = analyzer._generate_powershell_script(datasets)
 
         assert "Download dataset ISTAT" in script
-        assert '$baseUrl = "http://sdmx.istat.it/SDMXWS/rest/data/"' in script
+        assert '$baseUrl = "https://sdmx.istat.it/SDMXWS/rest/data/"' in script
         assert "101_12" in script
         assert "163_156" in script
         assert "Start-Sleep -Seconds 2" in script

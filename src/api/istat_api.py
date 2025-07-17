@@ -7,13 +7,14 @@ import pandas as pd
 import requests
 import seaborn as sns
 
+from ..utils.secure_path import create_secure_validator
 from ..utils.temp_file_manager import get_temp_manager
 
 
 class IstatAPITester:
     def __init__(self):
         """Inizializza il tester API ISTAT"""
-        self.base_url = "http://sdmx.istat.it/SDMXWS/rest/"
+        self.base_url = "https://sdmx.istat.it/SDMXWS/rest/"
         self.session = requests.Session()
         self.session.headers.update(
             {
@@ -23,6 +24,11 @@ class IstatAPITester:
         )
         self.test_results = []
         self.temp_manager = get_temp_manager()
+
+        # Initialize secure path validator for current directory
+        import os
+
+        self.path_validator = create_secure_validator(os.getcwd())
 
     def _test_single_endpoint(self, endpoint):
         """Test a single endpoint - helper method for integration tests"""
@@ -47,9 +53,11 @@ class IstatAPITester:
             }
         except Exception as e:
             return {
-                "endpoint": endpoint_name
-                if isinstance(endpoint, str)
-                else endpoint.get("name", "unknown"),
+                "endpoint": (
+                    endpoint_name
+                    if isinstance(endpoint, str)
+                    else endpoint.get("name", "unknown")
+                ),
                 "success": False,
                 "status_code": 500,
                 "response_time": 0.0,
@@ -416,12 +424,22 @@ class IstatAPITester:
             print(f"  📋 Colonne: {quality_report['total_columns']}")
             print(f"  🎯 Punteggio qualità: {quality_report['quality_score']:.1f}/100")
 
-            # Salva report
+            # Salva report in modo sicuro
             report_filename = f"quality_report_{dataset_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-            with open(report_filename, "w", encoding="utf-8") as f:
-                json.dump(quality_report, f, ensure_ascii=False, indent=2)
 
-            print(f"  💾 Report salvato: {report_filename}")
+            # Valida e sanitizza il nome del file
+            if not self.path_validator.validate_filename(report_filename):
+                report_filename = self.path_validator.sanitize_filename(report_filename)
+
+            safe_file = self.path_validator.safe_open(
+                report_filename, "w", encoding="utf-8"
+            )
+            if safe_file:
+                with safe_file as f:
+                    json.dump(quality_report, f, ensure_ascii=False, indent=2)
+                print(f"  💾 Report salvato: {report_filename}")
+            else:
+                print(f"  ❌ Impossibile salvare report: {report_filename}")
 
             return quality_report
 
@@ -543,35 +561,56 @@ class IstatAPITester:
 
             plt.tight_layout()
 
-            # Salva visualizzazione
+            # Salva visualizzazione in modo sicuro
             viz_filename = (
                 f"preview_{dataset_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.png"
             )
-            plt.savefig(viz_filename, dpi=300, bbox_inches="tight")
-            plt.close()
 
-            print(f"✅ Visualizzazione salvata: {viz_filename}")
+            # Valida e sanitizza il nome del file
+            if not self.path_validator.validate_filename(viz_filename):
+                viz_filename = self.path_validator.sanitize_filename(viz_filename)
 
-            # Crea anche summary statistico
+            safe_path = self.path_validator.get_safe_path(viz_filename)
+            if safe_path:
+                plt.savefig(safe_path, dpi=300, bbox_inches="tight")
+                plt.close()
+                print(f"✅ Visualizzazione salvata: {safe_path}")
+            else:
+                plt.close()
+                print(f"❌ Impossibile salvare visualizzazione: {viz_filename}")
+
+            # Crea anche summary statistico in modo sicuro
             summary_filename = (
                 f"summary_{dataset_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
             )
-            with open(summary_filename, "w", encoding="utf-8") as f:
-                f.write(f"SUMMARY STATISTICO - Dataset ISTAT {dataset_id}\n")
-                f.write("=" * 50 + "\n\n")
-                f.write(
-                    f"Generato il: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
-                )
-                f.write(f"Record totali: {len(df)}\n")
-                f.write(f"Colonne totali: {len(df.columns)}\n\n")
-                f.write("COLONNE:\n")
-                for col in df.columns:
-                    f.write(f"  • {col} ({df[col].dtype})\n")
-                f.write("\n")
-                f.write("STATISTICHE DESCRITTIVE:\n")
-                f.write(str(df.describe(include="all")))
 
-            print(f"✅ Summary salvato: {summary_filename}")
+            # Valida e sanitizza il nome del file
+            if not self.path_validator.validate_filename(summary_filename):
+                summary_filename = self.path_validator.sanitize_filename(
+                    summary_filename
+                )
+
+            safe_file = self.path_validator.safe_open(
+                summary_filename, "w", encoding="utf-8"
+            )
+            if safe_file:
+                with safe_file as f:
+                    f.write(f"SUMMARY STATISTICO - Dataset ISTAT {dataset_id}\n")
+                    f.write("=" * 50 + "\n\n")
+                    f.write(
+                        f"Generato il: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
+                    )
+                    f.write(f"Record totali: {len(df)}\n")
+                    f.write(f"Colonne totali: {len(df.columns)}\n\n")
+                    f.write("COLONNE:\n")
+                    for col in df.columns:
+                        f.write(f"  • {col} ({df[col].dtype})\n")
+                    f.write("\n")
+                    f.write("STATISTICHE DESCRITTIVE:\n")
+                    f.write(str(df.describe(include="all")))
+                print(f"✅ Summary salvato: {summary_filename}")
+            else:
+                print(f"❌ Impossibile salvare summary: {summary_filename}")
 
             return True
 
@@ -673,13 +712,27 @@ class IstatAPITester:
         """Genera report finale dei test"""
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
-        # Report JSON completo
+        # Report JSON completo in modo sicuro
         json_filename = f"istat_api_test_report_{timestamp}.json"
-        with open(json_filename, "w", encoding="utf-8") as f:
-            json.dump(test_report, f, ensure_ascii=False, indent=2)
 
-        # Report HTML user-friendly
+        # Valida e sanitizza il nome del file
+        if not self.path_validator.validate_filename(json_filename):
+            json_filename = self.path_validator.sanitize_filename(json_filename)
+
+        safe_file = self.path_validator.safe_open(json_filename, "w", encoding="utf-8")
+        if safe_file:
+            with safe_file as f:
+                json.dump(test_report, f, ensure_ascii=False, indent=2)
+        else:
+            print(f"❌ Impossibile salvare report JSON: {json_filename}")
+            return
+
+        # Report HTML user-friendly in modo sicuro
         html_filename = f"istat_api_test_report_{timestamp}.html"
+
+        # Valida e sanitizza il nome del file
+        if not self.path_validator.validate_filename(html_filename):
+            html_filename = self.path_validator.sanitize_filename(html_filename)
 
         html_content = f"""
 <!DOCTYPE html>
@@ -822,11 +875,14 @@ class IstatAPITester:
 </html>
         """
 
-        with open(html_filename, "w", encoding="utf-8") as f:
-            f.write(html_content)
-
-        print(f"✅ Report JSON: {json_filename}")
-        print(f"✅ Report HTML: {html_filename}")
+        safe_file = self.path_validator.safe_open(html_filename, "w", encoding="utf-8")
+        if safe_file:
+            with safe_file as f:
+                f.write(html_content)
+            print(f"✅ Report JSON: {json_filename}")
+            print(f"✅ Report HTML: {html_filename}")
+        else:
+            print(f"❌ Impossibile salvare report HTML: {html_filename}")
 
 
 def main():

@@ -15,6 +15,7 @@ import pandas as pd
 
 from src.utils.config import Config
 from src.utils.logger import get_logger
+from src.utils.secure_path import create_secure_validator
 
 logger = get_logger(__name__)
 
@@ -30,12 +31,31 @@ class IstatXMLToPowerBIConverter:
             "common": "http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common",
             "xsi": "http://www.w3.org/2001/XMLSchema-instance",
         }
+
+        # Initialize secure path validator BEFORE using it
+        self.path_validator = create_secure_validator(os.getcwd())
+
+        # Now safe to call methods that use path_validator
         self.datasets_config = self._load_datasets_config()
         self.conversion_results = []
 
-        # Assicura che directory PowerBI esista
+        # Assicura che directory PowerBI esista in modo sicuro
         self.powerbi_output_dir = Config.PROCESSED_DATA_DIR / "powerbi"
-        self.powerbi_output_dir.mkdir(exist_ok=True)
+
+        # Valida la directory di output
+        safe_output_dir = self.path_validator.get_safe_path(
+            self.powerbi_output_dir, create_dirs=True
+        )
+        if safe_output_dir:
+            self.powerbi_output_dir = safe_output_dir
+        else:
+            logger.error(
+                f"Impossibile creare directory PowerBI sicura: {self.powerbi_output_dir}"
+            )
+            # Fallback to a safe directory
+            self.powerbi_output_dir = self.path_validator.get_safe_path(
+                "powerbi_output", create_dirs=True
+            )
 
         logger.info("Convertitore ISTAT → PowerBI inizializzato")
 
@@ -57,7 +77,10 @@ class IstatXMLToPowerBIConverter:
         logger.info(f"Caricamento configurazione: {latest_config}")
 
         try:
-            with open(latest_config, "r", encoding="utf-8") as f:
+            safe_file = self.path_validator.safe_open(
+                latest_config, "r", encoding="utf-8"
+            )
+            with safe_file as f:
                 return json.load(f)
         except Exception as e:
             logger.error(f"Errore caricamento config: {e}")
@@ -109,8 +132,17 @@ class IstatXMLToPowerBIConverter:
         }
 
         config_file = f"powerbi_istat_datasets_{datetime.now().strftime('%Y%m%d')}.json"
-        with open(config_file, "w", encoding="utf-8") as f:
-            json.dump(sample_config, f, ensure_ascii=False, indent=2)
+
+        # Valida e sanitizza il nome del file
+        if not self.path_validator.validate_filename(config_file):
+            config_file = self.path_validator.sanitize_filename(config_file)
+
+        safe_file = self.path_validator.safe_open(config_file, "w", encoding="utf-8")
+        if safe_file:
+            with safe_file as f:
+                json.dump(sample_config, f, ensure_ascii=False, indent=2)
+        else:
+            logger.error(f"Impossibile salvare configurazione: {config_file}")
 
         logger.info(f"Creata configurazione di esempio: {config_file}")
         return sample_config
@@ -186,7 +218,7 @@ class IstatXMLToPowerBIConverter:
         )
 
     def _find_xml_file(self, dataflow_id: str) -> Optional[str]:
-        """Trova file XML per il dataset."""
+        """Trova file XML per il dataset in modo sicuro."""
         possible_paths = [
             f"sample_{dataflow_id}.xml",
             f"{dataflow_id}.xml",
@@ -195,8 +227,10 @@ class IstatXMLToPowerBIConverter:
         ]
 
         for path in possible_paths:
-            if os.path.exists(path):
-                return path
+            # Valida il percorso prima di controllare se esiste
+            safe_path = self.path_validator.get_safe_path(path)
+            if safe_path and safe_path.exists():
+                return str(safe_path)
 
         return None
 
@@ -330,7 +364,8 @@ class IstatXMLToPowerBIConverter:
         """Standardizza colonna temporale."""
         try:
             return pd.to_datetime(time_series)
-        except:
+        except (ValueError, TypeError, pd.errors.OutOfBoundsDatetime) as e:
+            logger.warning(f"Errore conversione datetime diretta: {e}")
             pass
 
         def parse_time(time_val):
@@ -358,12 +393,14 @@ class IstatXMLToPowerBIConverter:
                     try:
                         formatted = formatter(match)
                         return pd.to_datetime(formatted)
-                    except:
+                    except (ValueError, TypeError, pd.errors.OutOfBoundsDatetime) as e:
+                        logger.debug(f"Errore parsing pattern {pattern}: {e}")
                         continue
 
             try:
                 return pd.to_datetime(time_str)
-            except:
+            except (ValueError, TypeError, pd.errors.OutOfBoundsDatetime) as e:
+                logger.debug(f"Errore parsing fallback per {time_str}: {e}")
                 return time_str
 
         return time_series.apply(parse_time)
@@ -429,15 +466,25 @@ class IstatXMLToPowerBIConverter:
 
         output_files = {}
 
-        # 1. CSV per Power Query
-        csv_path = self.powerbi_output_dir / f"{base_name}.csv"
-        df.to_csv(csv_path, index=False, encoding="utf-8-sig")
-        output_files["csv"] = str(csv_path)
+        # 1. CSV per Power Query in modo sicuro
+        csv_filename = f"{base_name}.csv"
+        csv_path = self.powerbi_output_dir / csv_filename
 
-        # 2. Excel per importazione diretta
-        excel_path = self.powerbi_output_dir / f"{base_name}.xlsx"
-        with pd.ExcelWriter(excel_path, engine="openpyxl") as writer:
-            df.to_excel(writer, sheet_name="Data", index=False)
+        # Valida il percorso
+        if self.path_validator.validate_path(csv_path):
+            df.to_csv(csv_path, index=False, encoding="utf-8-sig")
+            output_files["csv"] = str(csv_path)
+        else:
+            logger.error(f"Percorso non sicuro per CSV: {csv_path}")
+
+        # 2. Excel per importazione diretta in modo sicuro
+        excel_filename = f"{base_name}.xlsx"
+        excel_path = self.powerbi_output_dir / excel_filename
+
+        # Valida il percorso
+        if self.path_validator.validate_path(excel_path):
+            with pd.ExcelWriter(excel_path, engine="openpyxl") as writer:
+                df.to_excel(writer, sheet_name="Data", index=False)
 
             # Foglio metadati
             metadata = pd.DataFrame(
@@ -456,19 +503,37 @@ class IstatXMLToPowerBIConverter:
 
             metadata.to_excel(writer, sheet_name="Metadata", index=False)
 
-        output_files["excel"] = str(excel_path)
+            output_files["excel"] = str(excel_path)
+        else:
+            logger.error(f"Percorso non sicuro per Excel: {excel_path}")
 
-        # 3. Parquet per performance ottimali
-        parquet_path = self.powerbi_output_dir / f"{base_name}.parquet"
-        df.to_parquet(parquet_path, index=False)
-        output_files["parquet"] = str(parquet_path)
+        # 3. Parquet per performance ottimali in modo sicuro
+        parquet_filename = f"{base_name}.parquet"
+        parquet_path = self.powerbi_output_dir / parquet_filename
 
-        # 4. JSON per API integrations
-        json_path = self.powerbi_output_dir / f"{base_name}.json"
-        df.to_json(
-            json_path, orient="records", date_format="iso", force_ascii=False, indent=2
-        )
-        output_files["json"] = str(json_path)
+        # Valida il percorso
+        if self.path_validator.validate_path(parquet_path):
+            df.to_parquet(parquet_path, index=False)
+            output_files["parquet"] = str(parquet_path)
+        else:
+            logger.error(f"Percorso non sicuro per Parquet: {parquet_path}")
+
+        # 4. JSON per API integrations in modo sicuro
+        json_filename = f"{base_name}.json"
+        json_path = self.powerbi_output_dir / json_filename
+
+        # Valida il percorso
+        if self.path_validator.validate_path(json_path):
+            df.to_json(
+                json_path,
+                orient="records",
+                date_format="iso",
+                force_ascii=False,
+                indent=2,
+            )
+            output_files["json"] = str(json_path)
+        else:
+            logger.error(f"Percorso non sicuro per JSON: {json_path}")
 
         return output_files
 
@@ -505,10 +570,22 @@ class IstatXMLToPowerBIConverter:
             },
         }
 
-        # Salva summary
-        summary_path = self.powerbi_output_dir / f"conversion_summary_{timestamp}.json"
-        with open(summary_path, "w", encoding="utf-8") as f:
-            json.dump(summary, f, ensure_ascii=False, indent=2)
+        # Salva summary in modo sicuro
+        summary_filename = f"conversion_summary_{timestamp}.json"
+        summary_path = self.powerbi_output_dir / summary_filename
+
+        # Valida il percorso
+        if self.path_validator.validate_path(summary_path):
+            safe_file = self.path_validator.safe_open(
+                summary_path, "w", encoding="utf-8"
+            )
+            if safe_file:
+                with safe_file as f:
+                    json.dump(summary, f, ensure_ascii=False, indent=2)
+            else:
+                logger.error(f"Impossibile salvare summary: {summary_path}")
+        else:
+            logger.error(f"Percorso non sicuro per summary: {summary_path}")
 
         # Genera guida PowerBI
         self._generate_powerbi_guide(successful, timestamp)
@@ -522,9 +599,13 @@ class IstatXMLToPowerBIConverter:
         self, successful_datasets: List[Dict], timestamp: str
     ) -> None:
         """Genera guida specifica per PowerBI."""
-        guide_path = (
-            self.powerbi_output_dir / f"powerbi_integration_guide_{timestamp}.md"
-        )
+        guide_filename = f"powerbi_integration_guide_{timestamp}.md"
+        guide_path = self.powerbi_output_dir / guide_filename
+
+        # Valida il percorso
+        if not self.path_validator.validate_path(guide_path):
+            logger.error(f"Percorso non sicuro per guida: {guide_path}")
+            return
 
         guide_content = f"""# Guida Integrazione PowerBI - Dati ISTAT
 
@@ -688,8 +769,13 @@ AVERAGEX(
 File generato da IstatXMLToPowerBIConverter v1.0
 """
 
-        with open(guide_path, "w", encoding="utf-8") as f:
-            f.write(guide_content)
+        safe_file = self.path_validator.safe_open(guide_path, "w", encoding="utf-8")
+        if safe_file:
+            with safe_file as f:
+                f.write(guide_content)
+        else:
+            logger.error(f"Impossibile salvare guida: {guide_path}")
+            return
 
         logger.info(f"Guida PowerBI salvata: {guide_path}")
 

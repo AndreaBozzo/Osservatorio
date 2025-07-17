@@ -34,8 +34,8 @@ This is an Italian data processing system for ISTAT (Italian National Institute 
 
 ### Testing
 - `pytest` - Run all tests
-- `pytest --cov=src tests/` - Run tests with coverage
-- `pytest tests/unit/` - Run unit tests only (89 tests)
+- `pytest --cov=src tests/` - Run tests with coverage (146 pass, 27 fail, 41% coverage)
+- `pytest tests/unit/` - Run unit tests only (146+ tests)
 - `pytest tests/integration/` - Run integration tests only
 - `pytest tests/performance/` - Run performance tests only
 - `pytest --cov=src --cov-report=html tests/` - Generate HTML coverage report
@@ -45,6 +45,16 @@ This is an Italian data processing system for ISTAT (Italian National Institute 
 - `flake8 .` - Lint code with Flake8
 - `isort .` - Sort imports with isort
 - `pre-commit run --all-files` - Run pre-commit hooks
+
+### Security Features
+- **Secure Path Validation**: All file operations use `SecurePathValidator` to prevent directory traversal attacks
+- **HTTPS Enforcement**: All API endpoints use HTTPS for secure communication
+- **Input Sanitization**: Filenames and paths are sanitized to prevent injection attacks
+- **Safe File Operations**: Custom `safe_open()` method validates paths before file operations
+- **Extension Validation**: Only approved file extensions are allowed (.json, .csv, .xlsx, .ps1, etc.)
+- **Path Traversal Protection**: Prevents `../` and absolute path attacks
+- **Windows Path Support**: Proper handling of Windows drive letters (C:\) and path separators
+- **Reserved Name Handling**: Prevents use of Windows reserved names (CON, PRN, AUX, etc.)
 
 ## Project Architecture
 
@@ -71,13 +81,19 @@ This is an Italian data processing system for ISTAT (Italian National Institute 
    - `src/utils/logger.py` - Loguru-based logging configuration
    - `tableau_config.json` - Tableau server configuration and capabilities
 
+4. **Security & Utilities**:
+   - `src/utils/secure_path.py` - Secure path validation and file operations
+   - `src/utils/temp_file_manager.py` - Temporary file management with automatic cleanup
+   - All file operations use validated paths and safe file handling
+   - HTTPS enforcement for all external API calls
+
 ### Directory Structure
 - `src/` - Source code modules
   - `api/` - API clients (ISTAT, PowerBI, Tableau)
   - `analyzers/` - Data analysis and categorization
   - `converters/` - Data format converters (Tableau, PowerBI)
   - `scrapers/` - Web scraping and data extraction
-  - `utils/` - Configuration, logging, and utilities
+  - `utils/` - Configuration, logging, security utilities, and file management
 - `data/` - Data storage
   - `raw/` - Raw ISTAT XML files
   - `processed/` - Converted files
@@ -87,7 +103,7 @@ This is an Italian data processing system for ISTAT (Italian National Institute 
   - `reports/` - Analysis reports and summaries
 - `scripts/` - Automation scripts (PowerShell for data download)
 - `tests/` - Test suites (unit, integration, performance)
-  - `unit/` - Unit tests for individual components (89 tests)
+  - `unit/` - Unit tests for individual components (146+ tests)
   - `integration/` - Integration tests for system components
   - `performance/` - Performance and scalability tests
 
@@ -154,15 +170,15 @@ Required environment variables (optional, defaults provided):
 ## Testing Infrastructure
 
 ### Test Suite Overview
-The project includes a comprehensive test suite with 89 unit tests and performance benchmarks:
+The project includes a comprehensive test suite with 120+ unit tests and performance benchmarks:
 
-- **Unit Tests**: 89 tests covering all core components (49% code coverage)
+- **Unit Tests**: 146+ tests covering all core components (41% code coverage)
 - **Integration Tests**: End-to-end system integration testing
 - **Performance Tests**: Scalability and performance benchmarks
 - **Coverage**: HTML reports available in `htmlcov/` directory
 
 ### Test Categories
-1. **Core Components** (89 tests passing):
+1. **Core Components** (146+ tests passing):
    - `test_config.py` - Configuration management
    - `test_logger.py` - Logging system
    - `test_dataflow_analyzer.py` - ISTAT dataflow analysis
@@ -170,6 +186,9 @@ The project includes a comprehensive test suite with 89 unit tests and performan
    - `test_powerbi_api.py` - PowerBI API integration
    - `test_tableau_scraper.py` - Tableau server analysis
    - `test_converters.py` - Data format conversions
+   - `test_secure_path.py` - Security utilities and path validation
+   - `test_powerbi_converter.py` - PowerBI converter functionality
+   - `test_tableau_converter.py` - Tableau converter functionality
 
 2. **Performance Tests**:
    - Scalability tests with 1000+ dataflows

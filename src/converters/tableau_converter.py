@@ -9,6 +9,7 @@ import pandas as pd
 
 from src.utils.config import Config
 from src.utils.logger import get_logger
+from src.utils.secure_path import create_secure_validator
 
 logger = get_logger(__name__)
 
@@ -22,6 +23,11 @@ class IstatXMLtoTableauConverter:
             "common": "http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common",
             "xsi": "http://www.w3.org/2001/XMLSchema-instance",
         }
+
+        # Initialize secure path validator BEFORE using it
+        self.path_validator = create_secure_validator(os.getcwd())
+
+        # Now safe to call methods that use path_validator
         self.datasets_config = self._load_datasets_config()
         self.conversion_results = []
 
@@ -43,7 +49,10 @@ class IstatXMLtoTableauConverter:
         print(f"📄 Caricamento configurazione: {latest_config}")
 
         try:
-            with open(latest_config, "r", encoding="utf-8") as f:
+            safe_file = self.path_validator.safe_open(
+                latest_config, "r", encoding="utf-8"
+            )
+            with safe_file as f:
                 return json.load(f)
         except Exception as e:
             print(f"❌ Errore caricamento config: {e}")
@@ -73,10 +82,19 @@ class IstatXMLtoTableauConverter:
             ],
         }
 
-        # Salva config di esempio
+        # Salva config di esempio in modo sicuro
         config_file = f"tableau_istat_datasets_{datetime.now().strftime('%Y%m%d')}.json"
-        with open(config_file, "w", encoding="utf-8") as f:
-            json.dump(sample_config, f, ensure_ascii=False, indent=2)
+
+        # Valida e sanitizza il nome del file
+        if not self.path_validator.validate_filename(config_file):
+            config_file = self.path_validator.sanitize_filename(config_file)
+
+        safe_file = self.path_validator.safe_open(config_file, "w", encoding="utf-8")
+        if safe_file:
+            with safe_file as f:
+                json.dump(sample_config, f, ensure_ascii=False, indent=2)
+        else:
+            print(f"❌ Impossibile salvare configurazione: {config_file}")
 
         print(f"✅ Creata configurazione di esempio: {config_file}")
         return sample_config
@@ -90,9 +108,17 @@ class IstatXMLtoTableauConverter:
         print(f"\n🔄 Conversione di {len(self.datasets_config['datasets'])} dataset...")
         print("=" * 60)
 
-        # Crea directory output se non esiste
-        output_dir = Path("tableau_output")
-        output_dir.mkdir(exist_ok=True)
+        # Crea directory output se non esiste in modo sicuro
+        output_dir_path = "tableau_output"
+        safe_output_dir = self.path_validator.get_safe_path(
+            output_dir_path, create_dirs=True
+        )
+
+        if not safe_output_dir:
+            print("❌ Impossibile creare directory output sicura")
+            return
+
+        output_dir = safe_output_dir
 
         for dataset in self.datasets_config["datasets"]:
             self._convert_single_dataset(dataset, output_dir)
@@ -158,7 +184,7 @@ class IstatXMLtoTableauConverter:
         )
 
     def _find_xml_file(self, dataflow_id):
-        """Trova file XML per il dataset"""
+        """Trova file XML per il dataset in modo sicuro"""
         possible_paths = [
             f"sample_{dataflow_id}.xml",
             f"{dataflow_id}.xml",
@@ -167,8 +193,10 @@ class IstatXMLtoTableauConverter:
         ]
 
         for path in possible_paths:
-            if os.path.exists(path):
-                return path
+            # Valida il percorso prima di controllare se esiste
+            safe_path = self.path_validator.get_safe_path(path)
+            if safe_path and safe_path.exists():
+                return str(safe_path)
 
         return None
 
@@ -346,7 +374,8 @@ class IstatXMLtoTableauConverter:
         # Prova conversione diretta a datetime
         try:
             return pd.to_datetime(time_series)
-        except:
+        except (ValueError, TypeError, pd.errors.OutOfBoundsDatetime) as e:
+            logger.warning(f"Errore conversione datetime diretta: {e}")
             pass
 
         # Altrimenti applica parsing custom
@@ -376,13 +405,15 @@ class IstatXMLtoTableauConverter:
                     try:
                         formatted = formatter(match)
                         return pd.to_datetime(formatted)
-                    except:
+                    except (ValueError, TypeError, pd.errors.OutOfBoundsDatetime) as e:
+                        logger.debug(f"Errore parsing pattern {pattern}: {e}")
                         continue
 
             # Prova parsing diretto come fallback
             try:
                 return pd.to_datetime(time_str)
-            except:
+            except (ValueError, TypeError, pd.errors.OutOfBoundsDatetime) as e:
+                logger.debug(f"Errore parsing fallback per {time_str}: {e}")
                 return time_str
 
         return time_series.apply(parse_time)
@@ -394,15 +425,25 @@ class IstatXMLtoTableauConverter:
 
         output_files = {}
 
-        # 1. CSV per import diretto
-        csv_path = output_dir / f"{base_name}.csv"
-        df.to_csv(csv_path, index=False, encoding="utf-8-sig")
-        output_files["csv"] = str(csv_path)
+        # 1. CSV per import diretto in modo sicuro
+        csv_filename = f"{base_name}.csv"
+        csv_path = output_dir / csv_filename
 
-        # 2. Excel con metadati
-        excel_path = output_dir / f"{base_name}.xlsx"
-        with pd.ExcelWriter(excel_path, engine="openpyxl") as writer:
-            df.to_excel(writer, sheet_name="Data", index=False)
+        # Valida il percorso
+        if self.path_validator.validate_path(csv_path):
+            df.to_csv(csv_path, index=False, encoding="utf-8-sig")
+            output_files["csv"] = str(csv_path)
+        else:
+            print(f"❌ Percorso non sicuro per CSV: {csv_path}")
+
+        # 2. Excel con metadati in modo sicuro
+        excel_filename = f"{base_name}.xlsx"
+        excel_path = output_dir / excel_filename
+
+        # Valida il percorso
+        if self.path_validator.validate_path(excel_path):
+            with pd.ExcelWriter(excel_path, engine="openpyxl") as writer:
+                df.to_excel(writer, sheet_name="Data", index=False)
 
             # Foglio metadati
             metadata = pd.DataFrame(
@@ -429,19 +470,27 @@ class IstatXMLtoTableauConverter:
                 )
                 stats_df.to_excel(writer, sheet_name="Statistics", index=False)
 
-        output_files["excel"] = str(excel_path)
+            output_files["excel"] = str(excel_path)
+        else:
+            print(f"❌ Percorso non sicuro per Excel: {excel_path}")
 
-        # 3. JSON per API/web (solo se piccolo)
+        # 3. JSON per API/web (solo se piccolo) in modo sicuro
         if len(df) < 10000:
-            json_path = output_dir / f"{base_name}.json"
-            df.to_json(
-                json_path,
-                orient="records",
-                date_format="iso",
-                force_ascii=False,
-                indent=2,
-            )
-            output_files["json"] = str(json_path)
+            json_filename = f"{base_name}.json"
+            json_path = output_dir / json_filename
+
+            # Valida il percorso
+            if self.path_validator.validate_path(json_path):
+                df.to_json(
+                    json_path,
+                    orient="records",
+                    date_format="iso",
+                    force_ascii=False,
+                    indent=2,
+                )
+                output_files["json"] = str(json_path)
+            else:
+                print(f"❌ Percorso non sicuro per JSON: {json_path}")
 
         return output_files
 
@@ -493,10 +542,22 @@ class IstatXMLtoTableauConverter:
             },
         }
 
-        # Salva summary
-        summary_path = output_dir / f"conversion_summary_{timestamp}.json"
-        with open(summary_path, "w", encoding="utf-8") as f:
-            json.dump(summary, f, ensure_ascii=False, indent=2)
+        # Salva summary in modo sicuro
+        summary_filename = f"conversion_summary_{timestamp}.json"
+        summary_path = output_dir / summary_filename
+
+        # Valida il percorso
+        if not self.path_validator.validate_path(summary_path):
+            print(f"❌ Percorso non sicuro per summary: {summary_path}")
+            return
+
+        safe_file = self.path_validator.safe_open(summary_path, "w", encoding="utf-8")
+        if safe_file:
+            with safe_file as f:
+                json.dump(summary, f, ensure_ascii=False, indent=2)
+        else:
+            print(f"❌ Impossibile salvare summary: {summary_path}")
+            return
 
         # Report console
         print("\n" + "=" * 60)
@@ -669,9 +730,23 @@ RANK(SUM([Value]))
 File generato da IstatXMLtoTableauConverter v2.0
 """
 
-        instructions_path = output_dir / f"tableau_import_instructions_{timestamp}.md"
-        with open(instructions_path, "w", encoding="utf-8") as f:
-            f.write(instructions)
+        instructions_filename = f"tableau_import_instructions_{timestamp}.md"
+        instructions_path = output_dir / instructions_filename
+
+        # Valida il percorso
+        if not self.path_validator.validate_path(instructions_path):
+            print(f"❌ Percorso non sicuro per istruzioni: {instructions_path}")
+            return
+
+        safe_file = self.path_validator.safe_open(
+            instructions_path, "w", encoding="utf-8"
+        )
+        if safe_file:
+            with safe_file as f:
+                f.write(instructions)
+        else:
+            print(f"❌ Impossibile salvare istruzioni: {instructions_path}")
+            return
 
         print(f"📖 Istruzioni Tableau salvate: {instructions_path}")
 
@@ -704,9 +779,20 @@ File generato da IstatXMLtoTableauConverter v2.0
 Buona analisi! 📊
 """
 
-        quick_path = output_dir / "QUICK_START.txt"
-        with open(quick_path, "w", encoding="utf-8") as f:
-            f.write(quick_start)
+        quick_filename = "QUICK_START.txt"
+        quick_path = output_dir / quick_filename
+
+        # Valida il percorso
+        if not self.path_validator.validate_path(quick_path):
+            print(f"❌ Percorso non sicuro per quick start: {quick_path}")
+            return
+
+        safe_file = self.path_validator.safe_open(quick_path, "w", encoding="utf-8")
+        if safe_file:
+            with safe_file as f:
+                f.write(quick_start)
+        else:
+            print(f"❌ Impossibile salvare quick start: {quick_path}")
 
 
 def main():

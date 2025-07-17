@@ -370,10 +370,11 @@ class TestTableauIstatScraper:
         scraper = TableauIstatScraper(mock_config)
         strategy = {"test": "data"}
 
-        scraper.export_strategy_to_json(strategy, "test.json")
-
-        # Verify file was opened
-        mock_file.assert_called_once_with("test.json", "w", encoding="utf-8")
+        # Mock the safe_open to return the mocked file handle
+        with patch.object(
+            scraper.path_validator, "safe_open", return_value=mock_file.return_value
+        ):
+            scraper.export_strategy_to_json(strategy, "test.json")
 
         # Verify JSON was dumped
         mock_json_dump.assert_called_once_with(

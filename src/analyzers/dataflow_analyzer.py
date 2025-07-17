@@ -1,4 +1,5 @@
 import json
+import os
 import re
 import time
 import xml.etree.ElementTree as ET
@@ -7,11 +8,13 @@ from datetime import datetime
 import pandas as pd
 import requests
 
+from ..utils.secure_path import create_secure_validator
+
 
 class IstatDataflowAnalyzer:
     def __init__(self):
         """Analizza i dataflow ISTAT per trovare quelli più utili"""
-        self.base_url = "http://sdmx.istat.it/SDMXWS/rest/"
+        self.base_url = "https://sdmx.istat.it/SDMXWS/rest/"
         self.session = requests.Session()
         self.session.headers.update(
             {
@@ -19,6 +22,9 @@ class IstatDataflowAnalyzer:
                 "Accept": "application/xml",
             }
         )
+
+        # Initialize secure path validator for current directory
+        self.path_validator = create_secure_validator(os.getcwd())
 
         # Keywords per categoria con priorità
         self.category_keywords = {
@@ -312,11 +318,25 @@ class IstatDataflowAnalyzer:
             if data_response.status_code == 200:
                 print(f"    ✅ Dati accessibili ({len(data_response.content)} bytes)")
 
-                # Salva sample per analisi successiva
+                # Salva sample per analisi successiva in modo sicuro
                 sample_filename = f"sample_{df_id}.xml"
-                with open(sample_filename, "w", encoding="utf-8") as f:
-                    f.write(data_response.text)
-                result["tests"]["sample_file"] = sample_filename
+
+                # Valida e sanitizza il nome del file
+                if not self.path_validator.validate_filename(sample_filename):
+                    sample_filename = self.path_validator.sanitize_filename(
+                        sample_filename
+                    )
+
+                safe_file = self.path_validator.safe_open(
+                    sample_filename, "w", encoding="utf-8"
+                )
+                if safe_file:
+                    with safe_file as f:
+                        f.write(data_response.text)
+                    result["tests"]["sample_file"] = sample_filename
+                else:
+                    result["tests"]["sample_file"] = None
+                    print(f"    ⚠️  Impossibile salvare sample: {sample_filename}")
 
                 # Prova parsing rapido
                 try:
@@ -462,32 +482,67 @@ Category breakdown:
                 datasets_config["categories"][category] = []
             datasets_config["categories"][category].append(ds["dataflow_id"])
 
-        # Salva configurazione
+        # Salva configurazione in modo sicuro
         config_filename = f"tableau_istat_datasets_{timestamp}.json"
-        with open(config_filename, "w", encoding="utf-8") as f:
-            json.dump(datasets_config, f, ensure_ascii=False, indent=2)
 
-        # Genera script PowerShell per download
+        # Valida e sanitizza il nome del file
+        if not self.path_validator.validate_filename(config_filename):
+            config_filename = self.path_validator.sanitize_filename(config_filename)
+
+        safe_file = self.path_validator.safe_open(
+            config_filename, "w", encoding="utf-8"
+        )
+        if safe_file:
+            with safe_file as f:
+                json.dump(datasets_config, f, ensure_ascii=False, indent=2)
+        else:
+            print(f"❌ Impossibile salvare configurazione: {config_filename}")
+            return {"error": "Failed to save configuration"}
+
+        # Genera script PowerShell per download in modo sicuro
         ps_script = self._generate_powershell_script(tableau_ready_datasets)
         ps_filename = f"download_istat_data_{timestamp}.ps1"
-        with open(ps_filename, "w", encoding="utf-8") as f:
-            f.write(ps_script)
 
-        # Genera Tableau Prep flow template
+        # Valida e sanitizza il nome del file
+        if not self.path_validator.validate_filename(ps_filename):
+            ps_filename = self.path_validator.sanitize_filename(ps_filename)
+
+        safe_file = self.path_validator.safe_open(ps_filename, "w", encoding="utf-8")
+        if safe_file:
+            with safe_file as f:
+                f.write(ps_script)
+        else:
+            print(f"❌ Impossibile salvare script PowerShell: {ps_filename}")
+            ps_filename = None
+
+        # Genera Tableau Prep flow template in modo sicuro
         prep_flow = self._generate_prep_flow_template(tableau_ready_datasets)
         flow_filename = f"istat_prep_flow_{timestamp}.json"
-        with open(flow_filename, "w", encoding="utf-8") as f:
-            json.dump(prep_flow, f, ensure_ascii=False, indent=2)
+
+        # Valida e sanitizza il nome del file
+        if not self.path_validator.validate_filename(flow_filename):
+            flow_filename = self.path_validator.sanitize_filename(flow_filename)
+
+        safe_file = self.path_validator.safe_open(flow_filename, "w", encoding="utf-8")
+        if safe_file:
+            with safe_file as f:
+                json.dump(prep_flow, f, ensure_ascii=False, indent=2)
+        else:
+            print(f"❌ Impossibile salvare flow template: {flow_filename}")
+            flow_filename = None
 
         print(f"\n📁 FILE GENERATI:")
-        print(f"  • {config_filename} - Configurazione dataset")
-        print(f"  • {ps_filename} - Script download PowerShell")
-        print(f"  • {flow_filename} - Template Tableau Prep")
+        if config_filename:
+            print(f"  • {config_filename} - Configurazione dataset")
+        if ps_filename:
+            print(f"  • {ps_filename} - Script download PowerShell")
+        if flow_filename:
+            print(f"  • {flow_filename} - Template Tableau Prep")
 
         return {
-            "config_file": config_filename,
-            "powershell_script": ps_filename,
-            "prep_flow": flow_filename,
+            "config_file": config_filename if config_filename else None,
+            "powershell_script": ps_filename if ps_filename else None,
+            "prep_flow": flow_filename if flow_filename else None,
         }
 
     def _generate_powershell_script(self, datasets):
@@ -495,7 +550,7 @@ Category breakdown:
         script = """# Script PowerShell per download dataset ISTAT
 # Generato automaticamente
 
-$baseUrl = "http://sdmx.istat.it/SDMXWS/rest/data/"
+$baseUrl = "https://sdmx.istat.it/SDMXWS/rest/data/"
 $outputDir = "istat_data"
 
 # Crea directory output

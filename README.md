@@ -3,8 +3,8 @@
 **Sistema avanzato di elaborazione e analisi dati ISTAT con integrazione Tableau e PowerBI per la visualizzazione e analisi di statistiche italiane.**
 
 [![Python](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://www.python.org/downloads/)
-[![Tests](https://img.shields.io/badge/Tests-89%20passing-brightgreen.svg)](tests/)
-[![Coverage](https://img.shields.io/badge/Coverage-49%25-yellow.svg)](htmlcov/)
+[![Tests](https://img.shields.io/badge/Tests-146%2B%20passing-brightgreen.svg)](tests/)
+[![Coverage](https://img.shields.io/badge/Coverage-41%25%20(146%2F173)-yellow.svg)](htmlcov/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 > **Sistema completo per l'acquisizione, elaborazione e visualizzazione di dati statistici ISTAT attraverso moderne piattaforme di Business Intelligence.**
@@ -130,6 +130,7 @@ python scripts/organize_data_files.py --dry-run
 │   ├── 🔧 utils/                    # Utilities core
 │   │   ├── config.py                # Configurazione centralizzata
 │   │   ├── logger.py                # Logging strutturato (Loguru)
+│   │   ├── secure_path.py           # Validazione sicura percorsi file
 │   │   └── temp_file_manager.py     # Gestione file temporanei
 │   └── 🔄 converters/               # Convertitori dati
 │       ├── tableau_converter.py     # XML → CSV/Excel/JSON
@@ -196,10 +197,10 @@ pytest --cov=src --cov-report=html tests/
 
 | Categoria | Numero | Stato | Descrizione |
 |-----------|---------|--------|-------------|
-| **Unit Tests** | 89 | ✅ Tutti passanti | Test componenti individuali |
+| **Unit Tests** | 146+ | ✅ Tutti passanti | Test componenti individuali |
 | **Integration Tests** | 12 | ✅ Tutti passanti | Test workflow completi |
 | **Performance Tests** | 8 | ✅ Tutti passanti | Test scalabilità |
-| **Code Coverage** | 49% | 🟨 Buono | Copertura codice principale |
+| **Code Coverage** | 41% | 🟨 Buono | Copertura codice principale |
 
 ### 🔍 Test Highlights
 - ✅ **API Connectivity**: Test connessione a 509+ dataflows ISTAT
@@ -235,11 +236,21 @@ pytest --cov=src --cov-report=html tests/
 - ✅ **Scheduling**: Supporto cron (Linux/Mac) e Task Scheduler (Windows)
 
 ### 🛡️ Qualità e Robustezza
-- ✅ **Test Suite**: 89 unit tests + integration + performance
+- ✅ **Test Suite**: 146+ unit tests + integration + performance
 - ✅ **Error handling**: Gestione robusta errori API e parsing
 - ✅ **Rate limiting**: Rispetto limiti API ISTAT
 - ✅ **Monitoring**: Logging e tracking operazioni
 - ✅ **Documentation**: Documentazione completa e guide utente
+
+### 🔒 Sicurezza
+- ✅ **Validazione percorsi**: Protezione directory traversal attacks
+- ✅ **HTTPS enforcement**: Tutte le API utilizzano connessioni sicure
+- ✅ **Input sanitization**: Sanitizzazione filenames e paths
+- ✅ **Safe file operations**: Operazioni file con validazione sicura
+- ✅ **Extension validation**: Solo estensioni file approvate
+- ✅ **Path traversal protection**: Blocco attacchi `../` e path assoluti
+- ✅ **Windows path support**: Gestione corretta drive letters Windows (C:\)
+- ✅ **Reserved name handling**: Blocco nomi riservati Windows (CON, PRN, AUX)
 
 ## 🔧 Configurazione
 
