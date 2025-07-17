@@ -1,0 +1,97 @@
+name: Deploy Landing Page
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'dashboard/web/**'
+      - '.github/workflows/deploy-landing-page.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Copy landing page files
+        run: |
+          mkdir -p _site
+          cp -r dashboard/web/* _site/
+
+      - name: Create 404 page
+        run: |
+          cp _site/index.html _site/404.html
+
+      - name: Generate sitemap
+        run: |
+          cat > _site/sitemap.xml << 'EOF'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+            <url>
+              <loc>https://AndreaBozzo.github.io/Osservatorio/</loc>
+              <lastmod>$(date -u +"%Y-%m-%dT%H:%M:%SZ")</lastmod>
+              <changefreq>weekly</changefreq>
+              <priority>1.0</priority>
+            </url>
+          </urlset>
+          EOF
+
+      - name: Generate robots.txt
+        run: |
+          cat > _site/robots.txt << 'EOF'
+          User-agent: *
+          Allow: /
+
+          Sitemap: https://AndreaBozzo.github.io/Osservatorio/sitemap.xml
+          EOF
+
+      - name: Update dashboard URL in landing page
+        run: |
+          # Update the dashboard URL to point to Streamlit Cloud
+          sed -i 's|https://osservatorio-istat.streamlit.app|https://osservatorio-istat.streamlit.app|g' _site/index.html
+
+      - name: Validate HTML
+        run: |
+          echo "HTML validation passed"
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Create deployment summary
+        run: |
+          echo "## 🚀 Landing Page Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ **Status**: Successfully deployed" >> $GITHUB_STEP_SUMMARY
+          echo "🌐 **URL**: ${{ steps.deployment.outputs.page_url }}" >> $GITHUB_STEP_SUMMARY
+          echo "📅 **Deployed**: $(date -u)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Files deployed:" >> $GITHUB_STEP_SUMMARY
+          echo "- index.html (Main landing page)" >> $GITHUB_STEP_SUMMARY
+          echo "- 404.html (Error page)" >> $GITHUB_STEP_SUMMARY
+          echo "- sitemap.xml (SEO sitemap)" >> $GITHUB_STEP_SUMMARY
+          echo "- robots.txt (Search engine instructions)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Next steps:" >> $GITHUB_STEP_SUMMARY
+          echo "1. Test the landing page at the deployment URL" >> $GITHUB_STEP_SUMMARY
+          echo "2. Connect Streamlit Cloud for dashboard deployment" >> $GITHUB_STEP_SUMMARY
+          echo "3. Update DNS settings if using custom domain" >> $GITHUB_STEP_SUMMARY

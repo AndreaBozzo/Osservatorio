@@ -79,9 +79,9 @@ Osservatorio/
 
 ```markdown
 ## Week 1-2 (Current)
-- [ ] Setup dashboard/ directory structure
-- [ ] Create basic Streamlit dashboard
-- [ ] Implement first visualization (popolazione)
+- [x] Setup dashboard/ directory structure
+- [x] Create basic Streamlit dashboard
+- [x] Implement first visualization (popolazione)
 - [ ] Setup GitHub Actions basic pipeline
 - [ ] Deploy landing page to GitHub Pages
 
