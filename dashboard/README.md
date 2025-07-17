@@ -109,13 +109,24 @@ Il dashboard utilizza la configurazione esistente in `src/utils/config.py`.
 
 ### Local Development
 ```bash
+# Dalla root del progetto
 streamlit run dashboard/app.py --server.port 8501
+
+# Oppure dalla directory dashboard
+cd dashboard
+streamlit run app.py
 ```
 
 ### Streamlit Cloud
 1. Push to GitHub
 2. Connect repository su [share.streamlit.io](https://share.streamlit.io)
-3. Deploy automatico
+3. Configurazione:
+   - **App path**: `dashboard/app.py`
+   - **Branch**: `main`
+   - **Python version**: 3.9+
+4. Deploy automatico
+
+**🌐 Live Demo**: https://osservatorio-dashboard.streamlit.app/
 
 ### Docker (Future)
 ```bash
@@ -182,6 +193,9 @@ netstat -ano | findstr :8501  # Windows
 # Genera dati
 python convert_to_powerbi.py
 
+# Oppure usa dati di test
+python scripts/generate_test_data.py
+
 # Verifica file
 ls data/processed/powerbi/
 ```
@@ -192,6 +206,15 @@ ls data/processed/powerbi/
 export PYTHONPATH="$PYTHONPATH:$(pwd)/src"  # Linux/Mac
 set PYTHONPATH=%PYTHONPATH%;%CD%\src         # Windows
 ```
+
+**Errori matplotlib (Streamlit Cloud):**
+- Assicurati che `matplotlib>=3.7.0` sia in `dashboard/requirements.txt`
+- Il dashboard ha fallback automatico per gestire moduli mancanti
+
+**Import error locale:**
+- Il dashboard usa import robusti con fallback
+- Funziona anche senza accesso ai moduli src/
+- Dati di esempio automatici se file non disponibili
 
 ## 🚦 Status
 
