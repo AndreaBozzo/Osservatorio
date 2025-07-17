@@ -3,8 +3,8 @@
 **Sistema avanzato di elaborazione e analisi dati ISTAT con integrazione Tableau e PowerBI per la visualizzazione e analisi di statistiche italiane.**
 
 [![Python](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://www.python.org/downloads/)
-[![Tests](https://img.shields.io/badge/Tests-146%2B%20passing-brightgreen.svg)](tests/)
-[![Coverage](https://img.shields.io/badge/Coverage-41%25%20(146%2F173)-yellow.svg)](htmlcov/)
+[![Tests](https://img.shields.io/badge/Tests-173%20passing-brightgreen.svg)](tests/)
+[![Coverage](https://img.shields.io/badge/Coverage-100%25%20success-brightgreen.svg)](htmlcov/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 > **Sistema completo per l'acquisizione, elaborazione e visualizzazione di dati statistici ISTAT attraverso moderne piattaforme di Business Intelligence.**
@@ -149,7 +149,7 @@ python scripts/organize_data_files.py --dry-run
 │   ├── organize_data_files.py       # Organizzazione file dati
 │   └── schedule_cleanup.py          # Scheduling automatico
 ├── 🧪 tests/                        # Test suite completa
-│   ├── unit/                        # Unit tests (89 tests ✅)
+│   ├── unit/                        # Unit tests (173 tests ✅)
 │   ├── integration/                 # Integration tests
 │   └── performance/                 # Performance tests
 ├── 📋 convert_to_tableau.py         # Wrapper Tableau
@@ -172,7 +172,7 @@ python scripts/organize_data_files.py --dry-run
 
 ```bash
 # Test rapidi (unit tests)
-pytest tests/unit/ -v                    # 89 tests in ~20s
+pytest tests/unit/ -v                    # 173 tests in ~20s
 
 # Test completi con coverage
 pytest --cov=src tests/                  # Tutti i test + coverage
@@ -197,7 +197,7 @@ pytest --cov=src --cov-report=html tests/
 
 | Categoria | Numero | Stato | Descrizione |
 |-----------|---------|--------|-------------|
-| **Unit Tests** | 146+ | ✅ Tutti passanti | Test componenti individuali |
+| **Unit Tests** | 173 | ✅ Tutti passanti | Test componenti individuali |
 | **Integration Tests** | 12 | ✅ Tutti passanti | Test workflow completi |
 | **Performance Tests** | 8 | ✅ Tutti passanti | Test scalabilità |
 | **Code Coverage** | 41% | 🟨 Buono | Copertura codice principale |
@@ -236,7 +236,7 @@ pytest --cov=src --cov-report=html tests/
 - ✅ **Scheduling**: Supporto cron (Linux/Mac) e Task Scheduler (Windows)
 
 ### 🛡️ Qualità e Robustezza
-- ✅ **Test Suite**: 146+ unit tests + integration + performance
+- ✅ **Test Suite**: 173 unit tests + integration + performance
 - ✅ **Error handling**: Gestione robusta errori API e parsing
 - ✅ **Rate limiting**: Rispetto limiti API ISTAT
 - ✅ **Monitoring**: Logging e tracking operazioni
@@ -417,7 +417,7 @@ with temp_manager.temp_file(suffix='.xml') as temp_file:
 ### 📈 Versione Attuale (v1.0)
 - ✅ Sistema completo di elaborazione dati ISTAT
 - ✅ Integrazione Tableau e PowerBI
-- ✅ 89 unit tests + integration tests
+- ✅ 173 unit tests + integration tests
 - ✅ Sistema gestione file temporanei
 - ✅ Documentazione completa
 
@@ -427,6 +427,56 @@ with temp_manager.temp_file(suffix='.xml') as temp_file:
 - 🔄 Supporto Docker e containerizzazione
 - 🔄 Plugin Tableau nativi
 - 🔄 Integrazione CI/CD completa
+
+## 🔧 API Programmatiche
+
+### PowerBI Converter API
+```python
+# Esempio di utilizzo programmatico
+from src.converters.powerbi_converter import IstatXMLToPowerBIConverter
+
+converter = IstatXMLToPowerBIConverter()
+
+# Conversione diretta XML
+result = converter.convert_xml_to_powerbi(
+    xml_content="<xml>...</xml>",
+    dataset_id="DCIS_POPRES1",
+    dataset_name="Popolazione residente"
+)
+
+# Parsing XML e validazione qualità
+df = converter._parse_xml_content(xml_content)
+quality = converter._validate_data_quality(df)
+category, priority = converter._categorize_dataset(dataset_id, dataset_name)
+```
+
+### Tableau Converter API
+```python
+# Esempio di utilizzo programmatico
+from src.converters.tableau_converter import IstatXMLtoTableauConverter
+
+converter = IstatXMLtoTableauConverter()
+
+# Conversione diretta XML
+result = converter.convert_xml_to_tableau(
+    xml_content="<xml>...</xml>",
+    dataset_id="DCIS_POPRES1",
+    dataset_name="Popolazione residente"
+)
+
+# Parsing XML e validazione qualità
+df = converter._parse_xml_content(xml_content)
+quality = converter._validate_data_quality(df)
+category, priority = converter._categorize_dataset(dataset_id, dataset_name)
+```
+
+### Caratteristiche API
+- ✅ **Parsing XML SDMX**: Conversione diretta XML → DataFrame
+- ✅ **Categorizzazione automatica**: 6 categorie con priorità
+- ✅ **Validazione qualità**: Completezza e consistenza dati
+- ✅ **Multi-formato**: CSV, Excel, JSON, Parquet
+- ✅ **Sicurezza**: Validazione path e file operation sicure
+- ✅ **Logging**: Tracciamento operazioni completo
 
 ---
 

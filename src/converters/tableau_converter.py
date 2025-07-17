@@ -731,7 +731,7 @@ File generato da IstatXMLtoTableauConverter v2.0
 """
 
         instructions_filename = f"tableau_import_instructions_{timestamp}.md"
-        instructions_path = output_dir / instructions_filename
+        instructions_path = Path(output_dir) / instructions_filename
 
         # Valida il percorso
         if not self.path_validator.validate_path(instructions_path):
@@ -780,7 +780,7 @@ Buona analisi! 📊
 """
 
         quick_filename = "QUICK_START.txt"
-        quick_path = output_dir / quick_filename
+        quick_path = Path(output_dir) / quick_filename
 
         # Valida il percorso
         if not self.path_validator.validate_path(quick_path):
@@ -793,6 +793,265 @@ Buona analisi! 📊
                 f.write(quick_start)
         else:
             print(f"❌ Impossibile salvare quick start: {quick_path}")
+
+    def _parse_xml_content(self, xml_content: str) -> pd.DataFrame:
+        """Parse XML content directly and return DataFrame."""
+        if not xml_content.strip():
+            return pd.DataFrame()
+
+        try:
+            root = ET.fromstring(xml_content)
+            observations = []
+
+            def strip_namespace(tag):
+                return tag.split("}")[1] if "}" in tag else tag
+
+            all_elements = root.findall(".//*")
+
+            for elem in all_elements:
+                tag_name = strip_namespace(elem.tag)
+
+                if tag_name in ["Obs", "Observation"]:
+                    obs_data = self._extract_observation_from_element(elem)
+                    if obs_data:
+                        observations.append(obs_data)
+
+                elif tag_name == "Series":
+                    series_data = {}
+                    # Extract series key attributes
+                    for key_elem in elem.findall(".//*"):
+                        key_tag = strip_namespace(key_elem.tag)
+                        if key_tag == "Value":
+                            attr_id = key_elem.get("id")
+                            attr_value = key_elem.get("value")
+                            if attr_id and attr_value:
+                                series_data[attr_id] = attr_value
+
+                    # Extract observations
+                    for obs_elem in elem.findall(".//*"):
+                        obs_tag = strip_namespace(obs_elem.tag)
+                        if obs_tag in ["Obs", "Observation"]:
+                            obs_data = self._extract_observation_from_element(obs_elem)
+                            if obs_data:
+                                obs_data.update(series_data)
+                                observations.append(obs_data)
+
+            if observations:
+                df = pd.DataFrame(observations)
+                # Standardize column names
+                if "ObsDimension_value" in df.columns:
+                    df["Time"] = df["ObsDimension_value"]
+                    df.drop("ObsDimension_value", axis=1, inplace=True)
+                if "ObsValue_value" in df.columns:
+                    df["Value"] = df["ObsValue_value"]
+                    df.drop("ObsValue_value", axis=1, inplace=True)
+                return df
+            else:
+                return pd.DataFrame()
+
+        except ET.ParseError as e:
+            print(f"❌ Errore parsing XML: {e}")
+            raise
+        except Exception as e:
+            print(f"❌ Errore generico parsing XML: {e}")
+            return pd.DataFrame()
+
+    def _categorize_dataset(
+        self, dataset_id: str, dataset_name: str
+    ) -> tuple[str, int]:
+        """Categorize dataset and return priority."""
+        name_lower = dataset_name.lower()
+
+        if any(
+            keyword in name_lower
+            for keyword in ["popolazione", "popola", "demografic", "residente"]
+        ):
+            return "popolazione", 10
+        elif any(
+            keyword in name_lower
+            for keyword in ["pil", "economia", "economico", "reddito", "prodotto"]
+        ):
+            return "economia", 9
+        elif any(
+            keyword in name_lower
+            for keyword in ["lavoro", "occupazione", "disoccupazione", "employment"]
+        ):
+            return "lavoro", 8
+        elif any(
+            keyword in name_lower
+            for keyword in [
+                "territorio",
+                "territorial",
+                "regional",
+                "comune",
+                "provincia",
+            ]
+        ):
+            return "territorio", 7
+        elif any(
+            keyword in name_lower
+            for keyword in [
+                "istruzione",
+                "education",
+                "università",
+                "scuola",
+                "studenti",
+            ]
+        ):
+            return "istruzione", 6
+        elif any(
+            keyword in name_lower
+            for keyword in ["salute", "health", "sanità", "ospedale", "medicina"]
+        ):
+            return "salute", 5
+        else:
+            return "altro", 1
+
+    def _generate_tableau_formats(self, df: pd.DataFrame, dataset_info: dict) -> dict:
+        """Generate multiple Tableau formats."""
+        dataflow_id = dataset_info["id"]
+        name = dataset_info["name"]
+        category = dataset_info.get("category", "altro")
+
+        # Generate file paths
+        base_name = f"{dataflow_id}_{name[:50]}".replace(" ", "_")
+        safe_base_name = self.path_validator.sanitize_filename(base_name)
+
+        # Create output directory
+        output_dir = self.path_validator.get_safe_path(
+            "tableau_output", create_dirs=True
+        )
+
+        csv_file = output_dir / f"{safe_base_name}.csv"
+        json_file = output_dir / f"{safe_base_name}.json"
+        excel_file = output_dir / f"{safe_base_name}.xlsx"
+
+        # Generate files
+        try:
+            # CSV
+            df.to_csv(csv_file, index=False, encoding="utf-8")
+
+            # JSON
+            df.to_json(json_file, orient="records", force_ascii=False, indent=2)
+
+            # Excel
+            with pd.ExcelWriter(excel_file, engine="openpyxl") as writer:
+                df.to_excel(writer, index=False, sheet_name=category[:31])
+
+            return {
+                "csv_file": str(csv_file),
+                "json_file": str(json_file),
+                "excel_file": str(excel_file),
+            }
+        except Exception as e:
+            print(f"❌ Errore generazione formati Tableau: {e}")
+            return {}
+
+    def _validate_data_quality(self, df: pd.DataFrame) -> dict:
+        """Validate data quality and return metrics."""
+        total_rows = len(df)
+        total_columns = len(df.columns)
+
+        if total_rows == 0 or total_columns == 0:
+            return {
+                "total_rows": total_rows,
+                "total_columns": total_columns,
+                "completeness_score": 0.0,
+                "data_quality_score": 0.0,
+            }
+
+        # Calculate completeness score
+        non_null_count = df.count().sum()
+        total_cells = total_rows * total_columns
+        completeness_score = non_null_count / total_cells if total_cells > 0 else 0.0
+
+        # Calculate data quality score (simplified)
+        # Consider numeric columns and valid values
+        numeric_cols = df.select_dtypes(include=[float, int]).columns
+        numeric_quality = 0.0
+
+        if len(numeric_cols) > 0:
+            numeric_df = df[numeric_cols]
+            valid_numeric = numeric_df.notna().sum().sum()
+            total_numeric = len(numeric_df) * len(numeric_cols)
+            numeric_quality = (
+                valid_numeric / total_numeric if total_numeric > 0 else 0.0
+            )
+
+        # Overall quality score
+        data_quality_score = (completeness_score + numeric_quality) / 2
+
+        return {
+            "total_rows": total_rows,
+            "total_columns": total_columns,
+            "completeness_score": completeness_score,
+            "data_quality_score": data_quality_score,
+        }
+
+    def convert_xml_to_tableau(
+        self, xml_input: str, dataset_id: str, dataset_name: str
+    ) -> dict:
+        """Convert XML to Tableau formats."""
+        try:
+            # Determine if input is file path or XML content
+            if xml_input.strip().startswith("<?xml") or xml_input.strip().startswith(
+                "<"
+            ):
+                # It's XML content
+                df = self._parse_xml_content(xml_input)
+            else:
+                # It's a file path
+                safe_file = self.path_validator.safe_open(
+                    xml_input, "r", encoding="utf-8"
+                )
+                if not safe_file:
+                    return {"success": False, "error": f"Cannot read file: {xml_input}"}
+
+                with safe_file as f:
+                    xml_content = f.read()
+                    df = self._parse_xml_content(xml_content)
+
+            if df.empty:
+                return {"success": False, "error": "No data found in XML"}
+
+            # Categorize dataset
+            category, priority = self._categorize_dataset(dataset_id, dataset_name)
+
+            # Validate data quality
+            quality_report = self._validate_data_quality(df)
+
+            # Generate dataset info
+            dataset_info = {
+                "id": dataset_id,
+                "name": dataset_name,
+                "category": category,
+                "priority": priority,
+            }
+
+            # Generate Tableau formats
+            files_created = self._generate_tableau_formats(df, dataset_info)
+
+            # Create summary
+            summary = {
+                "dataset_id": dataset_id,
+                "dataset_name": dataset_name,
+                "category": category,
+                "priority": priority,
+                "rows": len(df),
+                "columns": len(df.columns),
+                "files_created": len(files_created),
+            }
+
+            return {
+                "success": True,
+                "files_created": files_created,
+                "data_quality": quality_report,
+                "summary": summary,
+            }
+
+        except Exception as e:
+            print(f"❌ Errore conversione XML to Tableau: {e}")
+            return {"success": False, "error": str(e)}
 
 
 def main():

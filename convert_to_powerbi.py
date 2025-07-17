@@ -10,12 +10,12 @@ from pathlib import Path
 # Aggiungi src al path
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
-from converters.powerbi_converter import IstatXMLtoPowerBIConverter
+from converters.powerbi_converter import IstatXMLToPowerBIConverter
 
 
 def main():
     """Main entry point per conversione PowerBI"""
-    converter = IstatXMLtoPowerBIConverter()
+    converter = IstatXMLToPowerBIConverter()
 
     # Directory XML di input
     xml_dir = Path("data/raw/istat/istat_data")
