@@ -29,6 +29,131 @@ python convert_to_powerbi.py  # Per PowerBI
 python scripts/cleanup_temp_files.py --stats
 ```
 
+## 🌟 Features Principali
+
+### 📊 Data Processing
+- ✅ **ISTAT SDMX API**: Accesso a 509+ dataset ufficiali italiani
+- ✅ **Categorizzazione intelligente**: 6 categorie prioritarie (Popolazione, Economia, Lavoro, Territorio, Istruzione, Salute)
+- ✅ **Conversione multi-formato**: XML → CSV, Excel, JSON, Parquet
+- ✅ **Cache intelligente**: Ottimizzazione performance con sistema di cache
+- ✅ **Validazione qualità**: Controllo completezza e consistenza dati
+- ✅ **Logging strutturato**: Tracciamento completo operazioni con Loguru
+
+### 🔗 Business Intelligence
+- ✅ **Tableau Integration**: Server API + connettori BigQuery/Google Sheets
+- ✅ **PowerBI Integration**: REST API + Azure AD authentication + workspace management
+- ✅ **Formati ottimizzati**: Parquet per performance, metadati inclusi
+- ✅ **Guide integrate**: Istruzioni step-by-step per import e configurazione
+- ✅ **Dashboard ready**: File pronti per import diretto in Tableau/PowerBI
+
+### 🤖 Automazione
+- ✅ **Script PowerShell**: Download automatico dataset Windows
+- ✅ **Workflow end-to-end**: Da XML ISTAT a dashboard pronte
+- ✅ **Test connettività**: Validazione API e configurazioni automatica
+- ✅ **Configurazione centralizzata**: Gestione credenziali e environment variables
+- ✅ **Gestione file temporanei**: Sistema automatico pulizia e organizzazione
+- ✅ **Scheduling**: Supporto cron (Linux/Mac) e Task Scheduler (Windows)
+
+### 🛡️ Qualità e Sicurezza
+- ✅ **Test Suite**: 173 unit tests + integration + performance
+- ✅ **Sicurezza**: Validazione path, HTTPS enforcement, input sanitization
+- ✅ **Error handling**: Gestione robusta errori API e parsing
+- ✅ **Rate limiting**: Rispetto limiti API ISTAT
+- ✅ **Monitoring**: Logging e tracking operazioni complete
+
+## 📁 Architettura Sistema
+
+```
+📦 Osservatorio/
+├── 🐍 src/                          # Codice sorgente principale
+│   ├── 🔌 api/                      # API clients
+│   │   ├── istat_api.py             # ISTAT SDMX API (509+ dataflows)
+│   │   ├── powerbi_api.py           # PowerBI REST API + MSAL auth
+│   │   └── tableau_api.py           # Tableau Server API
+│   ├── 🔄 converters/               # Convertitori dati
+│   │   ├── tableau_converter.py     # XML → CSV/Excel/JSON
+│   │   └── powerbi_converter.py     # XML → CSV/Excel/Parquet/JSON
+│   ├── 🔍 analyzers/                # Analisi e categorizzazione
+│   │   └── dataflow_analyzer.py     # Categorizzazione automatica dataset
+│   ├── 🕷️ scrapers/                 # Web scraping e discovery
+│   │   └── tableau_scraper.py       # Tableau Public integration
+│   └── 🔧 utils/                    # Utilities core
+│       ├── config.py                # Configurazione centralizzata
+│       ├── logger.py                # Logging strutturato (Loguru)
+│       ├── secure_path.py           # Validazione sicura percorsi file
+│       └── temp_file_manager.py     # Gestione file temporanei
+├── 📊 data/                         # Dati e elaborazioni
+│   ├── raw/                         # Dati ISTAT grezzi (XML SDMX)
+│   ├── processed/                   # Dati processati
+│   │   ├── tableau/                 # File pronti per Tableau
+│   │   └── powerbi/                 # File ottimizzati PowerBI
+│   ├── cache/                       # Cache API responses
+│   └── reports/                     # Report e analisi
+├── 🛠️ scripts/                      # Automazione e gestione
+│   ├── download_istat_data.ps1      # Download PowerShell
+│   ├── setup_powerbi_azure.py       # Setup Azure AD guidato
+│   ├── cleanup_temp_files.py        # Pulizia file temporanei
+│   ├── organize_data_files.py       # Organizzazione file dati
+│   └── schedule_cleanup.py          # Scheduling automatico
+├── 🧪 tests/                        # Test suite completa
+│   ├── unit/                        # Unit tests (173 tests ✅)
+│   ├── integration/                 # Integration tests
+│   └── performance/                 # Performance tests
+├── 📋 convert_to_tableau.py         # Wrapper Tableau
+├── 📈 convert_to_powerbi.py         # Wrapper PowerBI
+└── 📚 CLAUDE.md                     # Documentazione Claude Code
+```
+
+## 🔧 API Programmatiche
+
+### PowerBI Converter API
+```python
+# Esempio di utilizzo programmatico
+from src.converters.powerbi_converter import IstatXMLToPowerBIConverter
+
+converter = IstatXMLToPowerBIConverter()
+
+# Conversione diretta XML
+result = converter.convert_xml_to_powerbi(
+    xml_content="<xml>...</xml>",
+    dataset_id="DCIS_POPRES1",
+    dataset_name="Popolazione residente"
+)
+
+# Parsing XML e validazione qualità
+df = converter._parse_xml_content(xml_content)
+quality = converter._validate_data_quality(df)
+category, priority = converter._categorize_dataset(dataset_id, dataset_name)
+```
+
+### Tableau Converter API
+```python
+# Esempio di utilizzo programmatico
+from src.converters.tableau_converter import IstatXMLtoTableauConverter
+
+converter = IstatXMLtoTableauConverter()
+
+# Conversione diretta XML
+result = converter.convert_xml_to_tableau(
+    xml_content="<xml>...</xml>",
+    dataset_id="DCIS_POPRES1",
+    dataset_name="Popolazione residente"
+)
+
+# Parsing XML e validazione qualità
+df = converter._parse_xml_content(xml_content)
+quality = converter._validate_data_quality(df)
+category, priority = converter._categorize_dataset(dataset_id, dataset_name)
+```
+
+### Caratteristiche API
+- ✅ **Parsing XML SDMX**: Conversione diretta XML → DataFrame
+- ✅ **Categorizzazione automatica**: 6 categorie con priorità
+- ✅ **Validazione qualità**: Completezza e consistenza dati
+- ✅ **Multi-formato**: CSV, Excel, JSON, Parquet
+- ✅ **Sicurezza**: Validazione path e file operation sicure
+- ✅ **Logging**: Tracciamento operazioni completo
+
 ## 📋 Prerequisiti
 
 - **Python 3.8+** - Linguaggio principale
@@ -37,7 +162,7 @@ python scripts/cleanup_temp_files.py --stats
 - **Account PowerBI Service** - (opzionale) Per publishing automatico
 - **Azure AD App Registration** - (opzionale) Per PowerBI API
 
-## 🛠️ Installazione Dettagliata
+## 🛠️ Installazione
 
 ### 1. Setup Base
 ```bash
@@ -114,144 +239,6 @@ python scripts/cleanup_temp_files.py --stats
 python scripts/organize_data_files.py --dry-run
 ```
 
-## 📁 Architettura Sistema
-
-```
-📦 Osservatorio/
-├── 🐍 src/                          # Codice sorgente principale
-│   ├── 🔌 api/                      # API clients
-│   │   ├── istat_api.py             # ISTAT SDMX API (509+ dataflows)
-│   │   ├── powerbi_api.py           # PowerBI REST API + MSAL auth
-│   │   └── tableau_api.py           # Tableau Server API
-│   ├── 🔍 analyzers/                # Analisi e categorizzazione
-│   │   └── dataflow_analyzer.py     # Categorizzazione automatica dataset
-│   ├── 🕷️ scrapers/                 # Web scraping e discovery
-│   │   └── tableau_scraper.py       # Tableau Public integration
-│   ├── 🔧 utils/                    # Utilities core
-│   │   ├── config.py                # Configurazione centralizzata
-│   │   ├── logger.py                # Logging strutturato (Loguru)
-│   │   ├── secure_path.py           # Validazione sicura percorsi file
-│   │   └── temp_file_manager.py     # Gestione file temporanei
-│   └── 🔄 converters/               # Convertitori dati
-│       ├── tableau_converter.py     # XML → CSV/Excel/JSON
-│       └── powerbi_converter.py     # XML → CSV/Excel/Parquet/JSON
-├── 📊 data/                         # Dati e elaborazioni
-│   ├── raw/                         # Dati ISTAT grezzi (XML SDMX)
-│   ├── processed/                   # Dati processati
-│   │   ├── tableau/                 # File pronti per Tableau
-│   │   └── powerbi/                 # File ottimizzati PowerBI
-│   ├── cache/                       # Cache API responses
-│   └── reports/                     # Report e analisi
-├── 🛠️ scripts/                      # Automazione e gestione
-│   ├── download_istat_data.ps1      # Download PowerShell
-│   ├── setup_powerbi_azure.py       # Setup Azure AD guidato
-│   ├── cleanup_temp_files.py        # Pulizia file temporanei
-│   ├── organize_data_files.py       # Organizzazione file dati
-│   └── schedule_cleanup.py          # Scheduling automatico
-├── 🧪 tests/                        # Test suite completa
-│   ├── unit/                        # Unit tests (173 tests ✅)
-│   ├── integration/                 # Integration tests
-│   └── performance/                 # Performance tests
-├── 📋 convert_to_tableau.py         # Wrapper Tableau
-├── 📈 convert_to_powerbi.py         # Wrapper PowerBI
-└── 📚 CLAUDE.md                     # Documentazione Claude Code
-```
-
-### 🏗️ Componenti Chiave
-
-| Componente | Funzione | Tecnologie |
-|------------|----------|------------|
-| **ISTAT API Client** | Connessione a 509+ dataflows SDMX | requests, XML parsing |
-| **PowerBI Integration** | Publishing automatico workspaces | MSAL, REST API |
-| **Tableau Integration** | Server API + connettori | tableau-server-client |
-| **Data Converters** | XML → Formati BI (CSV, Parquet, JSON) | pandas, pyarrow |
-| **Temp File Manager** | Gestione automatica file temporanei | Singleton pattern |
-| **Test Suite** | 89 unit tests + integration | pytest, coverage |
-
-## 🧪 Test Suite Completa
-
-```bash
-# Test rapidi (unit tests)
-pytest tests/unit/ -v                    # 173 tests in ~20s
-
-# Test completi con coverage
-pytest --cov=src tests/                  # Tutti i test + coverage
-
-# Test specifici per componente
-pytest tests/unit/test_istat_api.py      # API ISTAT
-pytest tests/unit/test_powerbi_api.py    # PowerBI integration
-pytest tests/unit/test_converters.py     # Data converters
-
-# Test integration (end-to-end)
-pytest tests/integration/ -v             # Workflow completi
-
-# Test performance
-pytest tests/performance/ -v             # Scalabilità 1000+ dataflows
-
-# Report HTML con coverage
-pytest --cov=src --cov-report=html tests/
-# Report disponibile in: htmlcov/index.html
-```
-
-### 📊 Statistiche Test Suite
-
-| Categoria | Numero | Stato | Descrizione |
-|-----------|---------|--------|-------------|
-| **Unit Tests** | 173 | ✅ Tutti passanti | Test componenti individuali |
-| **Integration Tests** | 12 | ✅ Tutti passanti | Test workflow completi |
-| **Performance Tests** | 8 | ✅ Tutti passanti | Test scalabilità |
-| **Code Coverage** | 41% | 🟨 Buono | Copertura codice principale |
-
-### 🔍 Test Highlights
-- ✅ **API Connectivity**: Test connessione a 509+ dataflows ISTAT
-- ✅ **Data Conversion**: Validazione XML → CSV/Excel/Parquet/JSON
-- ✅ **PowerBI Integration**: Test autenticazione Azure AD + publishing
-- ✅ **Temp File Management**: Test gestione automatica file temporanei
-- ✅ **Error Handling**: Test robustezza con scenari fallimento
-- ✅ **Performance**: Test con dataset 1000+ records
-
-## 🌟 Features Principali
-
-### 📊 Data Processing
-- ✅ **ISTAT SDMX API**: Accesso a 509+ dataset ufficiali italiani
-- ✅ **Categorizzazione intelligente**: 6 categorie prioritarie (Popolazione, Economia, Lavoro, Territorio, Istruzione, Salute)
-- ✅ **Conversione multi-formato**: XML → CSV, Excel, JSON, Parquet
-- ✅ **Cache intelligente**: Ottimizzazione performance con sistema di cache
-- ✅ **Validazione qualità**: Controllo completezza e consistenza dati
-- ✅ **Logging strutturato**: Tracciamento completo operazioni con Loguru
-
-### 🔗 Business Intelligence
-- ✅ **Tableau Integration**: Server API + connettori BigQuery/Google Sheets
-- ✅ **PowerBI Integration**: REST API + Azure AD authentication + workspace management
-- ✅ **Formati ottimizzati**: Parquet per performance, metadati inclusi
-- ✅ **Guide integrate**: Istruzioni step-by-step per import e configurazione
-- ✅ **Dashboard ready**: File pronti per import diretto in Tableau/PowerBI
-
-### 🤖 Automazione
-- ✅ **Script PowerShell**: Download automatico dataset Windows
-- ✅ **Workflow end-to-end**: Da XML ISTAT a dashboard pronte
-- ✅ **Test connettività**: Validazione API e configurazioni automatica
-- ✅ **Configurazione centralizzata**: Gestione credenziali e environment variables
-- ✅ **Gestione file temporanei**: Sistema automatico pulizia e organizzazione
-- ✅ **Scheduling**: Supporto cron (Linux/Mac) e Task Scheduler (Windows)
-
-### 🛡️ Qualità e Robustezza
-- ✅ **Test Suite**: 173 unit tests + integration + performance
-- ✅ **Error handling**: Gestione robusta errori API e parsing
-- ✅ **Rate limiting**: Rispetto limiti API ISTAT
-- ✅ **Monitoring**: Logging e tracking operazioni
-- ✅ **Documentation**: Documentazione completa e guide utente
-
-### 🔒 Sicurezza
-- ✅ **Validazione percorsi**: Protezione directory traversal attacks
-- ✅ **HTTPS enforcement**: Tutte le API utilizzano connessioni sicure
-- ✅ **Input sanitization**: Sanitizzazione filenames e paths
-- ✅ **Safe file operations**: Operazioni file con validazione sicura
-- ✅ **Extension validation**: Solo estensioni file approvate
-- ✅ **Path traversal protection**: Blocco attacchi `../` e path assoluti
-- ✅ **Windows path support**: Gestione corretta drive letters Windows (C:\)
-- ✅ **Reserved name handling**: Blocco nomi riservati Windows (CON, PRN, AUX)
-
 ## 🔧 Configurazione
 
 ### Variabili Ambiente (.env)
@@ -311,33 +298,47 @@ def calculate_priority(dataflow_name, description):
     # Algoritmo di matching e scoring
 ```
 
-## 🤝 Contributing
+## 🧪 Test Suite
 
 ```bash
-# Fork il progetto
-git clone https://github.com/your-username/Osservatorio.git
+# Test rapidi (unit tests)
+pytest tests/unit/ -v                    # 173 tests in ~20s
 
-# Crea un feature branch
-git checkout -b feature/AmazingFeature
+# Test completi con coverage
+pytest --cov=src tests/                  # Tutti i test + coverage
 
-# Commit delle modifiche
-git commit -m 'Add some AmazingFeature'
+# Test specifici per componente
+pytest tests/unit/test_istat_api.py      # API ISTAT
+pytest tests/unit/test_powerbi_api.py    # PowerBI integration
+pytest tests/unit/test_converters.py     # Data converters
 
-# Push al branch
-git push origin feature/AmazingFeature
+# Test integration (end-to-end)
+pytest tests/integration/ -v             # Workflow completi
 
-# Apri una Pull Request
+# Test performance
+pytest tests/performance/ -v             # Scalabilità 1000+ dataflows
+
+# Report HTML con coverage
+pytest --cov=src --cov-report=html tests/
+# Report disponibile in: htmlcov/index.html
 ```
 
-## 📄 License
+### 📊 Statistiche Test Suite
 
-Distribuito sotto licenza MIT. Vedi LICENSE per maggiori informazioni.
+| Categoria | Numero | Stato | Descrizione |
+|-----------|---------|--------|-------------|
+| **Unit Tests** | 173 | ✅ Tutti passanti | Test componenti individuali |
+| **Integration Tests** | 12 | ✅ Tutti passanti | Test workflow completi |
+| **Performance Tests** | 8 | ✅ Tutti passanti | Test scalabilità |
+| **Code Coverage** | 41% | 🟨 Buono | Copertura codice principale |
 
-## 👥 Contatti
-
-**Andrea Bozzo** - [@AndreaBozzo](https://github.com/AndreaBozzo)
-
-**Project Link**: [https://github.com/AndreaBozzo/Osservatorio](https://github.com/AndreaBozzo/Osservatorio)
+### 🔍 Test Highlights
+- ✅ **API Connectivity**: Test connessione a 509+ dataflows ISTAT
+- ✅ **Data Conversion**: Validazione XML → CSV/Excel/Parquet/JSON
+- ✅ **PowerBI Integration**: Test autenticazione Azure AD + publishing
+- ✅ **Temp File Management**: Test gestione automatica file temporanei
+- ✅ **Error Handling**: Test robustezza con scenari fallimento
+- ✅ **Performance**: Test con dataset 1000+ records
 
 ## 🧹 Sistema di Gestione File Temporanei
 
@@ -428,55 +429,33 @@ with temp_manager.temp_file(suffix='.xml') as temp_file:
 - 🔄 Plugin Tableau nativi
 - 🔄 Integrazione CI/CD completa
 
-## 🔧 API Programmatiche
+## 🤝 Contributing
 
-### PowerBI Converter API
-```python
-# Esempio di utilizzo programmatico
-from src.converters.powerbi_converter import IstatXMLToPowerBIConverter
+```bash
+# Fork il progetto
+git clone https://github.com/your-username/Osservatorio.git
 
-converter = IstatXMLToPowerBIConverter()
+# Crea un feature branch
+git checkout -b feature/AmazingFeature
 
-# Conversione diretta XML
-result = converter.convert_xml_to_powerbi(
-    xml_content="<xml>...</xml>",
-    dataset_id="DCIS_POPRES1",
-    dataset_name="Popolazione residente"
-)
+# Commit delle modifiche
+git commit -m 'Add some AmazingFeature'
 
-# Parsing XML e validazione qualità
-df = converter._parse_xml_content(xml_content)
-quality = converter._validate_data_quality(df)
-category, priority = converter._categorize_dataset(dataset_id, dataset_name)
+# Push al branch
+git push origin feature/AmazingFeature
+
+# Apri una Pull Request
 ```
 
-### Tableau Converter API
-```python
-# Esempio di utilizzo programmatico
-from src.converters.tableau_converter import IstatXMLtoTableauConverter
+## 📄 License
 
-converter = IstatXMLtoTableauConverter()
+Distribuito sotto licenza MIT. Vedi LICENSE per maggiori informazioni.
 
-# Conversione diretta XML
-result = converter.convert_xml_to_tableau(
-    xml_content="<xml>...</xml>",
-    dataset_id="DCIS_POPRES1",
-    dataset_name="Popolazione residente"
-)
+## 👥 Contatti
 
-# Parsing XML e validazione qualità
-df = converter._parse_xml_content(xml_content)
-quality = converter._validate_data_quality(df)
-category, priority = converter._categorize_dataset(dataset_id, dataset_name)
-```
+**Andrea Bozzo** - [@AndreaBozzo](https://github.com/AndreaBozzo)
 
-### Caratteristiche API
-- ✅ **Parsing XML SDMX**: Conversione diretta XML → DataFrame
-- ✅ **Categorizzazione automatica**: 6 categorie con priorità
-- ✅ **Validazione qualità**: Completezza e consistenza dati
-- ✅ **Multi-formato**: CSV, Excel, JSON, Parquet
-- ✅ **Sicurezza**: Validazione path e file operation sicure
-- ✅ **Logging**: Tracciamento operazioni completo
+**Project Link**: [https://github.com/AndreaBozzo/Osservatorio](https://github.com/AndreaBozzo/Osservatorio)
 
 ---
 
