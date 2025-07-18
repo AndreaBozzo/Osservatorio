@@ -22,9 +22,10 @@ Refer to PROJECT_STATE.md for developing context before making any change to the
 - `powershell scripts/download_istat_data.ps1` - Download ISTAT datasets via PowerShell
 
 ### CI/CD Commands
+- `python scripts/test_ci.py --strategy auto --generate-data` - Run CI tests with automatic fallback and data generation
+- `python scripts/test_ci.py --strategy quick` - Run essential tests for CI/CD
+- `python scripts/test_ci.py --strategy minimal` - Run minimal ultra-robust tests for CI/CD
 - `python scripts/generate_test_data.py` - Generate mock data for CI/CD testing
-- `python scripts/test_ci_quick.py` - Run essential tests for CI/CD fallback
-- `python scripts/test_ci_minimal.py` - Run minimal ultra-robust tests for CI/CD
 - `streamlit run dashboard/app.py` - Run dashboard locally
 
 ### File Management Commands
