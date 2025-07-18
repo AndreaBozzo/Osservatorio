@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is an Italian data processing system for ISTAT (Italian National Institute of Statistics) data with Tableau/Power Bi integration. The system fetches, processes, and converts ISTAT statistical data into Tableau/Power BI- friendly formats for visualization and analysis.
 
-Refer to PROJECT_STATE.md for developing context before making any change to the codebase.
+Refer to PROJECT_STATE.md for developing context before making any change to the codebase, assumptions, when made, have to still be realistical based on the real implementation of the code.
 
 ## Development Commands
 
@@ -363,7 +363,7 @@ files = converter._generate_powerbi_formats(df, dataset_info)
 
 ### 🔧 Core Components Status
 
-#### Security Management System ✅ FULLY INTEGRATED
+#### Security Management System ✅ ADDED, MORE TESTING NEEDED.
 - **SecurityManager Class** (`src/utils/security_enhanced.py`):
   - Path validation with directory traversal protection
   - Rate limiting with configurable thresholds (ISTAT: 50 req/hr, PowerBI: 100 req/hr)
@@ -372,7 +372,7 @@ files = converter._generate_powerbi_formats(df, dataset_info)
   - IP blocking and security headers
   - Comprehensive security decorators
 
-#### Circuit Breaker Implementation ✅ ACTIVE IN PRODUCTION
+#### Circuit Breaker Implementation ✅ ACTIVE, MORE TESTS NEEDED.
 - **Circuit Breaker Pattern** (`src/utils/circuit_breaker.py`):
   - Resilient external API calls with automatic recovery
   - Automatic failure detection and recovery
@@ -380,7 +380,7 @@ files = converter._generate_powerbi_formats(df, dataset_info)
   - State management (CLOSED/OPEN/HALF_OPEN)
   - Statistics and monitoring with real-time metrics
 
-#### Real-Time Data Pipeline ✅ OPERATIONAL
+#### Real-Time Data Pipeline ✅ OPERATIONAL, but barebone.
 - **IstatRealTimeDataLoader** (`dashboard/data_loader.py`):
   - Live ISTAT API integration with 509+ datasets
   - Automatic retry mechanism with exponential backoff
@@ -388,7 +388,7 @@ files = converter._generate_powerbi_formats(df, dataset_info)
   - Progress indicators and loading states
   - Graceful fallback to cached data when API unavailable
 
-#### Enhanced Testing Suite ✅ COMPREHENSIVE
+#### Enhanced Testing Suite ✅ COMPREHENSIVE, BUT POOR COVERAGE.
 - **Security Tests** (`tests/unit/test_security_enhanced.py`):
   - 15+ comprehensive security test cases
   - Path validation testing with Windows path support
@@ -396,7 +396,7 @@ files = converter._generate_powerbi_formats(df, dataset_info)
   - Input sanitization validation with injection prevention
   - Authentication system testing with OAuth flow
 
-### 🚀 Dashboard Deployment ✅ LIVE IN PRODUCTION
+### 🚀 Dashboard Deployment ✅ LIVE, BUT BAREBONE.
 - **Live Dashboard**: [https://osservatorio-dashboard.streamlit.app/](https://osservatorio-dashboard.streamlit.app/)
 - **Deployment Guide**: Complete documentation in `STREAMLIT_DEPLOYMENT.md`
 - **Configuration**: Streamlit config optimized for production with security headers
@@ -404,7 +404,7 @@ files = converter._generate_powerbi_formats(df, dataset_info)
 - **Real-Time Data**: Live ISTAT API integration with progress indicators
 - **Error Handling**: Graceful degradation with fallback mechanisms
 
-### 🛡️ Security Implementations ✅ ENTERPRISE-GRADE
+### 🛡️ Security Implementations ✅ BASIC AND NOT FULLY TESTED
 - **API Rate Limiting**:
   - ISTAT API: 50 requests/hour per endpoint (actively enforced)
   - PowerBI API: 100 requests/hour per endpoint (actively enforced)
@@ -423,7 +423,7 @@ files = converter._generate_powerbi_formats(df, dataset_info)
   - Command injection prevention with input validation
   - Path traversal prevention with secure path validation
 
-### 🔧 CI/CD Improvements ✅ FULLY OPERATIONAL
+### 🔧 CI/CD Improvements ✅ OPERATIONAL
 - **GitHub Actions**: Fixed workflow blocking issues with comprehensive testing
 - **Security Scanning**: Integrated Bandit and Safety checks with automated reports
 - **Deployment Pipeline**: Automated testing and deployment with zero-downtime
