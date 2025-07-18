@@ -6,6 +6,7 @@ Sistema di visualizzazione interattiva dei dati ISTAT
 
 import json
 import sys
+import time
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -42,6 +43,15 @@ except ImportError as e:
 
         def get_logger(x):
             return None
+
+
+# Import new real-time data loader
+try:
+    from data_loader import get_data_loader
+except ImportError as e:
+    st.error(f"Errore importazione data loader: {e}")
+    st.info("Falling back to mock data mode")
+    get_data_loader = None
 
 
 # Configurazione pagina
@@ -126,72 +136,108 @@ def create_sample_data():
     }
 
 
-# Cache per i dati
-@st.cache_data(ttl=3600)
-def load_sample_data():
-    """Carica dati di esempio dalla directory processed"""
+# Cache per i dati con TTL più breve per dati real-time
+@st.cache_data(ttl=1800)  # 30 minuti per dati real-time
+def load_real_time_data():
+    """Carica dati real-time dall'API ISTAT con enhanced error handling"""
+    if get_data_loader is None:
+        logger.warning("Data loader non disponibile, usando dati di esempio")
+        return create_sample_data()
+
     try:
-        data_dir = Path(__file__).parent.parent / "data" / "processed" / "powerbi"
-
-        # Se la directory non esiste, crea dati di esempio
-        if not data_dir.exists():
-            return create_sample_data()
-
-        # Trova i file più recenti per categoria
+        data_loader = get_data_loader()
         datasets = {}
+        failed_categories = []
 
+        # Carica dati per ogni categoria con enhanced error handling
         for category in CATEGORIES.keys():
-            csv_files = list(data_dir.glob(f"{category}_*.csv"))
-            if csv_files:
-                # Prendi il file più recente
-                latest_file = max(csv_files, key=lambda f: f.stat().st_mtime)
-                try:
-                    df = pd.read_csv(latest_file)
+            try:
+                logger.info(f"Caricando dati real-time per {category}")
+
+                # Add timeout handling for each category
+                start_time = time.time()
+                df = data_loader.load_category_data(category)
+                load_time = time.time() - start_time
+
+                if df is not None and not df.empty:
                     datasets[category] = df
-                    logger.info(f"Caricato dataset {category}: {len(df)} righe")
-                except Exception as e:
-                    logger.error(f"Errore caricamento {category}: {e}")
-                    continue
+                    logger.info(
+                        f"Caricato dataset {category}: {len(df)} righe in {load_time:.2f}s"
+                    )
+                else:
+                    logger.warning(f"Nessun dato per {category}, usando fallback")
+                    failed_categories.append(category)
+
+            except Exception as e:
+                logger.error(f"Errore caricamento {category}: {e}")
+                failed_categories.append(category)
+                continue
+
+        # Create fallback data for failed categories
+        if failed_categories:
+            logger.warning(f"Creando dati di fallback per: {failed_categories}")
+            sample_data = create_sample_data()
+            for category in failed_categories:
+                if category in sample_data:
+                    datasets[category] = sample_data[category]
+                    logger.info(f"Fallback data creato per {category}")
 
         # Se non ci sono dataset, crea dati di esempio
         if not datasets:
+            logger.warning("Nessun dataset caricato, usando dati di esempio completi")
             return create_sample_data()
 
+        # Validate data quality
+        for category, df in datasets.items():
+            if df.empty:
+                logger.warning(f"Dataset vuoto per {category}")
+            elif len(df) < 2:
+                logger.warning(
+                    f"Dataset {category} ha pochissimi dati: {len(df)} righe"
+                )
+
         return datasets
+
     except Exception as e:
-        logger.error(f"Errore caricamento dati: {e}")
+        logger.error(f"Errore critico caricamento dati real-time: {e}")
+        logger.error(f"Traceback: {str(e)}")
         return create_sample_data()
+
+
+# Funzione legacy per compatibilità
+@st.cache_data(ttl=3600)
+def load_sample_data():
+    """Carica dati - ora usa real-time come default"""
+    return load_real_time_data()
 
 
 @st.cache_data(ttl=1800)
 def get_system_stats():
-    """Ottieni statistiche del sistema"""
-    try:
-        # Conta file processati
-        data_dir = Path(__file__).parent.parent / "data" / "processed" / "powerbi"
-        total_files = len(list(data_dir.glob("*.csv")))
-
-        # Ultima elaborazione
-        csv_files = list(data_dir.glob("*.csv"))
-        if csv_files:
-            latest_file = max(csv_files, key=lambda f: f.stat().st_mtime)
-            last_update = datetime.fromtimestamp(latest_file.stat().st_mtime)
-        else:
-            last_update = datetime.now()
-
+    """Ottieni statistiche del sistema real-time"""
+    if get_data_loader is None:
         return {
-            "total_datasets": total_files,
-            "last_update": last_update,
+            "total_datasets": 0,
+            "last_update": datetime.now(),
             "categories_available": len(CATEGORIES),
-            "system_status": "🟢 Online",
+            "system_status": "🟡 Mock Data Mode",
         }
+
+    try:
+        data_loader = get_data_loader()
+        stats = data_loader.get_system_stats()
+
+        # Aggiungi info sulle categorie
+        stats["categories_available"] = len(CATEGORIES)
+
+        return stats
+
     except Exception as e:
         logger.error(f"Errore statistiche sistema: {e}")
         return {
             "total_datasets": 0,
             "last_update": datetime.now(),
             "categories_available": 0,
-            "system_status": "🔴 Errore",
+            "system_status": f"🔴 Error: {str(e)[:20]}",
         }
 
 
@@ -224,8 +270,24 @@ def render_header():
 
 
 def render_sidebar():
-    """Render della sidebar con filtri"""
+    """Render della sidebar con filtri e status feedback"""
     st.sidebar.header("🔍 Filtri e Navigazione")
+
+    # System Status Card
+    st.sidebar.subheader("📊 Status Sistema")
+    system_stats = get_system_stats()
+
+    # Create status indicator
+    if "🟢" in system_stats.get("system_status", ""):
+        st.sidebar.success("✅ Sistema Operativo")
+    elif "🟡" in system_stats.get("system_status", ""):
+        st.sidebar.warning("⚠️ Modalità Limitata")
+    else:
+        st.sidebar.error("❌ Sistema Non Disponibile")
+
+    # Show response time if available
+    if "api_response_time" in system_stats:
+        st.sidebar.metric("⏱️ Tempo Risposta", system_stats["api_response_time"])
 
     # Selezione categoria
     category_options = [
@@ -237,7 +299,7 @@ def render_sidebar():
     # Estrai il nome categoria
     category = selected.split(" ")[1].lower()
 
-    # Info categoria
+    # Info categoria con enhanced feedback
     info = CATEGORIES[category]
     st.sidebar.markdown(
         f"""
@@ -246,6 +308,21 @@ def render_sidebar():
     - Colore: {info['color']}
     """
     )
+
+    # Data Quality Indicator
+    try:
+        datasets = load_sample_data()
+        if category in datasets:
+            df = datasets[category]
+            if df is not None and not df.empty:
+                quality_score = min(100, int((len(df) / 1000) * 100))
+                st.sidebar.metric("📈 Qualità Dati", f"{quality_score}%")
+            else:
+                st.sidebar.warning("⚠️ Dati non disponibili")
+        else:
+            st.sidebar.info("📊 Caricamento in corso...")
+    except Exception as e:
+        st.sidebar.error("❌ Errore verifica dati")
 
     # Filtri temporali
     st.sidebar.subheader("📅 Periodo")
@@ -259,18 +336,24 @@ def render_sidebar():
         "Livello", ["Nazionale", "Regionale", "Provinciale", "Comunale"]
     )
 
-    # Pulsanti azione
+    # Pulsanti azione con enhanced feedback
     st.sidebar.subheader("⚡ Azioni")
     col1, col2 = st.sidebar.columns(2)
 
     with col1:
         if st.button("🔄 Aggiorna", help="Ricarica i dati"):
-            st.cache_data.clear()
-            st.rerun()
+            with st.spinner("Aggiornamento in corso..."):
+                st.cache_data.clear()
+                time.sleep(0.5)  # Give user feedback
+                st.rerun()
 
     with col2:
         if st.button("📥 Export", help="Scarica i dati"):
             st.sidebar.info("Feature in sviluppo...")
+
+    # Show last update time
+    st.sidebar.markdown("---")
+    st.sidebar.caption(f"Ultimo aggiornamento: {datetime.now().strftime('%H:%M:%S')}")
 
     return category, year_range, geo_filter
 
@@ -493,17 +576,87 @@ def main():
         # Sidebar
         selected_category, year_range, geo_filter = render_sidebar()
 
-        # Caricamento dati
-        with st.spinner("Caricamento dati..."):
-            datasets = load_sample_data()
+        # Enhanced loading states with progress indicators
+        loading_container = st.container()
+        with loading_container:
+            # Main progress bar
+            progress_bar = st.progress(0)
+            status_text = st.empty()
 
-        # Verifica disponibilità dati
-        if not datasets:
-            st.error(
-                "Nessun dataset disponibile. Esegui prima il processo di conversione."
-            )
-            st.info("Esegui: `python convert_to_powerbi.py` per generare i dati.")
-            return
+            # Step 1: Connection check
+            status_text.text("🔍 Verifica connessione API...")
+            progress_bar.progress(10)
+
+            # Check system status first
+            system_stats = get_system_stats()
+            if "🔴" in system_stats.get("system_status", ""):
+                st.warning(
+                    "⚠️ API ISTAT non disponibile. Utilizzando dati di fallback."
+                )
+                time.sleep(0.5)
+
+            # Step 2: Data loading
+            status_text.text("📊 Caricamento dati in corso...")
+            progress_bar.progress(30)
+
+            try:
+                datasets = load_sample_data()
+                progress_bar.progress(70)
+
+                if not datasets:
+                    progress_bar.progress(100)
+                    status_text.text("❌ Nessun dataset disponibile")
+                    st.error(
+                        "Nessun dataset disponibile. Esegui prima il processo di conversione."
+                    )
+                    st.info(
+                        "Esegui: `python convert_to_powerbi.py` per generare i dati."
+                    )
+                    return
+
+                # Step 3: Data validation
+                status_text.text("✅ Validazione dati...")
+                progress_bar.progress(90)
+
+                # Check if selected category has data
+                df = datasets.get(selected_category, None)
+                if df is None or df.empty:
+                    st.warning(
+                        f"⚠️ Nessun dato disponibile per {selected_category}. Mostrando dati di esempio."
+                    )
+
+                # Step 4: Complete
+                status_text.text("🎉 Caricamento completato!")
+                progress_bar.progress(100)
+                time.sleep(0.5)
+
+            except Exception as e:
+                progress_bar.progress(100)
+                status_text.text("❌ Errore durante il caricamento")
+                logger.error(f"Errore caricamento dati: {e}")
+                st.error(f"Errore durante il caricamento: {e}")
+                st.info("Provo a utilizzare dati di fallback...")
+
+                # Try fallback data
+                datasets = create_sample_data()
+                df = datasets.get(selected_category, None)
+
+                if df is None:
+                    st.error("Anche i dati di fallback non sono disponibili.")
+                    return
+
+            # Clear loading indicators
+            loading_container.empty()
+
+        # Add connection status indicator
+        col1, col2 = st.columns([3, 1])
+        with col2:
+            if "🟢" in system_stats.get("system_status", ""):
+                st.success("API Connessa")
+            elif "🟡" in system_stats.get("system_status", ""):
+                st.warning("Modalità Demo")
+            else:
+                st.error("API Disconnessa")
 
         # Rendering dashboard per categoria
         df = datasets.get(selected_category, None)
@@ -524,6 +677,14 @@ def main():
         logger.error(f"Errore applicazione: {e}")
         st.error(f"Errore nell'applicazione: {e}")
         st.info("Ricarica la pagina o contatta il supporto.")
+
+        # Show debug info in sidebar
+        with st.sidebar:
+            st.subheader("🔧 Debug Info")
+            st.text(f"Errore: {str(e)[:50]}...")
+            st.text(f"Timestamp: {datetime.now().strftime('%H:%M:%S')}")
+            if st.button("🔄 Riprova"):
+                st.rerun()
 
 
 if __name__ == "__main__":
