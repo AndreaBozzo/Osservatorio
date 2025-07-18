@@ -2,7 +2,7 @@ name: Deploy Landing Page
 
 on:
   push:
-    branches: [main]
+    branches: [main, feature/dashboard]
     paths:
       - 'dashboard/web/**'
       - '.github/workflows/deploy-landing-page.yml'
@@ -28,10 +28,38 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
+      - name: Check if web directory exists
+        run: |
+          if [ ! -d "dashboard/web" ]; then
+            echo "dashboard/web directory not found. Creating basic structure..."
+            mkdir -p dashboard/web
+            echo "Web directory created."
+          else
+            echo "dashboard/web directory exists."
+            ls -la dashboard/web/
+          fi
+
       - name: Copy landing page files
         run: |
           mkdir -p _site
-          cp -r dashboard/web/* _site/
+          if [ -f "dashboard/web/index.html" ]; then
+            cp dashboard/web/index.html _site/
+            echo "Copied index.html"
+          else
+            echo "index.html not found in dashboard/web/"
+            exit 1
+          fi
+
+          # Copy other web files if they exist
+          if [ -f "dashboard/web/style.css" ]; then
+            cp dashboard/web/style.css _site/
+            echo "Copied style.css"
+          fi
+
+          if [ -f "dashboard/web/script.js" ]; then
+            cp dashboard/web/script.js _site/
+            echo "Copied script.js"
+          fi
 
       - name: Create 404 page
         run: |
@@ -65,6 +93,13 @@ jobs:
           echo "Landing page files:"
           ls -la _site/
           echo "HTML file size: $(wc -c < _site/index.html) bytes"
+          echo "Verifying HTML structure..."
+          if grep -q "<html" _site/index.html; then
+            echo "✅ Valid HTML structure found"
+          else
+            echo "❌ Invalid HTML structure"
+            exit 1
+          fi
 
       - name: Validate HTML
         run: |
