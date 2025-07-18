@@ -1049,7 +1049,6 @@ def cleanup_memory():
 - **[README.md](README.md)**: Project overview and quick start
 - **[ARCHITECTURE.md](ARCHITECTURE.md)**: Detailed system architecture
 - **[API_REFERENCE.md](API_REFERENCE.md)**: Complete API documentation
-- **[PROJECT_AUDIT.md](PROJECT_AUDIT.md)**: Comprehensive project audit
 
 ---
 
