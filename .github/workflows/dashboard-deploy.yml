@@ -117,7 +117,19 @@ jobs:
         run: |
           echo "🚀 Ready for Streamlit Cloud deployment"
           echo "Connect this repository to https://share.streamlit.io/"
-          echo "App path: dashboard/app.py"
+          echo "App path options:"
+          echo "  - Option 1: streamlit_app.py (recommended for cloud)"
+          echo "  - Option 2: dashboard/app.py (direct path)"
+          echo "  - Option 3: debug_streamlit.py (for debugging)"
+          echo ""
+          echo "Files available for deployment:"
+          ls -la *.py || echo "No .py files in root"
+          echo ""
+          echo "Dashboard files:"
+          ls -la dashboard/ || echo "No dashboard directory"
+          echo ""
+          echo "Streamlit config:"
+          ls -la .streamlit/ || echo "No .streamlit directory"
 
       - name: Create deployment badge
         run: |
