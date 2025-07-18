@@ -52,12 +52,12 @@
                     <div class="text-gray-600">Dataset ISTAT</div>
                 </div>
                 <div class="text-center">
-                    <div class="text-4xl font-bold text-green-600 mb-2" id="test-success">192</div>
+                    <div class="text-4xl font-bold text-green-600 mb-2" id="test-success">172</div>
                     <div class="text-gray-600">Test Passing</div>
                 </div>
                 <div class="text-center">
-                    <div class="text-4xl font-bold text-purple-600 mb-2" id="categories">6</div>
-                    <div class="text-gray-600">Categorie Principali</div>
+                    <div class="text-4xl font-bold text-purple-600 mb-2" id="categories">3</div>
+                    <div class="text-gray-600">Categorie Attive</div>
                 </div>
                 <div class="text-center">
                     <div class="text-4xl font-bold text-orange-600 mb-2 pulse-animation" id="status">🟢</div>
@@ -77,7 +77,7 @@
                         <i class="fas fa-chart-bar"></i>
                     </div>
                     <h3 class="text-xl font-semibold mb-4">Visualizzazioni Interattive</h3>
-                    <p class="text-gray-600">Dashboard Streamlit con grafici interattivi per popolazione, economia, lavoro e territorio italiano.</p>
+                    <p class="text-gray-600">Dashboard Streamlit semplificato con focus su economia, popolazione e lavoro italiano.</p>
                 </div>
                 <div class="bg-white p-6 rounded-lg shadow-md card-hover">
                     <div class="text-green-600 text-4xl mb-4">
@@ -91,7 +91,7 @@
                         <i class="fas fa-shield-alt"></i>
                     </div>
                     <h3 class="text-xl font-semibold mb-4">Sicurezza & Qualità</h3>
-                    <p class="text-gray-600">192 test automatici, validazione sicura dei percorsi e controllo qualità dati.</p>
+                    <p class="text-gray-600">172 test automatici, validazione sicura dei percorsi e single entry point.</p>
                 </div>
             </div>
         </div>
@@ -174,7 +174,7 @@
                 <div>
                     <h3 class="text-xl font-semibold mb-4">📊 Qualità del Codice</h3>
                     <ul class="space-y-2 text-gray-600">
-                        <li><i class="fas fa-check text-green-600 mr-2"></i>192 test automatici (100% successo)</li>
+                        <li><i class="fas fa-check text-green-600 mr-2"></i>172 test automatici (attivi)</li>
                         <li><i class="fas fa-check text-green-600 mr-2"></i>Validazione sicurezza percorsi</li>
                         <li><i class="fas fa-check text-green-600 mr-2"></i>Controllo qualità dati integrato</li>
                         <li><i class="fas fa-check text-green-600 mr-2"></i>Documentazione completa</li>
@@ -287,8 +287,8 @@
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
                     animateValue(document.getElementById('dataset-count'), 0, 509, 2000);
-                    animateValue(document.getElementById('test-success'), 0, 192, 1500);
-                    animateValue(document.getElementById('categories'), 0, 6, 1500);
+                    animateValue(document.getElementById('test-success'), 0, 172, 1500);
+                    animateValue(document.getElementById('categories'), 0, 3, 1500);
                 }
             });
         });
