@@ -17,3 +17,7 @@ requests>=2.31.0
 loguru>=0.7.0
 python-dotenv>=1.0.0
 lxml>=4.9.0
+
+# Cloud-specific dependencies
+streamlit-aggrid>=0.3.0
+extra-streamlit-components>=0.1.0

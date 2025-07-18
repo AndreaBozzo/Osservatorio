@@ -230,13 +230,45 @@ def get_system_stats():
 
 def render_header():
     """Render dell'header principale"""
-    st.title("🇮🇹 Osservatorio Dati ISTAT")
+    # Custom CSS for better styling
     st.markdown(
         """
-    ### La piattaforma open-source per l'analisi dei dati statistici italiani
+    <style>
+    .main-header {
+        background: linear-gradient(90deg, #0066CC, #004499);
+        color: white;
+        padding: 2rem;
+        border-radius: 10px;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+    .metric-card {
+        background: white;
+        padding: 1rem;
+        border-radius: 8px;
+        border: 1px solid #e0e0e0;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .stMetric {
+        background: white;
+        padding: 1rem;
+        border-radius: 8px;
+        border: 1px solid #e0e0e0;
+    }
+    </style>
+    """,
+        unsafe_allow_html=True,
+    )
 
-    Esplora oltre **509+ dataset ISTAT** con visualizzazioni interattive e analisi avanzate.
-    """
+    st.markdown(
+        """
+    <div class="main-header">
+        <h1>🇮🇹 Osservatorio Dati ISTAT</h1>
+        <h3>La piattaforma open-source per l'analisi dei dati statistici italiani</h3>
+        <p>Esplora oltre <strong>509+ dataset ISTAT</strong> con visualizzazioni interattive e analisi avanzate.</p>
+    </div>
+    """,
+        unsafe_allow_html=True,
     )
 
     # Metrics row
@@ -258,13 +290,43 @@ def render_header():
 
 def render_sidebar():
     """Render della sidebar con filtri e status feedback"""
-    st.sidebar.header("🔍 Filtri e Navigazione")
+    # Enhanced sidebar styling
+    st.sidebar.markdown(
+        """
+    <style>
+    .sidebar-header {
+        background: #f8f9fa;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        border-left: 4px solid #0066CC;
+    }
+    .category-info {
+        background: white;
+        padding: 1rem;
+        border-radius: 8px;
+        border: 1px solid #e0e0e0;
+        margin: 1rem 0;
+    }
+    </style>
+    """,
+        unsafe_allow_html=True,
+    )
+
+    st.sidebar.markdown(
+        """
+    <div class="sidebar-header">
+        <h3>🔍 Filtri e Navigazione</h3>
+    </div>
+    """,
+        unsafe_allow_html=True,
+    )
 
     # System Status Card
     st.sidebar.subheader("📊 Status Sistema")
     system_stats = get_system_stats()
 
-    # Create status indicator
+    # Create status indicator with enhanced styling
     if "🟢" in system_stats.get("system_status", ""):
         st.sidebar.success("✅ Sistema Operativo")
     elif "🟡" in system_stats.get("system_status", ""):
@@ -554,9 +616,107 @@ def render_footer():
     st.markdown("Made with ❤️ in Italy | Powered by Streamlit")
 
 
+def add_global_css():
+    """Aggiungi CSS globale per migliorare l'aspetto"""
+    st.markdown(
+        """
+    <style>
+    /* Global improvements */
+    .stApp {
+        background: #f8f9fa;
+    }
+
+    /* Hide streamlit branding */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+
+    /* Custom containers */
+    .dashboard-container {
+        background: white;
+        padding: 2rem;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        margin: 1rem 0;
+    }
+
+    /* Improved metrics */
+    [data-testid="metric-container"] {
+        background: white;
+        border: 1px solid #e0e0e0;
+        padding: 1rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    /* Enhanced charts */
+    .plotly-graph-div {
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    /* Better buttons */
+    .stButton > button {
+        background: #0066CC;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 0.5rem 1rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .stButton > button:hover {
+        background: #004499;
+        transform: translateY(-2px);
+    }
+
+    /* Improved sidebar */
+    .stSidebar {
+        background: #f8f9fa;
+    }
+
+    /* Better selectbox */
+    .stSelectbox > div > div {
+        background: white;
+        border-radius: 8px;
+    }
+
+    /* Responsive design */
+    @media (max-width: 768px) {
+        .dashboard-container {
+            padding: 1rem;
+        }
+
+        .main-header {
+            padding: 1rem !important;
+        }
+    }
+    </style>
+    """,
+        unsafe_allow_html=True,
+    )
+
+
 def main():
     """Funzione principale dell'app"""
     try:
+        # Add global CSS
+        add_global_css()
+
+        # Add metadata for better SEO and sharing
+        st.markdown(
+            """
+        <meta name="description" content="Osservatorio ISTAT - Piattaforma open-source per l'analisi dei dati statistici italiani">
+        <meta name="keywords" content="ISTAT, dati statistici, Italia, visualizzazione dati, dashboard, open source">
+        <meta name="author" content="Andrea Bozzo">
+        <meta property="og:title" content="Osservatorio ISTAT - Dashboard Dati Statistici">
+        <meta property="og:description" content="Esplora oltre 509+ dataset ISTAT con visualizzazioni interattive">
+        <meta property="og:type" content="website">
+        <meta property="twitter:card" content="summary_large_image">
+        """,
+            unsafe_allow_html=True,
+        )
+
         # Header
         render_header()
 
