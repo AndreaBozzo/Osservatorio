@@ -1,0 +1,2 @@
+# System packages for Streamlit Cloud
+# This file helps with cloud deployment compatibility
