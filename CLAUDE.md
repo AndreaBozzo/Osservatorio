@@ -1,13 +1,16 @@
-# CLAUDE.md
+# CLAUDE.md - Developer Context & Commands
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Overview
 
-This is an Italian data processing system for ISTAT (Italian National Institute of Statistics) data with Tableau/Power Bi integration. The system fetches, processes, and converts ISTAT statistical data into Tableau/Power BI- friendly formats for visualization and analysis. The project aims to
-evolve further as a real civic tech tool. Roadmap may still vary.
+This is an Italian data processing system for ISTAT (Italian National Institute of Statistics) data with Tableau/Power BI integration. The system fetches, processes, and converts ISTAT statistical data into formats suitable for visualization and analysis.
 
-Refer to PROJECT_STATE.md for developing context before making any change to the codebase, assumptions, when made, have to still be realistical based on the real implementation of the code.
+**Current Status**: Working prototype with basic dashboard functionality
+
+**Documentation**: See [docs/README.md](docs/README.md) for organized documentation
+
+**Important**: Always refer to [PROJECT_STATE.md](PROJECT_STATE.md) for current development context before making any changes to the codebase.
 
 ## Development Commands
 
@@ -77,29 +80,27 @@ Refer to PROJECT_STATE.md for developing context before making any change to the
 
 ## Project Architecture
 
-### Core Components, again, many from the basic implementation
-### there's overlap in some functionalities but we'll look into
-### those during the development.
+### Core Components
 
 1. **Data Pipeline Flow**:
    - `src/api/istat_api.py` - ISTAT SDMX API client and data fetcher
-   - `src/analyzers/dataflow_analyzer.py` - Analyzes 509+ available ISTAT dataflows and categorizes them
-   - `src/converters/tableau_converter.py` - Main converter that transforms SDMX XML to CSV/Excel/JSON formats
-   - `src/converters/powerbi_converter.py` - PowerBI converter that transforms SDMX XML to PowerBI-optimized formats (CSV, Excel, Parquet, JSON)
+   - `src/analyzers/dataflow_analyzer.py` - Analyzes available ISTAT dataflows and categorizes them
+   - `src/converters/tableau_converter.py` - Converter for Tableau formats (CSV/Excel/JSON)
+   - `src/converters/powerbi_converter.py` - PowerBI converter (CSV, Excel, Parquet, JSON)
    - `convert_to_tableau.py` - Wrapper script for Tableau conversions
    - `convert_to_powerbi.py` - Wrapper script for PowerBI conversions
-   - `src/api/powerbi_api.py` - PowerBI REST API client for workspace and dataset management
-   - `src/scrapers/tableau_scraper.py` - Tableau server integration and configuration analysis
+   - `src/api/powerbi_api.py` - PowerBI REST API client
+   - `src/scrapers/tableau_scraper.py` - Tableau server integration
 
 2. **Data Processing Architecture**:
    - Raw ISTAT data is fetched via SDMX API endpoints
    - XML data is parsed and categorized by topic (popolazione, economia, lavoro, territorio, istruzione, salute)
-   - Data is cleaned, standardized, and converted to multiple formats for Tableau/Power Bi import
-   - Automatic generation of Tableau/Power BI import instructions and metadata
-   - **New**: Direct XML content parsing with `_parse_xml_content()` methods
-   - **New**: Automatic dataset categorization with priority scoring system
-   - **New**: Data quality validation with completeness and quality scoring
-   - **New**: Programmatic conversion APIs for both PowerBI and Tableau
+   - Data is cleaned, standardized, and converted to multiple formats
+   - Basic generation of import instructions and metadata
+   - Direct XML content parsing with `_parse_xml_content()` methods
+   - Automatic dataset categorization with priority scoring
+   - Data quality validation with completeness scoring
+   - Programmatic conversion APIs for both PowerBI and Tableau
 
 3. **Configuration System**:
    - `src/utils/config.py` - Centralized configuration management with environment variables
@@ -356,15 +357,15 @@ files = converter._generate_powerbi_formats(df, dataset_info)
 - **New**: To validate data quality: Use `_validate_data_quality()` method for quality assessment
 - **New**: To categorize datasets: Use `_categorize_dataset()` for automatic categorization with priority
 
-## Recent Updates (January 2025) - WEEK 1-3 COMPLETED
+## Recent Updates (January 2025)
 
-### 🎯 Major Week 1-3 Achievements
-- **✅ Dashboard Live**: [https://osservatorio-dashboard.streamlit.app/](https://osservatorio-dashboard.streamlit.app/)
-- **✅ Security Hardening**: Complete SecurityManager implementation with enterprise-grade features
-- **✅ CI/CD Fixed**: GitHub Actions workflow fully operational with automated testing
-- **✅ Rate Limiting**: API protection implemented across all endpoints (ISTAT: 50 req/hr, PowerBI: 100 req/hr)
-- **✅ Real Data Pipeline**: Live ISTAT API integration with 509+ datasets
-- **✅ Performance Optimization**: Caching system with 30min TTL and loading states
+### Major Achievements
+- **Dashboard Live**: [https://osservatorio-dashboard.streamlit.app/](https://osservatorio-dashboard.streamlit.app/)
+- **Security Implementation**: SecurityManager with path validation and rate limiting
+- **CI/CD Setup**: GitHub Actions workflow with automated testing
+- **Rate Limiting**: Basic API protection (ISTAT: 50 req/hr, PowerBI: 100 req/hr)
+- **Data Pipeline**: ISTAT API integration with available datasets
+- **Performance**: Caching system with 30min TTL
 
 ### 🔧 Core Components Status
 
@@ -438,11 +439,11 @@ files = converter._generate_powerbi_formats(df, dataset_info)
 ## Previous Updates (July 2025)
 
 ### Major Enhancements
-- **Complete Test Suite Fix**: All 173 tests now pass (139 unit + 26 integration + 8 performance)
-- **New Converter APIs**: Added programmatic APIs for both PowerBI and Tableau converters
-- **Enhanced Security**: Full integration of SecurePathValidator across all file operations
-- **Data Quality Validation**: New comprehensive data quality assessment system
-- **Auto-Categorization**: Automatic dataset categorization with priority scoring
+- **Test Suite**: 173 tests implemented (139 unit + 26 integration + 8 performance)
+- **Converter APIs**: Programmatic APIs for both PowerBI and Tableau converters
+- **Security**: Integration of SecurePathValidator across file operations
+- **Data Quality**: Basic data quality assessment system
+- **Auto-Categorization**: Dataset categorization with priority scoring
 
 ### New Methods Added
 - `convert_xml_to_powerbi()` and `convert_xml_to_tableau()` - Main conversion APIs
@@ -452,21 +453,21 @@ files = converter._generate_powerbi_formats(df, dataset_info)
 - `_generate_powerbi_formats()` and `_generate_tableau_formats()` - Multi-format generation
 
 ### Testing Improvements
-- **Unit Tests**: 139 tests (up from 89) with 100% success rate
-- **Integration Tests**: 26 comprehensive system tests
-- **Performance Tests**: 8 scalability and performance benchmarks
-- **Test Coverage**: Complete coverage of all new APIs and methods
+- **Unit Tests**: 139 tests covering core functionality
+- **Integration Tests**: 26 system integration tests
+- **Performance Tests**: 8 basic performance benchmarks
+- **Test Coverage**: Coverage of main APIs and methods
 
-### Security Enhancements (UPDATED January 2025)
-- **SecurityManager Class**: Centralized security management with path validation and rate limiting
-- **Circuit Breaker Pattern**: Resilient system design for external API calls
-- **Rate Limiting**: Implemented on ISTAT API (50 req/hr) and PowerBI API (100 req/hr)
-- **Path Traversal Protection**: Comprehensive validation against directory traversal attacks
-- **Input Sanitization**: Automatic sanitization of user inputs to prevent injection attacks
-- **Security Headers**: HTTP security headers for dashboard deployment
-- **Password Hashing**: Secure password handling with PBKDF2 and salt
-- **IP Blocking**: Automatic IP blocking for suspicious activities
-- Enhanced error handling with secure error messages
+### Security Enhancements
+- **SecurityManager Class**: Basic security management with path validation and rate limiting
+- **Circuit Breaker Pattern**: Basic resilience for external API calls
+- **Rate Limiting**: Basic implementation on ISTAT API (50 req/hr) and PowerBI API (100 req/hr)
+- **Path Traversal Protection**: Basic validation against directory traversal attacks
+- **Input Sanitization**: Basic sanitization of user inputs
+- **Security Headers**: HTTP security headers for dashboard
+- **Password Hashing**: Basic password handling with PBKDF2
+- **IP Blocking**: Basic IP blocking for suspicious activities
+- Basic error handling with secure error messages
 - XML parsing security improvements
-- Path validation integration in all converter methods
-- Secure file operations across all new functionality
+- Path validation integration in converter methods
+- Secure file operations

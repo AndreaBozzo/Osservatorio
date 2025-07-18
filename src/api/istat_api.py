@@ -5,11 +5,12 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 import pandas as pd
 import requests
-import seaborn as sns
 
 from ..utils.secure_path import create_secure_validator
 from ..utils.security_enhanced import rate_limit, security_manager
 from ..utils.temp_file_manager import get_temp_manager
+
+# seaborn removed - using matplotlib directly
 
 
 class IstatAPITester:
@@ -480,7 +481,7 @@ class IstatAPITester:
             df = pd.json_normalize(observations)
 
             # Configura stile grafici
-            plt.style.use("seaborn-v0_8")
+            plt.style.use("default")
             fig, axes = plt.subplots(2, 2, figsize=(15, 10))
             fig.suptitle(
                 f"Anteprima Dati ISTAT - Dataset {dataset_id}",

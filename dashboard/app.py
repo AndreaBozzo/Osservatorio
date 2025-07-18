@@ -15,46 +15,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 
-# Aggiungi src al path per import locali
-current_dir = Path(__file__).parent
-project_root = current_dir.parent
-sys.path.insert(0, str(project_root / "src"))
-sys.path.insert(0, str(project_root))
-
-# Import robusto con fallback
-try:
-    from api.istat_api import IstatAPITester
-    from converters.powerbi_converter import IstatXMLToPowerBIConverter
-    from utils.logger import get_logger
-except ImportError as e:
-    try:
-        # Fallback per Streamlit Cloud
-        from src.api.istat_api import IstatAPITester
-        from src.converters.powerbi_converter import IstatXMLToPowerBIConverter
-        from src.utils.logger import get_logger
-    except ImportError as e2:
-        st.error(f"Errore importazione moduli: {e}")
-        st.info(
-            "Nota: Alcuni moduli potrebbero non essere disponibili in questo ambiente"
-        )
-        # Continua senza i moduli per permettere il caricamento base
-        IstatAPITester = None
-        IstatXMLToPowerBIConverter = None
-
-        def get_logger(x):
-            return None
-
-
-# Import new real-time data loader
-try:
-    from data_loader import get_data_loader
-except ImportError as e:
-    st.error(f"Errore importazione data loader: {e}")
-    st.info("Falling back to mock data mode")
-    get_data_loader = None
-
-
-# Configurazione pagina
+# Configurazione pagina - DEVE essere il primo comando Streamlit
 st.set_page_config(
     page_title="🇮🇹 Osservatorio ISTAT",
     page_icon="🇮🇹",
@@ -66,6 +27,30 @@ st.set_page_config(
         "About": "Osservatorio ISTAT - Sistema di visualizzazione dati statistici italiani",
     },
 )
+
+# Aggiungi src al path per import locali
+current_dir = Path(__file__).parent
+project_root = current_dir.parent
+sys.path.insert(0, str(project_root / "src"))
+sys.path.insert(0, str(project_root))
+
+# Import robusto con fallback - disabilito import problematici per ora
+# I moduli src/ hanno import relativi che non funzionano da dashboard
+IstatAPITester = None
+IstatXMLToPowerBIConverter = None
+
+
+def get_logger(x):
+    return None
+
+
+# Import new real-time data loader
+try:
+    from data_loader import get_data_loader
+except ImportError as e:
+    st.error(f"Errore importazione data loader: {e}")
+    st.info("Falling back to mock data mode")
+    get_data_loader = None
 
 # Logger con fallback
 try:
@@ -91,12 +76,14 @@ if logger is None:
 
 # Costanti
 CATEGORIES = {
-    "popolazione": {"emoji": "🏘️", "priority": 10, "color": "#FF6B6B"},
+    # Only economia has working datasets as of Week 4 fixes
     "economia": {"emoji": "💰", "priority": 9, "color": "#4ECDC4"},
-    "lavoro": {"emoji": "👥", "priority": 8, "color": "#45B7D1"},
-    "territorio": {"emoji": "🏛️", "priority": 7, "color": "#96CEB4"},
-    "istruzione": {"emoji": "🎓", "priority": 6, "color": "#FECA57"},
-    "salute": {"emoji": "🏥", "priority": 5, "color": "#FF9FF3"},
+    # Other categories commented out until dataset discovery is implemented
+    # "popolazione": {"emoji": "🏘️", "priority": 10, "color": "#FF6B6B"},
+    # "lavoro": {"emoji": "👥", "priority": 8, "color": "#45B7D1"},
+    # "territorio": {"emoji": "🏛️", "priority": 7, "color": "#96CEB4"},
+    # "istruzione": {"emoji": "🎓", "priority": 6, "color": "#FECA57"},
+    # "salute": {"emoji": "🏥", "priority": 5, "color": "#FF9FF3"},
 }
 
 

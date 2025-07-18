@@ -4,6 +4,7 @@ Real-time data loader for ISTAT API integration
 Replaces mock data with real ISTAT API calls
 """
 
+import concurrent.futures
 import json
 import sys
 import time
@@ -58,29 +59,32 @@ class IstatRealTimeDataLoader:
         self.cache = {}
         self.cache_ttl = 3600  # 1 hour cache
 
-        # Dataset mappings for known working datasets
+        # Dataset mappings for VERIFIED working datasets (tested 2025-01-18)
         self.dataset_mappings = {
-            "popolazione": [
-                {"id": "DCIS_POPRES1", "name": "Popolazione residente"},
-                {"id": "DCIS_POPSTRRES1", "name": "Popolazione per struttura"},
-            ],
             "economia": [
                 {"id": "101_148", "name": "Risultati economici delle aziende agricole"},
                 {"id": "124_1157", "name": "Conto economico delle università"},
+                {"id": "124_322", "name": "Conto economico delle camere di commercio"},
+                {"id": "124_722", "name": "Conto economico delle Asl"},
             ],
-            "lavoro": [
-                {"id": "DCIS_OCCUPATI1", "name": "Occupati"},
-                {"id": "DCIS_DISOCCUPATI1", "name": "Disoccupati"},
-            ],
-            "territorio": [
-                {"id": "DCIS_TERRITORIO1", "name": "Dati territoriali"},
-            ],
-            "istruzione": [
-                {"id": "DCIS_ISTRUZIONE1", "name": "Dati istruzione"},
-            ],
-            "salute": [
-                {"id": "DCIS_SALUTE1", "name": "Dati sanitari"},
-            ],
+            # NOTE: DCIS_* IDs return 404 errors - removed until fixed
+            # "popolazione": [
+            #     {"id": "DCIS_POPRES1", "name": "Popolazione residente"},  # 404 ERROR
+            #     {"id": "DCIS_POPSTRRES1", "name": "Popolazione per struttura"},  # 404 ERROR
+            # ],
+            # "lavoro": [
+            #     {"id": "DCIS_OCCUPATI1", "name": "Occupati"},  # UNVERIFIED
+            #     {"id": "DCIS_DISOCCUPATI1", "name": "Disoccupati"},  # UNVERIFIED
+            # ],
+            # "territorio": [
+            #     {"id": "DCIS_TERRITORIO1", "name": "Dati territoriali"},  # UNVERIFIED
+            # ],
+            # "istruzione": [
+            #     {"id": "DCIS_ISTRUZIONE1", "name": "Dati istruzione"},  # UNVERIFIED
+            # ],
+            # "salute": [
+            #     {"id": "DCIS_SALUTE1", "name": "Dati sanitari"},  # UNVERIFIED
+            # ],
         }
 
     def _log(self, level: str, message: str):
@@ -238,27 +242,36 @@ class IstatRealTimeDataLoader:
             # Common SDMX patterns for observations
             observations = []
 
-            # Try different XML patterns
-            obs_elements = root.findall('.//*[local-name()="Obs"]')
+            # Try different XML patterns with namespace-agnostic approach
+            # Fix: Replace local-name() with Python-based filtering (ElementTree doesn't support local-name)
+            obs_elements = []
+            for elem in root.iter():
+                if elem.tag.endswith("}Obs") or elem.tag == "Obs":
+                    obs_elements.append(elem)
+
             if not obs_elements:
-                obs_elements = root.findall('.//*[local-name()="Observation"]')
+                for elem in root.iter():
+                    if elem.tag.endswith("}Observation") or elem.tag == "Observation":
+                        obs_elements.append(elem)
 
             for obs in obs_elements:
                 obs_data = {}
 
-                # Get dimensions
-                for dim in obs.findall('.//*[local-name()="Dimension"]'):
-                    key = dim.get("id") or dim.get("concept")
-                    value = dim.get("value")
-                    if key and value:
-                        obs_data[key] = value
+                # Get dimensions - namespace-agnostic
+                for dim in obs.iter():
+                    if dim.tag.endswith("}Dimension") or dim.tag == "Dimension":
+                        key = dim.get("id") or dim.get("concept")
+                        value = dim.get("value")
+                        if key and value:
+                            obs_data[key] = value
 
-                # Get attributes
-                for attr in obs.findall('.//*[local-name()="Attribute"]'):
-                    key = attr.get("id") or attr.get("concept")
-                    value = attr.get("value")
-                    if key and value:
-                        obs_data[key] = value
+                # Get attributes - namespace-agnostic
+                for attr in obs.iter():
+                    if attr.tag.endswith("}Attribute") or attr.tag == "Attribute":
+                        key = attr.get("id") or attr.get("concept")
+                        value = attr.get("value")
+                        if key and value:
+                            obs_data[key] = value
 
                 # Get observation value
                 obs_value = obs.get("value")
@@ -328,6 +341,41 @@ class IstatRealTimeDataLoader:
 
         return None
 
+    def _fetch_single_dataset(
+        self, dataset_info: Dict[str, str]
+    ) -> Optional[pd.DataFrame]:
+        """Fetch a single dataset with fast failure"""
+        try:
+            dataset_id = dataset_info["id"]
+            dataset_name = dataset_info["name"]
+
+            # Check cache first
+            cache_key = f"dataset_{dataset_id}"
+            cached_data = self._get_from_cache(cache_key)
+            if cached_data is not None:
+                return cached_data
+
+            # Fast API call with reduced timeout
+            data_url = f"{self.base_url}data/IT1/{dataset_id}"
+            response = self._make_api_request(data_url, timeout=8, max_retries=1)
+
+            if response:
+                df = self._parse_xml_to_dataframe(response.content)
+                if df is not None and not df.empty:
+                    df["dataset_id"] = dataset_id
+                    df["dataset_name"] = dataset_name
+                    self._set_cache(cache_key, df)
+                    return df
+
+            return None
+
+        except Exception as e:
+            self._log(
+                "error",
+                f"Error fetching dataset {dataset_info.get('id', 'unknown')}: {e}",
+            )
+            return None
+
     def _create_fallback_data(self, category: str) -> pd.DataFrame:
         """Create fallback data when API fails"""
         current_year = datetime.now().year
@@ -389,7 +437,7 @@ class IstatRealTimeDataLoader:
             )
 
     def load_category_data(self, category: str) -> pd.DataFrame:
-        """Load data for a specific category"""
+        """Load data for a specific category with parallel processing"""
         self._log("info", f"Loading data for category: {category}")
 
         # Get known datasets for this category
@@ -401,23 +449,30 @@ class IstatRealTimeDataLoader:
 
         combined_data = []
 
-        for dataset in datasets[:2]:  # Limit to 2 datasets per category
-            dataset_id = dataset["id"]
+        # Use ThreadPoolExecutor for parallel loading
+        with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
+            # Submit all dataset fetch tasks
+            future_to_dataset = {
+                executor.submit(self._fetch_single_dataset, dataset): dataset
+                for dataset in datasets[:3]  # Limit to 3 datasets per category
+            }
 
-            self._log("info", f"Trying to load dataset: {dataset_id}")
-
-            df = self._get_dataset_data(dataset_id)
-
-            if df is not None and not df.empty:
-                combined_data.append(df)
-                self._log(
-                    "info", f"Successfully loaded {len(df)} rows from {dataset_id}"
-                )
-            else:
-                self._log("warning", f"Failed to load dataset: {dataset_id}")
-
-            # Rate limiting
-            time.sleep(2)
+            # Collect results with timeout
+            for future in concurrent.futures.as_completed(
+                future_to_dataset, timeout=15
+            ):
+                dataset = future_to_dataset[future]
+                try:
+                    df = future.result()
+                    if df is not None and not df.empty:
+                        combined_data.append(df)
+                        self._log(
+                            "info",
+                            f"Successfully loaded {len(df)} rows from {dataset['id']}",
+                        )
+                except Exception as e:
+                    self._log("error", f"Dataset {dataset['id']} failed: {e}")
+                    continue
 
         if combined_data:
             # Combine all datasets

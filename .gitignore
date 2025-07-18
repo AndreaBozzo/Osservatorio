@@ -65,6 +65,9 @@ data/reports/*
 !data/cache/.gitkeep
 !data/reports/.gitkeep
 
+# Keep essential structure files
+!data/processed/tableau/QUICK_START.txt
+
 # Generated files with timestamps
 *_20*.csv
 *_20*.xlsx
@@ -74,6 +77,12 @@ data/reports/*
 *_20*.html
 *_20*.xml
 *.har
+
+# Dashboard specific files
+monitor_*.json
+security-report.json
+*.log
+*.log.*
 
 # ISTAT specific generated files
 sample_*.xml
@@ -86,6 +95,7 @@ istat_api_test_report_*.json
 tableau_import_instructions_*.md
 powerbi_integration_guide_*.md
 tableau_istat_datasets_*.json
+powerbi_istat_datasets_*.json
 istat_prep_flow_*.json
 istat_strategy.json
 tableau_config.json
@@ -123,3 +133,117 @@ htmlcov/
 .mypy_cache/
 .dmypy.json
 dmypy.json
+
+# Streamlit
+.streamlit/
+
+# Security and monitoring
+security-report.json
+*.har
+
+# Documentation build files
+docs/_build/
+docs/build/
+
+# IDE specific
+.vscode/settings.json
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/dictionaries/
+.idea/vcs.xml
+.idea/jsLibraryMappings.xml
+.idea/datasources.xml
+.idea/dataSources.ids
+.idea/sqlDataSources.xml
+.idea/dynamic.xml
+.idea/uiDesigner.xml
+.idea/gradle.xml
+.idea/libraries/
+.idea/mongoSettings.xml
+.idea/artifacts/
+.idea/compiler.xml
+.idea/copyright/
+.idea/modules.xml
+.idea/scopes/
+.idea/deployment.xml
+.idea/encodings.xml
+.idea/misc.xml
+.idea/runConfigurations.xml
+.idea/inspectionProfiles/
+.idea/codeStyles/
+.idea/navEditor.xml
+.idea/shelf/
+.idea/aws.xml
+.idea/usage.statistics.xml
+.idea/sonarlint/
+.idea/jarRepositories.xml
+.idea/csv-plugin.xml
+.idea/other.xml
+.idea/highlightedFiles.xml
+.idea/markdown-navigator.xml
+.idea/markdown-navigator-enh.xml
+.idea/markdown-navigator/
+.idea/httpRequests/
+.idea/caches/
+.idea/projectSettingsUpdater.xml
+.idea/azure/
+.idea/git_toolbox_prj.xml
+.idea/discord.xml
+.idea/saveactions_settings.xml
+.idea/prettier.xml
+.idea/webResources.xml
+.idea/jsLinters/
+.idea/php.xml
+.idea/blade.xml
+.idea/sqldialects.xml
+.idea/laravel-plugin.xml
+.idea/php-test-framework.xml
+.idea/php-docker-settings.xml
+.idea/codestream.xml
+.idea/remote-mappings.xml
+.idea/webServers.xml
+.idea/deployment.xml
+.idea/php-inspections-ea.xml
+.idea/symfony2.xml
+.idea/vagrant.xml
+.idea/composerJson.xml
+.idea/dataSources/
+.idea/dbnavigator.xml
+
+# Windows specific
+*.lnk
+ehthumbs_vista.db
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.appx
+*.appxbundle
+*.appxupload
+
+# MacOS specific
+.AppleDouble
+.LSOverride
+Icon
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Linux specific
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
