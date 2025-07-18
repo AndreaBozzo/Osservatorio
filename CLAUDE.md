@@ -4,13 +4,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is an Italian data processing system for ISTAT (Italian National Institute of Statistics) data with Tableau/Power Bi integration. The system fetches, processes, and converts ISTAT statistical data into Tableau/Power BI- friendly formats for visualization and analysis.
+This is an Italian data processing system for ISTAT (Italian National Institute of Statistics) data with Tableau/Power Bi integration. The system fetches, processes, and converts ISTAT statistical data into Tableau/Power BI- friendly formats for visualization and analysis. The project aims to
+evolve further as a real civic tech tool. Roadmap may still vary.
 
 Refer to PROJECT_STATE.md for developing context before making any change to the codebase, assumptions, when made, have to still be realistical based on the real implementation of the code.
 
 ## Development Commands
 
-### Core Commands
+### Core Commands, many from the first implementation of the project
+### We'll look into these very closely during the development
 - `python convert_to_tableau.py` - Main conversion script to convert ISTAT XML data to Tableau formats
 - `python convert_to_powerbi.py` - Convert ISTAT XML data to PowerBI formats (CSV, Excel, Parquet, JSON)
 - `python src/api/istat_api.py` - Test ISTAT API connectivity and data access
@@ -75,7 +77,9 @@ Refer to PROJECT_STATE.md for developing context before making any change to the
 
 ## Project Architecture
 
-### Core Components
+### Core Components, again, many from the basic implementation
+### there's overlap in some functionalities but we'll look into
+### those during the development.
 
 1. **Data Pipeline Flow**:
    - `src/api/istat_api.py` - ISTAT SDMX API client and data fetcher
@@ -142,7 +146,8 @@ Refer to PROJECT_STATE.md for developing context before making any change to the
   - `integration/` - Integration tests for system components (26 tests)
   - `performance/` - Performance and scalability tests (8 tests)
 
-### Key Data Flow Categories
+### Key Data Flow Categories, this might be a residual from the very
+### first data pull from ISTAT API, from an SDGs, we'll look into this
 The system categorizes ISTAT data into 7 main areas with priority scoring:
 1. **Popolazione** (Population) - Priority 10
 2. **Economia** (Economy) - Priority 9
