@@ -15,6 +15,7 @@ import requests
 from ..utils.config import Config
 from ..utils.logger import get_logger
 from ..utils.secure_path import SecurePathValidator, create_secure_validator
+from ..utils.security_enhanced import rate_limit, security_manager
 
 logger = get_logger(__name__)
 
@@ -114,12 +115,19 @@ class PowerBIAPIClient:
             return self.authenticate()
         return True
 
+    @rate_limit(max_requests=100, window=3600)  # 100 requests per hour
     def get_workspaces(self) -> List[Dict[str, Any]]:
         """Recupera lista dei workspace disponibili."""
         if not self._ensure_authenticated():
             return []
 
         try:
+            # Rate limiting check
+            if not security_manager.rate_limit(
+                "powerbi_api_workspaces", max_requests=100, window=3600
+            ):
+                raise Exception("Rate limit exceeded for PowerBI API workspaces")
+
             response = self.session.get(f"{self.base_url}/groups")
             response.raise_for_status()
 
@@ -131,6 +139,7 @@ class PowerBIAPIClient:
             logger.error(f"Errore recupero workspace: {e}")
             return []
 
+    @rate_limit(max_requests=100, window=3600)  # 100 requests per hour
     def get_datasets(self, workspace_id: Optional[str] = None) -> List[Dict[str, Any]]:
         """Recupera lista dei dataset nel workspace."""
         if not self._ensure_authenticated():
@@ -142,6 +151,12 @@ class PowerBIAPIClient:
             return []
 
         try:
+            # Rate limiting check
+            if not security_manager.rate_limit(
+                "powerbi_api_datasets", max_requests=100, window=3600
+            ):
+                raise Exception("Rate limit exceeded for PowerBI API datasets")
+
             response = self.session.get(
                 f"{self.base_url}/groups/{workspace_id}/datasets"
             )

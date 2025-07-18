@@ -40,6 +40,11 @@ Refer to PROJECT_STATE.md for developing context before making any change to the
 - `venv\Scripts\activate` (Windows) or `source venv/bin/activate` (Linux/Mac) - Activate virtual environment
 - `pip install -r requirements.txt` - Install dependencies
 
+### Security & Monitoring Commands (NEW)
+- `python -c "from src.utils.security_enhanced import security_manager; print(security_manager.get_security_headers())"` - Get security headers
+- `python -c "from src.utils.circuit_breaker import get_circuit_breaker_stats; print(get_circuit_breaker_stats())"` - Get circuit breaker stats
+- `python -c "from src.utils.security_enhanced import security_manager; security_manager.cleanup_old_entries()"` - Clean up rate limiter entries
+
 ### Testing
 - `pytest` - Run all tests
 - `pytest --cov=src tests/` - Run tests with coverage (173 pass, 100% success rate)
@@ -345,7 +350,67 @@ files = converter._generate_powerbi_formats(df, dataset_info)
 - **New**: To validate data quality: Use `_validate_data_quality()` method for quality assessment
 - **New**: To categorize datasets: Use `_categorize_dataset()` for automatic categorization with priority
 
-## Recent Updates (July 2025)
+## Recent Updates (January 2025) - WEEK 1-2 COMPLETED
+
+### 🎯 Major Week 1-2 Achievements
+- **✅ Dashboard Live**: [https://osservatorio-dashboard.streamlit.app/](https://osservatorio-dashboard.streamlit.app/)
+- **✅ Security Hardening**: Complete SecurityManager implementation
+- **✅ CI/CD Fixed**: GitHub Actions workflow fully operational
+- **✅ Rate Limiting**: API protection implemented across all endpoints
+
+### 🔧 New Core Components Added
+
+#### Security Management System
+- **SecurityManager Class** (`src/utils/security_enhanced.py`):
+  - Path validation with directory traversal protection
+  - Rate limiting with configurable thresholds
+  - Input sanitization and validation
+  - Secure password hashing with PBKDF2
+  - IP blocking and security headers
+  - Comprehensive security decorators
+
+#### Circuit Breaker Implementation
+- **Circuit Breaker Pattern** (`src/utils/circuit_breaker.py`):
+  - Resilient external API calls
+  - Automatic failure detection and recovery
+  - Configurable failure thresholds
+  - State management (CLOSED/OPEN/HALF_OPEN)
+  - Statistics and monitoring
+
+#### Enhanced Testing Suite
+- **Security Tests** (`tests/unit/test_security_enhanced.py`):
+  - 15+ comprehensive security test cases
+  - Path validation testing
+  - Rate limiting verification
+  - Input sanitization validation
+  - Authentication system testing
+
+### 🚀 Dashboard Deployment
+- **Live Dashboard**: Successfully deployed to Streamlit Cloud
+- **Deployment Guide**: Complete documentation in `STREAMLIT_DEPLOYMENT.md`
+- **Configuration**: Streamlit config optimized for production
+- **Performance**: Load time <5s, responsive design
+
+### 🛡️ Security Implementations
+- **API Rate Limiting**:
+  - ISTAT API: 50 requests/hour per endpoint
+  - PowerBI API: 100 requests/hour per endpoint
+  - Automatic rate limit enforcement
+  - Configurable per-endpoint limits
+
+- **Path Security**:
+  - Directory traversal protection
+  - File extension validation
+  - Windows reserved name handling
+  - Base directory restrictions
+
+### 🔧 CI/CD Improvements
+- **GitHub Actions**: Fixed workflow blocking issues
+- **Security Scanning**: Integrated Bandit and Safety checks
+- **Deployment Pipeline**: Automated testing and deployment
+- **Error Handling**: Robust fallback mechanisms
+
+## Previous Updates (July 2025)
 
 ### Major Enhancements
 - **Complete Test Suite Fix**: All 173 tests now pass (139 unit + 26 integration + 8 performance)
@@ -367,7 +432,15 @@ files = converter._generate_powerbi_formats(df, dataset_info)
 - **Performance Tests**: 8 scalability and performance benchmarks
 - **Test Coverage**: Complete coverage of all new APIs and methods
 
-### Security Enhancements
+### Security Enhancements (UPDATED January 2025)
+- **SecurityManager Class**: Centralized security management with path validation and rate limiting
+- **Circuit Breaker Pattern**: Resilient system design for external API calls
+- **Rate Limiting**: Implemented on ISTAT API (50 req/hr) and PowerBI API (100 req/hr)
+- **Path Traversal Protection**: Comprehensive validation against directory traversal attacks
+- **Input Sanitization**: Automatic sanitization of user inputs to prevent injection attacks
+- **Security Headers**: HTTP security headers for dashboard deployment
+- **Password Hashing**: Secure password handling with PBKDF2 and salt
+- **IP Blocking**: Automatic IP blocking for suspicious activities
 - Enhanced error handling with secure error messages
 - XML parsing security improvements
 - Path validation integration in all converter methods

@@ -8,6 +8,7 @@ import requests
 import seaborn as sns
 
 from ..utils.secure_path import create_secure_validator
+from ..utils.security_enhanced import rate_limit, security_manager
 from ..utils.temp_file_manager import get_temp_manager
 
 
@@ -30,9 +31,16 @@ class IstatAPITester:
 
         self.path_validator = create_secure_validator(os.getcwd())
 
+    @rate_limit(max_requests=50, window=3600)  # 50 requests per hour
     def _test_single_endpoint(self, endpoint):
         """Test a single endpoint - helper method for integration tests"""
         try:
+            # Rate limiting check
+            if not security_manager.rate_limit(
+                "istat_api_test", max_requests=50, window=3600
+            ):
+                raise Exception("Rate limit exceeded for ISTAT API testing")
+
             # Handle both string and dict parameters
             if isinstance(endpoint, dict):
                 endpoint_name = endpoint.get("name", "unknown")

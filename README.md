@@ -5,6 +5,8 @@
 [![Python](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://www.python.org/downloads/)
 [![Tests](https://img.shields.io/badge/Tests-173%20passing-brightgreen.svg)](tests/)
 [![Coverage](https://img.shields.io/badge/Coverage-100%25%20success-brightgreen.svg)](htmlcov/)
+[![Dashboard](https://img.shields.io/badge/Dashboard-Live-brightgreen.svg)](https://osservatorio-dashboard.streamlit.app/)
+[![Security](https://img.shields.io/badge/Security-Enhanced-blue.svg)](src/utils/security_enhanced.py)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 > **Sistema completo per l'acquisizione, elaborazione e visualizzazione di dati statistici ISTAT attraverso moderne piattaforme di Business Intelligence.**
@@ -21,11 +23,15 @@ pip install -r requirements.txt
 # 2. Test connettività
 python src/api/istat_api.py
 
-# 3. Conversione dati
+# 3. Dashboard live
+streamlit run dashboard/app.py  # Dashboard locale
+# Oppure visita: https://osservatorio-dashboard.streamlit.app/
+
+# 4. Conversione dati
 python convert_to_tableau.py  # Per Tableau
 python convert_to_powerbi.py  # Per PowerBI
 
-# 4. Gestione file temporanei
+# 5. Gestione file temporanei
 python scripts/cleanup_temp_files.py --stats
 ```
 
@@ -45,6 +51,21 @@ python scripts/cleanup_temp_files.py --stats
 - ✅ **Formati ottimizzati**: Parquet per performance, metadati inclusi
 - ✅ **Guide integrate**: Istruzioni step-by-step per import e configurazione
 - ✅ **Dashboard ready**: File pronti per import diretto in Tableau/PowerBI
+
+### 🔒 Security & Resilience (NEW)
+- ✅ **SecurityManager**: Protezione centralizzata contro attacchi path traversal e injection
+- ✅ **Rate Limiting**: Controllo accessi API con limiti configurabili
+- ✅ **Circuit Breaker**: Resilienza sistema con gestione automatica failure
+- ✅ **Input Sanitization**: Validazione e pulizia automatica input utente
+- ✅ **Security Headers**: Headers HTTP sicuri per protezione applicazione
+- ✅ **IP Blocking**: Blocco automatico IP sospetti
+
+### 🎯 Live Dashboard
+- ✅ **Streamlit Dashboard**: [https://osservatorio-dashboard.streamlit.app/](https://osservatorio-dashboard.streamlit.app/)
+- ✅ **Interactive Visualizations**: 6 categorie dati con grafici interattivi
+- ✅ **Real-time Metrics**: Monitoraggio sistema in tempo reale
+- ✅ **Responsive Design**: Ottimizzato per desktop e mobile
+- ✅ **Sample Data**: Dati demo sempre disponibili
 
 ### 🤖 Automazione
 - ✅ **Script PowerShell**: Download automatico dataset Windows
