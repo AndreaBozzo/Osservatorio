@@ -52,8 +52,8 @@
                     <div class="text-gray-600">Dataset ISTAT</div>
                 </div>
                 <div class="text-center">
-                    <div class="text-4xl font-bold text-green-600 mb-2" id="test-success">100%</div>
-                    <div class="text-gray-600">Test Success</div>
+                    <div class="text-4xl font-bold text-green-600 mb-2" id="test-success">192</div>
+                    <div class="text-gray-600">Test Passing</div>
                 </div>
                 <div class="text-center">
                     <div class="text-4xl font-bold text-purple-600 mb-2" id="categories">6</div>
@@ -91,7 +91,7 @@
                         <i class="fas fa-shield-alt"></i>
                     </div>
                     <h3 class="text-xl font-semibold mb-4">Sicurezza & Qualità</h3>
-                    <p class="text-gray-600">173 test automatici, validazione sicura dei percorsi e controllo qualità dati.</p>
+                    <p class="text-gray-600">192 test automatici, validazione sicura dei percorsi e controllo qualità dati.</p>
                 </div>
             </div>
         </div>
@@ -174,7 +174,7 @@
                 <div>
                     <h3 class="text-xl font-semibold mb-4">📊 Qualità del Codice</h3>
                     <ul class="space-y-2 text-gray-600">
-                        <li><i class="fas fa-check text-green-600 mr-2"></i>173 test automatici (100% successo)</li>
+                        <li><i class="fas fa-check text-green-600 mr-2"></i>192 test automatici (100% successo)</li>
                         <li><i class="fas fa-check text-green-600 mr-2"></i>Validazione sicurezza percorsi</li>
                         <li><i class="fas fa-check text-green-600 mr-2"></i>Controllo qualità dati integrato</li>
                         <li><i class="fas fa-check text-green-600 mr-2"></i>Documentazione completa</li>
@@ -207,7 +207,7 @@
                     <p class="text-gray-200">Sviluppato da Andrea Bozzo</p>
                     <p class="text-gray-200">Powered by Streamlit & GitHub Actions</p>
                     <div class="mt-4 space-x-4">
-                        <a href="https://github.com/AndreaBozzo" class="text-gray-200 hover:text-white">
+                        <a href="https://github.com/AndreaBozzo" target="_blank" class="text-gray-200 hover:text-white">
                             <i class="fab fa-github text-2xl"></i>
                         </a>
                     </div>
@@ -287,6 +287,7 @@
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
                     animateValue(document.getElementById('dataset-count'), 0, 509, 2000);
+                    animateValue(document.getElementById('test-success'), 0, 192, 1500);
                     animateValue(document.getElementById('categories'), 0, 6, 1500);
                 }
             });
