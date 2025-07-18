@@ -1,0 +1,11 @@
+This project "Osservatorio" contains multiple components under different licenses:
+
+- Codebase: licensed under the GNU AGPL v3.0
+- Data exports: licensed under CC BY 4.0
+- Documentation and website content: licensed under CC BY-SA 4.0
+
+Author: Andrea Bozzo
+Year: 2025
+Contact: [https://github.com/AndreaBozzo/]
+
+Any contribution to this project implies acceptance of these licensing terms.
