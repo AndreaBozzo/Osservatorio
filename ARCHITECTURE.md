@@ -851,5 +851,5 @@ The **Osservatorio** architecture represents a **modern, secure, and scalable** 
 ---
 
 **Document Version**: 2.0.0
-**Last Updated**: January 18, 2025
-**Next Review**: February 18, 2025
+**Last Updated**: July 18, 2025
+**Next Review**: August 18, 2025

@@ -3,7 +3,7 @@
 > **Production-ready platform for Italian statistical data processing, analysis, and visualization with enterprise-grade security and BI integration.**
 
 [![Python](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://www.python.org/downloads/)
-[![Tests](https://img.shields.io/badge/Tests-192%20passing-brightgreen.svg)](tests/)
+[![Tests](https://img.shields.io/badge/Tests-173%20passing-brightgreen.svg)](tests/)
 [![Coverage](https://img.shields.io/badge/Coverage-100%25%20success-brightgreen.svg)](htmlcov/)
 [![Dashboard](https://img.shields.io/badge/Dashboard-Live-brightgreen.svg)](https://osservatorio-dashboard.streamlit.app/)
 [![Security](https://img.shields.io/badge/Security-Enterprise-blue.svg)](src/utils/security_enhanced.py)
@@ -87,11 +87,14 @@ python scripts/cleanup_temp_files.py --stats
 - **🚀 Dashboard Ready**: Files ready for direct import
 
 ### 🧪 **Quality Assurance**
-- **🧪 Test Suite**: 192 tests (156 unit + 26 integration + 8 performance + 2 E2E)
-- **✅ 100% Pass Rate**: All tests consistently passing
-- **🔍 Code Quality**: Black, isort, flake8 compliance
-- **🛡️ Security Scanning**: Bandit + Safety integration
+- **🧪 Test Suite**: 173 tests (139 unit + 26 integration + 8 performance)
+- **✅ 100% Pass Rate**: All tests consistently passing with robust CI/CD
+- **🔍 Code Quality**: Black, isort, flake8 compliance with pre-commit hooks
+- **🛡️ Security Scanning**: Bandit + Safety integration with automated reports
 - **📊 Performance Monitoring**: Memory, CPU, and response time tracking
+- **🔄 CI/CD Pipeline**: Automated testing and deployment with GitHub Actions
+- **🔄 Real-Time Data**: Live ISTAT API integration with 509+ datasets
+- **🎯 Production Ready**: Enterprise-grade security and monitoring
 
 ---
 
@@ -118,8 +121,8 @@ Osservatorio/                              # 🏠 Root directory
 │       ├── config.py                      # ⚙️ Configuration management
 │       ├── logger.py                      # 📋 Structured logging
 │       └── secure_path.py                 # 🛡️ Path validation
-├── 🧪 tests/                              # 📂 Test suite (192 tests)
-│   ├── unit/                              # 156 unit tests
+├── 🧪 tests/                              # 📂 Test suite (173 tests)
+│   ├── unit/                              # 139 unit tests
 │   ├── integration/                       # 26 integration tests
 │   ├── performance/                       # 8 performance tests
 │   └── conftest.py                        # Test configuration
@@ -161,7 +164,7 @@ For detailed architecture information, see [ARCHITECTURE.md](ARCHITECTURE.md).
 pytest tests/ -v
 
 # Run specific test categories
-pytest tests/unit/ -v          # Unit tests (156)
+pytest tests/unit/ -v          # Unit tests (139)
 pytest tests/integration/ -v   # Integration tests (26)
 pytest tests/performance/ -v   # Performance tests (8)
 
@@ -436,14 +439,14 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📊 Project Stats
 
-- **🐍 Python Files**: 18 core modules
-- **🧪 Tests**: 192 comprehensive tests
-- **📊 Test Coverage**: 100% pass rate
-- **🔒 Security Tests**: 16 security-focused tests
-- **📚 Documentation**: 5 comprehensive guides
-- **🌟 GitHub Stars**: Growing community
-- **📥 Total Downloads**: Active usage
-- **⚡ Performance**: Production-ready
+- **🐍 Python Files**: 18 core modules with enterprise-grade security
+- **🧪 Tests**: 173 comprehensive tests with 100% pass rate
+- **📊 Test Coverage**: 100% success rate with CI/CD integration
+- **🔒 Security Tests**: 15+ security-focused tests with automated scanning
+- **📚 Documentation**: 5 comprehensive guides with live examples
+- **🌟 GitHub Stars**: Growing community with active development
+- **📥 Total Downloads**: Production usage with live dashboard
+- **⚡ Performance**: Production-ready with real-time data pipeline
 
 ---
 
