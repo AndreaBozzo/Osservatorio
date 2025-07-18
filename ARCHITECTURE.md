@@ -2,7 +2,7 @@
 
 > **Comprehensive architectural documentation for the Osservatorio ISTAT data processing platform**
 > **Version**: 2.0.0
-> **Date**: January 18, 2025
+> **Date**: July 18, 2025
 > **Status**: Production Ready
 
 ---
