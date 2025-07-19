@@ -4,7 +4,7 @@ on:
   push:
     branches: [main, feature/dashboard]
     paths:
-      - 'dashboard/web/**'
+      - 'dashboard/index.html'
       - '.github/workflows/deploy-landing-page.yml'
   workflow_dispatch:
 
@@ -28,36 +28,36 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
-      - name: Check if web directory exists
+      - name: Check if dashboard directory exists
         run: |
-          if [ ! -d "dashboard/web" ]; then
-            echo "dashboard/web directory not found. Creating basic structure..."
-            mkdir -p dashboard/web
-            echo "Web directory created."
+          if [ ! -d "dashboard" ]; then
+            echo "dashboard directory not found. Creating basic structure..."
+            mkdir -p dashboard
+            echo "Dashboard directory created."
           else
-            echo "dashboard/web directory exists."
-            ls -la dashboard/web/
+            echo "dashboard directory exists."
+            ls -la dashboard/
           fi
 
       - name: Copy landing page files
         run: |
           mkdir -p _site
-          if [ -f "dashboard/web/index.html" ]; then
-            cp dashboard/web/index.html _site/
-            echo "Copied index.html"
+          if [ -f "dashboard/index.html" ]; then
+            cp dashboard/index.html _site/
+            echo "Copied index.html from dashboard/"
           else
-            echo "index.html not found in dashboard/web/"
+            echo "index.html not found in dashboard/"
             exit 1
           fi
 
-          # Copy other web files if they exist
-          if [ -f "dashboard/web/style.css" ]; then
-            cp dashboard/web/style.css _site/
+          # Copy other web assets if they exist in dashboard/
+          if [ -f "dashboard/style.css" ]; then
+            cp dashboard/style.css _site/
             echo "Copied style.css"
           fi
 
-          if [ -f "dashboard/web/script.js" ]; then
-            cp dashboard/web/script.js _site/
+          if [ -f "dashboard/script.js" ]; then
+            cp dashboard/script.js _site/
             echo "Copied script.js"
           fi
 

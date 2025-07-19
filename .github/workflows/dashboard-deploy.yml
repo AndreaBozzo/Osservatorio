@@ -4,7 +4,8 @@ on:
   push:
     branches: [main, feature/dashboard]
     paths:
-      - 'app.py'
+      - 'dashboard/app.py'
+      - 'streamlit_app.py'
       - 'src/**'
       - '.streamlit/**'
       - 'requirements.txt'
@@ -12,7 +13,8 @@ on:
   pull_request:
     branches: [main]
     paths:
-      - 'app.py'
+      - 'dashboard/app.py'
+      - 'streamlit_app.py'
       - 'src/**'
       - '.streamlit/**'
       - 'requirements.txt'
@@ -57,10 +59,12 @@ jobs:
         timeout-minutes: 2
         run: |
           python -c "import streamlit as st; print('✅ Dashboard dependencies OK')"
+          python -c "from dashboard.app import main; print('✅ Dashboard import OK')"
 
       - name: Check dashboard structure
         run: |
-          ls -la app.py
+          ls -la streamlit_app.py
+          ls -la dashboard/app.py
           ls -la .streamlit/ || echo "⚠️  .streamlit directory not found"
 
       - name: Security scan
@@ -87,7 +91,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: '🚀 Dashboard preview will be available after merge to main branch.\n\nTo test locally:\n```bash\nstreamlit run app.py\n```'
+              body: '🚀 Dashboard preview will be available after merge to main branch.\n\nTo test locally:\n```bash\nstreamlit run dashboard/app.py\n# OR use the entry point:\nstreamlit run streamlit_app.py\n```'
             })
 
   deploy-prod:
@@ -118,13 +122,16 @@ jobs:
         run: |
           echo "🚀 Ready for Streamlit Cloud deployment"
           echo "Connect this repository to https://share.streamlit.io/"
-          echo "Entry point: app.py (single entry point)"
+          echo "Entry point: streamlit_app.py (imports from dashboard/app.py)"
+          echo ""
+          echo "Entry point file:"
+          ls -la streamlit_app.py
           echo ""
           echo "Main app file:"
-          ls -la app.py
+          ls -la dashboard/app.py
           echo ""
           echo "Streamlit config:"
-          ls -la .streamlit/
+          ls -la .streamlit/ || echo "No .streamlit config found"
           echo ""
           echo "Dependencies:"
           head -20 requirements.txt
@@ -140,5 +147,6 @@ jobs:
           echo "✅ Dashboard deployment completed successfully"
           echo "Next steps:"
           echo "1. Connect repository to Streamlit Cloud"
-          echo "2. Set app path to: app.py"
+          echo "2. Set app path to: streamlit_app.py"
           echo "3. Deploy automatically on push to main"
+          echo "4. Entry point will import from dashboard/app.py"
