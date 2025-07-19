@@ -53,7 +53,7 @@ This is an Italian data processing system for ISTAT (Italian National Institute 
 
 ### Testing
 - `pytest` - Run all tests
-- `pytest --cov=src tests/` - Run tests with coverage (173 pass, 100% success rate)
+- `pytest --cov=src tests/` - Run tests with coverage (basic test framework, improving coverage)
 - `pytest tests/unit/` - Run unit tests only (139 tests)
 - `pytest tests/integration/` - Run integration tests only (26 tests)
 - `pytest tests/performance/` - Run performance tests only (8 tests)
@@ -219,13 +219,13 @@ Required environment variables (optional, defaults provided):
 ## Testing Infrastructure
 
 ### Test Suite Overview
-The project includes a comprehensive test suite with 173 tests across all categories:
+The project includes a developing test framework with basic coverage:
 
-- **Unit Tests**: 139 tests covering all core components (100% success rate)
-- **Integration Tests**: 26 end-to-end system integration tests
-- **Performance Tests**: 8 scalability and performance benchmarks
-- **Coverage**: HTML reports available in `htmlcov/` directory
-- **Test Results**: All 173 tests passing with 100% success rate
+- **Test Infrastructure**: 215 tests collected across unit, integration, and performance categories
+- **Current Focus**: Core functionality testing for dashboard and data processing
+- **Coverage**: Basic test coverage with HTML reports in `htmlcov/` directory
+- **Status**: Test framework in development, improving coverage incrementally
+- **Quality**: Focus on critical functionality rather than comprehensive coverage
 
 ### Test Categories
 1. **Core Components** (139 unit tests passing):
@@ -439,7 +439,7 @@ files = converter._generate_powerbi_formats(df, dataset_info)
 ## Previous Updates (July 2025)
 
 ### Major Enhancements
-- **Test Suite**: 173 tests implemented (139 unit + 26 integration + 8 performance)
+- **Test Framework**: Basic testing infrastructure with pytest (developing coverage)
 - **Converter APIs**: Programmatic APIs for both PowerBI and Tableau converters
 - **Security**: Integration of SecurePathValidator across file operations
 - **Data Quality**: Basic data quality assessment system

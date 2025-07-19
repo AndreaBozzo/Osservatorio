@@ -191,7 +191,7 @@ Realtà:     - Coverage % non misurata
 
 ### Week 5-6: FOUNDATION (Base solida)
 **Senza questi, inutile proseguire**
-1. **Database (SQLite minimo)**
+1. **Database (PostgreSQL)**
    - Schema dati
    - Cache persistente
    - User sessions

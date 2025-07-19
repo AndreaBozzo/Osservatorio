@@ -1,14 +1,24 @@
 # 🇮🇹 Osservatorio - ISTAT Data Processing Platform
 
-> **Production-ready platform for Italian statistical data processing, analysis, and visualization with enterprise-grade security and BI integration.**
+> **MVP prototype for Italian statistical data processing and visualization. Currently in active development - NOT production-ready.**
 
-[![Python](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://www.python.org/downloads/)
-[![Tests](https://img.shields.io/badge/Tests-173%20passing-brightgreen.svg)](tests/)
-[![Coverage](https://img.shields.io/badge/Coverage-100%25%20success-brightgreen.svg)](htmlcov/)
-[![Dashboard](https://img.shields.io/badge/Dashboard-Live-brightgreen.svg)](https://osservatorio-dashboard.streamlit.app/)
-[![Security](https://img.shields.io/badge/Security-Enterprise-blue.svg)](src/utils/security_enhanced.py)
-[![Architecture](https://img.shields.io/badge/Architecture-Documented-green.svg)](ARCHITECTURE.md)
+[![Python](https://img.shields.io/badge/Python-3.9%2B-blue.svg)](https://www.python.org/downloads/)
+[![Status](https://img.shields.io/badge/Status-MVP%20Prototype-yellow.svg)](PROJECT_STATE.md)
+[![Tests](https://img.shields.io/badge/Tests-215%20collected-orange.svg)](tests/)
+[![Dashboard](https://img.shields.io/badge/Dashboard-Demo%20Live-green.svg)](https://osservatorio-dashboard.streamlit.app/)
+[![Security](https://img.shields.io/badge/Security-Basic-yellow.svg)](src/utils/security_enhanced.py)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
+## 🚨 Project Status: MVP Prototype
+
+**⚠️ Reality Check**: This is a working prototype demonstrating ISTAT data integration concepts.
+**NOT suitable for production use** due to:
+- Performance limitations (dashboard load times ~20-30s)
+- Basic security implementation (development level)
+- Limited scalability and error handling
+- Prototype-level features and stability
+
+**🎯 Target Audience**: Developers, data analysts, and ISTAT data enthusiasts exploring integration possibilities.
 
 **📊 Live Dashboard**: [https://osservatorio-dashboard.streamlit.app/](https://osservatorio-dashboard.streamlit.app/)
 
@@ -55,43 +65,44 @@ python scripts/cleanup_temp_files.py --stats
 
 ---
 
-## 🌟 Platform Features
+## ✅ Current Capabilities
 
-### 🎯 **Live Dashboard**
-- **🌐 URL**: [https://osservatorio-dashboard.streamlit.app/](https://osservatorio-dashboard.streamlit.app/)
-- **📊 Interactive Visualizations**: 6 data categories with basic charts
-- **📱 Responsive Design**: Basic mobile compatibility
-- **⚡ Performance**: Basic caching, ~5s load time
-- **🔍 Filtering**: Year range, geographic area, data quality
+### 🎯 **Working Features**
+- **🌐 Live Demo**: [https://osservatorio-dashboard.streamlit.app/](https://osservatorio-dashboard.streamlit.app/)
+- **📊 Basic Dashboard**: 3 data categories (popolazione, economia, lavoro) with sample data
+- **📱 Responsive UI**: Desktop-optimized design with mobile compatibility
+- **🔍 Functional Filters**: Year range filtering (2020-2024)
+- **📈 Interactive Charts**: Line, bar, and area charts with Plotly
 
-### 🔒 **Security Features**
-- **🛡️ SecurityManager**: Basic security with path validation and rate limiting
-- **🔄 Circuit Breaker**: Basic resilience for external API calls
-- **🚦 Rate Limiting**: Basic API protection (ISTAT: 50 req/hr, PowerBI: 100 req/hr)
-- **🧹 Input Sanitization**: Basic input validation
-- **📋 Security Headers**: HTTP security headers
-- **🚫 IP Blocking**: Basic IP blocking
+### 🔧 **Data Integration**
+- **🇮🇹 ISTAT API**: Basic connection to SDMX API endpoints
+- **📁 Format Conversion**: XML → CSV, Excel, JSON (basic implementation)
+- **🏷️ Data Categorization**: Simple category-based organization
+- **💾 Sample Data**: Working demo with realistic Italian statistical data
 
-### 📊 **Data Processing**
-- **🇮🇹 ISTAT SDMX API**: Access to available Italian datasets
-- **🔄 Categorization**: 6 priority categories (Population, Economy, Labor, Territory, Education, Health)
-- **📁 Multi-format Export**: XML → CSV, Excel, JSON, Parquet
-- **✅ Data Quality**: Basic completeness scoring and validation
-- **🗂️ Caching**: Basic performance optimization with cache management
+### 🔨 **Development Tools**
+- **🧪 Test Framework**: 215 tests collected (pytest infrastructure)
+- **🔍 Code Quality**: Black, isort, flake8 setup
+- **🚀 CI/CD**: GitHub Actions workflow (basic)
+- **📋 Documentation**: Comprehensive developer documentation
 
-### 🔗 **Business Intelligence**
-- **📊 Tableau Integration**: Basic server API integration
-- **⚡ PowerBI Integration**: REST API + Azure AD authentication
-- **🎯 Formats**: Parquet, CSV, Excel, JSON with metadata
-- **📋 Integration Guides**: Basic import instructions
-- **🚀 Dashboard Ready**: Files ready for import
+## 🟡 In Development
 
-### 🧪 **Quality Assurance**
-- **🧪 Test Suite**: 173 tests (139 unit + 26 integration + 8 performance)
-- **✅ Test Coverage**: Basic test coverage with CI/CD
-- **🔍 Code Quality**: Black, isort, flake8 compliance
-- **🛡️ Security Scanning**: Bandit + Safety integration
-- **📊 Performance Monitoring**: Basic memory, CPU, and response time tracking
+### 🚧 **Performance Issues**
+- **⚠️ Load Times**: 20-30s dashboard loading (unacceptable for production)
+- **🔄 Caching**: Basic implementation, needs optimization
+- **📊 Scalability**: Limited to small datasets
+
+### 🔨 **Security & Quality**
+- **🛡️ Security**: Basic path validation and input sanitization
+- **🧪 Test Coverage**: Improving (current focus on core functionality)
+- **🚫 Error Handling**: Basic implementation, needs enhancement
+
+### 📈 **Planned Improvements**
+- **⚡ Performance optimization** (critical priority)
+- **🔒 Enhanced security features**
+- **📊 Extended ISTAT dataset integration**
+- **🎯 Production-ready error handling**
 - **🔄 CI/CD Pipeline**: Automated testing with GitHub Actions
 - **🔄 Real-Time Data**: ISTAT API integration with available datasets
 - **🎯 Status**: Working prototype with basic features
