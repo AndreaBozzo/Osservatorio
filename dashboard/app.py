@@ -306,7 +306,7 @@ def create_sample_data():
     """Crea dati di esempio per la demo"""
     # Dati di esempio per popolazione
     population_data = {
-        "TIME_PERIOD": ["2020", "2021", "2022", "2023", "2024"],
+        "TIME_PERIOD": [2020, 2021, 2022, 2023, 2024],
         "TERRITORIO": ["Italia", "Italia", "Italia", "Italia", "Italia"],
         "Value": [59641488, 59236213, 58940425, 58997201, 59000000],
         "UNIT_MEASURE": ["NUM", "NUM", "NUM", "NUM", "NUM"],
@@ -315,7 +315,7 @@ def create_sample_data():
 
     # Dati di esempio per economia
     economy_data = {
-        "TIME_PERIOD": ["2020", "2021", "2022", "2023", "2024"],
+        "TIME_PERIOD": [2020, 2021, 2022, 2023, 2024],
         "TERRITORIO": ["Italia", "Italia", "Italia", "Italia", "Italia"],
         "Value": [1653000, 1775000, 1897000, 1952000, 2010000],
         "UNIT_MEASURE": ["EUR_MIO", "EUR_MIO", "EUR_MIO", "EUR_MIO", "EUR_MIO"],
@@ -324,7 +324,7 @@ def create_sample_data():
 
     # Dati di esempio per lavoro
     work_data = {
-        "TIME_PERIOD": ["2020", "2021", "2022", "2023", "2024"],
+        "TIME_PERIOD": [2020, 2021, 2022, 2023, 2024],
         "TERRITORIO": ["Italia", "Italia", "Italia", "Italia", "Italia"],
         "Value": [58.1, 58.2, 58.8, 59.5, 60.1],
         "UNIT_MEASURE": ["PC", "PC", "PC", "PC", "PC"],
@@ -408,8 +408,8 @@ def render_header():
 
 
 def render_sidebar():
-    """Render della sidebar"""
-    st.sidebar.header("🔍 Filtri e Navigazione")
+    """Render della sidebar - Enhanced with functional filters"""
+    st.sidebar.header("🔍 Navigazione e Controlli")
 
     # Status indicator
     st.sidebar.success("✅ Sistema Operativo")
@@ -422,32 +422,114 @@ def render_sidebar():
     selected = st.sidebar.selectbox("Seleziona Categoria", category_options, index=0)
     category = selected.split(" ")[1].lower()
 
-    # Category info
+    # Category info with enhanced details
     info = CATEGORIES[category]
     st.sidebar.markdown(
         f"""
-    **{info['emoji']} {category.title()}**
-    - Priorità: {info['priority']}/10
-    - Descrizione: {info['description']}
+    <div style="background: linear-gradient(135deg, {info['color']}20, {info['color']}10);
+                padding: 1rem; border-radius: 10px; margin: 1rem 0;">
+        <h4>{info['emoji']} {category.title()}</h4>
+        <p style="font-size: 0.9rem; margin: 0.5rem 0;">{info['description']}</p>
+        <div style="font-size: 0.8rem; color: #666;">
+            <strong>Priorità:</strong> {info['priority']}/10<br>
+            <strong>Fonte:</strong> ISTAT SDMX API
+        </div>
+    </div>
+    """,
+        unsafe_allow_html=True,
+    )
+
+    # Functional year filter
+    st.sidebar.subheader("📅 Filtro Temporale")
+    year_range = st.sidebar.slider(
+        "Seleziona Periodo",
+        2020,
+        2024,
+        (2020, 2024),
+        help="Filtra i dati per il periodo selezionato",
+    )
+
+    # Show selected period info
+    years_selected = year_range[1] - year_range[0] + 1
+    st.sidebar.info(
+        f"📊 Periodo: {years_selected} anni ({year_range[0]}-{year_range[1]})"
+    )
+
+    # Territory info (static but informative)
+    st.sidebar.subheader("🗺️ Copertura Territoriale")
+    territory_info = {
+        "popolazione": "🇮🇹 Italia nazionale + 20 regioni",
+        "economia": "🇮🇹 Italia nazionale + macroaree",
+        "lavoro": "🇮🇹 Italia nazionale + dettaglio regionale",
+    }
+
+    st.sidebar.info(territory_info.get(category, "🇮🇹 Italia nazionale"))
+
+    # Data source info
+    st.sidebar.subheader("📡 Informazioni Fonte")
+    st.sidebar.markdown(
+        """
+    **ISTAT SDMX API**
+    - 🔄 Aggiornamento: Real-time
+    - 📊 Qualità: Ufficiale
+    - 🏛️ Ente: Istituto Nazionale di Statistica
+    - 📅 Ultimo refresh: Automatico
     """
     )
 
-    # Filters
-    st.sidebar.subheader("📋 Filtri")
-    year_range = st.sidebar.slider("Anno", 2020, 2024, (2020, 2024))
-    geo_filter = st.sidebar.selectbox("Territorio", ["Italia", "Nord", "Centro", "Sud"])
+    # Quick actions
+    st.sidebar.subheader("⚡ Azioni Rapide")
+    if st.sidebar.button("🔄 Ricarica Dati", help="Aggiorna i dati dalla cache"):
+        st.cache_data.clear()
+        st.rerun()
 
-    return category, year_range, geo_filter
+    # Info sul filtro temporale
+    if st.sidebar.button("ℹ️ Info Filtro", help="Come funziona il filtro temporale"):
+        st.sidebar.info(
+            """
+        **Filtro Temporale:**
+        - Modifica il range per vedere diversi periodi
+        - I grafici si aggiornano automaticamente
+        - Le statistiche sono ricalcolate sui dati filtrati
+        """
+        )
+
+    # Export data option
+    if st.sidebar.button("💾 Opzioni Export", help="Informazioni su export dati"):
+        st.sidebar.success("Export CSV disponibile nei grafici tramite menu ⋮")
+
+    return category, year_range
 
 
-def render_category_dashboard(category, datasets):
-    """Render della dashboard per una categoria - Desktop optimized"""
+def render_category_dashboard(category, datasets, year_range):
+    """Render della dashboard per una categoria - Desktop optimized with functional filters"""
     if category not in datasets:
         st.error(f"Dati non disponibili per la categoria: {category}")
         return
 
-    df = datasets[category]
+    # Get original data
+    df_original = datasets[category]
     info = CATEGORIES[category]
+
+    # Apply year filter
+    df_original["TIME_PERIOD"] = df_original["TIME_PERIOD"].astype(int)
+    df = df_original[
+        (df_original["TIME_PERIOD"] >= year_range[0])
+        & (df_original["TIME_PERIOD"] <= year_range[1])
+    ].copy()
+
+    # Show filter info if data is filtered
+    if len(df) != len(df_original):
+        st.info(
+            f"📅 Filtro attivo: {year_range[0]}-{year_range[1]} ({len(df)} di {len(df_original)} anni mostrati)"
+        )
+
+    # Check if filtered data is empty
+    if df.empty:
+        st.warning(
+            f"⚠️ Nessun dato disponibile per il periodo {year_range[0]}-{year_range[1]}. Prova ad espandere il range temporale."
+        )
+        return
 
     # Enhanced category section with better styling
     st.markdown(
@@ -635,7 +717,7 @@ def main():
         render_header()
 
         # Sidebar
-        selected_category, year_range, geo_filter = render_sidebar()
+        selected_category, year_range = render_sidebar()
 
         # Load data
         with st.spinner("Caricamento dati..."):
@@ -643,7 +725,7 @@ def main():
 
         # Main dashboard
         if datasets:
-            render_category_dashboard(selected_category, datasets)
+            render_category_dashboard(selected_category, datasets, year_range)
         else:
             st.error("Nessun dataset disponibile")
 
