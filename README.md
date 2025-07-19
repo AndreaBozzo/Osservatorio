@@ -20,6 +20,8 @@
 
 **🎯 Target Audience**: Developers, data analysts, and ISTAT data enthusiasts exploring integration possibilities.
 
+**📄Github Pages Index**: [https://andreabozzo.github.io/Osservatorio/](https://andreabozzo.github.io/Osservatorio/)
+
 **📊 Live Dashboard**: [https://osservatorio-dashboard.streamlit.app/](https://osservatorio-dashboard.streamlit.app/)
 
 ---
