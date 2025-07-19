@@ -35,20 +35,20 @@ class IstatAPITester:
     @rate_limit(max_requests=50, window=3600)  # 50 requests per hour
     def _test_single_endpoint(self, endpoint):
         """Test a single endpoint - helper method for integration tests"""
+        # Handle both string and dict parameters first to get endpoint_name
+        if isinstance(endpoint, dict):
+            endpoint_name = endpoint.get("name", "unknown")
+            url = endpoint.get("url", f"{self.base_url}{endpoint_name}/IT1")
+        else:
+            endpoint_name = endpoint
+            url = f"{self.base_url}{endpoint_name}/IT1"
+
         try:
             # Rate limiting check
             if not security_manager.rate_limit(
                 "istat_api_test", max_requests=50, window=3600
             ):
                 raise Exception("Rate limit exceeded for ISTAT API testing")
-
-            # Handle both string and dict parameters
-            if isinstance(endpoint, dict):
-                endpoint_name = endpoint.get("name", "unknown")
-                url = endpoint.get("url", f"{self.base_url}{endpoint_name}/IT1")
-            else:
-                endpoint_name = endpoint
-                url = f"{self.base_url}{endpoint_name}/IT1"
 
             response = self.session.get(url, timeout=10)
 
@@ -62,11 +62,7 @@ class IstatAPITester:
             }
         except Exception as e:
             return {
-                "endpoint": (
-                    endpoint_name
-                    if isinstance(endpoint, str)
-                    else endpoint.get("name", "unknown")
-                ),
+                "endpoint": endpoint_name,
                 "success": False,
                 "status_code": 500,
                 "response_time": 0.0,

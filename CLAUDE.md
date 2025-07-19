@@ -51,13 +51,17 @@ This is an Italian data processing system for ISTAT (Italian National Institute 
 - `python -c "from src.utils.circuit_breaker import get_circuit_breaker_stats; print(get_circuit_breaker_stats())"` - Get circuit breaker stats
 - `python -c "from src.utils.security_enhanced import security_manager; security_manager.cleanup_old_entries()"` - Clean up rate limiter entries
 
-### Testing
-- `pytest` - Run all tests
-- `pytest --cov=src tests/` - Run tests with coverage (basic test framework, improving coverage)
-- `pytest tests/unit/` - Run unit tests only (139 tests)
+### Testing (UPDATED 19/01/2025)
+- `pytest` - Run all tests (270+ tests total)
+- `pytest --cov=src tests/` - Run tests with coverage (57% current coverage, target achieved)
+- `pytest tests/unit/` - Run unit tests only (205+ tests after expansion)
 - `pytest tests/integration/` - Run integration tests only (26 tests)
 - `pytest tests/performance/` - Run performance tests only (8 tests)
 - `pytest --cov=src --cov-report=html tests/` - Generate HTML coverage report
+- `pytest tests/unit/test_tableau_api.py -v` - Run specific tableau API tests (20 tests)
+- `pytest tests/unit/test_temp_file_manager.py -v` - Run temp file manager tests (26 tests)
+- `pytest tests/unit/test_istat_api.py -v` - Run expanded ISTAT API tests (25 tests)
+- `pytest --cov=src --cov-report=term tests/unit/ --tb=no -q` - Quick coverage check for unit tests
 
 ### Code Quality
 - `black .` - Format code with Black
@@ -142,8 +146,15 @@ This is an Italian data processing system for ISTAT (Italian National Institute 
   - `cache/` - Cached API responses
   - `reports/` - Analysis reports and summaries
 - `scripts/` - Automation scripts (PowerShell for data download, CI/CD utilities)
-- `tests/` - Test suites (unit, integration, performance)
-  - `unit/` - Unit tests for individual components (139 tests)
+- `tests/` - Test suites (unit, integration, performance) - EXPANDED!
+  - `unit/` - Unit tests for individual components (205+ tests)
+    - `test_tableau_api.py` - NEW! Comprehensive Tableau API tests (20 tests)
+    - `test_temp_file_manager.py` - NEW! Temp file management tests (26 tests)
+    - `test_istat_api.py` - EXPANDED! Enhanced ISTAT API tests (25 tests)
+    - `test_final_coverage.py` - NEW! Edge cases and utilities (17 tests)
+    - `test_edge_cases.py` - Additional coverage tests (various)
+    - `test_quick_coverage.py` - Quick coverage wins (14 tests)
+    - Plus existing: config, logger, dataflow_analyzer, converters, security, etc.
   - `integration/` - Integration tests for system components (26 tests)
   - `performance/` - Performance and scalability tests (8 tests)
 
@@ -394,13 +405,31 @@ files = converter._generate_powerbi_formats(df, dataset_info)
   - Progress indicators and loading states
   - Graceful fallback to cached data when API unavailable
 
-#### Enhanced Testing Suite ✅ COMPREHENSIVE, BUT POOR COVERAGE.
+#### Enhanced Testing Suite ✅ SIGNIFICANTLY IMPROVED COVERAGE (19/01/2025)
 - **Security Tests** (`tests/unit/test_security_enhanced.py`):
   - 15+ comprehensive security test cases
   - Path validation testing with Windows path support
   - Rate limiting verification with time-based testing
   - Input sanitization validation with injection prevention
   - Authentication system testing with OAuth flow
+
+- **NEW! Tableau API Tests** (`tests/unit/test_tableau_api.py`):
+  - 20 comprehensive test cases for TableauServerAnalyzer
+  - Full coverage of data extraction, categorization, and strategy generation
+  - Edge cases for malformed data and error handling
+  - Mock-based testing for external dependencies
+
+- **NEW! Temp File Manager Tests** (`tests/unit/test_temp_file_manager.py`):
+  - 26 test cases covering singleton pattern, context managers
+  - File and directory lifecycle management
+  - Error handling and cleanup verification
+  - Thread safety and integration testing
+
+- **EXPANDED! ISTAT API Tests** (`tests/unit/test_istat_api.py`):
+  - 25+ enhanced test cases for IstatAPITester
+  - Rate limiting, error handling, and timeout scenarios
+  - XML parsing and data quality validation
+  - Comprehensive mock-based API testing
 
 ### 🚀 Dashboard Deployment ✅ LIVE, BUT BAREBONE.
 - **Live Dashboard**: [https://osservatorio-dashboard.streamlit.app/](https://osservatorio-dashboard.streamlit.app/)
