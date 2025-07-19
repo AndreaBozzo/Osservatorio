@@ -527,8 +527,8 @@ def render_category_dashboard(category, datasets):
             paper_bgcolor="rgba(0,0,0,0)",
             font=dict(size=14, family="Inter"),
             title_font=dict(size=18, family="Inter"),
-            xaxis=dict(title="Anno", titlefont=dict(size=14)),
-            yaxis=dict(title="Valore", titlefont=dict(size=14)),
+            xaxis=dict(title=dict(text="Anno", font=dict(size=14))),
+            yaxis=dict(title=dict(text="Valore", font=dict(size=14))),
             hovermode="x unified",
             margin=dict(l=20, r=20, t=60, b=20),
         )
@@ -552,8 +552,8 @@ def render_category_dashboard(category, datasets):
             paper_bgcolor="rgba(0,0,0,0)",
             font=dict(size=14, family="Inter"),
             title_font=dict(size=18, family="Inter"),
-            xaxis=dict(title="Anno", titlefont=dict(size=14)),
-            yaxis=dict(title="Valore", titlefont=dict(size=14)),
+            xaxis=dict(title=dict(text="Anno", font=dict(size=14))),
+            yaxis=dict(title=dict(text="Valore", font=dict(size=14))),
             margin=dict(l=20, r=20, t=60, b=20),
             showlegend=False,
         )
@@ -574,8 +574,8 @@ def render_category_dashboard(category, datasets):
             paper_bgcolor="rgba(0,0,0,0)",
             font=dict(size=14, family="Inter"),
             title_font=dict(size=18, family="Inter"),
-            xaxis=dict(title="Anno", titlefont=dict(size=14)),
-            yaxis=dict(title="Valore", titlefont=dict(size=14)),
+            xaxis=dict(title=dict(text="Anno", font=dict(size=14))),
+            yaxis=dict(title=dict(text="Valore", font=dict(size=14))),
             margin=dict(l=20, r=20, t=60, b=20),
         )
         fig_area.update_traces(fill="tonexty", line=dict(width=2))
