@@ -473,4 +473,3 @@ graph TB
 > - **GitHub**: Supporto nativo
 > - **VS Code**: Estensione "Mermaid Preview"
 > - **Local**: Live Server con Mermaid.js CDN
-

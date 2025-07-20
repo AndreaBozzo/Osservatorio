@@ -8,4 +8,3 @@ Questo file è stato spostato dalla root del progetto alla directory docs/planni
 
 **Status**: Archiviato - tasks completati
 **Data spostamento**: 20 Gennaio 2025
-

@@ -533,4 +533,3 @@ La tua PR è stata accettata! 🎉
 Il tuo tempo e le tue competenze rendono questo progetto migliore per tutti. Se hai suggerimenti per migliorare questo processo, apri una issue - anche il processo di contribuzione è open source!
 
 *Ultimo aggiornamento: 20 LUGLIO 2025*
-

@@ -276,4 +276,3 @@ class PostgresAdapter(StorageAdapter):
 **Last Updated**: 20 Luglio 2025
 **Next Review**: 30 Luglio 2025 (after initial implementation)
 **Status**: ✅ **Ready for Implementation**
-

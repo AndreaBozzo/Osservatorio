@@ -30,4 +30,3 @@ tqdm>=4.65.0
 # API integration
 msal>=1.24.0
 tableauserverclient>=0.25
-

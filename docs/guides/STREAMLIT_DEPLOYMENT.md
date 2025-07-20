@@ -179,4 +179,3 @@ streamlit run dashboard/app.py --server.enableCORS false
 - GitHub Issues: [Report bugs](https://github.com/AndreaBozzo/Osservatorio/issues)
 - Documentation: [README](https://github.com/AndreaBozzo/Osservatorio/blob/main/README.md)
 - Streamlit Docs: [Official documentation](https://docs.streamlit.io/)
-

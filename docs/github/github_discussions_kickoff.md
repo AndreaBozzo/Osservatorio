@@ -189,4 +189,3 @@ This content is ready to be posted as a GitHub Discussion for the sprint kick-of
 
 **Status**: Template ready for GitHub Discussions
 **Created**: 20 Gennaio 2025
-

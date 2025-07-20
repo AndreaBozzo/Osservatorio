@@ -396,4 +396,3 @@ Dependencies organized per categoria con commenti chiari
 **Ready to contribute?** 🚀 Scegli una issue e inizia!
 **Roadmap e task soggetti a review e cambiamenti**
 *Ultimo update: 20 Luglio 2025 - Version 5.0.0*
-
