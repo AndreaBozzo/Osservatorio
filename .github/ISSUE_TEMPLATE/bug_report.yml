@@ -1,0 +1,128 @@
+name: 🐛 Bug Report
+description: Segnala un bug o un malfunzionamento
+title: "[BUG] "
+labels: ["type: bug", "status: ready"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Grazie per aver segnalato questo bug! Per aiutarci a risolverlo rapidamente, fornisci le informazioni richieste.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 📋 Descrizione del problema
+      description: Descrivi chiaramente cosa non funziona
+      placeholder: |
+        Descrivi il problema in modo dettagliato...
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: 🔄 Passi per riprodurre
+      description: Come possiamo riprodurre questo bug?
+      placeholder: |
+        1. Vai a '...'
+        2. Clicca su '....'
+        3. Scrolla fino a '....'
+        4. Vedi l'errore
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: ✅ Comportamento atteso
+      description: Cosa ti aspettavi che succedesse?
+      placeholder: Descrivi il comportamento corretto atteso...
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: ❌ Comportamento attuale
+      description: Cosa succede invece?
+      placeholder: Descrivi il comportamento errato osservato...
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: 🔧 Ambiente
+      description: Informazioni sul tuo ambiente di sviluppo
+      placeholder: |
+        - OS: [e.g. Windows 11, Ubuntu 22.04]
+        - Python version: [e.g. 3.13.3]
+        - Browser: [se applicabile]
+        - Version: [versione del progetto]
+      render: markdown
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: 📄 Log/Output
+      description: Se disponibili, includi log o messaggi di errore
+      placeholder: |
+        Incolla qui log, traceback, o output rilevanti...
+      render: shell
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: 📎 Informazioni aggiuntive
+      description: Screenshots, contesto aggiuntivo, o soluzioni tentate
+      placeholder: |
+        - Screenshots (se applicabili)
+        - Hai già provato qualche soluzione?
+        - Link a risorse correlate
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: 🚨 Priorità
+      description: Quanto è critico questo bug?
+      options:
+        - "🔴 Critical - Blocca completamente il sistema"
+        - "🟠 High - Funzionalità importante non utilizzabile"
+        - "🟡 Medium - Problema che impatta l'usabilità"
+        - "🟢 Low - Problema minore o estetico"
+      default: 2
+    validations:
+      required: true
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: 🧩 Componente
+      description: Quale componente è interessato?
+      options:
+        - "API (ISTAT, PowerBI, Tableau)"
+        - "Dashboard (Streamlit)"
+        - "Database (DuckDB)"
+        - "ETL/Processing"
+        - "Infrastructure/CI-CD"
+        - "Testing"
+        - "Non sono sicuro"
+      default: 6
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: ✅ Checklist
+      description: Conferma di aver controllato questi punti
+      options:
+        - label: Ho cercato issue simili esistenti
+          required: true
+        - label: Ho fornito tutte le informazioni richieste
+          required: true
+        - label: Ho testato su un ambiente pulito (se possibile)
+          required: false

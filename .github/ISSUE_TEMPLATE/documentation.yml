@@ -1,0 +1,175 @@
+name: 📚 Documentation
+description: Segnala problemi con la documentazione o proponi miglioramenti
+title: "[DOCS] "
+labels: ["type: documentation", "status: ready"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Grazie per aiutarci a migliorare la documentazione! Una buona documentazione è fondamentale per il successo del progetto.
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: 📝 Tipo di richiesta
+      description: Che tipo di problema/miglioramento riguarda la documentazione?
+      options:
+        - "🐛 Errore nella documentazione esistente"
+        - "❓ Documentazione mancante"
+        - "✨ Miglioramento della documentazione esistente"
+        - "🔄 Aggiornamento necessario"
+        - "🎨 Miglioramento della formattazione"
+        - "🌍 Traduzione"
+      default: 1
+    validations:
+      required: true
+
+  - type: textarea
+    id: location
+    attributes:
+      label: 📍 Posizione
+      description: Dove si trova il problema o dove dovrebbe essere aggiunta la documentazione?
+      placeholder: |
+        Specifica la posizione esatta:
+        - File: docs/README.md
+        - Sezione: "Installazione"
+        - URL: https://github.com/...
+        - Linea: 42
+    validations:
+      required: true
+
+  - type: textarea
+    id: current_content
+    attributes:
+      label: 📄 Contenuto attuale
+      description: Se stai segnalando un errore, copia il testo problematico
+      placeholder: |
+        Copia qui il testo attuale che presenta problemi...
+      render: markdown
+
+  - type: textarea
+    id: issue_description
+    attributes:
+      label: ❌ Problema riscontrato
+      description: Descrivi il problema con la documentazione attuale
+      placeholder: |
+        Descrivi chiaramente il problema:
+        - Informazioni incorrette
+        - Istruzioni poco chiare
+        - Passaggi mancanti
+        - Link non funzionanti
+        - Formato non corretto
+    validations:
+      required: true
+
+  - type: textarea
+    id: suggested_content
+    attributes:
+      label: ✅ Contenuto suggerito
+      description: Come dovrebbe essere corretta/migliorata la documentazione?
+      placeholder: |
+        Fornisci il testo corretto o suggerisci miglioramenti...
+      render: markdown
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: 🎯 Contesto d'uso
+      description: In quale scenario hai incontrato questo problema?
+      placeholder: |
+        Descrivi il contesto:
+        - Stavi seguendo un tutorial?
+        - Cercavi informazioni specifiche?
+        - Eri un nuovo utente?
+        - Qual era il tuo obiettivo?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: audience
+    attributes:
+      label: 👥 Pubblico target
+      description: A chi è rivolta questa documentazione?
+      options:
+        - "🔰 Nuovi utenti/Principianti"
+        - "💼 Sviluppatori"
+        - "🔧 Amministratori di sistema"
+        - "📊 Analisti dati"
+        - "🤝 Contributori"
+        - "👥 Tutti gli utenti"
+      default: 5
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: 🚨 Priorità
+      description: Quanto è importante questa modifica alla documentazione?
+      options:
+        - "🔴 Critical - Blocca l'uso del progetto"
+        - "🟠 High - Causa confusione significativa"
+        - "🟡 Medium - Migliorerebbe l'esperienza utente"
+        - "🟢 Low - Miglioramento minore"
+      default: 2
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: 📎 Contesto aggiuntivo
+      description: Informazioni aggiuntive che potrebbero essere utili
+      placeholder: |
+        - Screenshots della documentazione problematica
+        - Link a risorse correlate
+        - Esempi di buona documentazione
+        - Feedback di altri utenti
+
+  - type: checkboxes
+    id: related_docs
+    attributes:
+      label: 📚 Documentazione correlata
+      description: Altre sezioni che potrebbero richiedere aggiornamenti simili
+      options:
+        - label: README.md principale
+          required: false
+        - label: Documentazione API
+          required: false
+        - label: Guide di installazione
+          required: false
+        - label: Tutorial/Examples
+          required: false
+        - label: Documentazione per contributori
+          required: false
+        - label: Changelog/Release notes
+          required: false
+
+  - type: checkboxes
+    id: willing_to_help
+    attributes:
+      label: 🤝 Disponibilità
+      description: Sei disposto ad aiutare con questa documentazione?
+      options:
+        - label: Posso scrivere/correggere la documentazione
+          required: false
+        - label: Posso revisionare le modifiche
+          required: false
+        - label: Posso fornire feedback sui miglioramenti
+          required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: ✅ Checklist
+      description: Conferma di aver controllato questi punti
+      options:
+        - label: Ho cercato issue simili sulla documentazione
+          required: true
+        - label: Ho indicato chiaramente la posizione del problema
+          required: true
+        - label: Ho fornito un suggerimento costruttivo
+          required: true

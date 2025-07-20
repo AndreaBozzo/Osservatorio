@@ -1,0 +1,166 @@
+name: ✨ Feature Request
+description: Proponi una nuova funzionalità o miglioramento
+title: "[FEATURE] "
+labels: ["type: feature", "status: ready"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Grazie per aver proposto una nuova funzionalità! Le tue idee ci aiutano a migliorare il progetto.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: 💡 Riassunto della funzionalità
+      description: Descrivi brevemente la funzionalità proposta
+      placeholder: |
+        Una breve descrizione della funzionalità che vorresti vedere implementata...
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: 🎯 Problema da risolvere
+      description: Quale problema risolverebbe questa funzionalità?
+      placeholder: |
+        Descrivi il problema o il bisogno che questa funzionalità andrebbe a soddisfare...
+        Esempio: "È frustrante quando..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: 💭 Soluzione proposta
+      description: Come vorresti che funzionasse questa funzionalità?
+      placeholder: |
+        Descrivi in dettaglio come dovrebbe funzionare la nuova funzionalità...
+        - Comportamento atteso
+        - Interfaccia utente (se applicabile)
+        - Flusso di lavoro
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 🔄 Alternative considerate
+      description: Hai considerato soluzioni alternative?
+      placeholder: |
+        Descrivi eventuali soluzioni alternative che hai considerato...
+        - Workaround attuali
+        - Altre implementazioni possibili
+        - Pro e contro delle varie opzioni
+
+  - type: textarea
+    id: use_cases
+    attributes:
+      label: 📋 Casi d'uso
+      description: In quali scenari useresti questa funzionalità?
+      placeholder: |
+        Elenca i principali casi d'uso:
+        1. Quando l'utente...
+        2. Durante l'analisi di...
+        3. Per gestire...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: 🚨 Priorità
+      description: Quanto è importante questa funzionalità?
+      options:
+        - "🔴 Critical - Bloccante per l'uso del sistema"
+        - "🟠 High - Funzionalità molto importante"
+        - "🟡 Medium - Migliorerebbe significativamente l'esperienza"
+        - "🟢 Low - Nice to have"
+      default: 2
+    validations:
+      required: true
+
+  - type: dropdown
+    id: effort
+    attributes:
+      label: ⏱️ Sforzo stimato
+      description: Quanto pensi che richieda implementare questa funzionalità?
+      options:
+        - "🕐 Minutes - Modifiche minori"
+        - "🕑 Hours - Qualche ora di sviluppo"
+        - "🕕 Days - Alcuni giorni di lavoro"
+        - "🕰️ Weeks - Settimane di sviluppo"
+        - "❓ Non sono sicuro"
+      default: 4
+    validations:
+      required: true
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: 🧩 Componente interessato
+      description: Quale componente dovrebbe essere modificato?
+      options:
+        - "API (ISTAT, PowerBI, Tableau)"
+        - "Dashboard (Streamlit)"
+        - "Database (DuckDB)"
+        - "ETL/Processing"
+        - "Infrastructure/CI-CD"
+        - "Testing"
+        - "Documentazione"
+        - "Nuovo componente"
+        - "Non sono sicuro"
+      default: 8
+    validations:
+      required: true
+
+  - type: textarea
+    id: technical_details
+    attributes:
+      label: 🔧 Dettagli tecnici
+      description: Considerazioni tecniche, API coinvolte, dipendenze
+      placeholder: |
+        Se hai competenze tecniche, fornisci dettagli su:
+        - API/endpoint coinvolti
+        - Nuove dipendenze necessarie
+        - Modifiche al database
+        - Considerazioni di performance
+        - Compatibilità
+
+  - type: textarea
+    id: mockups
+    attributes:
+      label: 🎨 Mockup/Screenshots
+      description: Allegati visivi o link a mockup (se applicabile)
+      placeholder: |
+        Se hai preparato mockup, wireframe, o screenshots:
+        - Drag & drop immagini qui
+        - Link a Figma/altri tool
+        - Schizzi o descrizioni UI
+
+  - type: checkboxes
+    id: willing_to_contribute
+    attributes:
+      label: 🤝 Contributo
+      description: Sei interessato a contribuire allo sviluppo?
+      options:
+        - label: Sono disposto a lavorare su questa funzionalità
+          required: false
+        - label: Posso aiutare con i test
+          required: false
+        - label: Posso aiutare con la documentazione
+          required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: ✅ Checklist
+      description: Conferma di aver controllato questi punti
+      options:
+        - label: Ho cercato feature request simili esistenti
+          required: true
+        - label: Ho fornito una descrizione chiara del problema e della soluzione
+          required: true
+        - label: Ho considerato l'impatto sui componenti esistenti
+          required: true
