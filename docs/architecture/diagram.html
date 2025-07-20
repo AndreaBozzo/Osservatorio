@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagrammi Architetturali - Osservatorio</title>
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'default',
+            securityLevel: 'loose',
+            flowchart: { curve: 'basis' },
+            themeVariables: {
+                primaryColor: '#ff6b6b',
+                primaryTextColor: '#333',
+                primaryBorderColor: '#ff6b6b',
+                lineColor: '#333',
+                sectionBkgColor: '#f8f9fa',
+                altSectionBkgColor: '#ffffff',
+                gridColor: '#e9ecef',
+                tertiaryColor: '#f8f9fa'
+            }
+        });
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .navigation {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 10px;
+        }
+
+        .nav-item {
+            padding: 12px 16px;
+            background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .section-header h2 {
+            color: #333;
+            font-size: 1.8rem;
+            margin: 0;
+        }
+
+        .section-icon {
+            font-size: 2rem;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .diagram-container {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            overflow-x: auto;
+        }
+
+        .mermaid {
+            display: flex;
+            justify-content: center;
+            min-height: 300px;
+        }
+
+        .section-description {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            border-radius: 0 10px 10px 0;
+            font-style: italic;
+            color: #555;
+        }
+
+        .back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .back-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .back-to-top:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .nav-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .section {
+                padding: 20px;
+            }
+
+            .section-header {
+                flex-direction: column;
+                text-align: center;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Diagrammi Architetturali</h1>
+            <p>Documentazione visuale del sistema Osservatorio</p>
+        </div>
+
+        <div class="navigation">
+            <div class="nav-title">
+                🧭 Navigazione Rapida
+            </div>
+            <div class="nav-grid">
+                <a href="#architettura-generale" class="nav-item">🏗️ Architettura Generale</a>
+                <a href="#flusso-dati" class="nav-item">🔄 Flusso Dati</a>
+                <a href="#componenti-dashboard" class="nav-item">🎨 Dashboard</a>
+                <a href="#database-architecture" class="nav-item">🗄️ Database</a>
+                <a href="#api-integration" class="nav-item">🔌 API Integration</a>
+                <a href="#security" class="nav-item">🔒 Security</a>
+                <a href="#deployment" class="nav-item">🚀 Deployment</a>
+            </div>
+        </div>
+
+        <section id="architettura-generale" class="section">
+            <div class="section-header">
+                <span class="section-icon">🏗️</span>
+                <h2>Architettura Generale</h2>
+            </div>
+            <div class="section-description">
+                Panoramica completa dell'architettura del sistema, mostrando l'integrazione tra API esterne, layer di elaborazione, storage e presentazione.
+            </div>
+            <div class="diagram-container">
+                <div class="mermaid">
+graph TB
+   subgraph "External APIs"
+       ISTAT[ISTAT API]
+       PBI[PowerBI API]
+       TAB[Tableau API]
+   end
+
+   subgraph "Osservatorio Core"
+       subgraph "API Layer"
+           APIM[API Manager]
+           CB[Circuit Breaker]
+           RL[Rate Limiter]
+           CACHE[Cache Layer]
+       end
+
+       subgraph "Processing Layer"
+           DL[Data Loader]
+           TRANS[Transformers]
+           ANAL[Analyzers]
+           VAL[Validators]
+       end
+
+       subgraph "Storage Layer"
+           DUCK[(DuckDB<br/>Analytics)]
+           PG[(PostgreSQL<br/>Metadata)]
+           FS[File System<br/>Temp Storage]
+       end
+
+       subgraph "Presentation Layer"
+           DASH[Streamlit Dashboard]
+           API[FastAPI Server]
+       end
+   end
+
+   subgraph "Users"
+       WEB[Web Users]
+       APIUSER[API Users]
+   end
+
+   %% Connections
+   ISTAT --> CB
+   PBI --> CB
+   TAB --> CB
+
+   CB --> RL
+   RL --> CACHE
+   CACHE --> APIM
+
+   APIM --> DL
+   DL --> VAL
+   VAL --> TRANS
+   TRANS --> ANAL
+
+   ANAL --> DUCK
+   ANAL --> PG
+   DL --> FS
+
+   DUCK --> DASH
+   PG --> DASH
+   DUCK --> API
+   PG --> API
+
+   WEB --> DASH
+   APIUSER --> API
+
+   classDef external fill:#f9f,stroke:#333,stroke-width:2px
+   classDef storage fill:#bbf,stroke:#333,stroke-width:2px
+   classDef processing fill:#bfb,stroke:#333,stroke-width:2px
+   classDef presentation fill:#fbf,stroke:#333,stroke-width:2px
+
+   class ISTAT,PBI,TAB external
+   class DUCK,PG,FS storage
+   class DL,TRANS,ANAL,VAL processing
+   class DASH,API presentation
+                </div>
+            </div>
+        </section>
+
+        <section id="flusso-dati" class="section">
+            <div class="section-header">
+                <span class="section-icon">🔄</span>
+                <h2>Flusso Dati (Raw → Clean → Business)</h2>
+            </div>
+            <div class="section-description">
+                Processo di trasformazione dei dati dalle fonti grezze ai dati pronti per l'analisi business, inclusi validazione e pulizia.
+            </div>
+            <div class="diagram-container">
+                <div class="mermaid">
+flowchart LR
+    subgraph "RAW Stage"
+        R1[XML/SDMX Data]
+        R2[JSON Data]
+        R3[CSV Data]
+    end
+
+    subgraph "Validation"
+        V1{Schema<br/>Valid?}
+        V2{Data<br/>Complete?}
+        V3[Error Log]
+    end
+
+    subgraph "CLEAN Stage"
+        C1[Parse & Extract]
+        C2[Type Conversion]
+        C3[Normalize Values]
+        C4[Handle Missing]
+    end
+
+    subgraph "BUSINESS Stage"
+        B1[Apply Business Rules]
+        B2[Calculate Metrics]
+        B3[Aggregate Data]
+        B4[Enrich Metadata]
+    end
+
+    subgraph "Storage"
+        S1[(DuckDB)]
+        S2[(PostgreSQL)]
+    end
+
+    %% Flow
+    R1 --> V1
+    R2 --> V1
+    R3 --> V1
+
+    V1 -->|No| V3
+    V1 -->|Yes| V2
+    V2 -->|No| V3
+    V2 -->|Yes| C1
+
+    C1 --> C2
+    C2 --> C3
+    C3 --> C4
+
+    C4 --> B1
+    B1 --> B2
+    B2 --> B3
+    B3 --> B4
+
+    B4 --> S1
+    B4 --> S2
+
+    style V3 fill:#f99,stroke:#333,stroke-width:2px
+    style S1 fill:#bbf,stroke:#333,stroke-width:2px
+    style S2 fill:#bbf,stroke:#333,stroke-width:2px
+                </div>
+            </div>
+        </section>
+
+        <section id="componenti-dashboard" class="section">
+            <div class="section-header">
+                <span class="section-icon">🎨</span>
+                <h2>Componenti Dashboard</h2>
+            </div>
+            <div class="section-description">
+                Struttura modulare dell'applicazione Streamlit con componenti riutilizzabili e gestione dello stato.
+            </div>
+            <div class="diagram-container">
+                <div class="mermaid">
+graph TD
+    subgraph "Streamlit App Structure"
+        MAIN[streamlit_app.py<br/>Entry Point]
+
+        subgraph "Pages"
+            P1[📊 Home]
+            P2[👥 Popolazione]
+            P3[🏥 Sanità]
+            P4[💼 Lavoro]
+            P5[📈 Analytics]
+        end
+
+        subgraph "Components"
+            C1[Sidebar Navigator]
+            C2[Data Selector]
+            C3[Chart Builder]
+            C4[Export Manager]
+            C5[Filter Panel]
+        end
+
+        subgraph "Utils"
+            U1[Session Manager]
+            U2[Cache Manager]
+            U3[Theme Manager]
+            U4[Auth Handler]
+        end
+    end
+
+    MAIN --> P1
+    MAIN --> C1
+    C1 --> P2
+    C1 --> P3
+    C1 --> P4
+    C1 --> P5
+
+    P1 --> C2
+    P1 --> C3
+    P2 --> C2
+    P2 --> C3
+    P2 --> C5
+
+    C2 --> U2
+    C3 --> C4
+    C1 --> U1
+    MAIN --> U3
+    MAIN --> U4
+                </div>
+            </div>
+        </section>
+
+        <section id="database-architecture" class="section">
+            <div class="section-header">
+                <span class="section-icon">🗄️</span>
+                <h2>Database Architecture</h2>
+            </div>
+            <div class="section-description">
+                Schema del database con entità principali, relazioni e struttura per gestire dati, utenti e monitoraggio.
+            </div>
+            <div class="diagram-container">
+                <div class="mermaid">
+erDiagram
+    DATASETS {
+        string dataset_id PK
+        string name
+        string category
+        string source_api
+        timestamp last_updated
+        json metadata
+        string status
+    }
+
+    DATA_POINTS {
+        bigint id PK
+        string dataset_id FK
+        string dimension_1
+        string dimension_2
+        string dimension_3
+        float value
+        string unit
+        date reference_date
+        timestamp created_at
+    }
+
+    API_REQUESTS {
+        bigint request_id PK
+        string api_name
+        string endpoint
+        timestamp requested_at
+        int response_time_ms
+        int status_code
+        json headers
+        text error_message
+    }
+
+    CACHE_ENTRIES {
+        string cache_key PK
+        string dataset_id FK
+        json data
+        timestamp created_at
+        timestamp expires_at
+        int hit_count
+    }
+
+    USERS {
+        int user_id PK
+        string username
+        string email
+        string role
+        timestamp created_at
+        timestamp last_login
+    }
+
+    API_KEYS {
+        string api_key PK
+        int user_id FK
+        string name
+        timestamp created_at
+        timestamp expires_at
+        boolean is_active
+        json permissions
+    }
+
+    EXPORT_LOGS {
+        bigint export_id PK
+        int user_id FK
+        string dataset_id FK
+        string format
+        timestamp exported_at
+        int row_count
+        string file_path
+    }
+
+    DATASETS ||--o{ DATA_POINTS : contains
+    DATASETS ||--o{ CACHE_ENTRIES : cached_in
+    DATASETS ||--o{ EXPORT_LOGS : exported_in
+    USERS ||--o{ API_KEYS : owns
+    USERS ||--o{ EXPORT_LOGS : requested
+                </div>
+            </div>
+        </section>
+
+        <section id="api-integration" class="section">
+            <div class="section-header">
+                <span class="section-icon">🔌</span>
+                <h2>API Integration Flow</h2>
+            </div>
+            <div class="section-description">
+                Diagramma di sequenza che mostra l'interazione tra componenti durante le richieste API, inclusi circuit breaker, rate limiting e cache.
+            </div>
+            <div class="diagram-container">
+                <div class="mermaid">
+sequenceDiagram
+    participant User
+    participant Dashboard
+    participant APIManager
+    participant CircuitBreaker
+    participant RateLimiter
+    participant Cache
+    participant ISTATApi
+    participant Storage
+
+    User->>Dashboard: Request Data
+    Dashboard->>APIManager: fetch_dataset("DCIS_POPRES1")
+    APIManager->>CircuitBreaker: check_status()
+
+    alt Circuit Open
+        CircuitBreaker-->>APIManager: CircuitOpenError
+        APIManager-->>Dashboard: Return cached/stale data
+    else Circuit Closed
+        CircuitBreaker->>RateLimiter: check_rate_limit()
+
+        alt Rate Limit Exceeded
+            RateLimiter-->>APIManager: RateLimitError
+            APIManager-->>Dashboard: Return 429 error
+        else Within Limits
+            RateLimiter->>Cache: get(dataset_id)
+
+            alt Cache Hit
+                Cache-->>Dashboard: Return cached data
+            else Cache Miss
+                Cache->>ISTATApi: GET /SDMX/dataset
+                ISTATApi-->>Cache: XML Response
+                Cache->>Cache: Parse & Transform
+                Cache->>Storage: Save to DuckDB
+                Storage-->>Cache: Confirmation
+                Cache-->>Dashboard: Return fresh data
+            end
+        end
+    end
+
+    Dashboard-->>User: Display results
+                </div>
+            </div>
+        </section>
+
+        <section id="security" class="section">
+            <div class="section-header">
+                <span class="section-icon">🔒</span>
+                <h2>Security & Rate Limiting</h2>
+            </div>
+            <div class="section-description">
+                Diagramma di stato che illustra il flusso di sicurezza, autenticazione, rate limiting e circuit breaker pattern.
+            </div>
+            <div class="diagram-container">
+                <div class="mermaid">
+stateDiagram-v2
+    [*] --> Idle
+
+    Idle --> CheckingRate: API Request
+
+    CheckingRate --> ValidatingToken: Rate OK
+    CheckingRate --> RateLimited: Rate Exceeded
+
+    ValidatingToken --> Authenticated: Token Valid
+    ValidatingToken --> Unauthorized: Token Invalid
+
+    Authenticated --> ProcessingRequest: Check Permissions
+    Unauthorized --> [*]: Return 401
+
+    ProcessingRequest --> CircuitCheck: Start Processing
+
+    CircuitCheck --> Open: Too Many Failures
+    CircuitCheck --> HalfOpen: Recovery Mode
+    CircuitCheck --> Closed: Healthy
+
+    Open --> [*]: Return 503
+    HalfOpen --> Closed: Success
+    HalfOpen --> Open: Failure
+
+    Closed --> Success: Process Complete
+    Closed --> Failed: Process Error
+
+    Success --> UpdateMetrics: Log Success
+    Failed --> UpdateMetrics: Log Failure
+
+    UpdateMetrics --> [*]
+    RateLimited --> [*]: Return 429
+
+    note right of CircuitCheck
+        Circuit Breaker Pattern
+        - Open: Block all requests
+        - Half-Open: Test recovery
+        - Closed: Normal operation
+    end note
+
+    note right of CheckingRate
+        Rate Limiting
+        - 100 req/hour per API key
+        - 10 req/min burst
+    end note
+                </div>
+            </div>
+        </section>
+
+        <section id="deployment" class="section">
+            <div class="section-header">
+                <span class="section-icon">🚀</span>
+                <h2>Deployment Architecture</h2>
+            </div>
+            <div class="section-description">
+                Architettura di deployment completa dal development alla produzione, includendo CI/CD, staging e monitoring.
+            </div>
+            <div class="diagram-container">
+                <div class="mermaid">
+graph TB
+    subgraph "Development"
+        DEV[Local Machine]
+        DOCKER[Docker Compose]
+        DEV --> DOCKER
+    end
+
+    subgraph "CI/CD Pipeline"
+        GH[GitHub]
+        GHA[GitHub Actions]
+        TEST[Test Suite]
+        BUILD[Build]
+
+        GH --> GHA
+        GHA --> TEST
+        TEST --> BUILD
+    end
+
+    subgraph "Staging"
+        STREAM_STG[Streamlit Cloud<br/>Free Tier]
+        NEON_STG[Neon PostgreSQL<br/>Free Tier]
+
+        BUILD --> STREAM_STG
+        STREAM_STG --> NEON_STG
+    end
+
+    subgraph "Production"
+        subgraph "Frontend"
+            CF[Cloudflare CDN]
+            STREAM_PRD[Streamlit Cloud<br/>Pro]
+        end
+
+        subgraph "Backend"
+            API_GW[API Gateway]
+            FASTAPI[FastAPI<br/>Container]
+            WORKER[Background Workers]
+        end
+
+        subgraph "Data Layer"
+            DUCK_PRD[(DuckDB<br/>Analytics)]
+            PG_PRD[(PostgreSQL<br/>Cloud)]
+            REDIS[(Redis<br/>Cache)]
+        end
+
+        subgraph "Monitoring"
+            GRAFANA[Grafana]
+            LOKI[Loki Logs]
+            PROM[Prometheus]
+        end
+    end
+
+    BUILD --> CF
+    CF --> STREAM_PRD
+    CF --> API_GW
+
+    API_GW --> FASTAPI
+    FASTAPI --> WORKER
+
+    FASTAPI --> DUCK_PRD
+    FASTAPI --> PG_PRD
+    FASTAPI --> REDIS
+
+    WORKER --> DUCK_PRD
+    WORKER --> PG_PRD
+
+    FASTAPI --> PROM
+    WORKER --> PROM
+    PROM --> GRAFANA
+    FASTAPI --> LOKI
+    LOKI --> GRAFANA
+
+    style DEV fill:#f9f,stroke:#333,stroke-width:2px
+    style STREAM_STG fill:#bbf,stroke:#333,stroke-width:2px
+    style STREAM_PRD fill:#bfb,stroke:#333,stroke-width:2px
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <button class="back-to-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+        ↑
+    </button>
+
+    <script>
+        // Show/hide back to top button
+        window.addEventListener('scroll', function() {
+            const backToTop = document.querySelector('.back-to-top');
+            if (window.pageYOffset > 300) {
+                backToTop.classList.add('visible');
+            } else {
+                backToTop.classList.remove('visible');
+            }
+        });
+
+        // Smooth scroll for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+

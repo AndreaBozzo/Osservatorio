@@ -31,7 +31,8 @@ This is an Italian data processing system for ISTAT (Italian National Institute 
 - `python scripts/test_ci.py --strategy quick` - Run essential tests for CI/CD
 - `python scripts/test_ci.py --strategy minimal` - Run minimal ultra-robust tests for CI/CD
 - `python scripts/generate_test_data.py` - Generate mock data for CI/CD testing
-- `streamlit run dashboard/app.py` - Run dashboard locally
+- `streamlit run dashboard/app.py` - Run dashboard locally (Streamlit 1.45.0, verified 20/07/2025)
+- **Dashboard live**: [https://osservatorio-dashboard.streamlit.app/](https://osservatorio-dashboard.streamlit.app/) ✅ OPERATIVO
 
 ### File Management Commands
 - `python scripts/cleanup_temp_files.py` - Clean up temporary files
@@ -42,19 +43,22 @@ This is an Italian data processing system for ISTAT (Italian National Institute 
 - `python scripts/schedule_cleanup.py` - Set up automatic cleanup scheduling
 
 ### Development Environment
+- **Python Version**: 3.13.3 (verified 20/07/2025)
+- **Testing Framework**: pytest 8.3.5 (verified 20/07/2025)
 - `python -m venv venv` - Create virtual environment
 - `venv\Scripts\activate` (Windows) or `source venv/bin/activate` (Linux/Mac) - Activate virtual environment
 - `pip install -r requirements.txt` - Install dependencies
+- `pip install -r requirements-dev.txt` - Install development dependencies
 
 ### Security & Monitoring Commands (NEW)
 - `python -c "from src.utils.security_enhanced import security_manager; print(security_manager.get_security_headers())"` - Get security headers
 - `python -c "from src.utils.circuit_breaker import get_circuit_breaker_stats; print(get_circuit_breaker_stats())"` - Get circuit breaker stats
 - `python -c "from src.utils.security_enhanced import security_manager; security_manager.cleanup_old_entries()"` - Clean up rate limiter entries
 
-### Testing (UPDATED 19/01/2025)
-- `pytest` - Run all tests (270+ tests total)
+### Testing (UPDATED 20/07/2025)
+- `pytest` - Run all tests (292 tests total, verified 20/07/2025)
 - `pytest --cov=src tests/` - Run tests with coverage (57% current coverage, target achieved)
-- `pytest tests/unit/` - Run unit tests only (205+ tests after expansion)
+- `pytest tests/unit/` - Run unit tests only (215+ tests after expansions)
 - `pytest tests/integration/` - Run integration tests only (26 tests)
 - `pytest tests/performance/` - Run performance tests only (8 tests)
 - `pytest --cov=src --cov-report=html tests/` - Generate HTML coverage report
@@ -500,3 +504,32 @@ files = converter._generate_powerbi_formats(df, dataset_info)
 - XML parsing security improvements
 - Path validation integration in converter methods
 - Secure file operations
+
+## 📝 Documentation & Process (UPDATED 20/07/2025)
+
+### Documentation Structure ✅ VERIFICATA
+- **Main Documentation**: [docs/README.md](docs/README.md) - Organized project documentation
+- **API Reference**: [docs/api-mapping.md](docs/api-mapping.md) - Complete ISTAT endpoint mapping
+- **Architecture Decisions**: [docs/adr/](docs/adr/) - ADR records per decisioni tecniche
+- **Contributing Guide**: [docs/guides/CONTRIBUTING.md](docs/guides/CONTRIBUTING.md) - Formattato e strutturato
+- **Project State**: [PROJECT_STATE.md](PROJECT_STATE.md) - Stato sviluppo corrente
+
+### Development Process ✅ ATTIVO
+- **Git Workflow**: Feature branches con commit convenzionali
+- **Code Quality**: black, flake8, isort, pre-commit hooks
+- **Testing**: pytest con coverage reporting (292 tests verificati)
+- **CI/CD**: GitHub Actions con testing automatico
+- **Security**: Bandit e Safety checks integrati
+
+### Environment Specs ✅ VERIFICATE 20/07/2025
+- **Python**: 3.13.3 (tags/v3.13.3:6280bb5, Apr 8 2025)
+- **Testing**: pytest 8.3.5
+- **Dashboard**: Streamlit 1.45.0
+- **Total Tests**: 292 (collectibles verificati)
+- **Coverage**: 57% target raggiunto
+
+## Important Instructions
+Respect existing implementations and verify functionality before making changes.
+ALWAYS check current test status and coverage before modifying code.
+Use the CONTRIBUTING.md guide for development standards and processes.
+Refer to PROJECT_STATE.md for current development context.

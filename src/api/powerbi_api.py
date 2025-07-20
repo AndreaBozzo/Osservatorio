@@ -441,7 +441,9 @@ def main():
         f"Workspace accessibili: {'✅' if test_result['workspaces_accessible'] else '❌'}"
     )
     print(f"Numero workspace: {test_result['workspace_count']}")
-    print(f"Dataset accessibili: {'✅' if test_result['datasets_accessible'] else '❌'}")
+    print(
+        f"Dataset accessibili: {'✅' if test_result['datasets_accessible'] else '❌'}"
+    )
     print(f"Numero dataset: {test_result['dataset_count']}")
 
     if test_result["errors"]:

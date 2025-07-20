@@ -850,6 +850,53 @@ The **Osservatorio** architecture represents a **modern, secure, and scalable** 
 
 ---
 
-**Document Version**: 2.0.0
-**Last Updated**: July 18, 2025
-**Next Review**: August 18, 2025
+**Document Version**: 2.1.0
+**Last Updated**: July 19, 2025
+**Next Review**: August 19, 2025
+
+## 🆕 Recent Updates (v2.1.0)
+
+### Database Architecture Addition
+Following the completion of Day 1 API mapping and database selection (ADR-001), the architecture now includes:
+
+#### **Hybrid Database Strategy**
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    💾 Database Layer                           │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐ │
+│  │   🦆 DuckDB      │  │   🐘 PostgreSQL │  │   📁 File       │ │
+│  │   (Analytics)   │  │   (Metadata)    │  │   (Temp/Cache)  │ │
+│  │                 │  │                 │  │                 │ │
+│  │  • Time-series  │  │  • Users        │  │  • API Cache    │ │
+│  │  • Aggregations │  │  • Config       │  │  • Temp Files   │ │
+│  │  • Data Warehouse│  │  • Audit Logs   │  │  • Backups      │ │
+│  └─────────────────┘  └─────────────────┘  └─────────────────┘ │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+#### **Storage Requirements (Analyzed)**
+- **Current**: ~5GB total (raw + processed)
+- **Annual Growth**: ~1.8GB raw data
+- **5-year Projection**: ~15GB total
+- **DuckDB Optimization**: Columnar storage, 70%+ compression ratio
+- **PostgreSQL Usage**: <500MB for metadata and user management
+
+#### **New Architecture Decision Records**
+- **[ADR-001: Database Selection](adr/001-database-selection.md)**: Hybrid DuckDB + PostgreSQL approach
+- **[Planned ADR-002]**: API Authentication Strategy
+- **[Planned ADR-003]**: Caching Strategy
+
+#### **Updated Component Architecture**
+The data flow now includes persistent storage:
+
+```
+ISTAT API → XML Parser → DuckDB (Analytics) → Dashboard
+                      ↘ PostgreSQL (Metadata) → API Management
+```
+
+#### **Implementation Timeline**
+- **Day 1 (Completed)**: API mapping and documentation
+- **Day 2-3**: DuckDB implementation and integration
+- **Day 4-5**: PostgreSQL setup and user management
+- **Day 6-7**: Performance optimization and testing
+

@@ -1,42 +1,33 @@
-# Core dependencies
+# Core dependencies - PRODUCTION ONLY
+# For complete dependency list see pyproject.toml
+
+# Essential core for cloud deployment
 pandas>=2.0.0
 numpy>=1.24.0
 requests>=2.31.0
 
-# Streamlit and visualization (for cloud deployment)
+# Database layer (Database Foundation Sprint)
+duckdb>=0.9.0
+psycopg2-binary>=2.9.0
+sqlalchemy>=2.0.0
+
+# Dashboard deployment (Streamlit Cloud)
 streamlit>=1.32.0
 plotly>=5.17.0
 matplotlib>=3.7.0
 seaborn>=0.12.0
 
-# Data processing
+# Data processing essential
 lxml>=4.9.0
-beautifulsoup4>=4.12.0
 openpyxl>=3.1.0
 pyarrow>=13.0.0
 
-# API clients
-tableauserverclient>=0.25
-msal>=1.24.0
-
-# Utilities
+# Utilities essential
 python-dotenv>=1.0.0
-click>=8.1.0
-tqdm>=4.65.0
 loguru>=0.7.0
+tqdm>=4.65.0
 
-# Testing
-pytest>=7.4.0
-pytest-cov>=4.1.0
-pytest-mock>=3.11.0
-psutil>=5.9.0
+# API integration
+msal>=1.24.0
+tableauserverclient>=0.25
 
-# Development
-black>=23.7.0
-flake8>=6.1.0
-isort>=5.12.0
-pre-commit>=3.3.0
-
-# Performance testing and visualization
-seaborn>=0.12.0
-matplotlib>=3.7.0

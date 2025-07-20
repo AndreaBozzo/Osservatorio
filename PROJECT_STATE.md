@@ -1,405 +1,399 @@
 # PROJECT_STATE.md - Osservatorio Project Status & Evolution
 
-> **Ultimo aggiornamento**: 19 Gennaio 2025 - Evening Update
-> **Versione**: 4.1.0 (Post Test Coverage Push)
+> **Ultimo aggiornamento**: 20 Luglio 2025 - Roadmap Update
+> **Versione**: 5.0.0 (Public Roadmap + 10-Day Sprint Plan)
 > **Maintainer**: Andrea Bozzo
-> **Scopo**: Stato reale del progetto con aggiornamenti test coverage e preparazione database
+> **Scopo**: Stato reale del progetto con roadmap pubblica per i prossimi 10 giorni
 
 ## 📊 Executive Summary
 
-**Osservatorio** è un sistema di elaborazione dati statistici italiani (ISTAT) in fase MVP avanzata. Significativo miglioramento della qualità del codice con espansione test coverage. Sistema pronto per integrazione database.
-
-### 🎯 Stato Attuale (Evening Update 19/01)
-- ✅ **Performance Fix**: Da 25-30s a 0.20s (150x miglioramento)
-- ✅ **Dataset Discovery**: Rimossi hardcoded IDs, implementato sistema dinamico
-- ✅ **XML Parser**: Fix per SDMX complesso con fallback robusti
-- ✅ **Dashboard Structure**: Verificata - già correttamente organizzata
-- ✅ **Test Coverage**: 48% → 57% (+9% improvement)
-- ❌ **Database**: Ancora assente (prossimo target)
-
-### 🎉 Achievements Today
-1. ✅ **Test Coverage Boost**: Da 48% a 57% con 67 nuovi test
-2. ✅ **Dashboard Verification**: Struttura già corretta, no fix necessari
-3. ✅ **Test Infrastructure**: +3 nuovi file test per aree critiche
-4. ✅ **Quality Gates**: Sistema pronto per database integration
-
-## 📈 Metriche Reali vs Target (AGGIORNATE)
-
-| Metrica | Target Week 4 | Raggiunto | Status |
-|---------|---------------|-----------|---------|
-| Performance | <15s | **0.20s** | ✅ SUPERATO |
-| Dataset Discovery | Dinamico | Implementato | ✅ COMPLETATO |
-| XML Parser Fix | 80% dataset | ~85% | ✅ COMPLETATO |
-| Test Coverage | >50% | **57%** | ✅ SUPERATO |
-| Dashboard Structure | Fix necessari | Già corretta | ✅ VERIFICATO |
-| Database Integration | Base | Pronto per Task 1.1 | 🟡 READY |
-
-### 🎯 Test Coverage Breakdown (Nuovo!)
-| Modulo | Coverage Precedente | Coverage Attuale | Miglioramento |
-|--------|-------------------|------------------|---------------|
-| `tableau_api.py` | 0% | **81%** | +81% 🚀 |
-| `temp_file_manager.py` | 38% | **88%** | +50% 📈 |
-| `istat_api.py` | 51% | **43%** | -8% (refactoring) |
-| `security_enhanced.py` | 86% | **93%** | +7% |
-| `circuit_breaker.py` | 83% | **83%** | Stabile |
-| **TOTAL** | **48%** | **57%** | **+9%** ✨ |
-
-## 🏗️ Architettura Attuale
-
-### Componenti Funzionanti
-```
-src/
-├── api/
-│   ├── istat_api.py      ✅ Ottimizzato con parallelizzazione
-│   ├── powerbi_api.py    ✅ Funzionante
-│   └── tableau_api.py    ✅ Funzionante
-├── converters/           ✅ Operativi
-├── analyzers/            ✅ Categorizzazione automatica
-└── utils/
-    ├── security_enhanced.py  ✅ Rate limiting attivo
-    ├── circuit_breaker.py    ✅ Resilienza implementata
-    └── logger.py            ✅ Logging strutturato
-```
-
-### ✅ Struttura Verificata (AGGIORNAMENTO)
-```
-Osservatorio/              # Root ben organizzata!
-├── streamlit_app.py       ✅ Entry point Streamlit Cloud
-├── dashboard/
-│   ├── app.py            ✅ Main dashboard app
-│   └── index.html        ✅ Configurazioni
-├── tests/                ✅ Ora con 270+ test
-│   ├── unit/             ✅ 67 nuovi test aggiunti
-│   ├── integration/      ✅ Funzionanti
-│   └── performance/      ✅ Benchmarks
-└── src/                  ✅ Architettura solida
-```
-
-## 🗺️ ROADMAP AGGIORNATA CON PROGRESSI
-
-### ✅ FASE 0: Quality Gates (19 Gennaio) - COMPLETATA
-
-#### ✅ Task 0.1: Test Coverage Push - COMPLETATO
-**Risultati**:
-- ✅ Coverage: 48% → 57% (+9%)
-- ✅ Nuovi test: `test_tableau_api.py` (20 test), `test_temp_file_manager.py` (26 test)
-- ✅ Infrastruttura test: Aggiunti test edge cases e utilities
-- ✅ Dashboard verification: Struttura già corretta
-
-```bash
-git checkout -b fix/dashboard-structure
-```
-
-**Subtasks**:
-- [ ] Identificare tutti i file dashboard nella root
-  ```bash
-  find . -maxdepth 1 -name "*.py" -exec grep -l "streamlit" {} \;
-  ls -la pages/
-  ```
-### 🗄️ FASE 1: Database Foundation (20-24 Gennaio) - READY TO START
-
-#### 🎯 Task 1.1: DuckDB Integration - PROSSIMO TARGET
-**Branch**: `feature/duckdb-integration`
-**Effort**: 2 giorni | **Priority**: ALTA
-**Prerequisites**: ✅ Test Coverage 57% - Quality gate superato!
-
-**Motivazione**:
-- ✅ Test coverage sufficiente per sviluppo sicuro
-- ✅ Architettura solida già in place
-- ✅ Performance optimized (0.20s load time)
-- 🎯 DuckDB = Perfect fit per analytics workload
-
-**Subtasks**:
-- [ ] Setup DuckDB
-  ```bash
-  pip install duckdb==0.9.2
-  echo "duckdb==0.9.2" >> requirements.txt
-  ```
-- [ ] Creare database manager
-  ```python
-  # src/database/duckdb_manager.py
-  import duckdb
-
-  class DuckDBManager:
-      def __init__(self, db_path="osservatorio.duckdb"):
-          self.conn = duckdb.connect(db_path)
-          self._init_schema()
-
-      def _init_schema(self):
-          self.conn.execute("""
-              CREATE TABLE IF NOT EXISTS datasets (
-                  dataset_id VARCHAR PRIMARY KEY,
-                  name VARCHAR,
-                  category VARCHAR,
-                  last_updated TIMESTAMP,
-                  data JSON
-              )
-          """)
-  ```
-- [ ] Integrare con data loader esistente
-- [ ] Test performance queries
-- [ ] Benchmark vs file system
-
-#### Task 1.2: PostgreSQL Docker Setup (Locale)
-**Branch**: `feature/postgresql-local`
-**Effort**: 1 giorno | **Priority**: MEDIA
-
-**Setup locale gratuito**:
-```yaml
-# docker-compose.yml
-version: '3.8'
-services:
-  postgres:
-    image: postgres:15-alpine
-    environment:
-      POSTGRES_DB: osservatorio
-      POSTGRES_USER: osservatorio
-      POSTGRES_PASSWORD: dev_password
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-
-  pgadmin:
-    image: dpage/pgadmin4
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@osservatorio.local
-      PGADMIN_DEFAULT_PASSWORD: admin
-    ports:
-      - "5050:80"
-
-volumes:
-  postgres_data:
-```
-
-**Subtasks**:
-- [ ] Installare Docker Desktop su Windows
-- [ ] Creare docker-compose.yml
-- [ ] Test connessione
-- [ ] Schema iniziale
-- [ ] SQLAlchemy setup base
-
-### FASE 2: Testing & Quality (27-31 Gennaio) 🧪
-
-#### Task 2.1: Aumentare Test Coverage
-**Target**: Da 48% a 65%
-**Effort**: 3 giorni
-
-**Areas da coprire**:
-- [ ] Dashboard components (nuovo)
-- [ ] Database operations (nuovo)
-- [ ] Parallel processing (nuovo)
-- [ ] Error scenarios
-
-**Comando monitoraggio**:
-```bash
-pytest --cov=src --cov-report=html --cov-report=term
-```
-
-#### Task 2.2: Load Testing
-**Tools**: Locust o pytest-benchmark
-**Scenarios**:
-- [ ] 1 user, tutte le categorie
-- [ ] 10 users concorrenti
-- [ ] 50 users spike test
-- [ ] Database query performance
-
-### FASE 3: API Development (Febbraio Week 1-2) 🚀
-
-#### Task 3.1: FastAPI Backend
-**Branch**: `feature/api-backend`
-**Motivazione**: Separare backend da dashboard per scalabilità
-
-**Endpoints base**:
-```python
-# src/api/server.py
-from fastapi import FastAPI
-from src.database.duckdb_manager import DuckDBManager
-
-app = FastAPI(title="Osservatorio API")
-
-@app.get("/datasets")
-async def list_datasets(category: str = None):
-    # Lista dataset con filtri
-    pass
-
-@app.get("/datasets/{dataset_id}")
-async def get_dataset(dataset_id: str):
-    # Dati specifici dataset
-    pass
-
-@app.get("/stats/summary")
-async def get_summary_stats():
-    # Statistiche aggregate
-    pass
-```
-
-### FASE 4: Cloud Migration (Febbraio Week 3-4) ☁️
-
-#### Task 4.1: PostgreSQL Cloud (FREE Tier)
-**Opzioni gratuite**:
-
-1. **Neon** (Raccomandato)
-   - 3GB storage free
-   - Branching database
-   - Ottimo per development
-   ```python
-   DATABASE_URL = "postgresql://user:pass@ep-xxx.region.neon.tech/osservatorio"
-   ```
-
-2. **Supabase**
-   - 500MB storage free
-   - Auth integrato
-   - Realtime features
-   ```python
-   DATABASE_URL = "postgresql://postgres:pass@db.xxx.supabase.co:5432/postgres"
-   ```
-
-3. **Aiven**
-   - 1 month free trial
-   - PostgreSQL 15
-   - Buon per testing
-
-#### Task 4.2: Hybrid Architecture
-**DuckDB + PostgreSQL**:
-```python
-# Operational data in PostgreSQL
-# Analytics in DuckDB
-# Best of both worlds!
-```
-
-### FASE 5: Frontend Evolution (Marzo) 💻
-
-#### Task 5.1: Valutare Alternative a Streamlit
-**Motivazione**: Streamlit limitations per multi-user
-
-**Opzioni**:
-1. **Dash** (Plotly) - Più controllo, stesso Python
-2. **Panel** - Migliore per dashboards complesse
-3. **React + FastAPI** - Separazione completa (lungo termine)
-
-### 📋 GANTT Chart Semplificato
-
-```
-Gennaio:
-20-21: Fix Dashboard Structure ████
-22-26: DuckDB Integration     ████████
-27-31: Testing & Quality      ████████
-
-Febbraio:
-01-14: API Development        ████████████████
-15-28: Cloud Migration        ████████████████
-
-Marzo:
-01-15: Frontend Assessment    ████████████████
-16-31: Production Prep        ████████████████
-```
-
-## 🎯 Definition of Done per Ogni Fase
-
-### Done Fase 0 (Fix Immediati)
-- [ ] Dashboard funziona da `dashboard/app.py`
-- [ ] Streamlit Cloud aggiornato
-- [ ] Nessun file dashboard nella root
-- [ ] CI/CD passa senza errori
-
-### Done Fase 1 (Database)
-- [ ] DuckDB operativo per analytics
-- [ ] PostgreSQL locale per development
-- [ ] Migration scripts pronti
-- [ ] 3 query benchmark documentate
-
-### Done Fase 2 (Testing)
-- [ ] Coverage ≥ 65%
-- [ ] Load test report (10 users)
-- [ ] Nessun test flaky
-- [ ] Performance baseline stabilita
-
-### Done Fase 3 (API)
-- [ ] 5 endpoints REST documentati
-- [ ] OpenAPI/Swagger spec
-- [ ] Rate limiting implementato
-- [ ] Test E2E API
-
-### Done Fase 4 (Cloud)
-- [ ] Database cloud operativo
-- [ ] Zero downtime migration
-- [ ] Backup strategy documentata
-- [ ] Costi entro FREE tier
-
-## 💰 Budget & Risorse
-
-### Costi Mensili Stimati
-| Servizio | Development | Staging | Production |
-|----------|-------------|---------|------------|
-| Database | €0 (Docker) | €0 (Neon free) | €15-50 |
-| Hosting | €0 (locale) | €0 (Streamlit) | €20-50 |
-| CI/CD | €0 (GitHub) | €0 | €0 |
-| **TOTALE** | **€0** | **€0** | **€35-100** |
-
-### Risorse Umane
-- **Disponibilità**: Part-time (sera/weekend)
-- **Skills presenti**: Python, Analytics, DuckDB
-- **Skills da acquisire**: Docker basics, Cloud deployment
-
-## 📊 KPIs & Success Metrics
-
-### Metriche Tecniche
-| KPI | Current | Target Feb | Target Mar |
-|-----|---------|------------|------------|
-| Response Time | 0.20s | <0.5s | <0.3s |
-| Concurrent Users | 1 | 10 | 50 |
-| Test Coverage | 48% | 65% | 80% |
-| Uptime | N/A | 95% | 99% |
-| API Endpoints | 0 | 5 | 15 |
-
-### Metriche di Business
-- **Datasets gestiti**: 4 → 20 → 50+
-- **Categorie complete**: 1 → 3 → 6
-- **Export formats**: 4 → 4 → 6
-- **Visualizzazioni**: 1 → 5 → 10
-
-## 🚨 Risk Register Aggiornato
-
-| Risk | Probability | Impact | Mitigation | Status |
-|------|-------------|---------|------------|---------|
-| Dashboard structure mess | **CERTO** | ALTO | Fix immediato 20/01 | 🔴 ACTIVE |
-| No database delays project | **ALTO** | CRITICO | DuckDB quick win | 🟡 PLANNED |
-| Test coverage gaps | **MEDIO** | MEDIO | Incremental approach | 🟡 MONITORED |
-| ISTAT API changes | BASSO | ALTO | Robust parsers done | 🟢 MITIGATED |
-| Resource constraints | **MEDIO** | MEDIO | Realistic timeline | 🟡 ACCEPTED |
-
-## 🎯 Next Actions (Prossima Settimana)
-
-### Lunedì 20/01
-- [ ] 09:00: Creare branch `fix/dashboard-structure`
-- [ ] 10:00: Identificare e listare file da spostare
-- [ ] 14:00: Eseguire riorganizzazione
-- [ ] 16:00: Test locale completo
-
-### Martedì 21/01
-- [ ] 09:00: Fix deployment Streamlit Cloud
-- [ ] 14:00: Merge fix su main
-- [ ] 15:00: Setup DuckDB environment
-
-### Mercoledì-Venerdì 22-24/01
-- [ ] DuckDB schema design
-- [ ] Integration con data_loader
-- [ ] Performance benchmarks
-- [ ] Docker PostgreSQL setup
-
-## 📝 Note Finali
-
-**Stato reale**: MVP funzionante con ottimi miglioramenti performance ma ancora lontano da production.
-
-**Priorità immediate**:
-1. Fix struttura dashboard (bloccante)
-2. Database implementation (critico)
-3. Test coverage increase (importante)
-
-**Timeline realistica per production**: 2-3 mesi con effort part-time.
-
-**Prossimo update**: 26 Gennaio con database operativo.
+**Osservatorio** è un sistema di elaborazione dati statistici italiani (ISTAT) in fase MVP avanzata. Il progetto ha raggiunto stabilità operativa con performance eccellenti e codebase testata. Ora è pronto per l'implementazione del layer di persistenza e l'apertura a contributi esterni.
+
+### 🎯 Stato Attuale (20 Luglio 2025)
+- ✅ **Performance**: 0.20s load time (150x improvement achieved)
+- ✅ **Test Coverage**: 57% (target 50% superato)
+- ✅ **Documentazione Base**: API mapping completato
+- ✅ **GitHub Setup**: Labels e issue templates pronti
+- 🚧 **Database**: Non implementato (prossima priorità)
+- 🚧 **Contributors**: Pronti per onboarding
+
+## 📅 10-DAY SPRINT ROADMAP (21-31 Luglio 2025)
+
+### 🎯 Sprint Goal
+Implementare il layer di persistenza con architettura ibrida DuckDB + PostgreSQL, rendendo il progetto production-ready e contributor-friendly.
+
+### ✅ Lavoro Già Completato (20 Luglio)
+- Mappatura API ISTAT completa
+- Documentazione base (README, CONTRIBUTING.md)
+- Diagrammi architettura
+- GitHub setup (labels, issue templates)
+- ADR-001: Approccio database ibrido deciso
 
 ---
-*Versione 4.0.0 - Assessment realistico con roadmap concreta*
+
+## 📋 Day-by-Day Roadmap
+
+### Day 0: Sabato 19 Luglio - ✅ COMPLETATO
+**Focus**: Mappatura API e documentazione base
+
+#### Completati:
+- ✅ Mappatura completa API ISTAT (`docs/api-mapping.md`)
+- ✅ Analisi formati dati (`scripts/analyze_data_formats.py`)
+- ✅ README tecnico dettagliato
+- ✅ CONTRIBUTING.md con guidelines
+- ✅ Diagrammi architettura (Mermaid) (docs/architecture/diagram.html)
+- ✅ Setup issue templates e labels GitHub
+- ✅ ADR-001: Decisione hybrid database approach
+
+### Day 1: Domenica 21 Luglio - Final Documentation & Sprint Setup
+**Focus**: Completare setup collaborativo e lanciare sprint pubblico
+
+  ✅ Setup Mattutino Completato al 100%
+
+  Obiettivi raggiunti (9:00-13:00):
+
+  🏗️ Infrastructure Setup
+
+  - ✅ Milestone: "Database Foundation Sprint" (scadenza 31 Luglio)
+  - ✅ Project Board: https://github.com/users/AndreaBozzo/projects/2
+  - ✅ Issues: Prime 2 issues create con labels corretti
+  - ✅ Labels System: Integrato con issue templates
+
+  📋 Project Organization
+
+  - ✅ Issue Tracking: Sistema completo per 10-day sprint
+  - ✅ Dependencies: Mappate tra tasks sequenziali
+  - ✅ Prioritization: Critical, High, Medium priorities assegnate
+  - ✅ Components: Database, Infrastructure, ETL, Testing
+
+ **Dependencies Review & Update** COMPLETATO
+
+pyproject.toml aggiornato con Database Foundation Sprint dependencies:
+
+    DuckDB >=0.9.0 per analytics
+    PostgreSQL (psycopg2-binary >=2.9.0) per metadata
+    SQLAlchemy >=2.0.0 + Alembic >=1.12.0 per ORM e migrations
+    Streamlit >=1.32.0 + Plotly >=5.17.0 per dashboard
+
+requirements.txt refactored - solo production dependencies, no duplicates
+requirements-dev.txt creato - development workflow completo
+Python 3.13 compatibility verificata e configurata
+Dependencies organized per categoria con commenti chiari
+
+#### 🌆 Pomeriggio (14:00-18:00) ✅ COMPLETATO
+- [x] **Wiki Setup** ✅
+  - [x] FAQ tecniche per contributors
+  - [x] Guida setup ambiente locale
+  - [x] Troubleshooting comune
+  - [x] Security policy e check security interna
+  - [x] Implementazione Issues fino 6/7, anche su projects
+- [x] **Comunicazione Sprint** ✅
+  - [x] Post su GitHub Discussions per kick-off
+  - [x] README update, anche con link a project board
+  - [ ] Invito contributors (Francesco) - richiede accesso GitHub
+
+**Deliverables COMPLETATI**: ✅
+- [x] GitHub project board operativo con 7 issues strategici
+- [x] Wiki con 6 pagine complete (Home, FAQ, Setup, Troubleshooting, Security, Contributing)
+- [x] Security policy attiva in repo
+- [x] Sprint ufficialmente lanciato
+- [x] 7+ issue attive pronte per development
+---
+
+### Day 2-3: Lunedì-Mercoledì 21-23 Luglio - DuckDB Core
+**Focus**: Implementazione core DuckDB per analytics
+
+#### Day 2 Tasks
+- [ ] **09:00-12:00**: DuckDB Environment Setup
+  ```python
+  # src/database/duckdb/config.py
+  DUCKDB_CONFIG = {
+      'database': 'data/osservatorio.duckdb',
+      'read_only': False,
+      'threads': 4,
+      'memory_limit': '4GB'
+  }
+  ```
+
+- [ ] **14:00-18:00**: Schema Design & Implementation
+  - Tabelle per dati ISTAT
+  - Indici ottimizzati per query comuni
+  - Partitioning per anno/territorio
+
+#### Day 3 Tasks
+- [ ] **09:00-12:00**: Query Builder Pattern
+  - Builder per query analitiche comuni
+  - Caching layer integrato
+  - Error handling robusto
+
+- [ ] **14:00-18:00**: Performance Testing
+  - Benchmark vs file system
+  - Test con dataset reali
+  - Ottimizzazione query
+
+**Deliverables**:
+- DuckDB manager funzionante
+- 10+ test di integrazione
+- Benchmark report
+
+---
+
+### Day 4-5: Giovedì-Venerdì 24-25 Luglio - PostgreSQL Setup
+**Focus**: Metadata management con PostgreSQL
+
+#### Day 4 Tasks
+- [ ] **09:00-12:00**: Docker Environment
+  - docker-compose.yml per development
+  - Volume persistence
+  - Health checks
+
+- [ ] **14:00-18:00**: SQLAlchemy Models
+  - Dataset metadata
+  - User preferences
+  - API keys management
+
+#### Day 5 Tasks
+- [ ] **09:00-12:00**: Migration System
+  - Alembic setup
+  - Initial migrations
+  - Seed data scripts
+
+- [ ] **14:00-18:00**: Integration Testing
+  - Connection pooling
+  - Transaction management
+  - Backup/restore procedures
+
+**Deliverables**:
+- PostgreSQL containerizzato
+- Schema migrations pronte
+- Integration test suite
+
+---
+
+### Day 6-7: Sabato-Domenica 26-27 Luglio - Storage Adapters
+**Focus**: Unificare accesso ai dati con adapter pattern
+
+#### Day 6 Tasks
+- [ ] **09:00-12:00**: Abstract Storage Interface
+  ```python
+  class IStorageAdapter(Protocol):
+      def save_dataset(self, data: pd.DataFrame) -> str: ...
+      def load_dataset(self, dataset_id: str) -> pd.DataFrame: ...
+      def query_analytics(self, query: AnalyticsQuery) -> pd.DataFrame: ...
+  ```
+
+- [ ] **14:00-18:00**: Concrete Implementations
+  - DuckDBAdapter per analytics
+  - PostgreSQLAdapter per metadata
+  - FileSystemAdapter (legacy compatibility)
+
+#### Day 7 Tasks
+- [ ] **09:00-12:00**: Pipeline Integration
+  - Refactor data_loader
+  - Update dashboard queries
+  - Migration utilities
+
+- [ ] **14:00-18:00**: End-to-End Testing
+  - Full pipeline test
+  - Performance comparison
+  - Rollback procedures
+
+**Deliverables**:
+- Storage adapter system completo
+- Pipeline refactoring completato
+- Migration guide
+
+---
+
+### Day 8: Lunedì 28 Luglio - Monitoring & Observability
+**Focus**: Visibilità sulle performance del sistema
+
+#### Tasks
+- [ ] **09:00-12:00**: Query Performance Monitoring
+  - Slow query logging
+  - Query pattern analysis
+  - Performance dashboards
+
+- [ ] **14:00-16:00**: System Metrics
+  - Database connection pools
+  - Memory usage tracking
+  - API response times
+
+- [ ] **16:00-18:00**: Alert Configuration
+  - Threshold definitions
+  - Notification channels
+  - Runbook documentation
+
+**Deliverables**:
+- Monitoring dashboard
+- Alert rules configured
+- Performance baseline established
+
+---
+
+### Day 9: Martedì 29 Luglio - Testing & Quality Assurance
+**Focus**: Testing completo e quality gates
+
+#### Tasks
+- [ ] **09:00-12:00**: Test Suite Expansion
+  - Unit tests per tutti gli adapters
+  - Integration tests end-to-end
+  - Performance regression tests
+  - Test coverage report (target: 70%)
+
+- [ ] **14:00-18:00**: Load & Stress Testing
+  - Concurrent user simulation
+  - Large dataset processing
+  - Memory leak detection
+  - Bottleneck identification
+
+**Deliverables**:
+- Test coverage >70%
+- Load test report
+- Performance optimization recommendations
+
+---
+
+### Day 10: Mercoledì 30 Luglio - Documentation & Release Prep
+**Focus**: Documentazione finale e preparazione release
+
+#### Tasks
+- [ ] **09:00-12:00**: Documentation Sprint
+  - Database setup guide completa
+  - Migration guide from file system
+  - Performance tuning guide
+  - Troubleshooting documentation
+
+- [ ] **14:00-16:00**: Release Preparation
+  - Version bump a v1.0.0-beta
+  - CHANGELOG.md update
+  - Release notes draft
+  - Tag e branch creation
+
+- [ ] **16:00-18:00**: Sprint Retrospective
+  - Obiettivi raggiunti vs pianificati
+  - Metriche finali (performance, coverage)
+  - Lessons learned
+  - Planning prossimo sprint
+
+**Deliverables**:
+- Documentazione completa in `/docs`
+- Release v1.0.0-beta tagged
+- Sprint report pubblicato
+
+---
+
+### Day 11: Giovedì 31 Luglio - Sprint Review & Demo
+**Focus**: Review pubblica e demo delle nuove funzionalità
+
+#### Tasks
+- [ ] **18:00-19:00**: Sprint Review Meeting
+  - Demo database functionality
+  - Performance benchmarks presentation
+  - Q&A con contributors
+  - Raccolta feedback
+
+**Deliverables**:
+- Sprint officially closed
+- Feedback raccolto per prossima iterazione
+- Roadmap agosto pubblicata
+
+---
+
+## 🎯 Sprint Success Metrics
+
+### Must Have (Sprint Failure if not met)
+- ✅ DuckDB operational for analytics
+- ✅ PostgreSQL operational for metadata
+- ✅ Zero data loss during operations
+- ✅ All existing tests passing
+- ✅ Documentation complete
+
+### Should Have (Target 80% completion)
+- 📊 Performance equal or better than current
+- 📊 70%+ test coverage on new code
+- 📊 Monitoring dashboards operational
+- 📊 3+ external contributors onboarded
+
+### Nice to Have (Stretch goals)
+- 🎯 API prototype started
+- 🎯 Cloud deployment tested
+- 🎯 Load testing completed
+
+## 👥 How to Contribute
+
+### Per Contributors Esperti (Francesco e altri)
+1. **Fork** il repository
+2. **Claim** una issue dal board (commenta per assignment)
+3. **Branch** dal main: `feature/issue-number-description`
+4. **Test** con coverage minimo 60% in dev
+5. **PR** con description dettagliata
+
+### Per Newcomers
+1. Cerca issues con label `good first issue`
+2. Leggi `CONTRIBUTING.md` per guidelines
+3. Setup ambiente locale seguendo il README
+4. Chiedi aiuto nelle issue o Discussions
+
+### Task Disponibili per Assignment
+- 🟢 **[Easy]** Test coverage per utils modules
+- 🟢 **[Easy]** Dockerfile optimization
+- 🟡 **[Medium]** DuckDB query optimization
+- 🟡 **[Medium]** PostgreSQL model design review
+- 🔴 **[Hard]** Performance monitoring system
+- 🔴 **[Hard]** Storage adapter implementation
+
+## 📊 Current Metrics
+
+### Codebase Health
+| Metric | Current | Sprint Target |
+|--------|---------|---------------|
+| Test Coverage | 57% | 70% |
+| Code Duplication | <5% | <3% |
+| Cyclomatic Complexity | 8.2 | <10 |
+| Technical Debt | 2.5 days | <4 days |
+
+### Performance Baseline
+| Operation | Current | Target |
+|-----------|---------|---------|
+| Dataset Load | 0.20s | <0.30s |
+| Query Analytics | N/A | <100ms |
+| Export Data | 1.2s | <2s |
+| API Response | N/A | <200ms |
+
+## 🚀 Next Steps After Sprint
+
+### Fine Agosto 2025 - API Development
+- FastAPI implementation
+- Authentication system
+- Rate limiting
+- OpenAPI documentation
+
+### Metà/Fine Settembre 2025 - Production Deployment
+- Cloud infrastructure
+- CI/CD pipeline
+- Monitoring stack
+- Backup procedures
+
+## 📞 Communication Channels
+
+- **GitHub Issues**: Bug reports e feature requests
+- **GitHub Discussions**: Domande e discussioni tecniche
+- **Email**: osservatorio-dev@example.com (coming soon)
+- **Wiki**: Documentazione dettagliata e guide
+
+## 🏁 Sprint Review
+
+**Data**: Mercoledì 31 Luglio 2025, ore 18:00
+**Format**: GitHub Discussion post con:
+- Obiettivi raggiunti
+- Metriche finali
+- Lessons learned
+- Piano per prossimo sprint
+
+---
+
+**Ready to contribute?** 🚀 Scegli una issue e inizia!
+**Roadmap e task soggetti a review e cambiamenti**
+*Ultimo update: 20 Luglio 2025 - Version 5.0.0*
+

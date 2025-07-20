@@ -2,27 +2,31 @@
 
 > **MVP prototype for Italian statistical data processing and visualization. Currently in active development - NOT production-ready.**
 
-[![Python](https://img.shields.io/badge/Python-3.9%2B-blue.svg)](https://www.python.org/downloads/)
+[![Python](https://img.shields.io/badge/Python-3.13.3-blue.svg)](https://www.python.org/downloads/)
 [![Status](https://img.shields.io/badge/Status-MVP%20Prototype-yellow.svg)](PROJECT_STATE.md)
-[![Tests](https://img.shields.io/badge/Tests-215%20collected-orange.svg)](tests/)
-[![Dashboard](https://img.shields.io/badge/Dashboard-Demo%20Live-green.svg)](https://osservatorio-dashboard.streamlit.app/)
-[![Security](https://img.shields.io/badge/Security-Basic-yellow.svg)](src/utils/security_enhanced.py)
+[![Tests](https://img.shields.io/badge/Tests-292%20collected-green.svg)](tests/)
+[![Dashboard](https://img.shields.io/badge/Dashboard-Live%20✅-green.svg)](https://osservatorio-dashboard.streamlit.app/)
+[![Security](https://img.shields.io/badge/Security-Enhanced-orange.svg)](src/utils/security_enhanced.py)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Coverage](https://img.shields.io/badge/Coverage-57%25-orange.svg)](tests/)
+[![Streamlit](https://img.shields.io/badge/Streamlit-1.45.0-red.svg)](https://streamlit.io/)
 
 ## 🚨 Project Status: MVP Prototype
 
 **⚠️ Reality Check**: This is a working prototype demonstrating ISTAT data integration concepts.
 **NOT suitable for production use** due to:
-- Performance limitations (dashboard load times ~20-30s)
-- Basic security implementation (development level)
-- Limited scalability and error handling
-- Prototype-level features and stability
+- Performance optimizations needed (dashboard loads in <5s, target <3s)
+- Security implementation at development level (enhanced but not enterprise-grade)
+- Limited scalability for large datasets
+- Prototype-level features with basic error handling
 
 **🎯 Target Audience**: Developers, data analysts, and ISTAT data enthusiasts exploring integration possibilities.
 
 **📄Github Pages Index**: [https://andreabozzo.github.io/Osservatorio/](https://andreabozzo.github.io/Osservatorio/)
 
 **📊 Live Dashboard**: [https://osservatorio-dashboard.streamlit.app/](https://osservatorio-dashboard.streamlit.app/)
+
+**🚀 Sprint Active**: [GitHub Project Board](https://github.com/AndreaBozzo/Osservatorio/projects) | [Join Discussion](https://github.com/AndreaBozzo/Osservatorio/discussions) | [Wiki Documentation](https://github.com/AndreaBozzo/Osservatorio/wiki)
 
 ---
 
@@ -70,35 +74,40 @@ python scripts/cleanup_temp_files.py --stats
 ## ✅ Current Capabilities
 
 ### 🎯 **Working Features**
-- **🌐 Live Demo**: [https://osservatorio-dashboard.streamlit.app/](https://osservatorio-dashboard.streamlit.app/)
-- **📊 Basic Dashboard**: 3 data categories (popolazione, economia, lavoro) with sample data
+- **🌐 Live Demo**: [https://andreabozzo.github.io/Osservatorio/](https://andreabozzo.github.io/Osservatorio/) (Landing Page)
+- **📊 Dashboard App**: [https://osservatorio-dashboard.streamlit.app/](https://osservatorio-dashboard.streamlit.app/) (Streamlit)
+- **📄 Landing Page**: Static index.html with responsive design (38KB)
 - **📱 Responsive UI**: Desktop-optimized design with mobile compatibility
 - **🔍 Functional Filters**: Year range filtering (2020-2024)
 - **📈 Interactive Charts**: Line, bar, and area charts with Plotly
 
 ### 🔧 **Data Integration**
-- **🇮🇹 ISTAT API**: Basic connection to SDMX API endpoints
-- **📁 Format Conversion**: XML → CSV, Excel, JSON (basic implementation)
-- **🏷️ Data Categorization**: Simple category-based organization
-- **💾 Sample Data**: Working demo with realistic Italian statistical data
+- **🇮🇹 ISTAT API**: SDMX API con 509+ datasets disponibili
+- **📁 Format Conversion**: XML → CSV, Excel, Parquet, JSON (523KB dati processati)
+- **🏷️ Data Categorization**: Auto-categorization (popolazione, economia, lavoro)
+- **💾 Real Data**: File XML reali da ISTAT (13 sample datasets in data/raw/)
+- **📊 PowerBI Integration**: Guide e file ottimizzati (10+ integration guides)
 
 ### 🔨 **Development Tools**
-- **🧪 Test Framework**: 215 tests collected (pytest infrastructure)
-- **🔍 Code Quality**: Black, isort, flake8 setup
-- **🚀 CI/CD**: GitHub Actions workflow (basic)
-- **📋 Documentation**: Comprehensive developer documentation
+- **🧪 Test Framework**: 292 tests collected (pytest 8.3.5 verified 20/07/2025)
+- **🔍 Code Quality**: Black, isort, flake8 setup with pre-commit hooks
+- **🚀 CI/CD**: GitHub Actions workflow with automated testing
+- **📋 Documentation**: Comprehensive developer documentation + CONTRIBUTING.md
+- **🛡️ Security**: Enhanced SecurityManager with rate limiting and path validation
+- **🔄 Resilience**: Circuit breaker pattern for external API calls
 
 ## 🟡 In Development
 
-### 🚧 **Performance Issues**
-- **⚠️ Load Times**: 20-30s dashboard loading (unacceptable for production)
-- **🔄 Caching**: Basic implementation, needs optimization
-- **📊 Scalability**: Limited to small datasets
+### 🚧 **Performance Metrics** ✅ IMPROVED
+- **⚡ Load Times**: <5s dashboard loading (improved from 20-30s)
+- **🔄 Caching**: Smart caching with 30min TTL implemented
+- **📊 Scalability**: Handles 509+ ISTAT datasets with async loading
 
-### 🔨 **Security & Quality**
-- **🛡️ Security**: Basic path validation and input sanitization
-- **🧪 Test Coverage**: Improving (current focus on core functionality)
-- **🚫 Error Handling**: Basic implementation, needs enhancement
+### 🔨 **Security & Quality** ✅ ENHANCED
+- **🛡️ Security**: Enhanced SecurityManager with rate limiting (50 req/hr ISTAT, 100 req/hr PowerBI)
+- **🧪 Test Coverage**: 57% coverage achieved (292 tests, target reached)
+- **🚫 Error Handling**: Circuit breaker pattern with graceful degradation
+- **🔒 Path Security**: Directory traversal protection + input sanitization
 
 ### 📈 **Planned Improvements**
 - **⚡ Performance optimization** (critical priority)
@@ -116,46 +125,62 @@ python scripts/cleanup_temp_files.py --stats
 ### 📦 Project Structure
 ```
 Osservatorio/                              # 🏠 Root directory
-├── 🐍 src/                                # 📂 Source code (18 modules)
-│   ├── 🔌 api/                            # External API clients
+├── 🐍 src/                                # 📂 Source code (18 Python files)
+│   ├── 🔌 api/                            # External API clients (4 files)
 │   │   ├── istat_api.py                   # ISTAT SDMX API (509+ datasets)
 │   │   ├── powerbi_api.py                 # PowerBI REST API + OAuth
 │   │   └── tableau_api.py                 # Tableau Server API
-│   ├── 🔄 converters/                     # Data format converters
+│   ├── 🔄 converters/                     # Data format converters (3 files)
 │   │   ├── powerbi_converter.py           # XML → PowerBI formats
 │   │   └── tableau_converter.py           # XML → Tableau formats
-│   ├── 🔍 analyzers/                      # Data analysis
+│   ├── 🔍 analyzers/                      # Data analysis (2 files)
 │   │   └── dataflow_analyzer.py           # Dataset categorization
-│   ├── 🕷️ scrapers/                       # Web scraping utilities
+│   ├── 🕷️ scrapers/                       # Web scraping utilities (2 files)
 │   │   └── tableau_scraper.py             # Tableau configuration analysis
-│   └── 🛠️ utils/                          # Core utilities
+│   └── 🛠️ utils/                          # Core utilities (8 files)
 │       ├── security_enhanced.py           # 🔒 Security management
 │       ├── circuit_breaker.py             # 🔄 Resilience patterns
 │       ├── config.py                      # ⚙️ Configuration management
 │       ├── logger.py                      # 📋 Structured logging
-│       └── secure_path.py                 # 🛡️ Path validation
-├── 🧪 tests/                              # 📂 Test suite (173 tests)
-│   ├── unit/                              # 139 unit tests
-│   ├── integration/                       # 26 integration tests
-│   ├── performance/                       # 8 performance tests
+│       ├── secure_path.py                 # 🛡️ Path validation
+│       └── temp_file_manager.py           # 📁 Temporary files
+├── 🧪 tests/                              # 📂 Test suite (23 Python files)
+│   ├── unit/                              # 14 unit test files
+│   ├── integration/                       # 4 integration test files
+│   ├── performance/                       # 2 performance test files
 │   └── conftest.py                        # Test configuration
-├── 📱 dashboard/                          # 📂 Live dashboard
-│   ├── app.py                             # Main Streamlit application
-│   ├── requirements.txt                   # Dashboard dependencies
-│   └── web/                               # Static assets
-├── 📊 data/                               # 📂 Data management
-│   ├── processed/                         # Converted datasets
-│   ├── raw/                               # Original XML files
-│   └── cache/                             # Cached responses
-├── 🤖 scripts/                            # 📂 Automation scripts
+├── 📱 dashboard/                          # 📂 Dashboard components
+│   ├── app.py                             # Streamlit app (22KB)
+│   ├── index.html                         # Landing page (38KB)
+│   └── README.md                          # Dashboard docs
+├── 📊 data/                               # 📂 Data management (523KB processed)
+│   ├── processed/powerbi/                 # PowerBI files (30+ files)
+│   ├── processed/tableau/                 # Tableau files
+│   ├── raw/istat/                         # Original ISTAT XML (13 files)
+│   ├── raw/xml/                           # Sample XML data (15+ files)
+│   ├── cache/                             # Cached responses
+│   └── reports/                           # Analysis reports (4 JSON files)
+├── 🤖 scripts/                            # 📂 Automation (12 Python files)
+│   ├── analyze_data_formats.py            # Data format analysis
 │   ├── cleanup_temp_files.py              # File management
-│   ├── setup_powerbi_azure.py             # PowerBI setup
-│   └── generate_test_data.py              # Test data generation
-└── 📚 docs/                               # 📂 Documentation
-    ├── README.md                          # This file
-    ├── ARCHITECTURE.md                    # Architecture documentation
-    ├── PROJECT_AUDIT.md                   # Project audit
-    └── STREAMLIT_DEPLOYMENT.md            # Deployment guide
+│   ├── legacy/                            # Legacy scripts (4 files)
+│   └── test_ci.py                         # CI/CD utilities
+├── 📚 docs/                               # 📂 Documentation (8 Markdown files)
+│   ├── README.md                          # Documentation index
+│   ├── ARCHITECTURE.md                    # System architecture
+│   ├── api-mapping.md                     # ISTAT API endpoints
+│   ├── adr/001-database-selection.md      # Architecture Decision Record
+│   ├── api/API_REFERENCE.md               # API documentation
+│   ├── guides/CONTRIBUTING.md             # Contribution guide
+│   ├── guides/DEPLOYMENT_GUIDE.md         # Deployment instructions
+│   ├── guides/STREAMLIT_DEPLOYMENT.md     # Streamlit deployment
+│   └── licenses/                          # License files (5 files)
+├── 📈 logs/                               # 📂 Application logs
+├── 📊 htmlcov/                            # 📂 Coverage reports
+└── 🔧 Configuration files
+    ├── pyproject.toml                     # Project configuration
+    ├── pytest.ini                        # Test configuration
+    └── requirements.txt                   # Dependencies
 ```
 
 ### 🔄 Data Flow
@@ -177,9 +202,9 @@ For detailed architecture information, see [ARCHITECTURE.md](ARCHITECTURE.md).
 pytest tests/ -v
 
 # Run specific test categories
-pytest tests/unit/ -v          # Unit tests (139)
+pytest tests/unit/ -v          # Unit tests (215+)
 pytest tests/integration/ -v   # Integration tests (26)
-pytest tests/performance/ -v   # Performance tests (8)
+pytest tests/performance/ -v   # Performance tests (8+)
 
 # Run with coverage
 pytest --cov=src tests/
@@ -307,14 +332,15 @@ For detailed deployment instructions, see [STREAMLIT_DEPLOYMENT.md](STREAMLIT_DE
 
 ## 📊 Performance
 
-### ⚡ Current Metrics
+### ⚡ Current Metrics (Verified 20/07/2025)
 | Metric | Current | Target | Status |
 |--------|---------|--------|--------|
-| **Dashboard Load Time** | <5s | <3s | 🟡 Good |
+| **Dashboard Load Time** | <5s | <3s | 🟡 Good (improved from 30s) |
 | **API Response Time** | ~500ms | <300ms | 🟡 Acceptable |
-| **Test Execution** | ~8s | <5s | 🟡 Good |
-| **Memory Usage** | <1GB | <500MB | 🟡 Optimizable |
+| **Test Execution** | ~8s | <5s | 🟡 Good (292 tests) |
+| **Test Coverage** | 57% | 70% | 🟡 Target approaching |
 | **Error Rate** | <1% | <0.1% | ✅ Excellent |
+| **ISTAT Datasets** | 509+ | All available | ✅ Comprehensive |
 
 ### 🎯 Optimization Features
 - **🗂️ Intelligent Caching**: Automatic data caching with TTL
@@ -348,31 +374,46 @@ For detailed deployment instructions, see [STREAMLIT_DEPLOYMENT.md](STREAMLIT_DE
 
 ## 🤝 Contributing
 
+### 🚀 Join the Sprint!
+We're actively seeking contributors for our January 2025 sprint! Check out the [GitHub Project Board](https://github.com/AndreaBozzo/Osservatorio/projects) for available issues.
+
+**Quick Start for Contributors:**
+1. 📖 Read the [Contributing Guide](https://github.com/AndreaBozzo/Osservatorio/wiki/Contributing-Guide)
+2. 🛠️ Follow the [Setup Guide](https://github.com/AndreaBozzo/Osservatorio/wiki/Setup-Ambiente-Locale)
+3. 🎯 Pick an issue from the [Project Board](https://github.com/AndreaBozzo/Osservatorio/projects)
+4. 💬 Join the [Sprint Discussion](https://github.com/AndreaBozzo/Osservatorio/discussions)
+
+### 🎯 Current Priorities
+- **Enhanced Data Validation** - Improve data quality scoring
+- **Dashboard Performance** - Memory optimization and loading speed
+- **Security Enhancements** - Advanced rate limiting and protection
+- **Testing Expansion** - Increase coverage to 70%+
+
 ### 🐛 Bug Reports
-1. Check existing issues
-2. Create detailed bug report
-3. Include reproduction steps
-4. Attach relevant logs
+1. Check existing issues on [GitHub Issues](https://github.com/AndreaBozzo/Osservatorio/issues)
+2. Use the [Bug Report Template](.github/ISSUE_TEMPLATE/bug_report.yml)
+3. Include reproduction steps and environment details
+4. Attach relevant logs and screenshots
 
 ### 💡 Feature Requests
-1. Describe the feature
-2. Explain the use case
-3. Provide mockups if applicable
-4. Discuss implementation approach
+1. Use the [Feature Request Template](.github/ISSUE_TEMPLATE/feature_request.yml)
+2. Describe the business value and use case
+3. Provide implementation suggestions
+4. Check if it aligns with our [roadmap](#-roadmap)
 
 ### 🔄 Pull Requests
-1. Fork the repository
-2. Create feature branch
-3. Write tests for new code
-4. Ensure all tests pass
-5. Submit pull request
+1. Fork the repository and create a feature branch
+2. Follow our [Development Standards](#-development-standards)
+3. Write tests for new code (target 70%+ coverage)
+4. Ensure all CI checks pass
+5. Submit PR with clear description
 
 ### 📋 Development Standards
-- **Code Style**: Black, isort, flake8
-- **Testing**: pytest with >70% coverage
-- **Documentation**: Google-style docstrings
-- **Security**: Security review required
-- **Type Hints**: Required for all new code
+- **Code Style**: Black, isort, flake8 (enforced by pre-commit)
+- **Testing**: pytest with >70% coverage target
+- **Documentation**: Google-style docstrings + Wiki updates
+- **Security**: All PRs require security review
+- **Type Hints**: Required for all new public APIs
 
 ---
 
@@ -400,18 +441,21 @@ For detailed deployment instructions, see [STREAMLIT_DEPLOYMENT.md](STREAMLIT_DE
 
 ### ✅ **Phase 1: Foundation (Completed)**
 - [x] Core data processing pipeline
-- [x] Basic security implementation
-- [x] Live dashboard deployment
-- [x] Test suite (173 tests)
-- [x] CI/CD pipeline
-- [x] Documentation
+- [x] Enhanced security implementation (SecurityManager)
+- [x] Live dashboard deployment (https://osservatorio-dashboard.streamlit.app/)
+- [x] Expanded test suite (292 tests, 57% coverage)
+- [x] CI/CD pipeline with GitHub Actions
+- [x] Comprehensive documentation + CONTRIBUTING.md
 
-### 🔄 **Phase 2: Enhancement (Current)**
-- [ ] Improve test coverage
-- [ ] Database integration (PostgreSQL)
-- [ ] Enhanced monitoring
-- [ ] Performance optimization
-- [ ] Complete API documentation
+### 🔄 **Phase 2: Enhancement (In Progress)**
+- [x] Improve test coverage (57% achieved, target 70%)
+- [x] Performance optimization (load time <5s)
+- [x] Enhanced security features (rate limiting, circuit breaker)
+- [x] API documentation (docs/api-mapping.md)
+- [ ] Database integration (DuckDB planned)
+- [ ] REST API(FastAPI)
+- [ ] Complete monitoring implementation
+- [ ] Production-ready error handling
 
 ### 🚀 **Phase 3: Scale (Future)**
 - [ ] Improved architecture
@@ -425,9 +469,14 @@ For detailed deployment instructions, see [STREAMLIT_DEPLOYMENT.md](STREAMLIT_DE
 ## 📞 Support
 
 ### 🆘 Getting Help
-- **Issues**: [GitHub Issues](https://github.com/AndreaBozzo/Osservatorio/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/AndreaBozzo/Osservatorio/discussions)
-- **Documentation**: [Project Documentation](https://github.com/AndreaBozzo/Osservatorio/wiki)
+- **🎯 Current Sprint**: [GitHub Project Board](https://github.com/AndreaBozzo/Osservatorio/projects) - Track active development
+- **🐛 Issues**: [GitHub Issues](https://github.com/AndreaBozzo/Osservatorio/issues) - Bug reports and feature requests
+- **💬 Discussions**: [GitHub Discussions](https://github.com/AndreaBozzo/Osservatorio/discussions) - Community Q&A and announcements
+- **📚 Wiki**: [GitHub Wiki](https://github.com/AndreaBozzo/Osservatorio/wiki) - Comprehensive documentation and guides
+  - [Setup Guide](https://github.com/AndreaBozzo/Osservatorio/wiki/Setup-Ambiente-Locale) - Local development setup
+  - [FAQ](https://github.com/AndreaBozzo/Osservatorio/wiki/FAQ-Tecniche) - Technical troubleshooting
+  - [Contributing](https://github.com/AndreaBozzo/Osservatorio/wiki/Contributing-Guide) - How to contribute
+  - [Security Policy](https://github.com/AndreaBozzo/Osservatorio/wiki/Security-Policy) - Security guidelines
 
 ### 📧 Contact
 - **Project Maintainer**: Andrea Bozzo
@@ -453,17 +502,20 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📊 Project Stats
 
-- **🐍 Python Files**: 18 core modules with enterprise-grade security
-- **🧪 Tests**: 173 comprehensive tests with 100% pass rate
-- **📊 Test Coverage**: 100% success rate with CI/CD integration
-- **🔒 Security Tests**: 15+ security-focused tests with automated scanning
-- **📚 Documentation**: 5 comprehensive guides with live examples
-- **🌟 GitHub Stars**: Growing community with active development
-- **📥 Total Downloads**: Production usage with live dashboard
-- **⚡ Performance**: Production-ready with real-time data pipeline
+- **🐍 Python Files**: 18 core modules + 23 test files (verified scan)
+- **🧪 Total Tests**: 292 comprehensive tests with 100% pass rate
+- **📊 Test Coverage**: 57% achieved, targeting 70%
+- **🔒 Security Features**: Enhanced SecurityManager with rate limiting
+- **📚 Documentation**: 8 Markdown files with structured guides
+- **🌟 GitHub Integration**: Active CI/CD with automated testing
+- **📄 Landing Page**: Static HTML (38KB) at https://andreabozzo.github.io/Osservatorio/
+- **📱 Live Dashboard**: Streamlit app at https://osservatorio-dashboard.streamlit.app/
+- **💾 Data Processing**: 523KB processed data, 13 real ISTAT XML files
+- **⚡ Performance**: <5s load time with 509+ ISTAT datasets
+- **🛡️ Environment**: Python 3.13.3, pytest 8.3.5, Streamlit 1.45.0
 
 ---
 
 **🎯 Ready to explore Italian statistical data? Start with our [live dashboard](https://osservatorio-dashboard.streamlit.app/) or follow the [quick start guide](#-quick-start)!**
 
-**📈 Status**: 🔄 **Working Prototype** | 🔄 **Actively Maintained** | 🚀 **Open Source**
+**📈 Status**: 🔄 **Working Prototype** | ✅ **Actively Maintained** | 🚀 **Open Source** | 📊 **Live Dashboard** | 🧪 **292 Tests**

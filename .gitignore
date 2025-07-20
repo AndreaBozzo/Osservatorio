@@ -50,6 +50,9 @@ logs/
 *.log
 *.log.*
 
+# Claude agent specs
+.claude/
+
 # Environment variables
 .env
 .env.local

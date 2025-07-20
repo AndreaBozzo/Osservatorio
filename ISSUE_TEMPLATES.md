@@ -1,8 +1,8 @@
 # Issue Templates - Osservatorio ISTAT
 
-Questo progetto utilizza template strutturati per GitHub Issues per migliorare la qualità delle segnalazioni e facilitare la gestione del progetto.
+Questo progetto utilizza template strutturati per GitHub Issues per migliorare la qualitï¿½ delle segnalazioni e facilitare la gestione del progetto.
 
-## =Ë Template Disponibili
+## =ï¿½ Template Disponibili
 
 ### = Bug Report (`.github/ISSUE_TEMPLATE/bug_report.yml`)
 Per segnalare malfunzionamenti, errori o comportamenti non attesi del sistema.
@@ -13,24 +13,24 @@ Per segnalare malfunzionamenti, errori o comportamenti non attesi del sistema.
 - Comportamento atteso vs attuale
 - Informazioni sull'ambiente di sviluppo
 - Log e output di errore
-- Priorità e componente interessato
+- Prioritï¿½ e componente interessato
 
 **Labels automatici:** `type: bug`, `status: ready`
 
 ### ( Feature Request (`.github/ISSUE_TEMPLATE/feature_request.yml`)
-Per proporre nuove funzionalità o miglioramenti al sistema.
+Per proporre nuove funzionalitï¿½ o miglioramenti al sistema.
 
 **Campi principali:**
-- Riassunto della funzionalità proposta
-- Problema che la funzionalità risolverebbe
+- Riassunto della funzionalitï¿½ proposta
+- Problema che la funzionalitï¿½ risolverebbe
 - Soluzione dettagliata proposta
 - Casi d'uso specifici
-- Priorità e sforzo stimato
+- Prioritï¿½ e sforzo stimato
 - Dettagli tecnici e mockup
 
 **Labels automatici:** `type: feature`, `status: ready`
 
-### =Ú Documentation (`.github/ISSUE_TEMPLATE/documentation.yml`)
+### =ï¿½ Documentation (`.github/ISSUE_TEMPLATE/documentation.yml`)
 Per segnalare problemi con la documentazione o proporre miglioramenti.
 
 **Campi principali:**
@@ -39,17 +39,17 @@ Per segnalare problemi con la documentazione o proporre miglioramenti.
 - Contenuto attuale problematico
 - Suggerimenti per il miglioramento
 - Pubblico target della documentazione
-- Priorità della modifica
+- Prioritï¿½ della modifica
 
 **Labels automatici:** `type: documentation`, `status: ready`
 
-## <÷ Sistema di Labels
+## <ï¿½ Sistema di Labels
 
 I template utilizzano il sistema di labels standardizzato del progetto:
 
 ### Type Labels
 - `type: bug` - Segnalazioni di malfunzionamenti
-- `type: feature` - Richieste di nuove funzionalità
+- `type: feature` - Richieste di nuove funzionalitï¿½
 - `type: documentation` - Problemi/miglioramenti documentazione
 - `type: refactor` - Ristrutturazione codice
 - `type: test` - Miglioramenti ai test
@@ -58,9 +58,9 @@ I template utilizzano il sistema di labels standardizzato del progetto:
 
 ### Priority Labels
 - `priority: critical` - Problemi bloccanti
-- `priority: high` - Alta priorità
-- `priority: medium` - Media priorità
-- `priority: low` - Bassa priorità
+- `priority: high` - Alta prioritï¿½
+- `priority: medium` - Media prioritï¿½
+- `priority: low` - Bassa prioritï¿½
 
 ### Status Labels
 - `status: ready` - Pronto per essere lavorato
@@ -77,7 +77,7 @@ I template utilizzano il sistema di labels standardizzato del progetto:
 - `component: infrastructure` - Docker, CI/CD, deployment
 - `component: testing` - Suite di test
 
-## =Ý Best Practices per i Contributori
+## =ï¿½ Best Practices per i Contributori
 
 ### Prima di Creare un Issue
 1. **Cerca issue esistenti** simili per evitare duplicati
@@ -133,12 +133,12 @@ I template sono in formato YAML e si trovano in `.github/ISSUE_TEMPLATE/`. Per m
 ### Gestione Labels
 I labels sono configurati automaticamente. Per aggiungere nuovi labels:
 
-1. Usa l'interfaccia GitHub Settings ’ Labels
+1. Usa l'interfaccia GitHub Settings ï¿½ Labels
 2. Segui la convenzione `category: name`
 3. Aggiorna i template per utilizzare i nuovi labels
 4. Documenta i cambiamenti in questo file
 
-## =Ú Risorse Aggiuntive
+## =ï¿½ Risorse Aggiuntive
 
 - [GitHub Issue Template Documentation](https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests)
 - [CONTRIBUTING.md](docs/guides/CONTRIBUTING.md) - Guida per contributori
@@ -147,4 +147,4 @@ I labels sono configurati automaticamente. Per aggiungere nuovi labels:
 
 ---
 
-**Nota:** Questo sistema di template è progettato per migliorare la collaborazione e la qualità delle segnalazioni. Se hai suggerimenti per migliorare i template, apri un issue usando il template "Documentation"!
+**Nota:** Questo sistema di template ï¿½ progettato per migliorare la collaborazione e la qualitï¿½ delle segnalazioni. Se hai suggerimenti per migliorare i template, apri un issue usando il template "Documentation"!

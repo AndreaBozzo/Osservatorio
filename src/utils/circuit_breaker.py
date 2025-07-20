@@ -175,9 +175,9 @@ class CircuitBreaker:
             "total_failures": self.total_failures,
             "total_successes": self.total_successes,
             "failure_rate": self.total_failures / max(self.total_calls, 1),
-            "last_failure_time": self.last_failure_time.isoformat()
-            if self.last_failure_time
-            else None,
+            "last_failure_time": (
+                self.last_failure_time.isoformat() if self.last_failure_time else None
+            ),
             "failure_threshold": self.failure_threshold,
             "recovery_timeout": self.recovery_timeout,
         }
