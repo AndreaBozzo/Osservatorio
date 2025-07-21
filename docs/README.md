@@ -30,6 +30,8 @@ Welcome to the comprehensive documentation for the Osservatorio ISTAT Data Proce
 | **Current Status** | [PROJECT_STATE.md](../PROJECT_STATE.md) | Current project state and progress |
 | **📋 Changes** | [CHANGELOG.md](../CHANGELOG.md) | **NEW**: Complete change history and DuckDB features |
 | **🦆 DuckDB** | [examples/duckdb_demo.py](../examples/duckdb_demo.py) | **NEW**: DuckDB analytics engine demonstration |
+| **⚡ Performance** | [guides/PERFORMANCE_TESTING.md](guides/PERFORMANCE_TESTING.md) | **NEW**: Performance testing and optimization guide |
+| **🔍 Regression** | [scripts/performance_regression_detector.py](../scripts/performance_regression_detector.py) | **NEW**: Automated performance regression detection |
 | **Architecture** | [ARCHITECTURE.md](ARCHITECTURE.md) | System design and technical architecture |
 | **API Reference** | [API_REFERENCE.md](api/API_REFERENCE.md) | Complete API documentation |
 | **Deployment** | [DEPLOYMENT_GUIDE.md](guides/DEPLOYMENT_GUIDE.md) | Production deployment instructions |
@@ -40,6 +42,7 @@ Welcome to the comprehensive documentation for the Osservatorio ISTAT Data Proce
 
 - **Start Here**: [README.md](../README.md) for project overview
 - **Development**: [CLAUDE.md](../CLAUDE.md) for commands and context
+- **Performance Testing**: [guides/PERFORMANCE_TESTING.md](guides/PERFORMANCE_TESTING.md) for optimization and benchmarking
 - **Architecture**: [ARCHITECTURE.md](ARCHITECTURE.md) for system design
 - **API Usage**: [API_REFERENCE.md](api/API_REFERENCE.md) for integration
 
