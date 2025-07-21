@@ -50,6 +50,11 @@ logs/
 *.log
 *.log.*
 
+# Database files
+*.db
+*.duckdb
+data/databases/
+
 # Claude agent specs
 .claude/
 

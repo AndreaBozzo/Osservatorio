@@ -15,85 +15,71 @@ sys.path.insert(0, str(project_root))
 
 def test_imports():
     """Test che tutti i moduli si importino correttamente"""
-    try:
-        from converters.powerbi_converter import IstatXMLToPowerBIConverter
-        from converters.tableau_converter import IstatXMLtoTableauConverter
-        from utils.config import Config
-        from utils.logger import get_logger
-        from utils.secure_path import SecurePathValidator
+    from converters.powerbi_converter import IstatXMLToPowerBIConverter
+    from converters.tableau_converter import IstatXMLtoTableauConverter
+    from utils.config import Config
+    from utils.logger import get_logger
+    from utils.secure_path import SecurePathValidator
 
-        print("✅ Tutti gli import funzionano")
-        return True
-    except Exception as e:
-        print(f"❌ Errore import: {e}")
-        return False
+    print("✅ Tutti gli import funzionano")
+    assert True  # Test passed
 
 
 def test_basic_functionality():
     """Test funzionalità base senza file system"""
-    try:
-        # Test Config
-        from utils.config import Config
+    # Test Config
+    from utils.config import Config
 
-        config = Config()
-        assert hasattr(config, "ISTAT_API_BASE_URL")
+    config = Config()
+    assert hasattr(config, "ISTAT_API_BASE_URL")
 
-        # Test Logger
-        from utils.logger import get_logger
+    # Test Logger
+    from utils.logger import get_logger
 
-        logger = get_logger("test")
-        assert logger is not None
+    logger = get_logger("test")
+    assert logger is not None
 
-        # Test SecurePathValidator - solo creazione oggetto
-        from utils.secure_path import SecurePathValidator
+    # Test SecurePathValidator - solo creazione oggetto
+    from utils.secure_path import SecurePathValidator
 
-        validator = SecurePathValidator("/tmp")
-        assert validator.base_directory.name == "tmp"
+    validator = SecurePathValidator("/tmp")
+    assert validator.base_directory.name == "tmp"
 
-        # Test Converters - solo creazione oggetto
-        from converters.powerbi_converter import IstatXMLToPowerBIConverter
+    # Test Converters - solo creazione oggetto
+    from converters.powerbi_converter import IstatXMLToPowerBIConverter
 
-        converter_pb = IstatXMLToPowerBIConverter()
-        assert converter_pb is not None
+    converter_pb = IstatXMLToPowerBIConverter()
+    assert converter_pb is not None
 
-        from converters.tableau_converter import IstatXMLtoTableauConverter
+    from converters.tableau_converter import IstatXMLtoTableauConverter
 
-        converter_tb = IstatXMLtoTableauConverter()
-        assert converter_tb is not None
+    converter_tb = IstatXMLtoTableauConverter()
+    assert converter_tb is not None
 
-        print("✅ Funzionalità base OK")
-        return True
-
-    except Exception as e:
-        print(f"❌ Errore test base: {e}")
-        return False
+    print("✅ Funzionalità base OK")
 
 
 def test_data_generation():
     """Test che la generazione dati funzioni"""
-    try:
-        from pathlib import Path
+    from pathlib import Path
 
-        import pandas as pd
+    import pandas as pd
 
-        # Controlla se i dati di test esistono
-        data_dir = Path("data/processed/powerbi")
-        if data_dir.exists():
-            test_files = list(data_dir.glob("*test*.csv"))
-            if test_files:
-                # Prova a leggere un file di test
-                test_file = test_files[0]
-                df = pd.read_csv(test_file)
-                assert len(df) > 0
-                print(f"✅ Test data OK: {len(test_files)} file trovati")
-                return True
+    # Controlla se i dati di test esistono
+    data_dir = Path("data/processed/powerbi")
+    if data_dir.exists():
+        test_files = list(data_dir.glob("*test*.csv"))
+        if test_files:
+            # Prova a leggere un file di test
+            test_file = test_files[0]
+            df = pd.read_csv(test_file)
+            assert len(df) > 0
+            print(f"✅ Test data OK: {len(test_files)} file trovati")
+            return
 
-        print("⚠️ Test data non trovati, ma non è critico")
-        return True
-
-    except Exception as e:
-        print(f"❌ Errore test data: {e}")
-        return False
+    print("⚠️ Test data non trovati, ma non è critico")
+    # Test passes even if no test data found
+    assert True
 
 
 def main():
