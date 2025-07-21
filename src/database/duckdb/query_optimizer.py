@@ -44,7 +44,7 @@ class QueryPerformance:
     rows_returned: int
     cache_hit: bool
     execution_plan: Optional[str] = None
-    timestamp: datetime = None
+    timestamp: Optional[datetime] = None
 
     def __post_init__(self):
         if self.timestamp is None:
@@ -62,8 +62,8 @@ class QueryOptimizer:
         """
         self.manager = manager or DuckDBManager()
         self.schema_config = get_schema_config()
-        self.query_cache = {}  # Simple in-memory cache
-        self.performance_log = []
+        self.query_cache: Dict[str, Any] = {}  # Simple in-memory cache
+        self.performance_log: List[QueryPerformance] = []
         self.cache_ttl = timedelta(minutes=30)
 
     def create_advanced_indexes(self) -> None:
@@ -453,8 +453,8 @@ class QueryOptimizer:
         # Calculate averages
         for stats in performance_by_type.values():
             if stats["count"] > 0:
-                stats["avg_time"] = stats["total_time"] / stats["count"]
-                stats["cache_hit_rate"] = stats["cache_hits"] / stats["count"]
+                stats["avg_time"] = float(stats["total_time"]) / stats["count"]
+                stats["cache_hit_rate"] = float(stats["cache_hits"]) / stats["count"]
 
         return {
             "total_entries": len(self.query_cache),

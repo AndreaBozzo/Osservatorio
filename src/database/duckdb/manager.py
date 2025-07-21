@@ -173,7 +173,9 @@ class DuckDBManager:
             raise
 
     def execute_statement(
-        self, statement: str, parameters: Optional[Dict[str, Any]] = None
+        self,
+        statement: str,
+        parameters: Optional[Union[Dict[str, Any], List[Any]]] = None,
     ) -> None:
         """Execute SQL statement without returning results.
 
@@ -223,7 +225,11 @@ class DuckDBManager:
             #     raise ValueError("Table name failed security validation")
 
             with self.get_connection() as conn:
-                # Use DuckDB's optimized DataFrame insertion
+                # Use DuckDB's optimized DataFrame insertion with safe table name
+                # Validate table name to prevent SQL injection
+                if not table_name.replace("_", "").replace("-", "").isalnum():
+                    raise ValueError(f"Invalid table name: {table_name}")
+
                 conn.register("temp_df", data)
                 insert_query = f"INSERT INTO {table_name} SELECT * FROM temp_df"
                 conn.execute(insert_query)
@@ -291,14 +297,22 @@ class DuckDBManager:
             True if table exists, False otherwise
         """
         try:
-            # Use DuckDB's system tables to check existence
-            if schema_name == "main":
-                query = f"SELECT COUNT(*) as table_count FROM duckdb_tables WHERE table_name = '{table_name}';"
-            else:
-                query = f"SELECT COUNT(*) as table_count FROM duckdb_tables WHERE schema_name = '{schema_name}' AND table_name = '{table_name}';"
+            # Use DuckDB's system tables to check existence with parameterized queries
+            # Validate inputs to prevent SQL injection
+            if not table_name.replace("_", "").replace("-", "").isalnum():
+                raise ValueError(f"Invalid table name: {table_name}")
+            if not schema_name.replace("_", "").replace("-", "").isalnum():
+                raise ValueError(f"Invalid schema name: {schema_name}")
 
-            result = self.execute_query(query)
-            return bool(result.iloc[0]["table_count"] > 0)
+            with self.get_connection() as conn:
+                if schema_name == "main":
+                    query = "SELECT COUNT(*) as table_count FROM duckdb_tables WHERE table_name = ?;"
+                    result = conn.execute(query, [table_name]).fetchone()
+                else:
+                    query = "SELECT COUNT(*) as table_count FROM duckdb_tables WHERE schema_name = ? AND table_name = ?;"
+                    result = conn.execute(query, [schema_name, table_name]).fetchone()
+
+                return bool(result[0] > 0)
 
         except Exception as e:
             print(f"Error checking table existence: {e}")
