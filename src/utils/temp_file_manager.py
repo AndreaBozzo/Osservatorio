@@ -17,6 +17,9 @@ from .logger import get_logger
 
 logger = get_logger(__name__)
 
+# Silent mode for tests - reduce logging verbosity
+SILENT_MODE = os.getenv("TEMP_FILE_MANAGER_SILENT", "false").lower() == "true"
+
 
 class TempFileManager:
     """Gestione centralizzata dei file temporanei con cleanup automatico."""
@@ -49,7 +52,10 @@ class TempFileManager:
             atexit.register(self.cleanup_all)
             self._cleanup_registered = True
 
-        logger.info(f"TempFileManager inizializzato. Base dir: {self.base_temp_dir}")
+        if not SILENT_MODE:
+            logger.info(
+                f"TempFileManager inizializzato. Base dir: {self.base_temp_dir}"
+            )
 
     def create_temp_dir(
         self, prefix: str = "temp_", cleanup_on_exit: bool = True
@@ -161,7 +167,8 @@ class TempFileManager:
         """Rimuove tutti i file e directory temporanei tracciati."""
         results = {"files_removed": 0, "dirs_removed": 0, "errors": 0}
 
-        logger.info("Pulizia file temporanei in corso...")
+        if not SILENT_MODE:
+            logger.info("Pulizia file temporanei in corso...")
 
         # Cleanup file
         for temp_file in list(self._temp_files):
@@ -177,7 +184,8 @@ class TempFileManager:
             else:
                 results["errors"] += 1
 
-        logger.info(f"Pulizia completata: {results}")
+        if not SILENT_MODE:
+            logger.info(f"Pulizia completata: {results}")
         return results
 
     def cleanup_old_files(self, max_age_hours: int = 24) -> int:

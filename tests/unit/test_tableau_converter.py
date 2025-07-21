@@ -308,7 +308,7 @@ class TestIstatXMLtoTableauConverter:
             with patch.object(
                 converter.path_validator,
                 "safe_open",
-                return_value=mock_open().return_value,
+                mock_open(),
             ):
                 converter._generate_tableau_instructions([summary], "test_output")
 

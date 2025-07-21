@@ -33,16 +33,11 @@ class TestTableauIstatScraper:
         base_url = scraper._extract_base_url()
         assert base_url == "https://tableau-server/"
 
-    @patch("requests.Session")
-    def test_setup_authentication_success(self, mock_session_class):
+    def test_setup_authentication_success(self):
         """Test successful authentication setup."""
         mock_config = {
             "result": {"user": {"id": "test_user"}, "site": {"urlName": "test_site"}}
         }
-
-        # Setup mock session
-        mock_session = Mock()
-        mock_session_class.return_value = mock_session
 
         # Mock successful response
         mock_response = Mock()
@@ -50,16 +45,19 @@ class TestTableauIstatScraper:
         mock_response.json.return_value = {
             "credentials": {"token": "test_token", "site": {"id": "site_id"}}
         }
-        mock_session.post.return_value = mock_response
 
         scraper = TableauIstatScraper(mock_config)
-        result = scraper.setup_authentication("test_user", "test_pass")
+
+        # Mock only the specific method we need
+        with patch.object(scraper, "session") as mock_session:
+            mock_session.post.return_value = mock_response
+            result = scraper.setup_authentication("test_user", "test_pass")
 
         assert result is True
         assert scraper.auth_token == "test_token"
         assert scraper.site_id == "site_id"
 
-    @patch("requests.Session")
+    @patch("src.scrapers.tableau_scraper.requests.Session")
     def test_setup_authentication_failure(self, mock_session_class):
         """Test authentication failure."""
         mock_config = {
