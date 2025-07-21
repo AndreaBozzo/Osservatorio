@@ -28,6 +28,8 @@ Welcome to the comprehensive documentation for the Osservatorio ISTAT Data Proce
 | **Getting Started** | [README.md](../README.md) | Main project overview and quick start |
 | **Development** | [CLAUDE.md](../CLAUDE.md) | Development commands and project context |
 | **Current Status** | [PROJECT_STATE.md](../PROJECT_STATE.md) | Current project state and progress |
+| **📋 Changes** | [CHANGELOG.md](../CHANGELOG.md) | **NEW**: Complete change history and DuckDB features |
+| **🦆 DuckDB** | [examples/duckdb_demo.py](../examples/duckdb_demo.py) | **NEW**: DuckDB analytics engine demonstration |
 | **Architecture** | [ARCHITECTURE.md](ARCHITECTURE.md) | System design and technical architecture |
 | **API Reference** | [API_REFERENCE.md](api/API_REFERENCE.md) | Complete API documentation |
 | **Deployment** | [DEPLOYMENT_GUIDE.md](guides/DEPLOYMENT_GUIDE.md) | Production deployment instructions |
