@@ -342,9 +342,28 @@ class TestISTATSchemaManager:
 
         yield schema_mgr
 
-        manager.close()
-        if os.path.exists(temp_db_path):
-            os.unlink(temp_db_path)
+        # Force close connection and wait a bit
+        try:
+            manager.close()
+            import time
+
+            time.sleep(0.1)  # Give time for file handle to release
+        except Exception:
+            pass
+
+        # Force cleanup
+        try:
+            if os.path.exists(temp_db_path):
+                os.unlink(temp_db_path)
+        except PermissionError:
+            # Try again after a short delay
+            import time
+
+            time.sleep(0.2)
+            try:
+                os.unlink(temp_db_path)
+            except Exception:
+                pass  # Ignore cleanup errors in tests
 
     def test_create_all_schemas(self, schema_manager):
         """Test creation of all required schemas."""

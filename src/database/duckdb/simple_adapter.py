@@ -24,7 +24,7 @@ class SimpleDuckDBAdapter:
             database_path: Path to database file or ':memory:' for in-memory
         """
         self.database_path = database_path
-        self.connection = None
+        self.connection: Optional[duckdb.DuckDBPyConnection] = None
         self._ensure_connection()
 
     def _ensure_connection(self):
@@ -42,6 +42,7 @@ class SimpleDuckDBAdapter:
             Query results as DataFrame
         """
         self._ensure_connection()
+        assert self.connection is not None
         return self.connection.execute(query).df()
 
     def execute_statement(self, statement: str):
@@ -51,6 +52,7 @@ class SimpleDuckDBAdapter:
             statement: SQL statement to execute
         """
         self._ensure_connection()
+        assert self.connection is not None
         self.connection.execute(statement)
 
     def create_istat_schema(self):
@@ -139,6 +141,7 @@ class SimpleDuckDBAdapter:
             df: DataFrame with observation data
         """
         # Register DataFrame and insert
+        assert self.connection is not None
         self.connection.register("temp_observations", df)
         self.execute_statement(
             """
@@ -156,6 +159,7 @@ class SimpleDuckDBAdapter:
             FROM temp_observations;
         """
         )
+        assert self.connection is not None
         self.connection.unregister("temp_observations")
 
     def get_dataset_summary(self) -> pd.DataFrame:
@@ -184,7 +188,7 @@ class SimpleDuckDBAdapter:
         )
 
     def get_time_series(
-        self, dataset_id: str, territory_code: str = None
+        self, dataset_id: str, territory_code: Optional[str] = None
     ) -> pd.DataFrame:
         """Get time series data for a dataset.
 
@@ -195,25 +199,39 @@ class SimpleDuckDBAdapter:
         Returns:
             Time series data
         """
-        where_clause = f"WHERE dataset_id = '{dataset_id}'"
-        if territory_code:
-            where_clause += f" AND territory_code = '{territory_code}'"
+        # Use parameterized query to prevent SQL injection
+        assert self.connection is not None
 
-        return self.execute_query(
-            f"""
-            SELECT
-                year,
-                territory_code,
-                territory_name,
-                measure_code,
-                measure_name,
-                obs_value,
-                obs_status
-            FROM istat_observations
-            {where_clause}
-            ORDER BY year, territory_code, measure_code;
-        """
-        )
+        if territory_code:
+            query = """
+                SELECT
+                    year,
+                    territory_code,
+                    territory_name,
+                    measure_code,
+                    measure_name,
+                    obs_value,
+                    obs_status
+                FROM istat_observations
+                WHERE dataset_id = ? AND territory_code = ?
+                ORDER BY year, territory_code, measure_code;
+            """
+            return self.connection.execute(query, [dataset_id, territory_code]).df()
+        else:
+            query = """
+                SELECT
+                    year,
+                    territory_code,
+                    territory_name,
+                    measure_code,
+                    measure_name,
+                    obs_value,
+                    obs_status
+                FROM istat_observations
+                WHERE dataset_id = ?
+                ORDER BY year, territory_code, measure_code;
+            """
+            return self.connection.execute(query, [dataset_id]).df()
 
     def get_territory_comparison(self, dataset_id: str, year: int) -> pd.DataFrame:
         """Get territory comparison for a specific year.
@@ -225,8 +243,9 @@ class SimpleDuckDBAdapter:
         Returns:
             Territory comparison data
         """
-        return self.execute_query(
-            f"""
+        # Use parameterized query to prevent SQL injection
+        assert self.connection is not None
+        query = """
             SELECT
                 territory_code,
                 territory_name,
@@ -236,15 +255,18 @@ class SimpleDuckDBAdapter:
                 MAX(obs_value) as max_value,
                 RANK() OVER (ORDER BY AVG(obs_value) DESC) as rank
             FROM istat_observations
-            WHERE dataset_id = '{dataset_id}' AND year = {year}
+            WHERE dataset_id = ? AND year = ?
               AND obs_value IS NOT NULL
             GROUP BY territory_code, territory_name
             ORDER BY avg_value DESC;
         """
-        )
+        return self.connection.execute(query, [dataset_id, year]).df()
 
     def get_category_trends(
-        self, category: str, start_year: int = None, end_year: int = None
+        self,
+        category: str,
+        start_year: Optional[int] = None,
+        end_year: Optional[int] = None,
     ) -> pd.DataFrame:
         """Get trend analysis for a category.
 
@@ -256,39 +278,82 @@ class SimpleDuckDBAdapter:
         Returns:
             Trend analysis data
         """
-        year_filter = ""
-        if start_year and end_year:
-            year_filter = f"AND o.year BETWEEN {start_year} AND {end_year}"
-        elif start_year:
-            year_filter = f"AND o.year >= {start_year}"
-        elif end_year:
-            year_filter = f"AND o.year <= {end_year}"
+        # Use parameterized query to prevent SQL injection
+        assert self.connection is not None
 
-        return self.execute_query(
-            f"""
-            SELECT
-                o.year,
-                COUNT(DISTINCT m.dataset_id) as datasets,
-                COUNT(o.id) as total_observations,
-                AVG(o.obs_value) as avg_value,
-                MEDIAN(o.obs_value) as median_value
-            FROM dataset_metadata m
-            JOIN istat_observations o ON m.dataset_id = o.dataset_id
-            WHERE m.category = '{category}' {year_filter}
-              AND o.obs_value IS NOT NULL
-            GROUP BY o.year
-            ORDER BY o.year;
-        """
-        )
+        if start_year and end_year:
+            query = """
+                SELECT
+                    o.year,
+                    COUNT(DISTINCT m.dataset_id) as datasets,
+                    COUNT(o.id) as total_observations,
+                    AVG(o.obs_value) as avg_value,
+                    MEDIAN(o.obs_value) as median_value
+                FROM dataset_metadata m
+                JOIN istat_observations o ON m.dataset_id = o.dataset_id
+                WHERE m.category = ? AND o.year BETWEEN ? AND ?
+                  AND o.obs_value IS NOT NULL
+                GROUP BY o.year
+                ORDER BY o.year;
+            """
+            return self.connection.execute(query, [category, start_year, end_year]).df()
+        elif start_year:
+            query = """
+                SELECT
+                    o.year,
+                    COUNT(DISTINCT m.dataset_id) as datasets,
+                    COUNT(o.id) as total_observations,
+                    AVG(o.obs_value) as avg_value,
+                    MEDIAN(o.obs_value) as median_value
+                FROM dataset_metadata m
+                JOIN istat_observations o ON m.dataset_id = o.dataset_id
+                WHERE m.category = ? AND o.year >= ?
+                  AND o.obs_value IS NOT NULL
+                GROUP BY o.year
+                ORDER BY o.year;
+            """
+            return self.connection.execute(query, [category, start_year]).df()
+        elif end_year:
+            query = """
+                SELECT
+                    o.year,
+                    COUNT(DISTINCT m.dataset_id) as datasets,
+                    COUNT(o.id) as total_observations,
+                    AVG(o.obs_value) as avg_value,
+                    MEDIAN(o.obs_value) as median_value
+                FROM dataset_metadata m
+                JOIN istat_observations o ON m.dataset_id = o.dataset_id
+                WHERE m.category = ? AND o.year <= ?
+                  AND o.obs_value IS NOT NULL
+                GROUP BY o.year
+                ORDER BY o.year;
+            """
+            return self.connection.execute(query, [category, end_year]).df()
+        else:
+            query = """
+                SELECT
+                    o.year,
+                    COUNT(DISTINCT m.dataset_id) as datasets,
+                    COUNT(o.id) as total_observations,
+                    AVG(o.obs_value) as avg_value,
+                    MEDIAN(o.obs_value) as median_value
+                FROM dataset_metadata m
+                JOIN istat_observations o ON m.dataset_id = o.dataset_id
+                WHERE m.category = ?
+                  AND o.obs_value IS NOT NULL
+                GROUP BY o.year
+                ORDER BY o.year;
+            """
+            return self.connection.execute(query, [category]).df()
 
     def optimize_database(self):
         """Run database optimization."""
         try:
             self.execute_statement("ANALYZE;")
             self.execute_statement("CHECKPOINT;")
-        except:
-            # Optimization might fail in some versions
-            pass
+        except Exception as e:
+            # Optimization might fail in some versions - log but continue
+            print(f"Database optimization warning: {e}")
 
     def close(self):
         """Close database connection."""

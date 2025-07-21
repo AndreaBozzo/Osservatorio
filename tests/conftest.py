@@ -3,6 +3,7 @@ Test configuration and fixtures for osservatorio scuola tests.
 """
 
 import json
+import os
 import shutil
 import sys
 import tempfile
@@ -17,6 +18,29 @@ import pytest
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.utils.config import Config
+
+
+@pytest.fixture(autouse=True)
+def silent_temp_file_manager():
+    """Enable silent mode for TempFileManager during tests."""
+    # Set environment variable before any imports
+    os.environ["TEMP_FILE_MANAGER_SILENT"] = "true"
+
+    # Also reduce logging level for temp file manager
+    import logging
+
+    temp_logger = logging.getLogger("src.utils.temp_file_manager")
+    original_level = temp_logger.level
+    temp_logger.setLevel(logging.ERROR)
+
+    yield
+
+    # Restore logging level
+    temp_logger.setLevel(original_level)
+
+    # Clean up environment
+    if "TEMP_FILE_MANAGER_SILENT" in os.environ:
+        del os.environ["TEMP_FILE_MANAGER_SILENT"]
 
 
 @pytest.fixture

@@ -124,7 +124,10 @@ def get_connection_string() -> str:
     Returns:
         Connection string for DuckDB database
     """
-    return DUCKDB_CONFIG["database"]
+    db_path = DUCKDB_CONFIG["database"]
+    if isinstance(db_path, str):
+        return db_path
+    return str(db_path)
 
 
 def get_schema_config() -> Dict[str, Any]:
@@ -147,6 +150,8 @@ def get_table_config(table_name: str) -> Optional[Dict[str, Any]]:
     """
     tables = SCHEMA_CONFIG.get("tables", {})
     for table_key, table_config in tables.items():
+        if not isinstance(table_config, dict):
+            continue
         if table_config.get("name") == table_name:
             return table_config
     return None
@@ -162,21 +167,30 @@ def validate_config() -> bool:
         ValueError: If configuration is invalid
     """
     # Check database path
-    db_path = Path(DUCKDB_CONFIG["database"])
+    db_path_str = DUCKDB_CONFIG["database"]
+    if not isinstance(db_path_str, str):
+        raise ValueError(f"Database path must be string, got: {type(db_path_str)}")
+    db_path = Path(db_path_str)
     if not db_path.parent.exists():
         raise ValueError(f"Database directory does not exist: {db_path.parent}")
 
     # Check memory limits
     memory_limit = DUCKDB_CONFIG["memory_limit"]
+    if not isinstance(memory_limit, str):
+        raise ValueError(f"Memory limit must be string, got: {type(memory_limit)}")
     if not memory_limit.endswith(("GB", "MB", "%")):
         raise ValueError(f"Invalid memory limit format: {memory_limit}")
 
     # Check thread counts
-    if DUCKDB_CONFIG["threads"] <= 0:
+    threads = DUCKDB_CONFIG["threads"]
+    if not isinstance(threads, int) or threads <= 0:
         raise ValueError("Thread count must be positive")
 
     # Check temp directory
-    temp_dir = Path(DUCKDB_CONFIG["temp_directory"])
+    temp_dir_str = DUCKDB_CONFIG["temp_directory"]
+    if not isinstance(temp_dir_str, str):
+        raise ValueError(f"Temp directory must be string, got: {type(temp_dir_str)}")
+    temp_dir = Path(temp_dir_str)
     temp_dir.mkdir(parents=True, exist_ok=True)
 
     print("DuckDB configuration validation successful")

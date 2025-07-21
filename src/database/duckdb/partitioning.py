@@ -65,7 +65,9 @@ class YearPartitionStrategy(PartitionStrategy):
         year = row.get("year", datetime.now().year)
         return f"year_{year}"
 
-    def get_partition_filter(self, start_year: int = None, end_year: int = None) -> str:
+    def get_partition_filter(
+        self, start_year: Optional[int] = None, end_year: Optional[int] = None
+    ) -> str:
         """Generate year filter for partition pruning."""
         if start_year and end_year:
             return f"year BETWEEN {start_year} AND {end_year}"
@@ -90,7 +92,7 @@ class TerritoryPartitionStrategy(PartitionStrategy):
             return f"territory_italy_{territory[:4]}"  # Group by first 4 chars
         return f"territory_{territory[:2]}"  # Group by first 2 chars
 
-    def get_partition_filter(self, territories: List[str] = None) -> str:
+    def get_partition_filter(self, territories: Optional[List[str]] = None) -> str:
         """Generate territory filter for partition pruning."""
         if territories:
             territory_list = "', '".join(territories)
@@ -117,9 +119,9 @@ class HybridPartitionStrategy(PartitionStrategy):
 
     def get_partition_filter(
         self,
-        start_year: int = None,
-        end_year: int = None,
-        territories: List[str] = None,
+        start_year: Optional[int] = None,
+        end_year: Optional[int] = None,
+        territories: Optional[List[str]] = None,
     ) -> str:
         """Generate hybrid filter for partition pruning."""
         filters = []
@@ -160,7 +162,7 @@ class PartitionManager:
         # Default strategy
         self.default_strategy = "hybrid"
 
-    def create_partitioned_tables(self, strategy_name: str = None) -> None:
+    def create_partitioned_tables(self, strategy_name: Optional[str] = None) -> None:
         """Create partitioned versions of main tables.
 
         Args:
@@ -314,7 +316,7 @@ class PartitionManager:
 
         logger.debug(f"Partitioned observations table created: {table_name}")
 
-    def create_partition_views(self, strategy_name: str = None) -> None:
+    def create_partition_views(self, strategy_name: Optional[str] = None) -> None:
         """Create views for each partition to optimize queries.
 
         Args:
@@ -377,7 +379,7 @@ class PartitionManager:
             logger.warning(f"Failed to create partition view {view_name}: {e}")
 
     def partition_data(
-        self, df: pd.DataFrame, dataset_id: str, strategy_name: str = None
+        self, df: pd.DataFrame, dataset_id: str, strategy_name: Optional[str] = None
     ) -> Dict[str, pd.DataFrame]:
         """Partition DataFrame data according to strategy.
 
@@ -393,7 +395,7 @@ class PartitionManager:
         if not strategy:
             raise ValueError(f"Unknown partitioning strategy: {strategy_name}")
 
-        partitions = {}
+        partitions: Dict[str, List[Dict[str, Any]]] = {}
 
         for _, row in df.iterrows():
             row_dict = row.to_dict()
