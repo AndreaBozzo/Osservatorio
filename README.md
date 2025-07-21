@@ -3,7 +3,7 @@
 > **MVP prototype for Italian statistical data processing and visualization. Currently in active development - NOT production-ready.**
 
 [![Python](https://img.shields.io/badge/Python-3.13.3-blue.svg)](https://www.python.org/downloads/)
-[![Status](https://img.shields.io/badge/Status-MVP%20Prototype-yellow.svg)](PROJECT_STATE.md)
+[![Status](https://img.shields.io/badge/Status-MVP%20Prototype-yellow.svg)](docs/project/PROJECT_STATE.md)
 [![Tests](https://img.shields.io/badge/Tests-319%20passing-green.svg)](tests/)
 [![Dashboard](https://img.shields.io/badge/Dashboard-Live%20✅-green.svg)](https://osservatorio-dashboard.streamlit.app/)
 [![Security](https://img.shields.io/badge/Security-Enhanced%20🛡️-green.svg)](src/utils/security_enhanced.py)

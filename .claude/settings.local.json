@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(move:*)",
-      "Bash(gh issue create:*)"
+      "Bash(gh issue create:*)",
+      "Bash(mkdir:*)",
+      "Bash(mv:*)"
     ],
     "deny": []
   }

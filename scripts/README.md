@@ -129,7 +129,7 @@ python scripts/schedule_cleanup.py
 - **`deploy-landing-page.yml`**: Deployment GitHub Pages
 
 ### Documentazione
-- **`CLAUDE.md`**: Comandi principali documentati
+- **`docs/project/CLAUDE.md`**: Comandi principali documentati
 - **`README.md`**: Guida utente con esempi
 - **`DEPLOYMENT_GUIDE.md`**: Procedure di deployment
 
@@ -174,7 +174,7 @@ scripts/
 ## 🔗 Collegamenti
 
 - **Scripts Legacy**: [`legacy/README.md`](legacy/README.md)
-- **Documentazione**: [`../CLAUDE.md`](../CLAUDE.md)
+- **Documentazione**: [`../docs/project/CLAUDE.md`](../docs/project/CLAUDE.md)
 - **Deployment**: [`../DEPLOYMENT_GUIDE.md`](../DEPLOYMENT_GUIDE.md)
 
 ---
