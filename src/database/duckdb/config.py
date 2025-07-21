@@ -149,6 +149,8 @@ def get_table_config(table_name: str) -> Optional[Dict[str, Any]]:
         Table configuration or None if not found
     """
     tables = SCHEMA_CONFIG.get("tables", {})
+    if not isinstance(tables, dict):
+        return None
     for table_key, table_config in tables.items():
         if not isinstance(table_config, dict):
             continue

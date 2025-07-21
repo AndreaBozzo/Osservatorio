@@ -17,12 +17,13 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 import duckdb
 import pandas as pd
 
+from src.utils.logger import get_logger
+
 from .config import PERFORMANCE_CONFIG, get_connection_string, get_duckdb_config
 
-# from src.utils.logger import get_logger
 # from src.utils.security_enhanced import security_manager
 
-# logger = get_logger(__name__)
+logger = get_logger(__name__)
 
 
 class DuckDBManager:
@@ -48,7 +49,7 @@ class DuckDBManager:
         else:
             self.config = config
             self.connection_string = config.get("database", get_connection_string())
-        self._connection = None
+        self._connection: Optional[duckdb.DuckDBPyConnection] = None
         self._lock = Lock()
         self._query_stats = {
             "total_queries": 0,
@@ -225,12 +226,18 @@ class DuckDBManager:
             #     raise ValueError("Table name failed security validation")
 
             with self.get_connection() as conn:
-                # Use DuckDB's optimized DataFrame insertion with safe table name
-                # Validate table name to prevent SQL injection
-                if not table_name.replace("_", "").replace("-", "").isalnum():
-                    raise ValueError(f"Invalid table name: {table_name}")
+                # Use DuckDB's optimized DataFrame insertion with enhanced validation
+                # Enhanced table name validation to prevent SQL injection
+                table_parts = table_name.split(".")
+                if len(table_parts) > 2:
+                    raise ValueError(f"Invalid table name format: {table_name}")
+
+                for part in table_parts:
+                    if not part.replace("_", "").isalnum() or not part.islower():
+                        raise ValueError(f"Invalid table name component: {part}")
 
                 conn.register("temp_df", data)
+                # Table name validated above - safe for f-string usage
                 insert_query = f"INSERT INTO {table_name} SELECT * FROM temp_df"
                 conn.execute(insert_query)
                 conn.unregister("temp_df")
@@ -402,9 +409,11 @@ class DuckDBManager:
                 # Vacuum to reclaim space (if supported)
                 try:
                     conn.execute("VACUUM;")
-                except Exception:
+                except Exception as e:
                     # VACUUM may not be available in all DuckDB versions
-                    pass
+                    logger.debug(
+                        f"VACUUM not supported or failed (this is normal): {e}"
+                    )
 
             print("Database optimization completed successfully")
 

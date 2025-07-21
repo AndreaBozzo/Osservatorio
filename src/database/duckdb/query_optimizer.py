@@ -441,7 +441,7 @@ class QueryOptimizer:
             if query_type not in performance_by_type:
                 performance_by_type[query_type] = {
                     "count": 0,
-                    "total_time": 0,
+                    "total_time": 0.0,
                     "cache_hits": 0,
                 }
 
