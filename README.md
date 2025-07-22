@@ -458,7 +458,7 @@ We're actively seeking contributors for our January 2025 sprint! Check out the [
 - **Enhanced Data Validation** - Improve data quality scoring
 - **Dashboard Performance** - Memory optimization and loading speed
 - **Security Enhancements** - Advanced rate limiting and protection
-- **Testing Expansion** - Increase coverage to 70%+
+- **Testing Expansion** - Coverage at 67%, approaching 70% target
 
 ### 🐛 Bug Reports
 1. Check existing issues on [GitHub Issues](https://github.com/AndreaBozzo/Osservatorio/issues)
@@ -519,7 +519,7 @@ We're actively seeking contributors for our January 2025 sprint! Check out the [
 - [x] Comprehensive documentation + CONTRIBUTING.md
 
 ### 🔄 **Phase 2: Enhancement (In Progress)**
-- [x] Improve test coverage (57% achieved, target 70%)
+- [x] Improve test coverage (67% achieved, target 70%)
 - [x] Performance optimization (load time <5s)
 - [x] Enhanced security features (rate limiting, circuit breaker)
 - [x] API documentation (docs/api-mapping.md)

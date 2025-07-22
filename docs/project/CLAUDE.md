@@ -88,8 +88,8 @@ This is an Italian data processing system for ISTAT (Italian National Institute 
 - **Security Status**: ✅ All 23 original security vulnerabilities resolved, 100% MyPy compliance, enterprise-grade SQL injection protection
 
 ### Testing (UPDATED 21/07/2025 - Security Audit & Performance Testing)
-- `pytest` - Run all tests (319+ tests total, all passing as of 21/07/2025)
-- `pytest --cov=src tests/` - Run tests with coverage (improved coverage with DuckDB modules)
+- `pytest` - Run all tests (401+ tests total, 400 passing as of 22/07/2025)
+- `pytest --cov=src tests/` - Run tests with coverage (67% total coverage achieved)
 - `pytest tests/unit/` - Run unit tests only (270+ tests including DuckDB)
 - `pytest tests/integration/` - Run integration tests only (26 tests)
 - `pytest tests/performance/` - Run performance tests only (15+ tests including new DuckDB performance suite)

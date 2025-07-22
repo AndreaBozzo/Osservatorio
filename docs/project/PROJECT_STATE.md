@@ -305,7 +305,7 @@ Dependencies organized per categoria con commenti chiari
   - Unit tests per tutti gli adapters
   - Integration tests end-to-end
   - Performance regression tests
-  - Test coverage report (target: 70%)
+  - Test coverage report (67% achieved, target: 70%)
 
 - [ ] **14:00-18:00**: Load & Stress Testing
   - Concurrent user simulation
@@ -314,7 +314,7 @@ Dependencies organized per categoria con commenti chiari
   - Bottleneck identification
 
 **Deliverables**:
-- Test coverage >70%
+- Test coverage 67% (close to 70% target)
 - Load test report
 - Performance optimization recommendations
 
@@ -392,7 +392,7 @@ Dependencies organized per categoria con commenti chiari
 1. **Fork** il repository
 2. **Claim** una issue dal board (commenta per assignment)
 3. **Branch** dal main: `feature/issue-number-description`
-4. **Test** con coverage minimo 60% in dev
+4. **Test** con coverage 67% raggiunto (obiettivo 70%)
 5. **PR** con description dettagliata
 
 ### Per Newcomers
