@@ -152,15 +152,11 @@ class SimpleDuckDBAdapter:
         self.connection.register("temp_observations", df)
         self.execute_statement(
             """
-            INSERT INTO istat_observations (dataset_id, year, territory_code, territory_name,
-                                          measure_code, measure_name, obs_value, obs_status)
+            INSERT INTO istat_observations (dataset_id, year, territory_code, obs_value, obs_status)
             SELECT
                 dataset_id,
                 year,
                 territory_code,
-                territory_name,
-                measure_code,
-                measure_name,
                 obs_value,
                 obs_status
             FROM temp_observations;

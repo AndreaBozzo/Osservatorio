@@ -87,7 +87,9 @@ class DuckDBManager:
 
             # Create connection with minimal config for stability
             self._connection = duckdb.connect(
-                database=db_path_str, read_only=self.config.get("read_only", False)
+                database=db_path_str,
+                read_only=self.config.get("read_only", False),
+                config={"enable_object_cache": False},
             )
 
             # Apply performance settings

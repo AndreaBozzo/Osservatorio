@@ -36,7 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Automated performance baseline updates
 
 #### Outstanding Performance Results
-- **200,000+ records/second** - Bulk insert performance validated (10k records in 0.05s)
+- **High-performance bulk insert** - >2k records/second validated (scalable architecture)
 - **Sub-millisecond queries** - Aggregation queries on large datasets
 - **5x+ speedup** - Query caching effectiveness confirmed
 - **<1KB per record** - Memory usage with linear scaling

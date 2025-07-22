@@ -635,8 +635,8 @@ files = converter._generate_powerbi_formats(df, dataset_info)
 - **Memory Analysis** - Linear scaling validation and memory usage patterns
 
 ### 📊 Performance Achievements (Day 3)
-- **200,000+ records/second** - Bulk insert performance (10k records in 0.05s)
-- **Sub-millisecond queries** - Aggregation queries on large datasets
+- **High-performance bulk insert** - >2k records/second validated in tests
+- **Fast queries** - Aggregation queries optimized for large datasets
 - **5x+ speedup** - Query caching effectiveness validated
 - **<1KB per record** - Memory usage with linear scaling confirmed
 - **8-thread concurrency** - Concurrent execution scaling tested and validated

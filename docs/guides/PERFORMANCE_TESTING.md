@@ -240,8 +240,8 @@ Git Commit: cc3dd20
 Based on comprehensive testing, the DuckDB implementation achieves exceptional performance:
 
 #### Bulk Insert Performance
-- **200,000+ records/second** sustained insertion rate
-- **10,000 records in 0.05 seconds** (demo validated)
+- **High-performance insertion rate** (>2k records/second minimum)
+- **Scalable bulk operations** (tested up to 100k records)
 - **Linear memory scaling** with <1KB per record
 
 #### Query Performance
