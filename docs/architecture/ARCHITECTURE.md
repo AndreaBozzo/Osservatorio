@@ -1,9 +1,9 @@
 # 🏗️ Osservatorio - Architecture Documentation
 
 > **Comprehensive architectural documentation for the Osservatorio ISTAT data processing platform**
-> **Version**: 2.0.0
-> **Date**: July 18, 2025
-> **Status**: Production Ready
+> **Version**: 2.1.0
+> **Date**: July 22, 2025
+> **Status**: Production Ready - Day 3 Performance Testing Complete
 
 ---
 
@@ -174,8 +174,15 @@
 - **DuckDB Analytics Engine (`src/database/duckdb/`)**
   - **DuckDBManager**: High-performance connection management with security validation
   - **SQL Injection Protection**: Enhanced table name validation and parameterized queries
-  - **Type Safety**: 100% MyPy compliance across all 7 modules
+  - **Type Safety**: Implementation with security best practices (bandit scan: 0 HIGH issues)
   - **Performance Monitoring**: Real-time query optimization and statistics
+
+- **Query Builder (`src/database/duckdb/query_builder.py`)**
+  - **Fluent Interface**: 826 lines of intuitive query building with method chaining
+  - **Intelligent Caching**: Query result caching with >10x speedup validation
+  - **ISTAT Patterns**: Specialized methods for time series, territory comparison, category trends
+  - **Security**: Parameterized queries with SQL injection protection
+  - **Performance**: Cache hit rate optimization and TTL management
 
 - **Query Optimizer (`src/database/duckdb/query_optimizer.py`)**
   - **Smart Caching**: Query result caching with TTL management
@@ -186,8 +193,8 @@
 - **Data Partitioning (`src/database/duckdb/partitioning.py`)**
   - **Partitioning Strategies**: Year-based, territory-based, and hybrid partitioning
   - **Query Pruning**: Automatic partition pruning for optimal performance
-  - **Scalability**: Handles 100k+ records with linear scaling performance
-  - **Memory Optimization**: <1KB per record with efficient storage patterns
+  - **Scalability**: Validated performance >2k records/sec with linear scaling
+  - **Memory Optimization**: Efficient storage patterns for analytical workloads
 
 #### 🛠️ Utility Layer
 - **Security (`src/utils/security_enhanced.py`)**
@@ -420,21 +427,21 @@ security_headers = {
                     └─────────────────┘
                            ▲
                     ┌─────────────────┐
-                    │   🔄 E2E        │
-                    │   Testing       │ ◀─── 15% of effort
-                    │   (8 tests)     │
+                    │   ⚡ Performance │
+                    │   Testing       │ ◀─── 10% of effort
+                    │   (24 tests)    │
                     └─────────────────┘
                            ▲
                     ┌─────────────────┐
                     │   🔗 Integration│
-                    │   Testing       │ ◀─── 25% of effort
+                    │   Testing       │ ◀─── 15% of effort
                     │   (26 tests)    │
                     └─────────────────┘
                            ▲
             ┌─────────────────────────────────┐
             │           🧪 Unit               │
-            │           Testing               │ ◀─── 55% of effort
-            │           (156 tests)          │
+            │           Testing               │ ◀─── 70% of effort
+            │           (351 tests)           │
             └─────────────────────────────────┘
 ```
 
@@ -652,6 +659,21 @@ MAX_CACHE_SIZE=1000
 - **Memory Usage**: <500MB (target)
 - **CPU Usage**: <50% (target)
 - **Error Rate**: <0.1% (target)
+
+#### **DuckDB Performance Testing (Day 3 Implementation)**
+- **Performance Test Suite**: 24 comprehensive performance tests
+  - **Bulk Insert Performance**: >2k records/sec validated (minimum requirement)
+  - **Query Caching**: >10x speedup with intelligent TTL management
+  - **Concurrent Execution**: Scaling validation with 1-8 threads
+  - **Memory Patterns**: Linear scaling with efficient memory usage
+  - **Indexing Impact**: Performance optimization for large datasets
+  - **Query Builder**: 826 lines with fluent interface and ISTAT-specific patterns
+
+- **Performance Monitoring Tools**:
+  - **DuckDBPerformanceProfiler**: Real-time CPU, memory, and execution time tracking
+  - **Regression Detection**: Automated baseline comparison with statistical analysis
+  - **Cache Analytics**: Hit rate optimization and performance metrics
+  - **Memory Profiling**: psutil integration for detailed memory usage patterns
 
 #### **Performance Optimization Techniques**
 
