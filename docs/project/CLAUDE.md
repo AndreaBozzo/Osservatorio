@@ -10,7 +10,9 @@ This is an Italian data processing system for ISTAT (Italian National Institute 
 
 **Documentation**: See [docs/README.md](docs/README.md) for organized documentation
 
-**Important**: Always refer to [PROJECT_STATE.md](PROJECT_STATE.md) for current development context before making any changes to the codebase.
+**Important**: Always refer to [PROJECT_STATE.md](docs/project/PROJECT_STATE.md) for current development context before making any changes to the codebase.
+
+**Strategic Update (v8.0.0)**: Following ADR-002, the project has pivoted from PostgreSQL to SQLite + DuckDB architecture for pragmatic metadata management and high-performance analytics.
 
 ## Development Commands
 
@@ -50,13 +52,24 @@ This is an Italian data processing system for ISTAT (Italian National Institute 
 - `pip install -r requirements.txt` - Install dependencies
 - `pip install -r requirements-dev.txt` - Install development dependencies
 
-### DuckDB Analytics Commands (UPDATED 21/07/2025)
+### SQLite + DuckDB Hybrid Commands (UPDATED 22/07/2025 - Strategic Pivot)
+#### DuckDB Analytics (Production Ready)
 - `python examples/duckdb_demo.py` - Complete DuckDB demonstration with real ISTAT data
 - `python -c "from src.database.duckdb import SimpleDuckDBAdapter; adapter = SimpleDuckDBAdapter(); adapter.create_istat_schema(); print('Schema created')"` - Quick schema setup
 - `python -c "from src.database.duckdb import DuckDBManager; manager = DuckDBManager(); print(manager.get_performance_stats())"` - Get performance statistics
 - `pytest tests/unit/test_duckdb_basic.py -v` - Run basic DuckDB tests (focused on core functionality)
 - `pytest tests/unit/test_duckdb_integration.py -v` - Run comprehensive DuckDB integration tests (45 tests)
 - `pytest tests/unit/test_simple_adapter.py -v` - Run simple adapter tests (lightweight usage patterns)
+
+#### SQLite Metadata Management (Day 4+ Implementation)
+- `python examples/sqlite_metadata_demo.py` - SQLite metadata layer demonstration (Coming Day 4)
+- `python -c "from src.database.metadata import SQLiteMetadataManager; manager = SQLiteMetadataManager(); manager.init_schema(); print('SQLite schema ready')"` - Initialize SQLite metadata schema
+- `pytest tests/unit/test_sqlite_metadata.py -v` - Run SQLite metadata tests (Coming Day 4)
+- `python scripts/migrate_json_to_sqlite.py` - Migrate existing JSON configs to SQLite (Day 4)
+
+#### Unified Data Repository (Day 5+ Integration)
+- `python -c "from src.database.unified import UnifiedDataRepository; repo = UnifiedDataRepository(); print('Unified repo ready')"` - Test unified data access
+- `pytest tests/integration/test_sqlite_duckdb_integration.py -v` - Run dual-database integration tests (Day 5+)
 
 ### DuckDB Performance Testing Commands (NEW 21/07/2025)
 - `pytest tests/performance/test_duckdb_performance.py -v` - Run comprehensive performance test suite (7 categories)
@@ -74,11 +87,20 @@ This is an Italian data processing system for ISTAT (Italian National Institute 
 - Performance reports saved to: `data/performance_results/performance_report_YYYYMMDD_HHMMSS.md`
 - Performance baselines stored in: `data/performance_baselines.json`
 
-### Security & Monitoring Commands (UPDATED)
+### Security & Monitoring Commands (UPDATED 22/07/2025 - SQLite Era)
+#### General Security
 - `python -c "from src.utils.security_enhanced import security_manager; print(security_manager.get_security_headers())"` - Get security headers
 - `python -c "from src.utils.circuit_breaker import get_circuit_breaker_stats; print(get_circuit_breaker_stats())"` - Get circuit breaker stats
 - `python -c "from src.utils.security_enhanced import security_manager; security_manager.cleanup_old_entries()"` - Clean up rate limiter entries
-- `bandit -r src/database/duckdb/` - Security scan for DuckDB modules
+
+#### Database Security Scans
+- `bandit -r src/database/duckdb/` - Security scan for DuckDB modules (enterprise-grade)
+- `bandit -r src/database/metadata/` - Security scan for SQLite metadata layer (Day 4+)
+- `bandit -r src/auth/` - Security scan for authentication system (Day 7+)
+
+#### SQLite Security Validation (Day 4+)
+- `python -c "from src.database.metadata import SQLiteMetadataManager; manager = SQLiteMetadataManager(); print('✅ SQLite security validated')"` - Verify SQLite security features
+- `python scripts/audit_sqlite_permissions.py` - Audit SQLite file permissions and access controls
 
 ### DuckDB Security Audit Commands (UPDATED 22/07/2025 - Day 3 Security Complete)
 - `mypy src/database/duckdb/ --ignore-missing-imports` - Run MyPy type safety check (note: may timeout on large codebases)

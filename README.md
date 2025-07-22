@@ -52,7 +52,7 @@ pip install -r requirements.txt
 pytest tests/ -v
 
 # 5. Start dashboard
-streamlit run dashboard/app.py
+streamlit run src/dashboard/streamlit_app.py
 ```
 
 ### 🎯 Quick Actions
@@ -66,8 +66,11 @@ python convert_to_tableau.py
 # Convert data for PowerBI
 python convert_to_powerbi.py
 
-# NEW: DuckDB Analytics Demo
+# DuckDB Analytics Demo (High-performance)
 python examples/duckdb_demo.py
+
+# NEW: SQLite Metadata Management (Coming Day 4)
+python examples/sqlite_metadata_demo.py
 
 # Clean temporary files
 python scripts/cleanup_temp_files.py --stats
@@ -75,24 +78,47 @@ python scripts/cleanup_temp_files.py --stats
 
 ---
 
-## ✅ Current Capabilities
+## 🚀 Strategic Architecture (SQLite + DuckDB)
 
-### 🎯 **Working Features**
-- **🌐 Live Demo**: [https://andreabozzo.github.io/Osservatorio/](https://andreabozzo.github.io/Osservatorio/) (Landing Page)
-- **📊 Dashboard App**: [https://osservatorio-dashboard.streamlit.app/](https://osservatorio-dashboard.streamlit.app/) (Streamlit)
-- **📄 Landing Page**: Static index.html with responsive design (38KB)
-- **📱 Responsive UI**: Desktop-optimized design with mobile compatibility
-- **🔍 Functional Filters**: Year range filtering (2020-2024)
-- **📈 Interactive Charts**: Line, bar, and area charts with Plotly
+### 🏗️ **Current Architecture (v8.0.0 - Strategic Pivot)**
+Following ADR-002 strategic decision by @Gasta88 insight:
 
-### 🔧 **Data Integration**
-- **🇮🇹 ISTAT API**: SDMX API con 509+ datasets disponibili
-- **📁 Format Conversion**: XML → CSV, Excel, Parquet, JSON (523KB dati processati)
-- **🏷️ Data Categorization**: Auto-categorization (popolazione, economia, lavoro)
-- **💾 Real Data**: File XML reali da ISTAT (13 sample datasets in data/raw/)
-- **📊 PowerBI Integration**: Guide e file ottimizzati (10+ integration guides)
-- **🦆 NEW: DuckDB Analytics**: High-performance analytics engine with query optimization
-- **⚡ SQL Operations**: Advanced SQL queries with caching and performance monitoring
+```
+┌─────────────────────┐     ┌─────────────────────┐
+│   DuckDB Engine     │     │  SQLite Metadata    │
+├─────────────────────┤     ├─────────────────────┤
+│ • ISTAT Analytics   │     │ • Dataset Registry  │
+│ • Time Series       │     │ • User Preferences  │
+│ • Aggregations      │     │ • API Keys/Auth     │
+│ • Performance Data  │     │ • Audit Logging     │
+└─────────────────────┘     └─────────────────────┘
+         ↓                           ↓
+    ┌────────────────────────────────┐
+    │   Unified Data Repository      │
+    │   (Facade Pattern)             │
+    └────────────────────────────────┘
+```
+
+### ✅ **Current Capabilities**
+
+#### 🎯 **Production Features**
+- **🦆 DuckDB Analytics**: High-performance analytics engine (>2k records/sec)
+- **🗃️ SQLite Metadata**: Lightweight metadata layer (zero configuration)
+- **📊 PowerBI Integration**: Native BI tool support with star schema generation
+- **🔐 Enterprise Security**: JWT auth, rate limiting, SQL injection protection
+- **🧪 Comprehensive Testing**: 401 tests, 67% coverage, performance benchmarks
+
+#### 🌐 **Live Demos & UI**
+- **📊 Dashboard**: [osservatorio-dashboard.streamlit.app](https://osservatorio-dashboard.streamlit.app/)
+- **🌐 Landing Page**: [andreabozzo.github.io/Osservatorio](https://andreabozzo.github.io/Osservatorio/)
+- **📱 Responsive Design**: Desktop-optimized with mobile compatibility
+- **🔍 Interactive Features**: Filtering, charts, real-time data processing
+
+#### 🔧 **Data Integration**
+- **🇮🇹 ISTAT API**: Complete SDMX integration (509+ datasets)
+- **📁 Multi-Format Export**: CSV, Excel, Parquet, JSON, PowerBI-optimized
+- **🏷️ Smart Categorization**: AI-powered data classification
+- **⚡ Performance Optimized**: Query caching, bulk operations, indexing strategies
 
 ### 🔒 **Enterprise Security** (Day 3 Audit Complete)
 - **🛡️ SQL Injection Protection**: Enhanced table name validation, parameterized queries
