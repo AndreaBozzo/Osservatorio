@@ -249,9 +249,9 @@ class PerformanceRegressionDetector:
                 "median": statistics.median(recent_values),
                 "mean": statistics.mean(recent_values),
                 "count": len(recent_values),
-                "stddev": statistics.stdev(recent_values)
-                if len(recent_values) > 1
-                else 0,
+                "stddev": (
+                    statistics.stdev(recent_values) if len(recent_values) > 1 else 0
+                ),
             }
 
         # Compare current metrics with baseline

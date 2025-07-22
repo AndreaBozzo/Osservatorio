@@ -534,12 +534,12 @@ class PartitionManager:
 
             return {
                 "total_partitions": len(result),
-                "largest_partition": result.iloc[0]["row_count"]
-                if not result.empty
-                else 0,
-                "smallest_partition": result.iloc[-1]["row_count"]
-                if not result.empty
-                else 0,
+                "largest_partition": (
+                    result.iloc[0]["row_count"] if not result.empty else 0
+                ),
+                "smallest_partition": (
+                    result.iloc[-1]["row_count"] if not result.empty else 0
+                ),
                 "partition_details": result.to_dict("records"),
             }
 
