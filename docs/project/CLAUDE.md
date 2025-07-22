@@ -80,12 +80,13 @@ This is an Italian data processing system for ISTAT (Italian National Institute 
 - `python -c "from src.utils.security_enhanced import security_manager; security_manager.cleanup_old_entries()"` - Clean up rate limiter entries
 - `bandit -r src/database/duckdb/` - Security scan for DuckDB modules
 
-### DuckDB Security Audit Commands (NEW 21/07/2025 - Day 3 Security Audit)
-- `mypy src/database/duckdb/ --ignore-missing-imports` - Run MyPy type safety check (100% compliance achieved)
+### DuckDB Security Audit Commands (UPDATED 22/07/2025 - Day 3 Security Complete)
+- `mypy src/database/duckdb/ --ignore-missing-imports` - Run MyPy type safety check (note: may timeout on large codebases)
 - `bandit -r src/database/duckdb/ -f json` - Comprehensive security scan with JSON output
+- `bandit -r src/database/duckdb/ --severity-level high` - Check for HIGH severity issues only
 - `pytest tests/unit/test_duckdb_integration.py -v` - Run all 45 security-enhanced DuckDB tests
 - `python -c "from src.database.duckdb.manager import DuckDBManager; m = DuckDBManager(); print('✅ SQL injection protection active')"` - Verify security features
-- **Security Status**: ✅ All 23 original security vulnerabilities resolved, 100% MyPy compliance, enterprise-grade SQL injection protection
+- **Security Status**: ✅ 0 HIGH severity issues, all MEDIUM warnings are false positives, enterprise-grade SQL injection protection
 
 ### Testing (UPDATED 21/07/2025 - Security Audit & Performance Testing)
 - `pytest` - Run all tests (401+ tests total, 400 passing as of 22/07/2025)
@@ -99,13 +100,15 @@ This is an Italian data processing system for ISTAT (Italian National Institute 
 - `pytest tests/unit/test_istat_api.py -v` - Run expanded ISTAT API tests (25 tests)
 - `pytest --cov=src --cov-report=term tests/unit/ --tb=no -q` - Quick coverage check for unit tests
 
-### Performance Testing Specific (NEW 21/07/2025)
-- `pytest tests/performance/test_scalability.py -v` - Run original scalability tests (8 tests, fixed file I/O performance test)
-- `pytest tests/performance/test_duckdb_performance.py -v` - Run comprehensive DuckDB performance tests (7 test methods)
-- `pytest tests/performance/ --tb=short` - Run all performance tests with short traceback
+### Performance Testing Specific (UPDATED 22/07/2025 - All Tests Passing)
+- `pytest tests/performance/test_scalability.py -v` - Run original scalability tests (8 tests)
+- `pytest tests/performance/test_duckdb_performance.py -v` - Run comprehensive DuckDB performance tests (6 test methods)
+- `pytest tests/performance/test_query_builder_performance.py -v` - Run query builder performance tests (10 test methods)
+- `pytest tests/performance/ --tb=short` - Run all 24 performance tests (all passing)
 - `pytest tests/performance/test_duckdb_performance.py -k "bulk_insert" -v` - Run only bulk insert performance tests
 - `pytest tests/performance/test_duckdb_performance.py -k "concurrent" -v` - Run only concurrent query tests
 - `pytest tests/performance/test_duckdb_performance.py -k "memory" -v` - Run only memory usage pattern tests
+- `pytest tests/performance/ -m benchmark` - Run benchmark-specific performance tests
 
 ### Code Quality
 - `black .` - Format code with Black
