@@ -4,12 +4,12 @@
 
 [![Python](https://img.shields.io/badge/Python-3.13.3-blue.svg)](https://www.python.org/downloads/)
 [![Status](https://img.shields.io/badge/Status-MVP%20Prototype-yellow.svg)](docs/project/PROJECT_STATE.md)
-[![Tests](https://img.shields.io/badge/Tests-319%20passing-green.svg)](tests/)
+[![Tests](https://img.shields.io/badge/Tests-400%20passing%2F401-green.svg)](tests/)
 [![Dashboard](https://img.shields.io/badge/Dashboard-Live%20✅-green.svg)](https://osservatorio-dashboard.streamlit.app/)
-[![Security](https://img.shields.io/badge/Security-Enhanced%20🛡️-green.svg)](src/utils/security_enhanced.py)
+[![Security](https://img.shields.io/badge/Security-0%20HIGH%20issues%20🛡️-green.svg)](src/utils/security_enhanced.py)
 [![DuckDB](https://img.shields.io/badge/DuckDB-Analytics%20Engine-blue.svg)](src/database/duckdb/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Coverage](https://img.shields.io/badge/Coverage-57%25-orange.svg)](tests/)
+[![Coverage](https://img.shields.io/badge/Coverage-67%25-yellow.svg)](tests/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-1.45.0-red.svg)](https://streamlit.io/)
 
 ## 🚨 Project Status: MVP Prototype
@@ -17,8 +17,8 @@
 **⚠️ Reality Check**: This is a working prototype demonstrating ISTAT data integration concepts.
 **NOT suitable for production use** due to:
 - Performance optimizations needed (dashboard loads in <5s, target <3s)
-- ✅ **Security now enterprise-grade** (Day 3 audit: 100% MyPy compliance, SQL injection protection)
-- Limited scalability for large datasets (DuckDB handles 200k+ records/sec)
+- ✅ **Security now enterprise-grade** (Day 3 audit: 0 HIGH severity issues, SQL injection protection)
+- Limited scalability for large datasets (DuckDB handles >2k records/sec validated)
 - Prototype-level features with basic error handling
 
 **🎯 Target Audience**: Developers, data analysts, and ISTAT data enthusiasts exploring integration possibilities.
