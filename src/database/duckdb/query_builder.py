@@ -755,7 +755,7 @@ class DuckDBQueryBuilder:
                 # Convert list to sorted strings to avoid type comparison errors
                 params_str = str([str(p) for p in params])
         content = sql + params_str
-        return hashlib.md5(content.encode()).hexdigest()
+        return hashlib.md5(content.encode(), usedforsecurity=False).hexdigest()
 
     def execute(self, use_cache: bool = True) -> pd.DataFrame:
         """Execute the query and return results.

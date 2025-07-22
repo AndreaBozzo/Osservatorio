@@ -240,7 +240,9 @@ class DuckDBManager:
 
                 conn.register("temp_df", data)
                 # Table name validated above - safe for f-string usage
-                insert_query = f"INSERT INTO {table_name} SELECT * FROM temp_df"
+                insert_query = (
+                    f"INSERT INTO {table_name} SELECT * FROM temp_df"  # nosec B608
+                )
                 conn.execute(insert_query)
                 conn.unregister("temp_df")
 
