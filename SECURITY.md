@@ -116,7 +116,7 @@ Checklist per review manuale:
 #### Per Vulnerabilità Critiche
 1. **Email**: [inserire email sicurezza]
 2. **Encrypted**: Usa PGP se possibile
-3. **Information**: 
+3. **Information**:
    - Descrizione dettagliata
    - Steps to reproduce
    - Potential impact

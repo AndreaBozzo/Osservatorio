@@ -3,7 +3,7 @@
 **Status**: Proposed
 **Date**: 20 Luglio 2025
 **Deciders**: Andrea Bozzo (Maintainer)
-**Technical Story**: [Database Foundation Sprint - PROJECT_STATE.md](../../PROJECT_STATE.md#fase-2-database-foundation-sprint)
+**Technical Story**: [Database Foundation Sprint - PROJECT_STATE.md](../project/PROJECT_STATE.md#fase-2-database-foundation-sprint)
 
 ## Context
 

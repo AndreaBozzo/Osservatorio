@@ -13,6 +13,10 @@ from typing import Any, Dict, List, Optional
 import duckdb
 import pandas as pd
 
+from src.utils.logger import get_logger
+
+logger = get_logger(__name__)
+
 
 class SimpleDuckDBAdapter:
     """Lightweight DuckDB adapter for ISTAT data processing."""
@@ -42,7 +46,8 @@ class SimpleDuckDBAdapter:
             Query results as DataFrame
         """
         self._ensure_connection()
-        assert self.connection is not None
+        if self.connection is None:
+            raise RuntimeError("Failed to establish database connection")
         return self.connection.execute(query).df()
 
     def execute_statement(self, statement: str):
@@ -52,7 +57,8 @@ class SimpleDuckDBAdapter:
             statement: SQL statement to execute
         """
         self._ensure_connection()
-        assert self.connection is not None
+        if self.connection is None:
+            raise RuntimeError("Failed to establish database connection")
         self.connection.execute(statement)
 
     def create_istat_schema(self):
@@ -108,9 +114,9 @@ class SimpleDuckDBAdapter:
             self.execute_statement(
                 "CREATE INDEX IF NOT EXISTS idx_metadata_category ON dataset_metadata(category);"
             )
-        except:
-            # Indexes might already exist
-            pass
+        except Exception as e:
+            # Indexes might already exist or other harmless errors
+            logger.debug(f"Index creation warning (expected if exists): {e}")
 
     def insert_metadata(
         self,
@@ -141,25 +147,23 @@ class SimpleDuckDBAdapter:
             df: DataFrame with observation data
         """
         # Register DataFrame and insert
-        assert self.connection is not None
+        if self.connection is None:
+            raise RuntimeError("Failed to establish database connection")
         self.connection.register("temp_observations", df)
         self.execute_statement(
             """
-            INSERT INTO istat_observations (dataset_id, year, territory_code, territory_name,
-                                          measure_code, measure_name, obs_value, obs_status)
+            INSERT INTO istat_observations (dataset_id, year, territory_code, obs_value, obs_status)
             SELECT
                 dataset_id,
                 year,
                 territory_code,
-                territory_name,
-                measure_code,
-                measure_name,
                 obs_value,
                 obs_status
             FROM temp_observations;
         """
         )
-        assert self.connection is not None
+        if self.connection is None:
+            raise RuntimeError("Failed to establish database connection")
         self.connection.unregister("temp_observations")
 
     def get_dataset_summary(self) -> pd.DataFrame:
@@ -200,7 +204,8 @@ class SimpleDuckDBAdapter:
             Time series data
         """
         # Use parameterized query to prevent SQL injection
-        assert self.connection is not None
+        if self.connection is None:
+            raise RuntimeError("Failed to establish database connection")
 
         if territory_code:
             query = """
@@ -244,7 +249,8 @@ class SimpleDuckDBAdapter:
             Territory comparison data
         """
         # Use parameterized query to prevent SQL injection
-        assert self.connection is not None
+        if self.connection is None:
+            raise RuntimeError("Failed to establish database connection")
         query = """
             SELECT
                 territory_code,
@@ -279,7 +285,8 @@ class SimpleDuckDBAdapter:
             Trend analysis data
         """
         # Use parameterized query to prevent SQL injection
-        assert self.connection is not None
+        if self.connection is None:
+            raise RuntimeError("Failed to establish database connection")
 
         if start_year and end_year:
             query = """

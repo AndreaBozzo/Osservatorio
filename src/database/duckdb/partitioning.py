@@ -65,10 +65,11 @@ class YearPartitionStrategy(PartitionStrategy):
         year = row.get("year", datetime.now().year)
         return f"year_{year}"
 
-    def get_partition_filter(
-        self, start_year: Optional[int] = None, end_year: Optional[int] = None
-    ) -> str:
+    def get_partition_filter(self, **kwargs) -> str:
         """Generate year filter for partition pruning."""
+        start_year = kwargs.get("start_year")
+        end_year = kwargs.get("end_year")
+
         if start_year and end_year:
             return f"year BETWEEN {start_year} AND {end_year}"
         elif start_year:
@@ -92,8 +93,9 @@ class TerritoryPartitionStrategy(PartitionStrategy):
             return f"territory_italy_{territory[:4]}"  # Group by first 4 chars
         return f"territory_{territory[:2]}"  # Group by first 2 chars
 
-    def get_partition_filter(self, territories: Optional[List[str]] = None) -> str:
+    def get_partition_filter(self, **kwargs) -> str:
         """Generate territory filter for partition pruning."""
+        territories = kwargs.get("territories")
         if territories:
             territory_list = "', '".join(territories)
             return f"territory_code IN ('{territory_list}')"
@@ -117,13 +119,12 @@ class HybridPartitionStrategy(PartitionStrategy):
 
         return f"hybrid_{decade}s_{territory_group}"
 
-    def get_partition_filter(
-        self,
-        start_year: Optional[int] = None,
-        end_year: Optional[int] = None,
-        territories: Optional[List[str]] = None,
-    ) -> str:
+    def get_partition_filter(self, **kwargs) -> str:
         """Generate hybrid filter for partition pruning."""
+        start_year = kwargs.get("start_year")
+        end_year = kwargs.get("end_year")
+        territories = kwargs.get("territories")
+
         filters = []
 
         if start_year and end_year:
@@ -533,12 +534,12 @@ class PartitionManager:
 
             return {
                 "total_partitions": len(result),
-                "largest_partition": result.iloc[0]["row_count"]
-                if not result.empty
-                else 0,
-                "smallest_partition": result.iloc[-1]["row_count"]
-                if not result.empty
-                else 0,
+                "largest_partition": (
+                    result.iloc[0]["row_count"] if not result.empty else 0
+                ),
+                "smallest_partition": (
+                    result.iloc[-1]["row_count"] if not result.empty else 0
+                ),
                 "partition_details": result.to_dict("records"),
             }
 

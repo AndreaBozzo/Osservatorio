@@ -16,12 +16,13 @@
 5. [Tableau API Client](#-tableau-api-client)
 6. [Data Converters](#-data-converters)
 7. [Security Manager](#-security-manager)
-8. [Circuit Breaker](#-circuit-breaker)
-9. [Analyzers](#-analyzers)
-10. [Utilities](#-utilities)
-11. [Error Handling](#-error-handling)
-12. [Rate Limiting](#-rate-limiting)
-13. [Examples](#-examples)
+8. [DuckDB Analytics Engine](#-duckdb-analytics-engine)
+9. [Circuit Breaker](#-circuit-breaker)
+10. [Analyzers](#-analyzers)
+11. [Utilities](#-utilities)
+12. [Error Handling](#-error-handling)
+13. [Rate Limiting](#-rate-limiting)
+14. [Examples](#-examples)
 
 ---
 
@@ -523,6 +524,120 @@ def unblock_ip(ip: str) -> None
 - **File Extension Validation**: Only allows safe extensions
 - **Input Sanitization**: Removes dangerous characters
 - **Rate Limiting**: Configurable request limits
+
+---
+
+## 🦆 DuckDB Analytics Engine
+
+### 📝 Overview
+
+The DuckDB Analytics Engine provides high-performance data analytics capabilities specifically optimized for ISTAT statistical data processing.
+
+### 🏗️ Core Components
+
+#### DuckDBManager
+```python
+from src.database.duckdb.manager import DuckDBManager
+
+# Initialize with default configuration
+manager = DuckDBManager()
+
+# Execute queries with automatic error handling
+result = manager.execute_query("SELECT * FROM dataset_metadata LIMIT 10")
+
+# Bulk insert with optimized performance
+manager.bulk_insert("istat.observations", dataframe)
+```
+
+#### SimpleDuckDBAdapter
+```python
+from src.database.duckdb.simple_adapter import SimpleDuckDBAdapter
+
+# Create lightweight adapter
+adapter = SimpleDuckDBAdapter(":memory:")
+adapter.create_istat_schema()
+
+# Insert and query data
+adapter.insert_observations(df)
+summary = adapter.get_dataset_summary()
+```
+
+### 🔒 Security Features
+
+#### Enhanced SQL Injection Protection
+- **Table Name Validation**: Strict alphanumeric checks for all table names
+- **Parameterized Queries**: All user data operations use prepared statements
+- **Input Sanitization**: Comprehensive validation of database identifiers
+
+#### Type Safety
+- **100% MyPy Compliance**: All modules pass strict type checking
+- **Runtime Safety**: Proper error handling with meaningful exceptions
+- **Connection Safety**: Robust connection lifecycle management
+
+### ⚡ Performance Features
+
+#### Query Optimization
+```python
+from src.database.duckdb.query_optimizer import QueryOptimizer
+
+optimizer = QueryOptimizer()
+optimizer.create_advanced_indexes()
+
+# Optimized time series queries with caching
+data = optimizer.get_time_series_data(
+    dataset_ids=["DCIS_POPRES1"],
+    start_year=2020,
+    end_year=2023
+)
+```
+
+#### Data Partitioning
+```python
+from src.database.duckdb.partitioning import PartitionManager
+
+partition_manager = PartitionManager()
+partition_manager.create_partitioned_tables("hybrid")
+
+# Automatic partition pruning
+optimized_query = partition_manager.get_partition_pruning_query(
+    base_query="SELECT * FROM istat.observations",
+    start_year=2022,
+    territories=["IT"]
+)
+```
+
+### 📊 Usage Examples
+
+#### Complete Data Pipeline
+```python
+# 1. Initialize components
+from src.database.duckdb import DuckDBManager, QueryOptimizer, PartitionManager
+
+manager = DuckDBManager()
+optimizer = QueryOptimizer(manager)
+partitioner = PartitionManager(manager)
+
+# 2. Create optimized schema
+optimizer.create_advanced_indexes()
+partitioner.create_partitioned_tables()
+
+# 3. Process data with security validation
+secure_data = manager.bulk_insert("istat.datasets_partitioned", df)
+
+# 4. Execute optimized queries
+results = optimizer.get_territory_comparison(
+    measure_codes=["POP_TOT"],
+    year=2023
+)
+```
+
+### 🧪 Testing
+
+All DuckDB components include comprehensive test coverage:
+- **45 Integration Tests**: Complete API coverage
+- **Security Tests**: SQL injection and input validation
+- **Performance Tests**: Benchmarking and optimization
+- **Type Safety Tests**: MyPy compliance verification
 
 ---
 

@@ -14,6 +14,18 @@ from .config import (
     get_table_config,
     validate_config,
 )
+from .manager import DuckDBManager, get_manager, reset_manager
+from .query_builder import (
+    AggregateFunction,
+    DuckDBQueryBuilder,
+    FilterCondition,
+    FilterOperator,
+    QueryCache,
+    QueryType,
+    create_query_builder,
+    get_global_cache,
+)
+from .schema import ISTATSchemaManager, initialize_schema
 
 # Import working simple adapter
 from .simple_adapter import (
@@ -23,8 +35,6 @@ from .simple_adapter import (
     create_temp_adapter,
 )
 
-# from .manager import DuckDBManager, get_manager, reset_manager
-# from .schema import ISTATSchemaManager, initialize_schema
 # from .query_optimizer import QueryOptimizer, QueryType, create_optimizer
 # from .partitioning import (
 #     PartitionManager, YearPartitionStrategy, TerritoryPartitionStrategy,
@@ -47,4 +57,19 @@ __all__ = [
     "create_adapter",
     "create_file_adapter",
     "create_temp_adapter",
+    # Core components
+    "DuckDBManager",
+    "get_manager",
+    "reset_manager",
+    "ISTATSchemaManager",
+    "initialize_schema",
+    # Query Builder
+    "DuckDBQueryBuilder",
+    "QueryCache",
+    "FilterCondition",
+    "FilterOperator",
+    "QueryType",
+    "AggregateFunction",
+    "create_query_builder",
+    "get_global_cache",
 ]

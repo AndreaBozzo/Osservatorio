@@ -46,10 +46,10 @@ Pulire la root del repository da file markdown fuori posto e file temporanei per
 ### Root Directory (Pulita)
 ```
 Osservatorio/
-├── CLAUDE.md                  # Development context
-├── ISSUE_TEMPLATES.md         # GitHub issue templates guide
+├── docs/project/CLAUDE.md        # Development context
+├── docs/github/ISSUE_TEMPLATES.md  # GitHub issue templates guide
 ├── LICENSE                    # Project license
-├── PROJECT_STATE.md           # Current project status
+├── docs/project/PROJECT_STATE.md   # Current project status
 ├── README.md                  # Main project documentation
 ├── convert_to_powerbi.py      # PowerBI conversion script
 ├── convert_to_tableau.py      # Tableau conversion script
