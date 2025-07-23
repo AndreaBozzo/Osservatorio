@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="it">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -22,13 +23,39 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+            background: url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
             opacity: 0.1;
+            z-index: 0;
+            pointer-events: none;
         }
 
         .hero-content {
             position: relative;
             z-index: 1;
+        }
+
+        /* Footer specific fixes */
+        .footer-content {
+            position: relative;
+            z-index: 10;
+        }
+
+        .footer-links {
+            position: relative;
+            z-index: 20;
+        }
+
+        .footer-links a {
+            position: relative;
+            z-index: 30;
+            display: inline-block;
+            pointer-events: auto;
+            transition: color 0.2s ease;
+        }
+
+        .footer-links a:hover {
+            color: white !important;
+            text-decoration: underline;
         }
 
         .card-hover {
@@ -49,8 +76,15 @@
         }
 
         @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.7;
+            }
         }
 
         .floating-animation {
@@ -58,8 +92,15 @@
         }
 
         @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
+
+            0%,
+            100% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
         }
 
         /* Enhanced button styles */
@@ -162,6 +203,11 @@
             color: #667eea;
         }
 
+        /* Chart styling */
+        #populationChart {
+            height: 300px;
+        }
+
         /* Responsive design improvements */
         @media (max-width: 768px) {
             .stat-number {
@@ -192,6 +238,7 @@
         }
     </style>
 </head>
+
 <body class="bg-gray-50">
     <!-- Enhanced Header -->
     <header class="gradient-bg text-white py-20 md:py-24">
@@ -212,14 +259,14 @@
 
                 <!-- Enhanced buttons -->
                 <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
-                    <a href="https://osservatorio-dashboard.streamlit.app" target="_blank"
-                       class="btn-primary text-white px-8 py-4 rounded-full font-semibold text-lg inline-flex items-center group">
+                    <a href="https://osservatorio-dashboard.streamlit.app" target="_blank" rel="noopener noreferrer"
+                        class="btn-primary text-white px-8 py-4 rounded-full font-semibold text-lg inline-flex items-center group">
                         <i class="fas fa-chart-line mr-3 group-hover:scale-110 transition-transform"></i>
                         Accedi al Dashboard
                         <i class="fas fa-arrow-right ml-3 group-hover:translate-x-1 transition-transform"></i>
                     </a>
-                    <a href="https://github.com/AndreaBozzo/Osservatorio" target="_blank"
-                       class="btn-secondary text-white px-8 py-4 rounded-full font-semibold text-lg inline-flex items-center group">
+                    <a href="https://github.com/AndreaBozzo/Osservatorio" target="_blank" rel="noopener noreferrer"
+                        class="btn-secondary text-white px-8 py-4 rounded-full font-semibold text-lg inline-flex items-center group">
                         <i class="fab fa-github mr-3 group-hover:rotate-12 transition-transform"></i>
                         Codice Sorgente
                         <i class="fas fa-external-link-alt ml-3 group-hover:scale-110 transition-transform"></i>
@@ -321,21 +368,24 @@
                         <i class="fas fa-chart-bar"></i>
                     </div>
                     <h3 class="text-xl font-semibold mb-4">Visualizzazioni Interattive</h3>
-                    <p class="text-gray-600">Dashboard Streamlit semplificato con focus su economia, popolazione e lavoro italiano.</p>
+                    <p class="text-gray-600">Dashboard Streamlit semplificato con focus su economia, popolazione e
+                        lavoro italiano.</p>
                 </div>
                 <div class="bg-white p-6 rounded-lg shadow-md card-hover">
                     <div class="text-green-600 text-4xl mb-4">
                         <i class="fas fa-download"></i>
                     </div>
                     <h3 class="text-xl font-semibold mb-4">Export Multi-formato</h3>
-                    <p class="text-gray-600">Converti dati ISTAT in CSV, Excel, Parquet e JSON per Tableau e PowerBI.</p>
+                    <p class="text-gray-600">Converti dati ISTAT in CSV, Excel, Parquet e JSON per Tableau e PowerBI.
+                    </p>
                 </div>
                 <div class="bg-white p-6 rounded-lg shadow-md card-hover">
                     <div class="text-purple-600 text-4xl mb-4">
                         <i class="fas fa-shield-alt"></i>
                     </div>
                     <h3 class="text-xl font-semibold mb-4">Sicurezza & Qualità</h3>
-                    <p class="text-gray-600">172 test automatici, validazione sicura dei percorsi e single entry point.</p>
+                    <p class="text-gray-600">172 test automatici, validazione sicura dei percorsi e single entry point.
+                    </p>
                 </div>
             </div>
         </div>
@@ -351,9 +401,11 @@
                         <div class="text-3xl mr-4">🏘️</div>
                         <h3 class="text-xl font-bold text-gray-800">Popolazione</h3>
                     </div>
-                    <p class="text-gray-600 mb-4">Dati demografici, residenza e struttura popolazione italiana con analisi temporali dettagliate</p>
+                    <p class="text-gray-600 mb-4">Dati demografici, residenza e struttura popolazione italiana con
+                        analisi temporali dettagliate</p>
                     <div class="flex justify-between items-center">
-                        <span class="text-sm font-medium text-red-600 bg-red-50 px-3 py-1 rounded-full">Priorità: 10/10</span>
+                        <span class="text-sm font-medium text-red-600 bg-red-50 px-3 py-1 rounded-full">Priorità:
+                            10/10</span>
                         <span class="text-xs text-gray-500">59M+ abitanti</span>
                     </div>
                 </div>
@@ -363,9 +415,11 @@
                         <div class="text-3xl mr-4">💰</div>
                         <h3 class="text-xl font-bold text-gray-800">Economia</h3>
                     </div>
-                    <p class="text-gray-600 mb-4">PIL, conti economici, indicatori macroeconomici e trend di crescita nazionale</p>
+                    <p class="text-gray-600 mb-4">PIL, conti economici, indicatori macroeconomici e trend di crescita
+                        nazionale</p>
                     <div class="flex justify-between items-center">
-                        <span class="text-sm font-medium text-teal-600 bg-teal-50 px-3 py-1 rounded-full">Priorità: 9/10</span>
+                        <span class="text-sm font-medium text-teal-600 bg-teal-50 px-3 py-1 rounded-full">Priorità:
+                            9/10</span>
                         <span class="text-xs text-gray-500">€2.0T PIL</span>
                     </div>
                 </div>
@@ -375,9 +429,11 @@
                         <div class="text-3xl mr-4">👥</div>
                         <h3 class="text-xl font-bold text-gray-800">Lavoro</h3>
                     </div>
-                    <p class="text-gray-600 mb-4">Occupazione, disoccupazione, forze lavoro e analisi del mercato del lavoro</p>
+                    <p class="text-gray-600 mb-4">Occupazione, disoccupazione, forze lavoro e analisi del mercato del
+                        lavoro</p>
                     <div class="flex justify-between items-center">
-                        <span class="text-sm font-medium text-blue-600 bg-blue-50 px-3 py-1 rounded-full">Priorità: 8/10</span>
+                        <span class="text-sm font-medium text-blue-600 bg-blue-50 px-3 py-1 rounded-full">Priorità:
+                            8/10</span>
                         <span class="text-xs text-gray-500">60.1% tasso</span>
                     </div>
                 </div>
@@ -387,9 +443,11 @@
                         <div class="text-3xl mr-4">🏛️</div>
                         <h3 class="text-xl font-bold text-gray-800">Territorio</h3>
                     </div>
-                    <p class="text-gray-600 mb-4">Dati territoriali, amministrativi e geografici delle regioni italiane</p>
+                    <p class="text-gray-600 mb-4">Dati territoriali, amministrativi e geografici delle regioni italiane
+                    </p>
                     <div class="flex justify-between items-center">
-                        <span class="text-sm font-medium text-green-600 bg-green-50 px-3 py-1 rounded-full">Priorità: 7/10</span>
+                        <span class="text-sm font-medium text-green-600 bg-green-50 px-3 py-1 rounded-full">Priorità:
+                            7/10</span>
                         <span class="text-xs text-gray-500">20 regioni</span>
                     </div>
                 </div>
@@ -399,9 +457,11 @@
                         <div class="text-3xl mr-4">🎓</div>
                         <h3 class="text-xl font-bold text-gray-800">Istruzione</h3>
                     </div>
-                    <p class="text-gray-600 mb-4">Sistema educativo, formazione professionale e livelli di istruzione</p>
+                    <p class="text-gray-600 mb-4">Sistema educativo, formazione professionale e livelli di istruzione
+                    </p>
                     <div class="flex justify-between items-center">
-                        <span class="text-sm font-medium text-yellow-600 bg-yellow-50 px-3 py-1 rounded-full">Priorità: 6/10</span>
+                        <span class="text-sm font-medium text-yellow-600 bg-yellow-50 px-3 py-1 rounded-full">Priorità:
+                            6/10</span>
                         <span class="text-xs text-gray-500">8M studenti</span>
                     </div>
                 </div>
@@ -411,9 +471,11 @@
                         <div class="text-3xl mr-4">🏥</div>
                         <h3 class="text-xl font-bold text-gray-800">Salute</h3>
                     </div>
-                    <p class="text-gray-600 mb-4">Sanità pubblica, indicatori di salute e mortalità della popolazione</p>
+                    <p class="text-gray-600 mb-4">Sanità pubblica, indicatori di salute e mortalità della popolazione
+                    </p>
                     <div class="flex justify-between items-center">
-                        <span class="text-sm font-medium text-pink-600 bg-pink-50 px-3 py-1 rounded-full">Priorità: 5/10</span>
+                        <span class="text-sm font-medium text-pink-600 bg-pink-50 px-3 py-1 rounded-full">Priorità:
+                            5/10</span>
                         <span class="text-xs text-gray-500">83 anni aspettativa</span>
                     </div>
                 </div>
@@ -463,7 +525,10 @@
                     <div class="relative">
                         <div class="bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg p-1">
                             <div class="bg-white rounded-lg p-4">
-                                <canvas id="populationChart" style="height: 300px;"></canvas>
+                                <canvas id="populationChart" aria-label="Grafico andamento popolazione Italia">
+                                    <p>Grafico non disponibile. I dati mostrano l'andamento della popolazione italiana
+                                        dal 2018 al 2024.</p>
+                                </canvas>
                             </div>
                         </div>
                     </div>
@@ -489,8 +554,8 @@
                 </div>
 
                 <div class="text-center">
-                    <a href="https://osservatorio-dashboard.streamlit.app" target="_blank"
-                       class="btn-primary text-white px-10 py-4 rounded-full font-semibold text-lg inline-flex items-center group mb-4">
+                    <a href="https://osservatorio-dashboard.streamlit.app" target="_blank" rel="noopener noreferrer"
+                        class="btn-primary text-white px-10 py-4 rounded-full font-semibold text-lg inline-flex items-center group mb-4">
                         <i class="fas fa-rocket mr-3 group-hover:scale-110 transition-transform"></i>
                         Accedi al Dashboard Completo
                         <i class="fas fa-arrow-right ml-3 group-hover:translate-x-1 transition-transform"></i>
@@ -559,16 +624,27 @@
                                     <span class="text-gray-600"> CI/CD automatizzato e deployment</span>
                                 </div>
                             </div>
+                            <div class="tech-item">
+                                <i class="fas fa-check-circle text-green-500 mr-3 text-lg"></i>
+                                <div>
+                                    <span class="font-semibold text-gray-800">SQLite & DuckDB</span>
+                                    <span class="text-gray-600"> Tecnologie database per gestione dati</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Performance metrics -->
+                    <!-- Performance metrics - Fixed to single line -->
                     <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-6">
                         <h4 class="font-bold text-gray-800 mb-4">⚡ Performance Metrics</h4>
-                        <div class="grid grid-cols-2 gap-4 text-center">
+                        <div class="grid grid-cols-3 gap-4 text-center">
                             <div>
-                                <div class="text-2xl font-bold text-green-600">~2s</div>
+                                <div class="text-2xl font-bold text-green-600">&lt;5s</div>
                                 <div class="text-xs text-gray-600">Load Time</div>
+                            </div>
+                            <div>
+                                <div class="text-2xl font-bold text-green-600">&gt;2k records/s</div>
+                                <div class="text-xs text-gray-600">Processing Time</div>
                             </div>
                             <div>
                                 <div class="text-2xl font-bold text-blue-600">99.9%</div>
@@ -656,115 +732,137 @@
         </div>
     </section>
 
-    <!-- Footer -->
+    <!-- Footer - FIXED LAYOUT -->
     <footer class="gradient-bg text-white py-12">
-        <div class="container mx-auto px-4">
+        <div class="container mx-auto px-4 footer-content">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div>
+                <div class="footer-links">
                     <h3 class="text-xl font-semibold mb-4">🇮🇹 Osservatorio ISTAT</h3>
-                    <p class="text-gray-200">Sistema open-source per l'analisi e visualizzazione dei dati statistici italiani.</p>
+                    <p class="text-gray-200">Sistema open-source per l'analisi e visualizzazione dei dati statistici
+                        italiani.</p>
                 </div>
-                <div>
+                <div class="footer-links">
                     <h3 class="text-xl font-semibold mb-4">🔗 Link Utili</h3>
                     <ul class="space-y-2 text-gray-200">
-                        <li><a href="https://github.com/AndreaBozzo/Osservatorio" target="_blank" class="hover:text-white">GitHub Repository</a></li>
-                        <li><a href="https://osservatorio-dashboard.streamlit.app" target="_blank" class="hover:text-white">Dashboard Live</a></li>
-                        <li><a href="https://github.com/AndreaBozzo/Osservatorio/blob/main/README.md" target="_blank" class="hover:text-white">Documentazione</a></li>
-                        <li><a href="https://www.istat.it/" target="_blank" class="hover:text-white">ISTAT Ufficiale</a></li>
+                        <li><a href="https://github.com/AndreaBozzo/Osservatorio" target="_blank"
+                                rel="noopener noreferrer" class="hover:text-white">GitHub Repository</a></li>
+                        <li><a href="https://osservatorio-dashboard.streamlit.app" target="_blank"
+                                rel="noopener noreferrer" class="hover:text-white">Dashboard Live</a></li>
+                        <li><a href="https://github.com/AndreaBozzo/Osservatorio/blob/main/README.md" target="_blank"
+                                rel="noopener noreferrer" class="hover:text-white">Documentazione</a></li>
+                        <li><a href="https://www.istat.it/" target="_blank" rel="noopener noreferrer"
+                                class="hover:text-white">ISTAT Ufficiale</a></li>
                     </ul>
                 </div>
-                <div>
+                <div class="footer-links">
                     <h3 class="text-xl font-semibold mb-4">📧 Contatti</h3>
                     <p class="text-gray-200">Sviluppato da Andrea Bozzo</p>
                     <p class="text-gray-200">Powered by Streamlit & GitHub Actions</p>
                     <div class="mt-4 space-x-4">
-                        <a href="https://github.com/AndreaBozzo" target="_blank" class="text-gray-200 hover:text-white">
+                        <a href="https://github.com/AndreaBozzo" target="_blank" rel="noopener noreferrer"
+                            class="text-gray-200 hover:text-white" aria-label="Profilo GitHub di Andrea Bozzo">
                             <i class="fab fa-github text-2xl"></i>
                         </a>
                     </div>
                 </div>
             </div>
-            <div class="border-t border-gray-600 mt-8 pt-8 text-center text-gray-300">
+            <div class="border-t border-gray-600 mt-8 pt-8 text-center text-gray-300 footer-links">
                 <p>&copy; 2025 Osservatorio ISTAT. Made with ❤️ in Italy. Licensed under MIT.</p>
             </div>
         </div>
     </footer>
 
     <script>
-        // Population Chart
-        const ctx = document.getElementById('populationChart').getContext('2d');
-        const populationChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: ['2018', '2019', '2020', '2021', '2022', '2023', '2024'],
-                datasets: [{
-                    label: 'Popolazione Italia (milioni)',
-                    data: [60.4, 60.2, 59.8, 59.6, 59.1, 58.9, 58.7],
-                    borderColor: '#3B82F6',
-                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                    fill: true,
-                    tension: 0.4
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'top',
+        document.addEventListener('DOMContentLoaded', function () {
+            // Population Chart
+            const ctx = document.getElementById('populationChart');
+            if (ctx) {
+                const populationChart = new Chart(ctx.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: ['2018', '2019', '2020', '2021', '2022', '2023', '2024'],
+                        datasets: [{
+                            label: 'Popolazione Italia (milioni)',
+                            data: [60.4, 60.2, 59.8, 59.6, 59.1, 58.9, 58.7],
+                            borderColor: '#3B82F6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }]
                     },
-                    title: {
-                        display: true,
-                        text: 'Andamento Popolazione Italia (2018-2024)'
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: false,
-                        min: 58,
-                        max: 61,
-                        ticks: {
-                            callback: function(value) {
-                                return value + 'M';
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                            },
+                            title: {
+                                display: true,
+                                text: 'Andamento Popolazione Italia (2018-2024)'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: false,
+                                min: 58,
+                                max: 61,
+                                ticks: {
+                                    callback: function (value) {
+                                        return value + 'M';
+                                    }
+                                }
+                            }
+                        },
+                        elements: {
+                            point: {
+                                radius: 4,
+                                hoverRadius: 6
                             }
                         }
                     }
-                },
-                elements: {
-                    point: {
-                        radius: 4,
-                        hoverRadius: 6
-                    }
-                }
+                });
             }
-        });
 
-        // Animation counters
-        function animateValue(obj, start, end, duration) {
-            let startTimestamp = null;
-            const step = (timestamp) => {
-                if (!startTimestamp) startTimestamp = timestamp;
-                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-                obj.innerHTML = Math.floor(progress * (end - start) + start);
-                if (progress < 1) {
-                    window.requestAnimationFrame(step);
-                }
-            };
-            window.requestAnimationFrame(step);
-        }
+            // Animation counters
+            function animateValue(obj, start, end, duration) {
+                if (!obj) return;
+                let startTimestamp = null;
+                const step = (timestamp) => {
+                    if (!startTimestamp) startTimestamp = timestamp;
+                    const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                    obj.innerHTML = Math.floor(progress * (end - start) + start);
+                    if (progress < 1) {
+                        window.requestAnimationFrame(step);
+                    }
+                };
+                window.requestAnimationFrame(step);
+            }
 
-        // Animate stats on scroll
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    animateValue(document.getElementById('dataset-count'), 0, 509, 2000);
-                    animateValue(document.getElementById('test-success'), 0, 172, 1500);
-                    animateValue(document.getElementById('categories'), 0, 3, 1500);
+            // Animate stats on scroll
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        animateValue(document.getElementById('dataset-count'), 0, 509, 2000);
+                        animateValue(document.getElementById('test-success'), 0, 172, 1500);
+                        animateValue(document.getElementById('categories'), 0, 6, 1500);
+                    }
+                });
+            });
+
+            const datasetElement = document.getElementById('dataset-count');
+            if (datasetElement) {
+                observer.observe(datasetElement);
+            }
+
+            // Cleanup
+            window.addEventListener('beforeunload', function () {
+                if (observer) {
+                    observer.disconnect();
                 }
             });
         });
-
-        observer.observe(document.getElementById('dataset-count'));
     </script>
 </body>
+
 </html>
