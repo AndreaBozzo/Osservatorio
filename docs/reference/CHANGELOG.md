@@ -5,38 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [8.0.0] - 2025-07-22 - Strategic Pivot to SQLite + DuckDB
-
-### 🔄 Changed (BREAKING CHANGE - Architecture Pivot)
-- **Strategic Architecture Change**: Pivoted from PostgreSQL + Docker to SQLite + DuckDB hybrid approach
-  - **Rationale**: ADR-002 documents the decision based on @Gasta88's critical insight about over-engineering
-  - **Impact**: Eliminates Docker complexity, zero-configuration deployment, faster development velocity
-  - **Migration**: Standard SQL schema enables easy PostgreSQL upgrade when enterprise scale needed
-- **Documentation Reorganization**: Complete documentation restructuring for SQLite architecture
-  - Updated README.md with new architecture diagrams and capabilities
-  - CLAUDE.md updated with SQLite commands and development workflow
-  - New comprehensive ADR-002 documenting architectural decision
-
-### ✨ Added (Strategic Pivot Implementation)
-- **ADR-002**: Strategic Pivot to SQLite Architecture (docs/reference/adr/002-strategic-pivot-sqlite.md)
-- **Comprehensive Label System**: 47 GitHub labels across 9 categories for better issue management
-- **Automated Issue Creation**: Linux script (scripts/create-issue.sh) for @Gasta88 with 3 operating modes
-- **Updated Roadmap**: Days 4-11 roadmap with SQLite implementation plan
-- **New Issues**: 7 new GitHub issues (#25-#31) for SQLite sprint implementation
-
-### ❌ Removed (Obsolete PostgreSQL Components)
-- Closed obsolete PostgreSQL-based issues (#13-#18)
-- Removed legacy planning documentation (SUBTASK_DAY1.md, SUBTASK_DAY2.md)
-- Cleaned up obsolete Docker and PostgreSQL references
-
-### 📋 Project Management
-- **Issue Board Update**: Replaced PostgreSQL tasks with SQLite-focused implementation
-- **Sprint Refocus**: Days 4-11 now target SQLite + FastAPI + PowerBI integration
-- **Community Tools**: Enhanced contributor experience with automated issue creation
-
----
-
-## [7.1.0] - 2025-07-22 - Day 3 Complete
+## [Unreleased] - 2025-07-22
 
 ### ⚡ Added (Day 3: Performance Testing & Optimization)
 

@@ -1,182 +1,155 @@
-# 🛠️ Scripts Attivi
+# 🛠️ Osservatorio Scripts
 
-Questa cartella contiene tutti gli script operativi del progetto Osservatorio ISTAT.
+Collezione di script per automatizzare tasks comuni del progetto.
 
-## 📋 Scripts Disponibili
+## 🚀 create-issue.sh
 
-### 🧪 **Test e CI/CD**
+Script rapido e intuitivo per creare GitHub issues, creato specificamente per @Gasta88.
 
-#### `test_ci.py` ⭐ **PRINCIPALE**
-- **Scopo**: Runner unificato per test CI/CD con strategie multiple
-- **Utilizzo**: `python scripts/test_ci.py --strategy [auto|full|quick|minimal]`
-- **Funzionalità**:
-  - Strategia `auto`: Fallback automatico da full → quick → minimal
-  - Strategia `full`: Suite completa di test (unit + integration + performance)
-  - Strategia `quick`: Test rapidi essenziali per CI/CD
-  - Strategia `minimal`: Test ultra-robusti senza dipendenze pytest
-- **Utilizzo nei workflow**: GitHub Actions `dashboard-deploy.yml`
+### ✨ Features
+- **3 modalità operative**: Interactive, Express, Template
+- **Auto-completamento labels**: Sistema di labels comprensivo
+- **Templates predefiniti**: Bug, Feature, Performance, Security, etc.
+- **UI colorata e intuitiva**: Facilita l'uso con colori e emoji
+- **Validazione input**: Controlli di sicurezza e coerenza
+- **Browser integration**: Apre direttamente l'issue nel browser
 
-#### `generate_test_data.py`
-- **Scopo**: Generazione dati mock per test automatici
-- **Utilizzo**: `python scripts/generate_test_data.py`
-- **Funzionalità**: Crea dati di test per evitare chiamate API durante CI/CD
-- **Utilizzo nei workflow**: Integrato in `test_ci.py --generate-data`
-
-### 🔧 **Setup e Configurazione**
-
-#### `setup_powerbi_azure.py`
-- **Scopo**: Setup guidato per configurazione Azure AD e PowerBI
-- **Utilizzo**: `python scripts/setup_powerbi_azure.py`
-- **Funzionalità**:
-  - Guida step-by-step per Azure AD app registration
-  - Configurazione variabili ambiente PowerBI
-  - Creazione file .env
-  - Verifica configurazione
-
-#### `test_powerbi_upload.py`
-- **Scopo**: Test upload dataset PowerBI Service
-- **Utilizzo**: `python scripts/test_powerbi_upload.py`
-- **Funzionalità**:
-  - Test connessione PowerBI Service
-  - Upload dataset di test
-  - Verifica autenticazione Azure AD
-
-### 📊 **Gestione Dati**
-
-#### `download_istat_data.ps1`
-- **Scopo**: Download dataset ISTAT tramite PowerShell
-- **Utilizzo**: `powershell scripts/download_istat_data.ps1`
-- **Funzionalità**:
-  - Download massivo dati ISTAT
-  - Gestione cache e retry
-  - Ottimizzato per ambiente Windows
-
-#### `organize_data_files.py`
-- **Scopo**: Organizzazione automatica file dati
-- **Utilizzo**: `python scripts/organize_data_files.py [--dry-run]`
-- **Funzionalità**:
-  - Organizza file secondo best practices
-  - Modalità dry-run per preview
-  - Categorizzazione automatica
-
-### 🧹 **Manutenzione**
-
-#### `cleanup_temp_files.py`
-- **Scopo**: Pulizia file temporanei del sistema
-- **Utilizzo**: `python scripts/cleanup_temp_files.py [--stats] [--max-age HOURS]`
-- **Funzionalità**:
-  - Pulizia file temporanei tracciati
-  - Statistiche utilizzo
-  - Configurazione età massima file
-
-#### `schedule_cleanup.py`
-- **Scopo**: Scheduling automatico pulizia
-- **Utilizzo**: `python scripts/schedule_cleanup.py`
-- **Funzionalità**:
-  - Configurazione cron jobs (Linux/Mac)
-  - Configurazione Task Scheduler (Windows)
-  - Pulizia automatica periodica
-
-## 🚀 Comandi Principali
-
-### Test e CI/CD
+### 🔧 Setup
 ```bash
-# Test automatici con fallback
-python scripts/test_ci.py --strategy auto --generate-data
+# Rendi eseguibile (una sola volta)
+chmod +x scripts/create-issue.sh
 
-# Test rapidi per CI/CD
-python scripts/test_ci.py --strategy quick
-
-# Test minimali ultra-robusti
-python scripts/test_ci.py --strategy minimal
+# Assicurati che GitHub CLI sia installato e configurato
+sudo apt install gh  # Ubuntu/Debian
+gh auth login
 ```
 
-### Setup PowerBI
+### 📖 Usage
+
+#### Modalità Interactive (Raccomandata)
 ```bash
-# Setup guidato PowerBI
-python scripts/setup_powerbi_azure.py
-
-# Test upload PowerBI
-python scripts/test_powerbi_upload.py
+./scripts/create-issue.sh
+# Segui il wizard step-by-step
 ```
 
-### Gestione Dati
+#### Express Mode (Veloce)
 ```bash
-# Download dati ISTAT
-powershell scripts/download_istat_data.ps1
-
-# Organizza file dati
-python scripts/organize_data_files.py --dry-run
-python scripts/organize_data_files.py
+./scripts/create-issue.sh
+# Scegli modalità 2, inserisci solo title/description/labels
 ```
 
-### Manutenzione
+#### Template Mode (Pre-configurata)
 ```bash
-# Statistiche file temporanei
-python scripts/cleanup_temp_files.py --stats
-
-# Pulizia file temporanei (24h)
-python scripts/cleanup_temp_files.py --max-age 24
-
-# Setup pulizia automatica
-python scripts/schedule_cleanup.py
+./scripts/create-issue.sh
+# Scegli modalità 3, seleziona template (bug/feature/etc.)
 ```
 
-## 🔄 Workflow Integration
-
-### GitHub Actions
-- **`dashboard-deploy.yml`**: Utilizza `test_ci.py` per test automatici
-- **`deploy-landing-page.yml`**: Deployment GitHub Pages
-
-### Documentazione
-- **`docs/project/CLAUDE.md`**: Comandi principali documentati
-- **`README.md`**: Guida utente con esempi
-- **`DEPLOYMENT_GUIDE.md`**: Procedure di deployment
-
-## 📁 Struttura File
-
-```
-scripts/
-├── README.md                 # Questo file
-├── test_ci.py               # 🧪 Test CI/CD unificato
-├── generate_test_data.py    # 📊 Generazione dati test
-├── setup_powerbi_azure.py   # 🔧 Setup PowerBI
-├── test_powerbi_upload.py   # 📤 Test upload PowerBI
-├── download_istat_data.ps1  # 📥 Download dati ISTAT
-├── organize_data_files.py   # 🗂️ Organizzazione file
-├── cleanup_temp_files.py    # 🧹 Pulizia file temporanei
-├── schedule_cleanup.py      # ⏰ Scheduling pulizia
-└── legacy/                  # 📦 Script obsoleti
-    ├── README.md
-    ├── migrate_repository.py
-    ├── validate_step1_2.py
-    ├── test_ci_quick.py
-    └── test_ci_minimal.py
+#### Show Available Labels
+```bash
+./scripts/create-issue.sh
+# Scegli modalità 4 per vedere tutte le labels disponibili
 ```
 
-## 🎯 Best Practices
+### 🏷️ Sistema Labels Comprensivo
 
-### Sviluppo
-1. **Testare sempre**: Usa `test_ci.py` prima di commit
-2. **Generare dati**: Usa `generate_test_data.py` per test offline
-3. **Dry-run**: Usa `--dry-run` per preview operazioni
+#### Type Labels
+- `type: bug` - Problemi e malfunzionamenti
+- `type: feature` - Nuove funzionalità
+- `type: enhancement` - Miglioramenti esistenti
+- `type: documentation` - Documentazione
+- `type: performance` - Ottimizzazioni performance
+- `type: security` - Sicurezza e vulnerabilità
+- `type: test` - Testing e QA
+- `type: refactor` - Refactoring codice
 
-### Manutenzione
-1. **Pulizia regolare**: Esegui `cleanup_temp_files.py` settimanalmente
-2. **Monitoring**: Usa `--stats` per monitorare utilizzo
-3. **Scheduling**: Configura pulizia automatica
+#### Priority Labels
+- `priority: critical` - Bloccante, immediata
+- `priority: high` - Alta priorità
+- `priority: medium` - Priorità normale
+- `priority: low` - Nice to have
 
-### Sicurezza
-1. **Validazione**: Tutti gli script validano input
-2. **Fallback**: Strategia fallback per test CI/CD
-3. **Timeout**: Timeout configurabili per evitare hang
+#### Component Labels
+- `component: api` - API endpoints
+- `component: auth` - Autenticazione
+- `component: cache` - Sistema caching
+- `component: cli` - Command-line interface
+- `component: config` - Configurazione
+- `component: database` - Database (SQLite/DuckDB)
+- `component: dashboard` - Streamlit dashboard
+- `component: etl` - Extract Transform Load
+- `component: integration` - Integrazioni esterne
+- `component: monitoring` - Monitoring e logging
+- `component: security` - Security audit
+- `component: testing` - Test suite
 
-## 🔗 Collegamenti
+#### Status Labels
+- `status: ready` - Pronto per essere lavorato
+- `status: in progress` - Work in progress
+- `status: blocked` - Bloccato da dipendenze
+- `status: review needed` - Needs review
+- `status: waiting for info` - Info mancanti
 
-- **Scripts Legacy**: [`legacy/README.md`](legacy/README.md)
-- **Documentazione**: [`../docs/project/CLAUDE.md`](../docs/project/CLAUDE.md)
-- **Deployment**: [`../DEPLOYMENT_GUIDE.md`](../DEPLOYMENT_GUIDE.md)
+#### Effort Labels
+- `effort: minutes` - <1 ora
+- `effort: hours` - Qualche ora
+- `effort: days` - 1+ giorni
+- `effort: weeks` - 1+ settimane
+
+#### Scope Labels
+- `scope: sprint` - Sprint corrente
+- `scope: backlog` - Backlog futuro
+- `scope: maintenance` - Tech debt
+- `scope: research` - Spike/research
+
+#### Impact Labels
+- `impact: breaking` - Breaking changes
+- `impact: major` - Cambiamenti significativi
+- `impact: minor` - Modifiche minori
+
+#### Platform Labels
+- `platform: linux` - Linux-specific
+- `platform: windows` - Windows-specific
+- `platform: macos` - macOS-specific
+- `platform: docker` - Container-related
+
+#### Experience Labels
+- `experience: beginner` - Good first issue
+- `experience: intermediate` - Richiede esperienza
+- `experience: advanced` - Expertise necessaria
+
+### 💡 Tips per @Gasta88
+
+#### Workflow Veloce
+1. **Express Mode** per issue semplici
+2. **Template Mode** per issue standard (bug/feature)
+3. **Interactive Mode** per issue complesse
+
+#### Labels Raccomandate
+- **Bug**: `type: bug,priority: high,status: ready,component: <relevant>`
+- **Feature**: `type: feature,priority: medium,scope: sprint,effort: hours`
+- **Performance**: `type: performance,priority: high,component: database`
+- **Security**: `type: security,priority: critical,component: security`
+
+#### Shortcuts
+```bash
+# Alias per facilità
+alias issue='./scripts/create-issue.sh'
+issue  # Lancia lo script velocemente
+```
+
+### 🔧 Customizzazione
+
+Per aggiungere nuovi template o modificare le labels, edita:
+- `TEMPLATES` array per nuovi template
+- `LABEL_CATEGORIES` per nuove categorie di labels
+
+### 📞 Support
+
+Per problemi o suggerimenti:
+- **GitHub Issues**: Usa il proprio script! 😄
+- **Discussions**: GitHub Discussions del repo
+- **Menzione**: @Gasta88 nelle issue
 
 ---
 
-*Ultima revisione: Gennaio 2025*
+**Creato con ❤️ per automatizzare il workflow di @Gasta88**
