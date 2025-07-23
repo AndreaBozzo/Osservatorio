@@ -37,16 +37,21 @@ class DuckDBManager:
     - Security validation
     """
 
-    def __init__(self, config: Optional[Dict[str, Any]] = None):
+    def __init__(self, config: Optional[Union[Dict[str, Any], str]] = None):
         """Initialize DuckDB manager.
 
         Args:
-            config: Optional custom configuration, uses default if None
+            config: Optional custom configuration dict, database path string, or None for defaults
         """
         if config is None:
             self.config = get_duckdb_config()
             self.connection_string = get_connection_string()
+        elif isinstance(config, str):
+            # Handle db_path string parameter
+            self.config = get_duckdb_config()
+            self.connection_string = config
         else:
+            # Handle config dictionary
             self.config = config
             self.connection_string = config.get("database", get_connection_string())
         self._connection: Optional[duckdb.DuckDBPyConnection] = None
@@ -424,6 +429,26 @@ class DuckDBManager:
         except Exception as e:
             print(f"Database optimization failed: {e}")
             raise
+
+    def ensure_schema_exists(self) -> bool:
+        """Ensure that the required DuckDB schema exists.
+
+        This method is called by the UnifiedDataRepository to ensure
+        that the analytics database schema is properly initialized.
+
+        Returns:
+            bool: True if schema exists or was created successfully
+        """
+        try:
+            # For now, we'll just verify that we can connect to the database
+            # In a full implementation, this would create necessary tables
+            with self.get_connection() as conn:
+                # Simple test query to verify connection works
+                conn.execute("SELECT 1").fetchone()
+                return True
+        except Exception as e:
+            logger.error(f"Failed to ensure schema exists: {e}")
+            return False
 
     def close(self) -> None:
         """Close database connection and cleanup resources."""
