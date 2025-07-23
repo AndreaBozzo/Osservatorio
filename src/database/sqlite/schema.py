@@ -337,8 +337,9 @@ class MetadataSchema:
                     with sqlite3.connect(self.db_path) as conn:
                         conn.execute("PRAGMA wal_checkpoint(TRUNCATE)")
                         conn.close()
-                except:
-                    pass
+                except Exception as e:
+                    # Ignore connection errors during cleanup - this is expected
+                    logger.debug(f"Connection cleanup error (expected): {e}")
 
                 # Force garbage collection to clean up connections
                 gc.collect()

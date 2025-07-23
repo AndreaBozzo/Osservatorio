@@ -55,8 +55,9 @@ class DatabaseCleaner:
                 with sqlite3.connect(db_path, timeout=1.0) as conn:
                     conn.execute("PRAGMA wal_checkpoint(TRUNCATE)")
                     conn.close()
-            except Exception:
-                pass  # Ignore connection errors
+            except Exception as e:
+                # Ignore connection errors during cleanup - this is expected
+                logger.debug(f"WAL checkpoint error during cleanup (expected): {e}")
 
             # Step 3: Force another garbage collection
             DatabaseCleaner.force_close_connections()

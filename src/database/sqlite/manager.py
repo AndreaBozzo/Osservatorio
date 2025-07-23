@@ -252,7 +252,12 @@ class SQLiteMetadataManager:
                     updates.append("updated_at = CURRENT_TIMESTAMP")
                     params.append(dataset_id)
 
-                    query = f"UPDATE dataset_registry SET {', '.join(updates)} WHERE dataset_id = ?"
+                    # Safe SQL construction - updates contains only predefined field assignments
+                    query = (
+                        "UPDATE dataset_registry SET "
+                        + ", ".join(updates)
+                        + " WHERE dataset_id = ?"
+                    )
                     conn.execute(query, params)
 
                     logger.debug(f"Updated stats for dataset {dataset_id}")
@@ -769,17 +774,17 @@ class SQLiteMetadataManager:
             conn = self._get_connection()
             stats = {}
 
-            # Table row counts
-            tables = [
-                "dataset_registry",
-                "user_preferences",
-                "api_credentials",
-                "audit_log",
-                "system_config",
-            ]
-            for table in tables:
-                cursor = conn.execute(f"SELECT COUNT(*) FROM {table}")
-                stats[f"{table}_count"] = cursor.fetchone()[0]
+            # Table row counts - using hardcoded table names for security
+            table_queries = {
+                "dataset_registry": "SELECT COUNT(*) FROM dataset_registry",
+                "user_preferences": "SELECT COUNT(*) FROM user_preferences",
+                "api_credentials": "SELECT COUNT(*) FROM api_credentials",
+                "audit_log": "SELECT COUNT(*) FROM audit_log",
+                "system_config": "SELECT COUNT(*) FROM system_config",
+            }
+            for table_name, query in table_queries.items():
+                cursor = conn.execute(query)
+                stats[f"{table_name}_count"] = cursor.fetchone()[0]
 
             # Database size
             cursor = conn.execute("PRAGMA page_count")

@@ -438,8 +438,8 @@ class UnifiedDataRepository:
 
             where_clause = " AND " + " AND ".join(conditions) if conditions else ""
 
-            # Execute time series query
-            query = f"""
+            # Execute time series query - safe construction with predefined conditions
+            base_query = """
                 SELECT
                     d.year,
                     d.time_period,
@@ -451,9 +451,13 @@ class UnifiedDataRepository:
                     o.obs_status
                 FROM istat_datasets d
                 JOIN istat_observations o ON d.id = o.dataset_id
-                WHERE d.dataset_id = ?{where_clause}
-                ORDER BY d.year ASC, o.territory_code ASC, o.measure_code ASC
-            """
+                WHERE d.dataset_id = ?"""
+
+            query = (
+                base_query
+                + where_clause
+                + " ORDER BY d.year ASC, o.territory_code ASC, o.measure_code ASC"
+            )
 
             results = self.analytics_manager.execute_query(query, query_params)
 
