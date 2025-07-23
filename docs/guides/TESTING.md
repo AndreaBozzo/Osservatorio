@@ -2,7 +2,7 @@
 
 ## Overview
 
-Osservatorio has a comprehensive test suite with **401 tests** achieving **67% coverage** across unit, integration, and performance testing.
+Osservatorio has a comprehensive test suite with **441 tests** achieving **68% coverage** across unit, integration, and performance testing.
 
 ## Test Structure
 

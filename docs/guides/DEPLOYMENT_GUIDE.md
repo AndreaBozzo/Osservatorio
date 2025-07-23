@@ -1,8 +1,8 @@
 # 🚀 Osservatorio Deployment Guide
 
 > **Comprehensive deployment guide for production, staging, and development environments**
-> **Version**: 2.0.0
-> **Date**: January 18, 2025
+> **Version**: 8.1.0
+> **Date**: July 23, 2025
 > **Status**: MVP Demo Ready
 
 ---
