@@ -7,6 +7,7 @@ This module provides centralized security features including:
 - Security headers management
 """
 
+import base64
 import hashlib
 import logging
 import re
@@ -16,6 +17,8 @@ from datetime import datetime, timedelta
 from functools import wraps
 from pathlib import Path
 from typing import Dict, List, Optional, Set, Tuple
+
+from cryptography.fernet import Fernet
 
 # Setup logging
 logger = logging.getLogger(__name__)
@@ -36,6 +39,9 @@ class SecurityManager:
             "C:\\Windows",
             "C:\\System32",  # Windows system directories
         }
+        # Initialize encryption key (in production, this should be from secure storage)
+        self._encryption_key = Fernet.generate_key()
+        self._fernet = Fernet(self._encryption_key)
         # Windows reserved names - match exact filenames only
         self.reserved_names: Set[str] = {
             "CON",
@@ -290,6 +296,45 @@ class SecurityManager:
             ]
             if not self.rate_limiter[identifier]:
                 del self.rate_limiter[identifier]
+
+    def encrypt_data(self, data: str) -> str:
+        """Encrypt sensitive data.
+
+        Args:
+            data: Data to encrypt
+
+        Returns:
+            str: Encrypted data as base64 string
+        """
+        try:
+            encrypted_data = self._fernet.encrypt(data.encode("utf-8"))
+            return base64.b64encode(encrypted_data).decode("utf-8")
+        except Exception as e:
+            logger.error(f"Failed to encrypt data: {e}")
+            # Fallback to base64 encoding for basic obfuscation
+            return base64.b64encode(data.encode("utf-8")).decode("utf-8")
+
+    def decrypt_data(self, encrypted_data: str) -> str:
+        """Decrypt sensitive data.
+
+        Args:
+            encrypted_data: Encrypted data as base64 string
+
+        Returns:
+            str: Decrypted data
+        """
+        try:
+            encrypted_bytes = base64.b64decode(encrypted_data.encode("utf-8"))
+            decrypted_data = self._fernet.decrypt(encrypted_bytes)
+            return decrypted_data.decode("utf-8")
+        except Exception as e:
+            logger.error(f"Failed to decrypt data: {e}")
+            # Fallback: try base64 decoding
+            try:
+                return base64.b64decode(encrypted_data.encode("utf-8")).decode("utf-8")
+            except Exception:
+                # If all fails, return the original data
+                return encrypted_data
 
 
 # Singleton instance

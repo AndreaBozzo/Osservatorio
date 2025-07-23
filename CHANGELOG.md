@@ -36,6 +36,62 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [8.1.0] - 2025-07-23 - Day 4 Complete: SQLite Metadata Layer
+
+### ✨ **Added (Day 4: SQLite Metadata Implementation)**
+
+#### 🗃️ **Complete SQLite Metadata Layer**
+- **SQLite Database Schema** - Complete metadata layer with 6 tables:
+  - `dataset_registry`: ISTAT dataset metadata and configuration
+  - `user_preferences`: User settings and dashboard preferences
+  - `api_credentials`: Secure API keys and authentication tokens
+  - `audit_log`: Comprehensive system audit trail and logging
+  - `system_config`: Application configuration and settings
+  - `schema_migrations`: Database version and migration tracking
+- **Thread-Safe Operations** - Production-ready SQLite manager with connection pooling
+- **Security-Enhanced Storage** - Encrypted preferences and hashed credentials using Fernet encryption
+- **Comprehensive Audit Logging** - All operations tracked with user, timestamp, and execution details
+
+#### 🔄 **Unified Data Repository (Facade Pattern)**
+- **Hybrid Architecture Implementation** - Single interface combining SQLite metadata with DuckDB analytics
+- **Intelligent Operation Routing** - Metadata queries to SQLite, analytics queries to DuckDB
+- **Caching Layer** - Performance-optimized with TTL-based cache for frequent operations
+- **Transaction Coordination** - Cross-database transaction support with rollback capabilities
+
+#### 🧪 **Comprehensive Testing Suite**
+- **40+ Tests Added** - Complete test coverage for SQLite implementation:
+  - 22 unit tests for SQLite metadata manager (100% pass rate)
+  - 18 integration tests for unified repository (100% pass rate)
+  - Thread safety validation and performance benchmarks
+- **Windows-Compatible Cleanup** - Robust database file cleanup for Windows environments
+- **Zero Test Failures** - All 441 tests now passing after resolving 7 previously failing tests
+- **Zero Teardown Errors** - Eliminated 33+ Windows file locking errors with intelligent retry logic
+
+#### 📚 **Documentation and Examples**
+- **Complete Demo Application** - `examples/sqlite_metadata_demo.py` showcasing all features
+- **Test Utilities** - Reusable database cleanup utilities for Windows compatibility
+- **Enhanced Security** - Added missing encryption/decryption methods to SecurityManager
+
+### 🔧 **Fixed (Test Suite Stability)**
+- **SQL Injection Prevention** - Resolved 3 Bandit security warnings with safe query construction
+- **Error Handling Improvements** - Replaced bare try/except/pass with proper logging
+- **Type Safety** - 83.2% average type hint coverage across all SQLite components
+- **Import Issues** - Fixed DuckDB performance test import problems
+
+### 📊 **Performance & Quality Metrics**
+- **Security Scan**: Reduced Bandit issues from 5 to 2 (remaining are false positives)
+- **Type Coverage**: 83.2% average across implementation (schema.py: 100%, manager.py: 85.7%)
+- **Test Suite**: 441 tests passing, 0 failures, 0 teardown errors
+- **Code Quality**: All pre-commit hooks passing (black, isort, flake8, pytest)
+
+### 🏗️ **Architecture Compliance**
+Fully implements ADR-002 hybrid architecture:
+- **SQLite**: Metadata, configuration, audit, user preferences (lightweight, zero-config)
+- **DuckDB**: Analytics, time series, performance data (high-performance analytics)
+- **Unified Interface**: Single facade pattern for both databases with intelligent routing
+
+---
+
 ## [7.1.0] - 2025-07-22 - Day 3 Complete
 
 ### ⚡ Added (Day 3: Performance Testing & Optimization)

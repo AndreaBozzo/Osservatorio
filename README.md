@@ -4,10 +4,11 @@
 
 [![Python](https://img.shields.io/badge/Python-3.13.3-blue.svg)](https://www.python.org/downloads/)
 [![Status](https://img.shields.io/badge/Status-MVP%20Prototype-yellow.svg)](docs/project/PROJECT_STATE.md)
-[![Tests](https://img.shields.io/badge/Tests-400%20passing%2F401-green.svg)](tests/)
+[![Tests](https://img.shields.io/badge/Tests-441%20passing-green.svg)](tests/)
 [![Dashboard](https://img.shields.io/badge/Dashboard-Live%20✅-green.svg)](https://osservatorio-dashboard.streamlit.app/)
 [![Security](https://img.shields.io/badge/Security-0%20HIGH%20issues%20🛡️-green.svg)](src/utils/security_enhanced.py)
 [![DuckDB](https://img.shields.io/badge/DuckDB-Analytics%20Engine-blue.svg)](src/database/duckdb/)
+[![SQLite](https://img.shields.io/badge/SQLite-Metadata%20Layer-orange.svg)](src/database/sqlite/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Coverage](https://img.shields.io/badge/Coverage-67%25-yellow.svg)](tests/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-1.45.0-red.svg)](https://streamlit.io/)
@@ -69,7 +70,7 @@ python convert_to_powerbi.py
 # DuckDB Analytics Demo (High-performance)
 python examples/duckdb_demo.py
 
-# NEW: SQLite Metadata Management (Coming Day 4)
+# SQLite Metadata Management (Day 4 Complete)
 python examples/sqlite_metadata_demo.py
 
 # Clean temporary files
@@ -80,8 +81,8 @@ python scripts/cleanup_temp_files.py --stats
 
 ## 🚀 Strategic Architecture (SQLite + DuckDB)
 
-### 🏗️ **Current Architecture (v8.0.0 - Strategic Pivot)**
-Following ADR-002 strategic decision by @Gasta88 insight:
+### 🏗️ **Current Architecture (v8.1.0 - Day 4 Complete)**
+Following ADR-002 strategic decision by @Gasta88 insight - **FULLY IMPLEMENTED**:
 
 ```
 ┌─────────────────────┐     ┌─────────────────────┐
@@ -106,7 +107,7 @@ Following ADR-002 strategic decision by @Gasta88 insight:
 - **🗃️ SQLite Metadata**: Lightweight metadata layer (zero configuration)
 - **📊 PowerBI Integration**: Native BI tool support with star schema generation
 - **🔐 Enterprise Security**: JWT auth, rate limiting, SQL injection protection
-- **🧪 Comprehensive Testing**: 401 tests, 67% coverage, performance benchmarks
+- **🧪 Comprehensive Testing**: 441 tests, 67% coverage, performance benchmarks
 
 #### 🌐 **Live Demos & UI**
 - **📊 Dashboard**: [osservatorio-dashboard.streamlit.app](https://osservatorio-dashboard.streamlit.app/)
@@ -144,16 +145,17 @@ Following ADR-002 strategic decision by @Gasta88 insight:
 
 ### 🔒 **Security & Quality** - AUDIT COMPLETE
 - **🛡️ Security**: Enhanced SecurityManager + 0 HIGH severity issues (bandit scan)
-- **🧪 Test Coverage**: 67% coverage achieved (401 tests, 400 passing - 99.75% success rate)
+- **🧪 Test Coverage**: 67% coverage achieved (441 tests, 100% passing - includes SQLite metadata layer)
 - **🚫 Error Handling**: Circuit breaker pattern with graceful degradation
 - **🔒 Path Security**: Directory traversal protection + input sanitization
 
-### ✅ **Recently Completed (Day 3)**
-- **⚡ Performance optimization**: DuckDB Query Builder with >10x speedup caching
-- **🔒 Enhanced security features**: 0 HIGH severity issues, SQL injection protection
-- **🧪 Performance Testing**: 24 comprehensive performance tests passing
-- **📊 Database Integration**: DuckDB analytics engine with fluent query interface
-- **🎯 Production-ready features**: Security audit complete, performance validated
+### ✅ **Recently Completed (Day 4 - SQLite Implementation)**
+- **🗃️ SQLite Metadata Layer**: Complete 6-table schema with thread-safe operations
+- **🔄 Unified Repository**: Facade pattern combining SQLite + DuckDB with intelligent routing
+- **🔐 Enhanced Security**: Fernet encryption for sensitive data, comprehensive audit logging
+- **🧪 Comprehensive Testing**: 40+ new tests (22 unit + 18 integration) with 100% pass rate
+- **📚 Complete Documentation**: Updated API reference, architecture docs, and performance guide
+- **⚡ Zero-config deployment**: File-based databases with automatic schema creation
 
 ---
 
@@ -174,15 +176,19 @@ Osservatorio/                              # 🏠 Root directory
 │   │   └── dataflow_analyzer.py           # Dataset categorization
 │   ├── 🕷️ scrapers/                       # Web scraping utilities (2 files)
 │   │   └── tableau_scraper.py             # Tableau configuration analysis
-│   ├── 🦆 database/                       # Database modules (8 files)
-│   │   └── duckdb/                        # DuckDB analytics engine
-│   │       ├── manager.py                 # Connection management & pooling
-│   │       ├── schema.py                  # ISTAT data schemas
-│   │       ├── simple_adapter.py          # Lightweight interface
-│   │       ├── query_builder.py           # 826 lines fluent query builder
-│   │       ├── query_optimizer.py         # Query optimization & caching
-│   │       ├── partitioning.py            # Data partitioning strategies
-│   │       └── config.py                  # DuckDB configuration
+│   ├── 🦆 database/                       # Database modules (11 files)
+│   │   ├── duckdb/                        # DuckDB analytics engine
+│   │   │   ├── manager.py                 # Connection management & pooling
+│   │   │   ├── schema.py                  # ISTAT data schemas
+│   │   │   ├── simple_adapter.py          # Lightweight interface
+│   │   │   ├── query_builder.py           # 826 lines fluent query builder
+│   │   │   ├── query_optimizer.py         # Query optimization & caching
+│   │   │   ├── partitioning.py            # Data partitioning strategies
+│   │   │   └── config.py                  # DuckDB configuration
+│   │   └── sqlite/                        # SQLite metadata layer
+│   │       ├── manager.py                 # Thread-safe metadata manager
+│   │       ├── schema.py                  # 6-table metadata schema
+│   │       └── repository.py              # Unified facade pattern
 │   └── 🛠️ utils/                          # Core utilities (7 files)
 │       ├── security_enhanced.py           # 🔒 Security management
 │       ├── circuit_breaker.py             # 🔄 Resilience patterns
@@ -211,10 +217,10 @@ Osservatorio/                              # 🏠 Root directory
 │   ├── cleanup_temp_files.py              # File management
 │   ├── legacy/                            # Legacy scripts (4 files)
 │   └── test_ci.py                         # CI/CD utilities
-├── 📋 examples/                           # 📂 Usage examples (2 demo files)
-│   ├── duckdb_demo.py                     # DuckDB basic usage demo
-│   └── duckdb_query_builder_demo.py       # Query Builder advanced usage (826 lines)
-│   └── duckdb_demo.py                     # Complete DuckDB demonstration
+├── 📋 examples/                           # 📂 Usage examples (3 demo files)
+│   ├── duckdb_demo.py                     # DuckDB analytics demo
+│   ├── duckdb_query_builder_demo.py       # Query Builder advanced usage (826 lines)
+│   └── sqlite_metadata_demo.py            # SQLite metadata layer demo
 ├── 📚 docs/                               # 📂 Documentation (8 Markdown files)
 │   ├── README.md                          # Documentation index
 │   ├── ARCHITECTURE.md                    # System architecture

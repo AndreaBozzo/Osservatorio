@@ -15,13 +15,10 @@ import pandas as pd
 import psutil
 import pytest
 
-# Add src to path
-sys.path.append(str(Path(__file__).parent.parent.parent / "src"))
-
-from database.duckdb.manager import DuckDBManager
-from database.duckdb.query_optimizer import QueryOptimizer, create_optimizer
-from database.duckdb.simple_adapter import SimpleDuckDBAdapter
-from utils.logger import get_logger
+from src.database.duckdb.manager import DuckDBManager
+from src.database.duckdb.query_optimizer import QueryOptimizer, create_optimizer
+from src.database.duckdb.simple_adapter import SimpleDuckDBAdapter
+from src.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
