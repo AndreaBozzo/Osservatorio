@@ -109,16 +109,20 @@ istat_strategy.json
 tableau_config.json
 
 # PowerBI Integration generated files
-*.pbit
+# NOTE: Static templates in templates/powerbi/ are tracked
 powerbi_test_results_*.json
 powerbi_validation_offline_*.json
-demo_popolazione_template.pbit
 star_schema_*.json
 dax_measures_*.json
 powerbi_template_*.json
 powerbi_lineage_*.json
 powerbi_governance_*.json
 powerbi_refresh_*.json
+
+# Generated .pbit files (but keep templates/powerbi/ static templates)
+*_template_*.pbit
+*_generated_*.pbit
+demo_*_auto_*.pbit
 
 # Temporary files - managed by TempFileManager
 data_DCIS_*.xml
