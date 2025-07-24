@@ -390,6 +390,7 @@ class IstatAPITester:
                 "total_columns": len(df.columns),
                 "missing_values": {},
                 "data_types": {},
+                "type_mismatch_count": {},
                 "unique_values": {},
                 "quality_score": 0,
             }
@@ -405,6 +406,16 @@ class IstatAPITester:
 
                 # Tipo dati
                 quality_report["data_types"][col] = str(df[col].dtype)
+
+                # Valori diversi dal loro data type
+                if len(df) > 0:
+                    type_mismatch_count = (
+                        df[col].apply(type) != df[col].dtype
+                    ).sum()
+                    quality_report["type_mismatch_count"][col] = {
+                        "count": int(type_mismatch_count),
+                        "percentage": round((type_mismatch_count / len(df)) * 100, 2),
+                    }
 
                 # Valori unici (se ragionevole)
                 if len(df) > 0:
