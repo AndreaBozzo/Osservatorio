@@ -16,7 +16,47 @@ This is an Italian data processing system for ISTAT (Italian National Institute 
 
 ## Development Commands
 
-### Core Commands
+### Makefile Commands (Recommended)
+The project includes a comprehensive Makefile for streamlined development workflows:
+
+#### Quick Start
+- `make help` - Show all available commands
+- `make dev-setup` - Complete development environment setup
+- `make status` - Show project status and health check
+- `make examples` - Show common development workflow examples
+
+#### Testing Workflows
+- `make test-fast` - Fast unit tests (~20s)
+- `make test-critical` - Critical path tests (~10s)
+- `make test-integration` - Integration tests (~10s)
+- `make test` - Optimized development testing workflow (~30s)
+- `make test-full` - Complete test suite with coverage (~300s)
+
+#### PowerBI Integration
+- `make powerbi-validate` - Validate PowerBI integration offline (100% success rate)
+- `make powerbi-demo` - Run PowerBI integration demonstration
+- `make powerbi-test` - Run PowerBI specific tests
+
+#### Code Quality
+- `make format` - Format code with black and isort
+- `make lint` - Run linting tools (black, isort, flake8)
+- `make pre-commit` - Run pre-commit hooks manually
+
+#### Development Workflows
+- `make dev-commit` - Pre-commit workflow (format + critical tests)
+- `make dev-push` - Pre-push workflow (format + test + lint)
+- `make ci` - Simulate CI/CD pipeline
+
+#### Database Management
+- `make db-init` - Initialize database schemas (SQLite + DuckDB)
+- `make db-status` - Check database status and health
+
+#### Utilities
+- `make clean` - Clean temporary files and caches
+- `make benchmark` - Run performance benchmarks
+- `make dashboard` - Run Streamlit dashboard
+
+### Core Commands (Direct Python)
 - `python convert_to_tableau.py` - Main conversion script to convert ISTAT XML data to Tableau formats
 - `python src/api/istat_api.py` - Test ISTAT API connectivity and data access
 - `python src/analyzers/dataflow_analyzer.py` - Analyze available ISTAT dataflows
