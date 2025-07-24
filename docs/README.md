@@ -7,7 +7,7 @@
 ### 📖 Getting Started
 - **[Quick Start Guide](GETTING_STARTED.md)** - Setup in 5 minutes
 - **[Development Guide](guides/DEVELOPMENT.md)** - Contributor workflow
-- **[Testing Guide](guides/TESTING.md)** - 401 tests, 67% coverage
+- **[Testing Guide](guides/TESTING.md)** - 441 tests, 68% coverage
 
 ### 🏗️ Core Documentation
 - **[Architecture](core/ARCHITECTURE.md)** - SQLite + DuckDB design
@@ -44,7 +44,7 @@
 | Component | Status | Coverage | Performance |
 |-----------|--------|----------|-------------|
 | **DuckDB Engine** | ✅ Complete | 85% | >2k records/sec |
-| **Test Suite** | ✅ 401 tests | 67% total | 99.75% pass rate |
+| **Test Suite** | ✅ 441 tests | 68% total | 100% pass rate |
 | **Security** | ✅ Audited | 100% | 0 HIGH issues |
 | **Documentation** | 🔄 85% | Updating | User-friendly |
 | **SQLite Layer** | ⏳ Next | Planned | <10ms target |
@@ -140,4 +140,4 @@
 **🎯 Ready to start?** Begin with [Getting Started Guide](GETTING_STARTED.md)
 
 *Documentation updated: 22 Luglio 2025*
-*Current version: v8.0.0 (Strategic Pivot)*
+*Current version: v8.1.0 (Day 5 Complete)*

@@ -31,14 +31,36 @@ repos:
 
   - repo: local
     hooks:
-      - id: pytest-check
-        name: pytest-check
+      - id: pytest-critical
+        name: pytest-critical-path
         entry: pytest
         language: system
         pass_filenames: false
         always_run: true
-        args: [tests/unit/, --tb=short]
+        args:
+          - -c
+          - pytest-fast.ini
+          - tests/unit/test_sqlite_metadata.py::TestSQLiteMetadataManager::test_dataset_registration
+          - tests/integration/test_unified_repository.py::TestUnifiedDataRepository::test_complete_dataset_registration
+          - --tb=short
+          - -x
+
+      - id: pytest-fast-unit
+        name: pytest-fast-unit-tests
+        entry: pytest
+        language: system
+        pass_filenames: false
+        always_run: false
+        stages: [manual]
+        args:
+          - -c
+          - pytest-fast.ini
+          - tests/unit/
+          - -k
+          - "not slow and not performance"
+          - --tb=short
+          - --maxfail=3
 
 ci:
   autoupdate_schedule: monthly
-  skip: [pytest-check]
+  skip: [pytest-fast-unit]  # Skip manual stage hooks in CI

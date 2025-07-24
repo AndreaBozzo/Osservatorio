@@ -60,7 +60,7 @@
 - Circuit breaker pattern for external dependencies
 - Graceful degradation and fallback mechanisms
 - Comprehensive error handling
-- Extensive test coverage (319+ tests including 45 DuckDB integration tests)
+- Extensive test coverage (441 tests including 45 DuckDB integration tests)
 
 ### 4. **Performance**
 - Efficient data processing pipelines with DuckDB analytics engine
@@ -604,7 +604,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: '3.9'
+        python-version: '3.13.3'
         cache: 'pip'
 
     - name: Install dependencies

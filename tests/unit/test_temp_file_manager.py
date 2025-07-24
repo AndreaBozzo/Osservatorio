@@ -224,7 +224,7 @@ class TestTempFileManager:
         assert "files_removed" in result
         assert "dirs_removed" in result
         assert "errors" in result
-        mock_logger.info.assert_called()
+        mock_logger.debug.assert_called()
 
     def test_context_manager_temp_file(self, manager):
         """Test context manager for temporary files."""
