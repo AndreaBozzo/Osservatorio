@@ -236,7 +236,7 @@ def demo_template_generation(template_generator: TemplateGenerator, dataset_id: 
 
         # Create PBIT file
         print(f"\n💾 Creating PBIT file...")
-        output_path = Path("demo_popolazione_template.pbit")
+        output_path = Path("templates/powerbi/demo_popolazione_template.pbit")
 
         try:
             created_path = template_generator.create_pbit_file(
