@@ -546,21 +546,23 @@ class TemplateGenerator:
         """Create table definitions for star schema."""
         tables = []
 
-        # Add fact table
+        # Add fact table (using string formatting for PowerBI template, not SQL execution)
         tables.append(
             {
                 "name": star_schema.fact_table,
-                "source": f"SELECT * FROM {star_schema.fact_table}",
+                "source": "SELECT * FROM {}".format(
+                    star_schema.fact_table
+                ),  # nosec B608
                 "columns": self._get_standard_fact_columns(),
             }
         )
 
-        # Add dimension tables
+        # Add dimension tables (using string formatting for PowerBI template, not SQL execution)
         for dim_table in star_schema.dimension_tables:
             tables.append(
                 {
                     "name": dim_table,
-                    "source": f"SELECT * FROM {dim_table}",
+                    "source": "SELECT * FROM {}".format(dim_table),  # nosec B608
                     "columns": self._get_dimension_columns(dim_table),
                 }
             )

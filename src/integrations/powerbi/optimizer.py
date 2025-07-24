@@ -308,8 +308,8 @@ class PowerBIOptimizer:
             if not metadata:
                 return {"error": f"Dataset {dataset_id} not found"}
 
-            # Query analytics database for performance data
-            analytics_query = f"""
+            # Query analytics database for performance data (using parameterized query - secure)
+            analytics_query = """
                 SELECT
                     COUNT(*) as total_records,
                     COUNT(DISTINCT territory_code) as territories,
@@ -319,7 +319,7 @@ class PowerBIOptimizer:
                     COUNT(*) / COUNT(DISTINCT year) as avg_records_per_year
                 FROM istat.istat_observations
                 WHERE dataset_id = ?
-            """
+            """  # nosec B608
 
             result = self.repo.analytics_manager.execute_query(
                 analytics_query, [dataset_id]
