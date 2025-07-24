@@ -902,6 +902,7 @@ File generato da IstatXMLToPowerBIConverter v1.0
             return {
                 "total_rows": total_rows,
                 "total_columns": total_columns,
+                "uniqueness_score": 0.0,
                 "completeness_score": 0.0,
                 "data_quality_score": 0.0,
             }
@@ -910,6 +911,10 @@ File generato da IstatXMLToPowerBIConverter v1.0
         non_null_count = df.count().sum()
         total_cells = total_rows * total_columns
         completeness_score = non_null_count / total_cells if total_cells > 0 else 0.0
+
+        # Calculate uniqueness score
+        unique_count = df.nunique().sum()
+        uniqueness_score = unique_count / total_cells if total_cells > 0 else 0.0
 
         # Calculate data quality score (simplified)
         # Consider numeric columns and valid values
@@ -925,11 +930,12 @@ File generato da IstatXMLToPowerBIConverter v1.0
             )
 
         # Overall quality score
-        data_quality_score = (completeness_score + numeric_quality) / 2
+        data_quality_score = (completeness_score + numeric_quality + uniqueness_score) / 2
 
         return {
             "total_rows": total_rows,
             "total_columns": total_columns,
+            "uniqueness_score": uniqueness_score,
             "completeness_score": completeness_score,
             "data_quality_score": data_quality_score,
         }
