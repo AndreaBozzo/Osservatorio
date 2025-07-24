@@ -322,7 +322,7 @@ class PowerBIOptimizer:
             """
 
             result = self.repo.analytics_manager.execute_query(
-                analytics_query, params=[dataset_id]
+                analytics_query, [dataset_id]
             )
 
             if result.empty:

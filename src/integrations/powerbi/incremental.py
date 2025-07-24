@@ -102,8 +102,7 @@ class ChangeTracker:
 
             since_iso = since.isoformat()
             result = self.repository.analytics_manager.execute_query(
-                change_query,
-                params=[since_iso, since_iso, since_iso, dataset_id, since_iso],
+                change_query, [since_iso, since_iso, since_iso, dataset_id, since_iso]
             )
 
             if result.empty:
@@ -169,9 +168,7 @@ class ChangeTracker:
                 query += " LIMIT ?"
                 params.append(limit)
 
-            result = self.repository.analytics_manager.execute_query(
-                query, params=params
-            )
+            result = self.repository.analytics_manager.execute_query(query, params)
 
             logger.info(f"Retrieved {len(result)} incremental records for {dataset_id}")
             return result
@@ -207,7 +204,7 @@ class ChangeTracker:
             """
 
             territory_changes = self.repository.analytics_manager.execute_query(
-                territory_query, params=[dataset_id, since.isoformat()]
+                territory_query, [dataset_id, since.isoformat()]
             )
 
             # Get changes by time period
@@ -223,7 +220,7 @@ class ChangeTracker:
             """
 
             time_changes = self.repository.analytics_manager.execute_query(
-                time_query, params=[dataset_id, since.isoformat()]
+                time_query, [dataset_id, since.isoformat()]
             )
 
             return {

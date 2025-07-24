@@ -16,19 +16,21 @@ Usage:
 import sys
 from pathlib import Path
 
-# Add src to Python path
-sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+# Add both project root and src to Python path
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
+sys.path.insert(0, str(project_root / "src"))
 
 import json
 from datetime import datetime, timedelta
 
 import pandas as pd
 
-from src.database.sqlite.repository import UnifiedDataRepository
-from src.integrations.powerbi.incremental import IncrementalRefreshManager
-from src.integrations.powerbi.metadata_bridge import MetadataBridge
-from src.integrations.powerbi.optimizer import PowerBIOptimizer
-from src.integrations.powerbi.templates import TemplateGenerator
+from database.sqlite.repository import UnifiedDataRepository
+from integrations.powerbi.incremental import IncrementalRefreshManager
+from integrations.powerbi.metadata_bridge import MetadataBridge
+from integrations.powerbi.optimizer import PowerBIOptimizer
+from integrations.powerbi.templates import TemplateGenerator
 
 
 def setup_demo_data(repository: UnifiedDataRepository) -> str:

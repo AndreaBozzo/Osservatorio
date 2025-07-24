@@ -176,10 +176,10 @@ class UnifiedDataRepository:
             stats_query = """
                 SELECT
                     COUNT(*) as record_count,
-                    MIN(year) as min_year,
-                    MAX(year) as max_year,
-                    COUNT(DISTINCT territory_code) as territory_count,
-                    COUNT(DISTINCT measure_code) as measure_count
+                    MIN(o.year) as min_year,
+                    MAX(o.year) as max_year,
+                    COUNT(DISTINCT o.territory_code) as territory_count,
+                    COUNT(DISTINCT o.measure_code) as measure_count
                 FROM istat.istat_observations o
                 JOIN istat.istat_datasets d ON o.dataset_row_id = d.id
                 WHERE d.dataset_id = ?

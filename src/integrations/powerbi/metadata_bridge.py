@@ -129,7 +129,7 @@ class QualityScoreSync:
             """
 
             result = self.repository.analytics_manager.execute_query(
-                quality_query, params=[dataset_id]
+                quality_query, [dataset_id]
             )
 
             if result.empty:
