@@ -90,19 +90,19 @@ class ChangeTracker:
             change_query = """
                 SELECT
                     COUNT(*) as total_changes,
-                    COUNT(CASE WHEN last_updated > ? THEN 1 END) as new_records,
-                    COUNT(CASE WHEN created_at < ? AND last_updated > ? THEN 1 END) as updated_records,
-                    MIN(last_updated) as earliest_change,
-                    MAX(last_updated) as latest_change,
+                    COUNT(CASE WHEN created_at > ? THEN 1 END) as new_records,
+                    COUNT(CASE WHEN created_at > ? THEN 1 END) as updated_records,
+                    MIN(created_at) as earliest_change,
+                    MAX(created_at) as latest_change,
                     COUNT(DISTINCT territory_code) as affected_territories,
                     COUNT(DISTINCT year) as affected_years
                 FROM istat.istat_observations
-                WHERE dataset_id = ? AND last_updated > ?
+                WHERE dataset_id = ? AND created_at > ?
             """
 
             since_iso = since.isoformat()
             result = self.repository.analytics_manager.execute_query(
-                change_query, [since_iso, since_iso, since_iso, dataset_id, since_iso]
+                change_query, [since_iso, since_iso, dataset_id, since_iso]
             )
 
             if result.empty:
@@ -151,15 +151,15 @@ class ChangeTracker:
                     obs.territory_code,
                     obs.obs_value,
                     obs.obs_status,
-                    obs.quality_score,
-                    obs.last_updated,
+                    obs.obs_conf,
+                    obs.created_at,
                     ds.territory_name,
                     ds.measure_name,
                     ds.time_period
                 FROM istat.istat_observations obs
                 JOIN istat.istat_datasets ds ON obs.dataset_row_id = ds.id
-                WHERE obs.dataset_id = ? AND obs.last_updated > ?
-                ORDER BY obs.last_updated DESC
+                WHERE obs.dataset_id = ? AND obs.created_at > ?
+                ORDER BY obs.created_at DESC
             """
 
             params = [dataset_id, since.isoformat()]
@@ -197,7 +197,7 @@ class ChangeTracker:
                     COUNT(*) as change_count
                 FROM istat.istat_observations obs
                 JOIN istat.istat_datasets ds ON obs.dataset_row_id = ds.id
-                WHERE obs.dataset_id = ? AND obs.last_updated > ?
+                WHERE obs.dataset_id = ? AND obs.created_at > ?
                 GROUP BY territory_code, territory_name
                 ORDER BY change_count DESC
                 LIMIT 10
@@ -213,7 +213,7 @@ class ChangeTracker:
                     year,
                     COUNT(*) as change_count
                 FROM istat.istat_observations
-                WHERE dataset_id = ? AND last_updated > ?
+                WHERE dataset_id = ? AND created_at > ?
                 GROUP BY year
                 ORDER BY year DESC
                 LIMIT 10
@@ -372,6 +372,7 @@ class IncrementalRefreshManager:
                 return {
                     "skipped": "No incremental data found",
                     "dataset_id": dataset_id,
+                    "refresh_timestamp": datetime.now().isoformat(),
                 }
 
             # Push data to PowerBI if client available

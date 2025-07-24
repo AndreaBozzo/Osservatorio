@@ -324,6 +324,9 @@ class TemplateGenerator:
                 visualizations=visualizations,
             )
 
+            # Store template metadata for library access
+            self._store_template_metadata(template, None)
+
             logger.info(f"Template generated for dataset {dataset_id}")
             return template
 
@@ -412,32 +415,31 @@ class TemplateGenerator:
             List of template metadata dictionaries
         """
         try:
-            # Query SQLite for stored templates
-            templates_query = """
-                SELECT dataset_id, config_value as template_data
-                FROM dataset_configs
-                WHERE config_key = 'powerbi_template'
-                ORDER BY updated_at DESC
-            """
-
-            result = self.repository.metadata_manager.execute_query(templates_query)
-
+            # Get all datasets and check for PowerBI templates
+            datasets = self.repository.list_datasets_complete()
             templates = []
-            for _, row in result.iterrows():
-                try:
-                    template_data = json.loads(row["template_data"])
-                    templates.append(
-                        {
-                            "dataset_id": row["dataset_id"],
-                            "template_id": template_data.get("template_id"),
-                            "name": template_data.get("name"),
-                            "category": template_data.get("category"),
-                            "created_at": template_data.get("created_at"),
-                            "description": template_data.get("description"),
-                        }
-                    )
-                except json.JSONDecodeError:
-                    continue
+
+            for dataset in datasets:
+                dataset_id = dataset["dataset_id"]
+                template_config = self.repository.metadata_manager.get_config(
+                    f"dataset.{dataset_id}.powerbi_template"
+                )
+
+                if template_config:
+                    try:
+                        template_data = json.loads(template_config)
+                        templates.append(
+                            {
+                                "dataset_id": dataset_id,
+                                "template_id": template_data.get("template_id"),
+                                "name": template_data.get("name"),
+                                "category": template_data.get("category"),
+                                "created_at": template_data.get("created_at"),
+                                "description": template_data.get("description"),
+                            }
+                        )
+                    except json.JSONDecodeError:
+                        continue
 
             return templates
 
@@ -667,12 +669,12 @@ class TemplateGenerator:
             return {"sampleData": {}}
 
     def _store_template_metadata(
-        self, template: PowerBITemplate, file_path: Path
+        self, template: PowerBITemplate, file_path: Path = None
     ) -> None:
         """Store template metadata in SQLite."""
         try:
             template_data = template.to_dict()
-            template_data["file_path"] = str(file_path)
+            template_data["file_path"] = str(file_path) if file_path else None
 
             # Extract dataset_id from template_id (assuming format "template_{dataset_id}")
             dataset_id = template.template_id.replace("template_", "")

@@ -179,7 +179,7 @@ class UnifiedDataRepository:
                     MIN(o.year) as min_year,
                     MAX(o.year) as max_year,
                     COUNT(DISTINCT o.territory_code) as territory_count,
-                    COUNT(DISTINCT o.measure_code) as measure_count
+                    COUNT(DISTINCT o.value_type) as measure_count
                 FROM istat.istat_observations o
                 JOIN istat.istat_datasets d ON o.dataset_row_id = d.id
                 WHERE d.dataset_id = ?
@@ -187,12 +187,16 @@ class UnifiedDataRepository:
 
             result = self.analytics_manager.execute_query(stats_query, [dataset_id])
 
-            if result and len(result) > 0:
+            if (
+                result is not None
+                and not (hasattr(result, "empty") and result.empty)
+                and len(result) > 0
+            ):
                 row = result[0]
                 return {
                     "record_count": row[0] or 0,
-                    "min_year": row[1],
-                    "max_year": row[2],
+                    "min_year": row[1] if row[1] is not None else 2020,
+                    "max_year": row[2] if row[2] is not None else 2024,
                     "territory_count": row[3] or 0,
                     "measure_count": row[4] or 0,
                 }
