@@ -149,6 +149,10 @@ osservatorio_temp/
 .coverage
 htmlcov/
 
+# Performance testing
+data/performance_baselines.json
+performance_report_*.md
+
 # mypy
 .mypy_cache/
 .dmypy.json
