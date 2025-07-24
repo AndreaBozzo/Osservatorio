@@ -1,9 +1,11 @@
 # ADR-001: Database Selection Strategy
 
-**Status**: Proposed
+**Status**: ~~SUPERSEDED~~ by [ADR-002: Strategic Pivot to SQLite](002-strategic-pivot-sqlite.md)
 **Date**: 20 Luglio 2025
 **Deciders**: Andrea Bozzo (Maintainer)
 **Technical Story**: [Database Foundation Sprint - PROJECT_STATE.md](../project/PROJECT_STATE.md#fase-2-database-foundation-sprint)
+
+**⚠️ NOTICE**: This ADR has been superseded by ADR-002 which implements a more pragmatic SQLite + DuckDB approach based on project experience and @Gasta88's feedback about over-engineering.
 
 ## Context
 

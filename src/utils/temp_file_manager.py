@@ -53,7 +53,7 @@ class TempFileManager:
             self._cleanup_registered = True
 
         if not SILENT_MODE:
-            logger.info(
+            logger.debug(
                 f"TempFileManager inizializzato. Base dir: {self.base_temp_dir}"
             )
 
@@ -168,7 +168,7 @@ class TempFileManager:
         results = {"files_removed": 0, "dirs_removed": 0, "errors": 0}
 
         if not SILENT_MODE:
-            logger.info("Pulizia file temporanei in corso...")
+            logger.debug("Pulizia file temporanei in corso...")
 
         # Cleanup file
         for temp_file in list(self._temp_files):
@@ -185,7 +185,7 @@ class TempFileManager:
                 results["errors"] += 1
 
         if not SILENT_MODE:
-            logger.info(f"Pulizia completata: {results}")
+            logger.debug(f"Pulizia completata: {results}")
         return results
 
     def cleanup_old_files(self, max_age_hours: int = 24) -> int:
@@ -210,7 +210,7 @@ class TempFileManager:
             logger.error(f"Errore durante cleanup file vecchi: {e}")
 
         if removed_count > 0:
-            logger.info(f"Rimossi {removed_count} file temporanei vecchi")
+            logger.debug(f"Rimossi {removed_count} file temporanei vecchi")
 
         return removed_count
 

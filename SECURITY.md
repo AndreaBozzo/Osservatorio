@@ -292,4 +292,4 @@ Questa policy viene rivista ogni 6 mesi o dopo:
 
 **Last Updated**: 2025-01-20
 **Next Review**: 2025-07-20
-**Version**: 1.0
+**Version**: 8.1.0

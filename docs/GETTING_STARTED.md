@@ -4,7 +4,7 @@
 
 ## 📋 Prerequisites
 
-- Python 3.9+ (tested on 3.13.3)
+- Python 3.13.3 (verified and tested)
 - Git
 - 4GB+ RAM recommended for DuckDB analytics
 

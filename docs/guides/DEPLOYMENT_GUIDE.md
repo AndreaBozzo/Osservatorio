@@ -1,8 +1,8 @@
 # 🚀 Osservatorio Deployment Guide
 
 > **Comprehensive deployment guide for production, staging, and development environments**
-> **Version**: 2.0.0
-> **Date**: January 18, 2025
+> **Version**: 8.1.0
+> **Date**: July 23, 2025
 > **Status**: MVP Demo Ready
 
 ---
@@ -431,19 +431,20 @@ services:
       retries: 3
       start_period: 40s
 
-  # Optional: Add database service
-  postgres:
-    image: postgres:13
-    environment:
-      - POSTGRES_DB=osservatorio
-      - POSTGRES_USER=osservatorio
-      - POSTGRES_PASSWORD=secure_password
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
+  # Optional: Add database services for advanced deployments
+  # Note: Current architecture uses SQLite + DuckDB hybrid approach
+  # These are optional for specialized deployments only
+
+  # Future enhancement - Redis for caching
+  redis:
+    image: redis:7-alpine
     restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
 
 volumes:
-  postgres_data:
+  redis_data:
 ```
 
 ### 🚀 Docker Deployment Commands

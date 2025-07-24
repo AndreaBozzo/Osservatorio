@@ -523,9 +523,9 @@ class UnifiedDataRepository:
             return {
                 "metadata_database": {"status": "connected", "stats": metadata_stats},
                 "analytics_database": {
-                    "status": "connected"
-                    if "error" not in analytics_stats
-                    else "error",
+                    "status": (
+                        "connected" if "error" not in analytics_stats else "error"
+                    ),
                     "stats": analytics_stats,
                 },
                 "cache": {
