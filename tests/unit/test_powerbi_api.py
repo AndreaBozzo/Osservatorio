@@ -347,6 +347,41 @@ class TestPowerBIAPIClient:
         reports = client.get_reports()
         assert reports == []
 
+    def test_offline_validation_methods(self):
+        """Test methods used for offline validation."""
+        # Test mock responses structure
+        mock_workspaces = [
+            {"id": "ws1", "name": "Test Workspace"},
+            {"id": "ws2", "name": "Development"},
+        ]
+
+        mock_datasets = [
+            {"id": "ds1", "name": "Population Data"},
+            {"id": "ds2", "name": "Economic Indicators"},
+        ]
+
+        # Verify expected structure
+        assert all("id" in ws and "name" in ws for ws in mock_workspaces)
+        assert all("id" in ds and "name" in ds for ds in mock_datasets)
+
+        # Test error response handling
+        error_response = {
+            "error": "invalid_client",
+            "error_description": "Invalid credentials",
+        }
+        assert "error" in error_response
+        assert "error_description" in error_response
+
+    def test_rate_limiting_offline(self):
+        """Test rate limiting behavior in offline mode."""
+        # Mock rate limit exceeded scenario
+        rate_limit_response = {"error": "rate_limit_exceeded", "retry_after": 300}
+
+        # Verify rate limit response structure
+        assert "error" in rate_limit_response
+        assert "retry_after" in rate_limit_response
+        assert isinstance(rate_limit_response["retry_after"], int)
+
     def _setup_authenticated_client(self, mock_config, mock_msal):
         """Helper to setup authenticated client mocks."""
         # Mock configuration

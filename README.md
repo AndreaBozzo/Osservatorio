@@ -7,6 +7,7 @@
 [![Tests](https://img.shields.io/badge/Tests-441%20passing-green.svg)](tests/)
 [![Dashboard](https://img.shields.io/badge/Dashboard-Live%20✅-green.svg)](https://osservatorio-dashboard.streamlit.app/)
 [![Security](https://img.shields.io/badge/Security-0%20HIGH%20issues%20🛡️-green.svg)](src/utils/security_enhanced.py)
+[![PowerBI](https://img.shields.io/badge/PowerBI-Enterprise%20Integration-blue.svg)](docs/integrations/POWERBI_INTEGRATION.md)
 [![DuckDB](https://img.shields.io/badge/DuckDB-Analytics%20Engine-blue.svg)](src/database/duckdb/)
 [![SQLite](https://img.shields.io/badge/SQLite-Metadata%20Layer-orange.svg)](src/database/sqlite/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
@@ -64,8 +65,11 @@ python src/api/istat_api.py
 # Convert data for Tableau
 python convert_to_tableau.py
 
-# Convert data for PowerBI
-python convert_to_powerbi.py
+# PowerBI Integration Demo (Enterprise-Ready)
+python examples/powerbi_integration_demo.py
+
+# Validate PowerBI Integration (Offline)
+python scripts/validate_powerbi_offline.py
 
 # DuckDB Analytics Demo (High-performance)
 python examples/duckdb_demo.py
@@ -217,16 +221,18 @@ Osservatorio/                              # 🏠 Root directory
 │   ├── cleanup_temp_files.py              # File management
 │   ├── legacy/                            # Legacy scripts (4 files)
 │   └── test_ci.py                         # CI/CD utilities
-├── 📋 examples/                           # 📂 Usage examples (3 demo files)
+├── 📋 examples/                           # 📂 Usage examples (4 demo files)
 │   ├── duckdb_demo.py                     # DuckDB analytics demo
 │   ├── duckdb_query_builder_demo.py       # Query Builder advanced usage (826 lines)
+│   ├── powerbi_integration_demo.py        # PowerBI enterprise integration demo
 │   └── sqlite_metadata_demo.py            # SQLite metadata layer demo
-├── 📚 docs/                               # 📂 Documentation (8 Markdown files)
+├── 📚 docs/                               # 📂 Documentation (9+ Markdown files)
 │   ├── README.md                          # Documentation index
-│   ├── ARCHITECTURE.md                    # System architecture
-│   ├── api-mapping.md                     # ISTAT API endpoints
-│   ├── adr/001-database-selection.md      # Architecture Decision Record
-│   ├── api/API_REFERENCE.md               # API documentation
+│   ├── core/ARCHITECTURE.md               # System architecture (1200+ lines)
+│   ├── integrations/POWERBI_INTEGRATION.md # PowerBI enterprise integration guide
+│   ├── api/api-mapping.md                 # ISTAT API endpoints
+│   ├── reference/adr/001-database-selection.md # Architecture Decision Record
+│   ├── core/API_REFERENCE.md              # API documentation
 │   ├── guides/CONTRIBUTING.md             # Contribution guide
 │   ├── guides/DEPLOYMENT_GUIDE.md         # Deployment instructions
 │   ├── guides/STREAMLIT_DEPLOYMENT.md     # Streamlit deployment
@@ -457,11 +463,15 @@ For detailed deployment instructions, see [STREAMLIT_DEPLOYMENT.md](STREAMLIT_DE
 - **Rate Limit**: 50 requests/hour
 - **Format**: SDMX XML
 
-### 📊 PowerBI Service
-- **Authentication**: OAuth 2.0 with Azure AD
-- **Features**: Workspace management, dataset upload
-- **Rate Limit**: 100 requests/hour
-- **Formats**: CSV, Excel, Parquet, JSON
+### 📊 PowerBI Integration (Enterprise-Ready)
+- **Status**: ✅ **Production Ready** - Complete enterprise integration
+- **Authentication**: MSAL with Service Principal (OAuth 2.0)
+- **Features**: Star schema optimization, template generation, incremental refresh
+- **Components**: API Client, Optimizer, Template Generator, Metadata Bridge
+- **Rate Limit**: 100 requests/hour with intelligent backoff
+- **Templates**: Automated .pbit file generation with Italian localization
+- **Validation**: 100% offline validation without Microsoft credentials
+- **Documentation**: [`docs/integrations/POWERBI_INTEGRATION.md`](docs/integrations/POWERBI_INTEGRATION.md)
 
 ### 📈 Tableau Server
 - **Authentication**: Server credentials
@@ -541,6 +551,13 @@ We're actively seeking contributors for our January 2025 sprint! Check out the [
 - [x] Core data processing pipeline
 - [x] Enhanced security implementation (SecurityManager)
 - [x] Live dashboard deployment (https://osservatorio-dashboard.streamlit.app/)
+- [x] **PowerBI Enterprise Integration** (Production Ready)
+  - [x] PowerBI API Client with MSAL authentication
+  - [x] Star Schema Optimizer for dimensional modeling
+  - [x] Template Generator (.pbit files) with Italian localization
+  - [x] Incremental Refresh Manager with change detection
+  - [x] Metadata Bridge for data governance
+  - [x] 100% offline validation system
 - [x] Expanded test suite (401 tests, 67% coverage)
 - [x] CI/CD pipeline with GitHub Actions
 - [x] Comprehensive documentation + CONTRIBUTING.md
@@ -555,12 +572,20 @@ We're actively seeking contributors for our January 2025 sprint! Check out the [
 - [ ] Complete monitoring implementation
 - [ ] Production-ready error handling
 
-### 🚀 **Phase 3: Scale (Future)**
-- [ ] Improved architecture
-- [ ] Container support
-- [ ] Machine learning integration
-- [ ] Real-time processing
-- [ ] Advanced features
+### 🚀 **Phase 3: Advanced Analytics (Q4 2025)**
+- [ ] **Tableau Integration**: Server API, Hyper files, workbook automation
+- [ ] **Qlik Integration**: QlikSense apps, associative models, script templates
+- [ ] **Advanced PowerBI Features**: Custom visuals, real-time refresh, ML integration
+- [ ] **Multi-Platform Analytics**: Unified analytics engine across BI tools
+- [ ] **Predictive Analytics**: Quality score prediction, trend analysis
+- [ ] **Natural Language Queries**: AI-powered data exploration
+
+### 🔧 **Phase 4: Enterprise Scale (2026)**
+- [ ] Container orchestration (Kubernetes)
+- [ ] Microservices architecture
+- [ ] Real-time data streaming
+- [ ] Advanced governance & compliance
+- [ ] Multi-tenant support
 
 ---
 
