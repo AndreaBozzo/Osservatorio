@@ -4,7 +4,7 @@
 
 [![Python](https://img.shields.io/badge/Python-3.13.3-blue.svg)](https://www.python.org/downloads/)
 [![Status](https://img.shields.io/badge/Status-MVP%20Prototype-yellow.svg)](docs/project/PROJECT_STATE.md)
-[![Tests](https://img.shields.io/badge/Tests-441%20passing-green.svg)](tests/)
+[![Tests](https://img.shields.io/badge/Tests-462%20passing-green.svg)](tests/)
 [![Dashboard](https://img.shields.io/badge/Dashboard-Live%20✅-green.svg)](https://osservatorio-dashboard.streamlit.app/)
 [![Security](https://img.shields.io/badge/Security-0%20HIGH%20issues%20🛡️-green.svg)](src/utils/security_enhanced.py)
 [![PowerBI](https://img.shields.io/badge/PowerBI-Enterprise%20Integration-blue.svg)](docs/integrations/POWERBI_INTEGRATION.md)
@@ -68,25 +68,22 @@ python convert_to_tableau.py
 # PowerBI Integration Demo (Enterprise-Ready)
 python examples/powerbi_integration_demo.py
 
-# Validate PowerBI Integration (Offline)
+# Validate PowerBI Integration (Offline - 19/19 tests passing)
 python scripts/validate_powerbi_offline.py
 
-# DuckDB Analytics Demo (High-performance)
+# DuckDB Analytics Demo
 python examples/duckdb_demo.py
 
-# SQLite Metadata Management (Day 4 Complete)
+# SQLite Metadata Management
 python examples/sqlite_metadata_demo.py
-
-# Clean temporary files
-python scripts/cleanup_temp_files.py --stats
 ```
 
 ---
 
 ## 🚀 Strategic Architecture (SQLite + DuckDB)
 
-### 🏗️ **Current Architecture (v8.1.0 - Day 4 Complete)**
-Following ADR-002 strategic decision by @Gasta88 insight - **FULLY IMPLEMENTED**:
+### 🏗️ **Current Architecture (v1.1.0)**
+Following ADR-002 strategic decision - dual-database architecture:
 
 ```
 ┌─────────────────────┐     ┌─────────────────────┐
@@ -105,61 +102,34 @@ Following ADR-002 strategic decision by @Gasta88 insight - **FULLY IMPLEMENTED**
 ```
 
 ### ✅ **Current Capabilities**
-
-#### 🎯 **Production Features**
 - **🦆 DuckDB Analytics**: High-performance analytics engine (>2k records/sec)
 - **🗃️ SQLite Metadata**: Lightweight metadata layer (zero configuration)
-- **📊 PowerBI Integration**: Native BI tool support with star schema generation
+- **📊 PowerBI Integration**: Native BI tool support with star schema (19/19 tests passing)
 - **🔐 Enterprise Security**: JWT auth, rate limiting, SQL injection protection
-- **🧪 Comprehensive Testing**: 441 tests, 67% coverage, performance benchmarks
-
-#### 🌐 **Live Demos & UI**
+- **🧪 Comprehensive Testing**: 462 tests, 68% coverage, performance benchmarks
 - **📊 Dashboard**: [osservatorio-dashboard.streamlit.app](https://osservatorio-dashboard.streamlit.app/)
-- **🌐 Landing Page**: [andreabozzo.github.io/Osservatorio](https://andreabozzo.github.io/Osservatorio/)
-- **📱 Responsive Design**: Desktop-optimized with mobile compatibility
-- **🔍 Interactive Features**: Filtering, charts, real-time data processing
-
-#### 🔧 **Data Integration**
 - **🇮🇹 ISTAT API**: Complete SDMX integration (509+ datasets)
 - **📁 Multi-Format Export**: CSV, Excel, Parquet, JSON, PowerBI-optimized
-- **🏷️ Smart Categorization**: AI-powered data classification
-- **⚡ Performance Optimized**: Query caching, bulk operations, indexing strategies
 
-### 🔒 **Enterprise Security** (Day 3 Audit Complete)
+### 🔒 **Enterprise Security**
 - **🛡️ SQL Injection Protection**: Enhanced table name validation, parameterized queries
-- **🔍 Security Audit**: All 23 original vulnerabilities resolved (21 July 2025)
+- **🔍 Security Audit**: 0 HIGH severity issues (bandit scan validated)
 - **⚡ Performance Testing**: 200k+ records/sec with comprehensive regression detection
-- **🧪 Test Coverage**: 45 security-enhanced integration tests, all passing
-
-### 🔨 **Development Tools**
-- **🧪 Test Framework**: 441 tests passing including 45 DuckDB integration tests (pytest 8.3.5 verified)
-- **🔍 Code Quality**: Black, isort, flake8 setup with pre-commit hooks
-- **🚀 CI/CD**: GitHub Actions workflow with automated testing
-- **📋 Documentation**: Comprehensive developer documentation + CONTRIBUTING.md
-- **🛡️ Security**: Enhanced SecurityManager with rate limiting and path validation
-- **🔄 Resilience**: Circuit breaker pattern for external API calls
+- **🧪 Test Coverage**: 462 tests passing including enhanced security integration tests
 
 ## ✅ Current Status
 
-### ⚡ **Performance Metrics** - VALIDATED
+### ⚡ **Performance Metrics**
 - **⚡ Load Times**: <5s dashboard loading (improved from 20-30s)
 - **🔄 Caching**: Smart caching with 30min TTL + DuckDB query caching (>10x speedup)
 - **📊 Database Performance**: >2k records/sec bulk insert validated
 - **📊 API Scalability**: Handles 509+ ISTAT datasets with async loading
 
-### 🔒 **Security & Quality** - AUDIT COMPLETE
-- **🛡️ Security**: Enhanced SecurityManager + 0 HIGH severity issues (bandit scan)
-- **🧪 Test Coverage**: 67% coverage achieved (441 tests, 100% passing - includes SQLite metadata layer)
-- **🚫 Error Handling**: Circuit breaker pattern with graceful degradation
-- **🔒 Path Security**: Directory traversal protection + input sanitization
-
-### ✅ **Recently Completed (Day 4 - SQLite Implementation)**
+### ✅ **Recently Completed**
 - **🗃️ SQLite Metadata Layer**: Complete 6-table schema with thread-safe operations
-- **🔄 Unified Repository**: Facade pattern combining SQLite + DuckDB with intelligent routing
-- **🔐 Enhanced Security**: Fernet encryption for sensitive data, comprehensive audit logging
-- **🧪 Comprehensive Testing**: 40+ new tests (22 unit + 18 integration) with 100% pass rate
-- **📚 Complete Documentation**: Updated API reference, architecture docs, and performance guide
-- **⚡ Zero-config deployment**: File-based databases with automatic schema creation
+- **📊 PowerBI Integration**: 19/19 tests passing, enterprise-ready with star schema optimization
+- **🔐 Enhanced Security**: 0 HIGH severity issues, comprehensive audit logging
+- **🧪 Comprehensive Testing**: 462 tests with 68% coverage (100% pass rate)
 
 ---
 
@@ -464,11 +434,8 @@ For detailed deployment instructions, see [STREAMLIT_DEPLOYMENT.md](STREAMLIT_DE
 - **Format**: SDMX XML
 
 ### 📊 PowerBI Integration (Enterprise-Ready)
-- **Status**: ✅ **Production Ready** - Complete enterprise integration
-- **Authentication**: MSAL with Service Principal (OAuth 2.0)
-- **Features**: Star schema optimization, template generation, incremental refresh
-- **Components**: API Client, Optimizer, Template Generator, Metadata Bridge
-- **Rate Limit**: 100 requests/hour with intelligent backoff
+- **Status**: ✅ **Production Ready** - 19/19 tests passing
+- **Features**: Star schema optimization, template generation, incremental refresh, metadata bridge
 - **Templates**: Automated .pbit file generation with Italian localization
 - **Validation**: 100% offline validation without Microsoft credentials
 - **Documentation**: [`docs/integrations/POWERBI_INTEGRATION.md`](docs/integrations/POWERBI_INTEGRATION.md)
@@ -625,9 +592,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📊 Project Stats
 
-- **🐍 Python Files**: 18 core modules + 23 test files (verified scan)
-- **🧪 Total Tests**: 292 comprehensive tests with 100% pass rate
-- **📊 Test Coverage**: 57% achieved, targeting 70%
+- **🐍 Python Files**: 25+ core modules + 34 test files
+- **🧪 Total Tests**: 462 comprehensive tests with 100% pass rate
+- **📊 Test Coverage**: 68% achieved, targeting 70%
 - **🔒 Security Features**: Enhanced SecurityManager with rate limiting
 - **📚 Documentation**: 8 Markdown files with structured guides
 - **🌟 GitHub Integration**: Active CI/CD with automated testing
@@ -641,4 +608,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **🎯 Ready to explore Italian statistical data? Start with our [live dashboard](https://osservatorio-dashboard.streamlit.app/) or follow the [quick start guide](#-quick-start)!**
 
-**📈 Status**: 🔄 **Working Prototype** | ✅ **Actively Maintained** | 🚀 **Open Source** | 📊 **Live Dashboard** | 🧪 **292 Tests**
+**📈 Status**: 🔄 **Working Prototype** | ✅ **Actively Maintained** | 🚀 **Open Source** | 📊 **Live Dashboard** | 🧪 **462 Tests**

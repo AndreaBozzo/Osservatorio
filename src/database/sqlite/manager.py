@@ -28,6 +28,33 @@ from src.utils.security_enhanced import SecurityManager
 
 from .schema import MetadataSchema, create_metadata_schema
 
+
+# Configure SQLite datetime handling to avoid deprecation warnings
+def adapt_datetime(dt):
+    """Convert datetime to ISO format string for SQLite storage."""
+    return dt.isoformat() if dt else None
+
+
+def convert_datetime(val):
+    """Convert ISO format string back to datetime from SQLite."""
+    if val:
+        try:
+            # Handle both bytes and string formats
+            if isinstance(val, bytes):
+                val = val.decode("utf-8")
+            # Ensure we have a string
+            if isinstance(val, str):
+                return datetime.fromisoformat(val)
+        except (ValueError, AttributeError, TypeError) as e:
+            logger.debug(f"Failed to convert datetime: {val}, error: {e}")
+            return None
+    return None
+
+
+# Register the adapters and converters
+sqlite3.register_adapter(datetime, adapt_datetime)
+sqlite3.register_converter("timestamp", convert_datetime)
+
 logger = get_logger(__name__)
 security = SecurityManager()
 
@@ -61,7 +88,12 @@ class SQLiteMetadataManager:
     def _get_connection(self) -> sqlite3.Connection:
         """Get thread-local database connection."""
         if not hasattr(self._thread_local, "connection"):
-            conn = sqlite3.connect(self.db_path, check_same_thread=False, timeout=30.0)
+            conn = sqlite3.connect(
+                self.db_path,
+                check_same_thread=False,
+                timeout=30.0,
+                detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES,
+            )
             conn.row_factory = sqlite3.Row
             conn.execute("PRAGMA foreign_keys = ON")
             conn.execute("PRAGMA journal_mode = WAL")
@@ -507,7 +539,12 @@ class SQLiteMetadataManager:
 
             # Check expiration
             if expires_at:
-                expiry = datetime.fromisoformat(expires_at)
+                # expires_at is already converted to datetime by our converter
+                expiry = (
+                    expires_at
+                    if isinstance(expires_at, datetime)
+                    else datetime.fromisoformat(expires_at)
+                )
                 if datetime.now() > expiry:
                     return False
 
