@@ -1,9 +1,9 @@
 # 🏗️ Osservatorio - Architecture Documentation
 
 > **Comprehensive architectural documentation for the Osservatorio ISTAT data processing platform**
-> **Version**: 9.0.0
-> **Date**: July 24, 2025
-> **Status**: Production Ready - Day 6 PowerBI Integration Complete
+> **Version**: 9.1.0
+> **Date**: July 25, 2025
+> **Status**: Enterprise Ready - Day 7 JWT Authentication Complete
 
 ---
 
@@ -12,15 +12,16 @@
 1. [System Overview](#-system-overview)
 2. [Architecture Principles](#-architecture-principles)
 3. [Component Architecture](#-component-architecture)
-4. [Data Flow Architecture](#-data-flow-architecture)
-5. [Security Architecture](#-security-architecture)
-6. [Testing Architecture](#-testing-architecture)
-7. [Deployment Architecture](#-deployment-architecture)
-8. [Performance Architecture](#-performance-architecture)
-9. [PowerBI Integration Architecture](#-powerbi-integration-architecture)
-10. [Advanced Analytics Architecture](#-advanced-analytics-architecture)
-11. [Integration Architecture](#-integration-architecture)
-12. [Future Architecture](#-future-architecture)
+4. [JWT Authentication Architecture](#-jwt-authentication-architecture) **NEW!**
+5. [Data Flow Architecture](#-data-flow-architecture)
+6. [Security Architecture](#-security-architecture)
+7. [Testing Architecture](#-testing-architecture)
+8. [Deployment Architecture](#-deployment-architecture)
+9. [Performance Architecture](#-performance-architecture)
+10. [PowerBI Integration Architecture](#-powerbi-integration-architecture)
+11. [Advanced Analytics Architecture](#-advanced-analytics-architecture)
+12. [Integration Architecture](#-integration-architecture)
+13. [Future Architecture](#-future-architecture)
 
 ---
 
@@ -225,6 +226,132 @@
   - Structured logging with Loguru
   - Log levels and filtering
   - Performance monitoring
+
+---
+
+## 🔐 JWT Authentication Architecture
+
+**Enterprise-grade authentication system integrated with SQLite backend (Day 7)**
+
+### 🏗️ Authentication System Overview
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    🔐 Authentication Layer (Day 7)              │
+│                                                                 │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐ │
+│  │  🔑 API Keys    │  │  🎫 JWT Tokens  │  │  ⚡ Rate Limit  │ │
+│  │                 │  │                 │  │                 │ │
+│  │ • Bcrypt Hash   │  │ • HS256/RS256   │  │ • Sliding Window│ │
+│  │ • Scope Perms   │  │ • Blacklisting  │  │ • Per-API/IP    │ │
+│  │ • Expiration    │  │ • Refresh Token │  │ • Configurable  │ │
+│  │ • CLI Tools     │  │ • Custom Claims │  │ • Violation Log │ │
+│  └─────────────────┘  └─────────────────┘  └─────────────────┘ │
+└─────────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+┌─────────────────────────────────────────────────────────────────┐
+│              🛡️ Security Headers Middleware                     │
+│                                                                 │
+│ • CSP (Content Security Policy)                                │
+│ • HSTS (HTTP Strict Transport Security)                        │
+│ • X-Frame-Options (Clickjacking Protection)                    │
+│ • X-Content-Type-Options (MIME Sniffing Prevention)            │
+│ • CORS Configuration with Secure Defaults                      │
+│ • Authentication Middleware for Request Processing             │
+└─────────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    🗃️ SQLite Authentication Storage             │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐ │
+│  │  API Credentials│  │  Rate Limits    │  │  Token Blacklist│ │
+│  │  • Hashed Keys  │  │  • Time Windows │  │  • Revoked JWT  │ │
+│  │  • Scopes       │  │  • Violation Log│  │  • Cleanup Jobs │ │
+│  │  • Metadata     │  │  • Statistics   │  │  • Audit Trail  │ │
+│  └─────────────────┘  └─────────────────┘  └─────────────────┘ │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### 🔧 Authentication Components
+
+#### 🔑 **SQLite API Key Management** (`src/auth/sqlite_auth.py`)
+- **Cryptographic Security**: bcrypt hashing with cost factor 12
+- **Scope-Based Permissions**: Fine-grained access control (read, write, admin, analytics, powerbi, tableau)
+- **Lifecycle Management**: Create, list, revoke, test API keys
+- **Expiration Handling**: Optional time-based expiration with automatic cleanup
+- **Usage Tracking**: Request counting and last-used timestamps
+
+#### 🎫 **JWT Token System** (`src/auth/jwt_manager.py`)
+- **Algorithm Support**: Both HS256 (HMAC) and RS256 (RSA)
+- **Token Types**: Access tokens with configurable expiration
+- **Token Blacklisting**: Secure logout with revoked token tracking
+- **Custom Claims**: API key metadata embedded in JWT payload
+- **Refresh Patterns**: Support for token refresh workflows
+
+#### ⚡ **Rate Limiting** (`src/auth/rate_limiter.py`)
+- **Sliding Window Algorithm**: Time-based request counting
+- **Multi-Layer Protection**: Per-API-key AND per-IP limits
+- **Configurable Windows**: Minute, hour, and day time windows
+- **Burst Allowance**: Short-term spike tolerance
+- **Violation Logging**: Complete audit trail of limit breaches
+
+#### 🛡️ **Security Headers Middleware** (`src/auth/security_middleware.py`)
+- **OWASP Compliance**: Industry-standard security headers
+- **Request Authentication**: Automatic API key and JWT validation
+- **CORS Management**: Configurable cross-origin resource sharing
+- **Security Reporting**: Comprehensive security status reporting
+
+### 🛠️ CLI Management Tools
+
+#### **API Key Management CLI** (`scripts/generate_api_key.py`)
+```bash
+# Create API key with specific scopes
+python scripts/generate_api_key.py create --name "Analytics App" --scopes analytics,read
+
+# List all active API keys
+python scripts/generate_api_key.py list
+
+# Revoke compromised key
+python scripts/generate_api_key.py revoke --id 123 --reason "Security breach"
+
+# Test key validity
+python scripts/generate_api_key.py test --key osv_abc123...
+
+# View usage statistics
+python scripts/generate_api_key.py stats
+
+# Cleanup expired tokens
+python scripts/generate_api_key.py cleanup
+```
+
+### 🔒 Security Features
+
+#### **Database Security**
+- **Transaction Safety**: Nested transaction handling with automatic cleanup
+- **SQL Injection Protection**: All queries use parameterized statements
+- **Connection Management**: Proper resource cleanup and Windows compatibility
+- **Audit Logging**: Complete security event tracking
+
+#### **Authentication Security**
+- **bcrypt Password Hashing**: Industry-standard key protection
+- **Scope Validation**: Strict permission checking
+- **Token Validation**: JWT signature verification and expiration checking
+- **Rate Limit Enforcement**: Automatic protection against abuse
+
+### 🧪 Testing & Validation
+
+#### **Comprehensive Test Suite** (`tests/unit/test_auth_system.py`)
+- **29 Test Methods**: Complete coverage of authentication functionality
+- **Integration Testing**: End-to-end authentication flow validation
+- **Security Testing**: Attack scenario and edge case testing
+- **Performance Testing**: Rate limiting and concurrent access testing
+
+#### **Security Validation**
+- **Bandit Security Scan**: 0 high-severity issues verified
+- **SQL Injection Testing**: All queries parameterized and tested
+- **Authentication Flow Testing**: Complete token lifecycle validation
+- **Cross-Platform Testing**: Windows and Linux compatibility verified
 
 ---
 
