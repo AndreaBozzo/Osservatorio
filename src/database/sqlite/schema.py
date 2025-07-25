@@ -159,7 +159,8 @@ class MetadataSchema:
             bool: True if schema created successfully, False otherwise.
         """
         try:
-            with sqlite3.connect(self.db_path) as conn:
+            conn = sqlite3.connect(self.db_path)
+            try:
                 conn.execute("PRAGMA foreign_keys = ON")
                 conn.execute("PRAGMA journal_mode = WAL")
                 conn.execute("PRAGMA synchronous = NORMAL")
@@ -185,6 +186,8 @@ class MetadataSchema:
                 conn.commit()
                 logger.info("SQLite metadata schema created successfully")
                 return True
+            finally:
+                conn.close()
 
         except Exception as e:
             logger.error(f"Failed to create metadata schema: {e}")
@@ -260,7 +263,8 @@ class MetadataSchema:
             bool: True if schema is valid, False otherwise.
         """
         try:
-            with sqlite3.connect(self.db_path) as conn:
+            conn = sqlite3.connect(self.db_path)
+            try:
                 # Check that all required tables exist
                 cursor = conn.execute(
                     "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'"
@@ -285,6 +289,8 @@ class MetadataSchema:
 
                 logger.info("SQLite metadata schema verification successful")
                 return True
+            finally:
+                conn.close()
 
         except Exception as e:
             logger.error(f"Schema verification failed: {e}")
@@ -300,7 +306,8 @@ class MetadataSchema:
             List of column information dictionaries.
         """
         try:
-            with sqlite3.connect(self.db_path) as conn:
+            conn = sqlite3.connect(self.db_path)
+            try:
                 cursor = conn.execute(f"PRAGMA table_info({table_name})")
                 columns = cursor.fetchall()
 
@@ -315,6 +322,8 @@ class MetadataSchema:
                     }
                     for col in columns
                 ]
+            finally:
+                conn.close()
         except Exception as e:
             logger.error(f"Failed to get table info for {table_name}: {e}")
             return []
