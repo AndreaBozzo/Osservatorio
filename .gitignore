@@ -108,6 +108,22 @@ istat_prep_flow_*.json
 istat_strategy.json
 tableau_config.json
 
+# PowerBI Integration generated files
+# NOTE: Static templates in templates/powerbi/ are tracked
+powerbi_test_results_*.json
+powerbi_validation_offline_*.json
+star_schema_*.json
+dax_measures_*.json
+powerbi_template_*.json
+powerbi_lineage_*.json
+powerbi_governance_*.json
+powerbi_refresh_*.json
+
+# Generated .pbit files (but keep templates/powerbi/ static templates)
+*_template_*.pbit
+*_generated_*.pbit
+demo_*_auto_*.pbit
+
 # Temporary files - managed by TempFileManager
 data_DCIS_*.xml
 structure_DCIS_*.xml
@@ -136,6 +152,10 @@ osservatorio_temp/
 .pytest_cache/
 .coverage
 htmlcov/
+
+# Performance testing
+data/performance_baselines.json
+performance_report_*.md
 
 # mypy
 .mypy_cache/

@@ -12,7 +12,7 @@
 1. [Overview](#-overview)
 2. [Authentication & Security](#-authentication--security)
 3. [ISTAT API Client](#-istat-api-client)
-4. [PowerBI API Client](#-powerbi-api-client)
+4. [PowerBI Integration](#-powerbi-integration)
 5. [Tableau API Client](#-tableau-api-client)
 6. [Data Converters](#-data-converters)
 7. [Security Manager](#-security-manager)
@@ -145,103 +145,120 @@ print(f\"API Status: {results['status']}\")
 
 ---
 
-## 📊 PowerBI API Client
+## 📊 PowerBI Integration
 
-### 📝 Class: `PowerBIAPIClient`
+### 🏢 Enterprise PowerBI Integration Suite
 
-Client for Microsoft PowerBI Service integration.
+The PowerBI Integration provides a comprehensive enterprise-grade solution for Microsoft PowerBI integration, including API client, star schema optimization, template generation, incremental refresh, and metadata governance.
 
-#### 🔧 Initialization
+#### 📦 Components Overview
+
+| Component | Purpose | Status |
+|-----------|---------|--------|
+| **PowerBI API Client** | Microsoft PowerBI REST API integration | ✅ Production Ready |
+| **Star Schema Optimizer** | Dimensional modeling for PowerBI performance | ✅ Production Ready |
+| **Template Generator** | Automated .pbit file creation | ✅ Production Ready |
+| **Incremental Refresh Manager** | Smart data refresh with change detection | ✅ Production Ready |
+| **Metadata Bridge** | Data governance and lineage tracking | ✅ Production Ready |
+
+#### 📖 Complete Documentation
+- **Full Guide**: [`docs/integrations/POWERBI_INTEGRATION.md`](../integrations/POWERBI_INTEGRATION.md)
+- **Offline Validation**: `scripts/validate_powerbi_offline.py`
+- **Demo Example**: `examples/powerbi_integration_demo.py`
+
+---
+
+### 🔌 PowerBI API Client
+
+#### 📝 Class: `PowerBIAPIClient`
+
+Enterprise-grade API client for Microsoft PowerBI Service with MSAL authentication, rate limiting, and comprehensive error handling.
+
 ```python
 from src.api.powerbi_api import PowerBIAPIClient
 
-# Initialize client
+# Initialize client (uses environment variables)
 client = PowerBIAPIClient()
+
+# Test connection
+test_result = client.test_connection()
+print(f"Authentication: {test_result['authentication']}")
+print(f"Workspaces: {test_result['workspace_count']}")
 ```
 
-#### 🔍 Methods
-
-##### `authenticate()`
-Authenticates with PowerBI Service using OAuth 2.0.
-
-```python
-def authenticate() -> bool
+#### 🔑 Environment Configuration
+```bash
+# Required environment variables
+export POWERBI_CLIENT_ID="your-service-principal-client-id"
+export POWERBI_CLIENT_SECRET="your-service-principal-secret"
+export POWERBI_TENANT_ID="your-azure-tenant-id"
+export POWERBI_WORKSPACE_ID="your-default-workspace-id"
 ```
+
+#### 🔍 Core Methods
+
+##### `authenticate() -> bool`
+Authenticates with PowerBI using service principal credentials with automatic token renewal.
+
+**Features:**
+- MSAL authentication with service principal
+- Automatic token renewal with 5-minute buffer
+- Session header management
+- Comprehensive error handling
 
 **Returns:**
 - `bool`: True if authentication successful
 
-**Example:**
-```python
-if client.authenticate():
-    print(\"Authentication successful\")
-```
-
-##### `get_workspaces()`
-Retrieves all available PowerBI workspaces.
+##### `get_workspaces() -> List[Dict[str, Any]]`
+Retrieves all accessible PowerBI workspaces with rate limiting.
 
 ```python
 @rate_limit(max_requests=100, window=3600)
 def get_workspaces() -> List[Dict[str, Any]]
 ```
 
+**Features:**
+- Rate limiting (100 requests/hour)
+- Security validation
+- Error recovery
+- Response caching
+
 **Returns:**
-- `List[Dict[str, Any]]`: List of workspace information
+- `List[Dict[str, Any]]`: Workspace information including ID, name, type
 
 **Example:**
 ```python
 workspaces = client.get_workspaces()
-for workspace in workspaces:
-    print(f\"Workspace: {workspace['name']}\")
+for ws in workspaces:
+    print(f"Workspace: {ws['name']} (ID: {ws['id']})")
 ```
 
-##### `get_datasets(workspace_id: Optional[str] = None)`
-Retrieves datasets from a specific workspace.
+##### `create_dataset(dataset_definition: Dict, workspace_id: Optional[str] = None) -> Optional[Dict[str, Any]]`
+Creates a new dataset in PowerBI with comprehensive schema validation.
 
+**Dataset Definition Structure:**
 ```python
-@rate_limit(max_requests=100, window=3600)
-def get_datasets(workspace_id: Optional[str] = None) -> List[Dict[str, Any]]
+dataset_definition = {
+    "name": "ISTAT Population Data",
+    "tables": [{
+        "name": "PopulationFacts",
+        "columns": [
+            {"name": "TerritoryCode", "dataType": "String"},
+            {"name": "Year", "dataType": "Int64"},
+            {"name": "Population", "dataType": "Double"},
+            {"name": "QualityScore", "dataType": "Double"}
+        ]
+    }]
+}
 ```
 
-**Parameters:**
-- `workspace_id` (Optional[str]): Workspace identifier
+#### 🚦 Enterprise Features
 
-**Returns:**
-- `List[Dict[str, Any]]`: List of dataset information
-
-**Example:**
-```python
-datasets = client.get_datasets(workspace_id=\"abc-123\")
-```
-
-##### `upload_dataset(dataset_name: str, file_path: str)`
-Uploads a dataset to PowerBI Service.
-
-```python
-def upload_dataset(dataset_name: str, file_path: str) -> Dict[str, Any]
-```
-
-**Parameters:**
-- `dataset_name` (str): Name for the dataset
-- `file_path` (str): Path to the data file
-
-**Returns:**
-- `Dict[str, Any]`: Upload result information
-
-**Example:**
-```python
-result = client.upload_dataset(\"Population Data\", \"data/population.csv\")
-```
-
-#### 🚦 Rate Limiting
-- **Limit**: 100 requests per hour
-- **Enforcement**: Method-level rate limiting
-- **Identifier**: Unique per API endpoint
-
-#### 🔑 Authentication Requirements
-- **Client ID**: Azure AD app registration
-- **Client Secret**: App registration secret
-- **Tenant ID**: Azure AD tenant identifier
+- **Rate Limiting**: 100 requests/hour with intelligent backoff
+- **Security**: Input validation, path sanitization, secure token storage
+- **Error Handling**: Comprehensive exception handling with recovery
+- **Monitoring**: Built-in connection testing and diagnostics
+- **Offline Validation**: Complete testing without Microsoft credentials
 
 ---
 

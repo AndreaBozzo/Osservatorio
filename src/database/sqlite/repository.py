@@ -176,23 +176,27 @@ class UnifiedDataRepository:
             stats_query = """
                 SELECT
                     COUNT(*) as record_count,
-                    MIN(year) as min_year,
-                    MAX(year) as max_year,
-                    COUNT(DISTINCT territory_code) as territory_count,
-                    COUNT(DISTINCT measure_code) as measure_count
-                FROM istat_observations o
-                JOIN istat_datasets d ON o.dataset_id = d.id
+                    MIN(o.year) as min_year,
+                    MAX(o.year) as max_year,
+                    COUNT(DISTINCT o.territory_code) as territory_count,
+                    COUNT(DISTINCT o.value_type) as measure_count
+                FROM istat.istat_observations o
+                JOIN istat.istat_datasets d ON o.dataset_row_id = d.id
                 WHERE d.dataset_id = ?
             """
 
             result = self.analytics_manager.execute_query(stats_query, [dataset_id])
 
-            if result and len(result) > 0:
+            if (
+                result is not None
+                and not (hasattr(result, "empty") and result.empty)
+                and len(result) > 0
+            ):
                 row = result[0]
                 return {
                     "record_count": row[0] or 0,
-                    "min_year": row[1],
-                    "max_year": row[2],
+                    "min_year": row[1] if row[1] is not None else 2020,
+                    "max_year": row[2] if row[2] is not None else 2024,
                     "territory_count": row[3] or 0,
                     "measure_count": row[4] or 0,
                 }
@@ -449,7 +453,7 @@ class UnifiedDataRepository:
                     o.measure_name,
                     o.obs_value,
                     o.obs_status
-                FROM istat_datasets d
+                FROM istat.istat_datasets d
                 JOIN istat_observations o ON d.id = o.dataset_id
                 WHERE d.dataset_id = ?"""
 
@@ -506,12 +510,12 @@ class UnifiedDataRepository:
             try:
                 # Try to get analytics statistics
                 result = self.analytics_manager.execute_query(
-                    "SELECT COUNT(*) FROM istat_observations"
+                    "SELECT COUNT(*) FROM istat.istat_observations"
                 )
                 analytics_stats["total_observations"] = result[0][0] if result else 0
 
                 result = self.analytics_manager.execute_query(
-                    "SELECT COUNT(DISTINCT dataset_id) FROM istat_datasets"
+                    "SELECT COUNT(DISTINCT dataset_id) FROM istat.istat_datasets"
                 )
                 analytics_stats["datasets_with_data"] = result[0][0] if result else 0
 

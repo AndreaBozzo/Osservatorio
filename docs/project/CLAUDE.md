@@ -16,17 +16,66 @@ This is an Italian data processing system for ISTAT (Italian National Institute 
 
 ## Development Commands
 
-### Core Commands, many from the first implementation of the project
-### We'll look into these very closely during the development
+### Makefile Commands (Recommended)
+The project includes a comprehensive Makefile for streamlined development workflows:
+
+#### Quick Start
+- `make help` - Show all available commands
+- `make dev-setup` - Complete development environment setup
+- `make status` - Show project status and health check
+- `make examples` - Show common development workflow examples
+
+#### Testing Workflows
+- `make test-fast` - Fast unit tests (~20s)
+- `make test-critical` - Critical path tests (~10s)
+- `make test-integration` - Integration tests (~10s)
+- `make test` - Optimized development testing workflow (~30s)
+- `make test-full` - Complete test suite with coverage (~300s)
+
+#### PowerBI Integration
+- `make powerbi-validate` - Validate PowerBI integration offline (100% success rate)
+- `make powerbi-demo` - Run PowerBI integration demonstration
+- `make powerbi-test` - Run PowerBI specific tests
+
+#### Code Quality
+- `make format` - Format code with black and isort
+- `make lint` - Run linting tools (black, isort, flake8)
+- `make pre-commit` - Run pre-commit hooks manually
+
+#### Development Workflows
+- `make dev-commit` - Pre-commit workflow (format + critical tests)
+- `make dev-push` - Pre-push workflow (format + test + lint)
+- `make ci` - Simulate CI/CD pipeline
+
+#### Database Management
+- `make db-init` - Initialize database schemas (SQLite + DuckDB)
+- `make db-status` - Check database status and health
+
+#### Utilities
+- `make clean` - Clean temporary files and caches
+- `make benchmark` - Run performance benchmarks
+- `make dashboard` - Run Streamlit dashboard
+
+### Core Commands (Direct Python)
 - `python convert_to_tableau.py` - Main conversion script to convert ISTAT XML data to Tableau formats
-- `python convert_to_powerbi.py` - Convert ISTAT XML data to PowerBI formats (CSV, Excel, Parquet, JSON)
 - `python src/api/istat_api.py` - Test ISTAT API connectivity and data access
-- `python src/api/powerbi_api.py` - Test PowerBI API connectivity and manage PowerBI resources
-- `python scripts/setup_powerbi_azure.py` - Guided setup for Azure AD and PowerBI configuration
-- `python scripts/test_powerbi_upload.py` - Test dataset upload to PowerBI Service
 - `python src/analyzers/dataflow_analyzer.py` - Analyze available ISTAT dataflows
 - `python src/scrapers/tableau_scraper.py` - Analyze Tableau server configuration
 - `powershell scripts/download_istat_data.ps1` - Download ISTAT datasets via PowerShell
+
+### PowerBI Integration Commands (Enterprise-Ready)
+- `python examples/powerbi_integration_demo.py` - Complete PowerBI integration demonstration
+- `python scripts/validate_powerbi_offline.py` - Comprehensive offline validation (100% success rate)
+- `python src/api/powerbi_api.py` - Test PowerBI API connectivity and diagnostics
+- `python scripts/setup_powerbi_azure.py` - Guided setup for Azure AD and PowerBI configuration
+- `python scripts/test_powerbi_upload.py` - Test dataset upload to PowerBI Service
+
+### PowerBI Components Testing
+- `pytest tests/unit/test_powerbi_api.py -v` - PowerBI API client unit tests
+- `pytest tests/unit/test_powerbi_converter.py -v` - PowerBI converter tests
+- `pytest tests/integration/test_powerbi_integration.py -v` - Full integration tests
+- `python -c "from src.integrations.powerbi.optimizer import PowerBIOptimizer; print('✅ Star Schema Optimizer loaded')"` - Test optimizer
+- `python -c "from src.integrations.powerbi.templates import TemplateGenerator; print('✅ Template Generator loaded')"` - Test template generator
 
 ### CI/CD Commands
 - `python scripts/test_ci.py --strategy auto --generate-data` - Run CI tests with automatic fallback and data generation
@@ -165,8 +214,13 @@ This is an Italian data processing system for ISTAT (Italian National Institute 
    - `src/converters/tableau_converter.py` - Converter for Tableau formats (CSV/Excel/JSON)
    - `src/converters/powerbi_converter.py` - PowerBI converter (CSV, Excel, Parquet, JSON)
    - `convert_to_tableau.py` - Wrapper script for Tableau conversions
-   - `convert_to_powerbi.py` - Wrapper script for PowerBI conversions
-   - `src/api/powerbi_api.py` - PowerBI REST API client
+   - `src/api/powerbi_api.py` - Enterprise PowerBI REST API client with MSAL authentication
+   - `src/integrations/powerbi/optimizer.py` - Star Schema Optimizer with DAX measures generation
+   - `src/integrations/powerbi/templates.py` - PowerBI Template Generator (.pbit files)
+   - `src/integrations/powerbi/incremental.py` - Incremental Refresh Manager with change detection
+   - `src/integrations/powerbi/metadata_bridge.py` - Data governance and lineage tracking
+   - `examples/powerbi_integration_demo.py` - Complete PowerBI enterprise demo
+   - `scripts/validate_powerbi_offline.py` - 100% offline validation system
    - `src/scrapers/tableau_scraper.py` - Tableau server integration
 
 2. **Data Processing Architecture**:

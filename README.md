@@ -4,9 +4,10 @@
 
 [![Python](https://img.shields.io/badge/Python-3.13.3-blue.svg)](https://www.python.org/downloads/)
 [![Status](https://img.shields.io/badge/Status-MVP%20Prototype-yellow.svg)](docs/project/PROJECT_STATE.md)
-[![Tests](https://img.shields.io/badge/Tests-441%20passing-green.svg)](tests/)
+[![Tests](https://img.shields.io/badge/Tests-462%20passing-green.svg)](tests/)
 [![Dashboard](https://img.shields.io/badge/Dashboard-Live%20✅-green.svg)](https://osservatorio-dashboard.streamlit.app/)
 [![Security](https://img.shields.io/badge/Security-0%20HIGH%20issues%20🛡️-green.svg)](src/utils/security_enhanced.py)
+[![PowerBI](https://img.shields.io/badge/PowerBI-Enterprise%20Integration-blue.svg)](docs/integrations/POWERBI_INTEGRATION.md)
 [![DuckDB](https://img.shields.io/badge/DuckDB-Analytics%20Engine-blue.svg)](src/database/duckdb/)
 [![SQLite](https://img.shields.io/badge/SQLite-Metadata%20Layer-orange.svg)](src/database/sqlite/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
@@ -64,25 +65,25 @@ python src/api/istat_api.py
 # Convert data for Tableau
 python convert_to_tableau.py
 
-# Convert data for PowerBI
-python convert_to_powerbi.py
+# PowerBI Integration Demo (Enterprise-Ready)
+python examples/powerbi_integration_demo.py
 
-# DuckDB Analytics Demo (High-performance)
+# Validate PowerBI Integration (Offline - 19/19 tests passing)
+python scripts/validate_powerbi_offline.py
+
+# DuckDB Analytics Demo
 python examples/duckdb_demo.py
 
-# SQLite Metadata Management (Day 4 Complete)
+# SQLite Metadata Management
 python examples/sqlite_metadata_demo.py
-
-# Clean temporary files
-python scripts/cleanup_temp_files.py --stats
 ```
 
 ---
 
 ## 🚀 Strategic Architecture (SQLite + DuckDB)
 
-### 🏗️ **Current Architecture (v8.1.0 - Day 4 Complete)**
-Following ADR-002 strategic decision by @Gasta88 insight - **FULLY IMPLEMENTED**:
+### 🏗️ **Current Architecture (v1.1.0)**
+Following ADR-002 strategic decision - dual-database architecture:
 
 ```
 ┌─────────────────────┐     ┌─────────────────────┐
@@ -101,61 +102,34 @@ Following ADR-002 strategic decision by @Gasta88 insight - **FULLY IMPLEMENTED**
 ```
 
 ### ✅ **Current Capabilities**
-
-#### 🎯 **Production Features**
 - **🦆 DuckDB Analytics**: High-performance analytics engine (>2k records/sec)
 - **🗃️ SQLite Metadata**: Lightweight metadata layer (zero configuration)
-- **📊 PowerBI Integration**: Native BI tool support with star schema generation
+- **📊 PowerBI Integration**: Native BI tool support with star schema (19/19 tests passing)
 - **🔐 Enterprise Security**: JWT auth, rate limiting, SQL injection protection
-- **🧪 Comprehensive Testing**: 441 tests, 67% coverage, performance benchmarks
-
-#### 🌐 **Live Demos & UI**
+- **🧪 Comprehensive Testing**: 462 tests, 68% coverage, performance benchmarks
 - **📊 Dashboard**: [osservatorio-dashboard.streamlit.app](https://osservatorio-dashboard.streamlit.app/)
-- **🌐 Landing Page**: [andreabozzo.github.io/Osservatorio](https://andreabozzo.github.io/Osservatorio/)
-- **📱 Responsive Design**: Desktop-optimized with mobile compatibility
-- **🔍 Interactive Features**: Filtering, charts, real-time data processing
-
-#### 🔧 **Data Integration**
 - **🇮🇹 ISTAT API**: Complete SDMX integration (509+ datasets)
 - **📁 Multi-Format Export**: CSV, Excel, Parquet, JSON, PowerBI-optimized
-- **🏷️ Smart Categorization**: AI-powered data classification
-- **⚡ Performance Optimized**: Query caching, bulk operations, indexing strategies
 
-### 🔒 **Enterprise Security** (Day 3 Audit Complete)
+### 🔒 **Enterprise Security**
 - **🛡️ SQL Injection Protection**: Enhanced table name validation, parameterized queries
-- **🔍 Security Audit**: All 23 original vulnerabilities resolved (21 July 2025)
+- **🔍 Security Audit**: 0 HIGH severity issues (bandit scan validated)
 - **⚡ Performance Testing**: 200k+ records/sec with comprehensive regression detection
-- **🧪 Test Coverage**: 45 security-enhanced integration tests, all passing
-
-### 🔨 **Development Tools**
-- **🧪 Test Framework**: 441 tests passing including 45 DuckDB integration tests (pytest 8.3.5 verified)
-- **🔍 Code Quality**: Black, isort, flake8 setup with pre-commit hooks
-- **🚀 CI/CD**: GitHub Actions workflow with automated testing
-- **📋 Documentation**: Comprehensive developer documentation + CONTRIBUTING.md
-- **🛡️ Security**: Enhanced SecurityManager with rate limiting and path validation
-- **🔄 Resilience**: Circuit breaker pattern for external API calls
+- **🧪 Test Coverage**: 462 tests passing including enhanced security integration tests
 
 ## ✅ Current Status
 
-### ⚡ **Performance Metrics** - VALIDATED
+### ⚡ **Performance Metrics**
 - **⚡ Load Times**: <5s dashboard loading (improved from 20-30s)
 - **🔄 Caching**: Smart caching with 30min TTL + DuckDB query caching (>10x speedup)
 - **📊 Database Performance**: >2k records/sec bulk insert validated
 - **📊 API Scalability**: Handles 509+ ISTAT datasets with async loading
 
-### 🔒 **Security & Quality** - AUDIT COMPLETE
-- **🛡️ Security**: Enhanced SecurityManager + 0 HIGH severity issues (bandit scan)
-- **🧪 Test Coverage**: 67% coverage achieved (441 tests, 100% passing - includes SQLite metadata layer)
-- **🚫 Error Handling**: Circuit breaker pattern with graceful degradation
-- **🔒 Path Security**: Directory traversal protection + input sanitization
-
-### ✅ **Recently Completed (Day 4 - SQLite Implementation)**
+### ✅ **Recently Completed**
 - **🗃️ SQLite Metadata Layer**: Complete 6-table schema with thread-safe operations
-- **🔄 Unified Repository**: Facade pattern combining SQLite + DuckDB with intelligent routing
-- **🔐 Enhanced Security**: Fernet encryption for sensitive data, comprehensive audit logging
-- **🧪 Comprehensive Testing**: 40+ new tests (22 unit + 18 integration) with 100% pass rate
-- **📚 Complete Documentation**: Updated API reference, architecture docs, and performance guide
-- **⚡ Zero-config deployment**: File-based databases with automatic schema creation
+- **📊 PowerBI Integration**: 19/19 tests passing, enterprise-ready with star schema optimization
+- **🔐 Enhanced Security**: 0 HIGH severity issues, comprehensive audit logging
+- **🧪 Comprehensive Testing**: 462 tests with 68% coverage (100% pass rate)
 
 ---
 
@@ -217,16 +191,18 @@ Osservatorio/                              # 🏠 Root directory
 │   ├── cleanup_temp_files.py              # File management
 │   ├── legacy/                            # Legacy scripts (4 files)
 │   └── test_ci.py                         # CI/CD utilities
-├── 📋 examples/                           # 📂 Usage examples (3 demo files)
+├── 📋 examples/                           # 📂 Usage examples (4 demo files)
 │   ├── duckdb_demo.py                     # DuckDB analytics demo
 │   ├── duckdb_query_builder_demo.py       # Query Builder advanced usage (826 lines)
+│   ├── powerbi_integration_demo.py        # PowerBI enterprise integration demo
 │   └── sqlite_metadata_demo.py            # SQLite metadata layer demo
-├── 📚 docs/                               # 📂 Documentation (8 Markdown files)
+├── 📚 docs/                               # 📂 Documentation (9+ Markdown files)
 │   ├── README.md                          # Documentation index
-│   ├── ARCHITECTURE.md                    # System architecture
-│   ├── api-mapping.md                     # ISTAT API endpoints
-│   ├── adr/001-database-selection.md      # Architecture Decision Record
-│   ├── api/API_REFERENCE.md               # API documentation
+│   ├── core/ARCHITECTURE.md               # System architecture (1200+ lines)
+│   ├── integrations/POWERBI_INTEGRATION.md # PowerBI enterprise integration guide
+│   ├── api/api-mapping.md                 # ISTAT API endpoints
+│   ├── reference/adr/001-database-selection.md # Architecture Decision Record
+│   ├── core/API_REFERENCE.md              # API documentation
 │   ├── guides/CONTRIBUTING.md             # Contribution guide
 │   ├── guides/DEPLOYMENT_GUIDE.md         # Deployment instructions
 │   ├── guides/STREAMLIT_DEPLOYMENT.md     # Streamlit deployment
@@ -457,11 +433,12 @@ For detailed deployment instructions, see [STREAMLIT_DEPLOYMENT.md](STREAMLIT_DE
 - **Rate Limit**: 50 requests/hour
 - **Format**: SDMX XML
 
-### 📊 PowerBI Service
-- **Authentication**: OAuth 2.0 with Azure AD
-- **Features**: Workspace management, dataset upload
-- **Rate Limit**: 100 requests/hour
-- **Formats**: CSV, Excel, Parquet, JSON
+### 📊 PowerBI Integration (Enterprise-Ready)
+- **Status**: ✅ **Production Ready** - 19/19 tests passing
+- **Features**: Star schema optimization, template generation, incremental refresh, metadata bridge
+- **Templates**: Automated .pbit file generation with Italian localization
+- **Validation**: 100% offline validation without Microsoft credentials
+- **Documentation**: [`docs/integrations/POWERBI_INTEGRATION.md`](docs/integrations/POWERBI_INTEGRATION.md)
 
 ### 📈 Tableau Server
 - **Authentication**: Server credentials
@@ -541,6 +518,13 @@ We're actively seeking contributors for our January 2025 sprint! Check out the [
 - [x] Core data processing pipeline
 - [x] Enhanced security implementation (SecurityManager)
 - [x] Live dashboard deployment (https://osservatorio-dashboard.streamlit.app/)
+- [x] **PowerBI Enterprise Integration** (Production Ready)
+  - [x] PowerBI API Client with MSAL authentication
+  - [x] Star Schema Optimizer for dimensional modeling
+  - [x] Template Generator (.pbit files) with Italian localization
+  - [x] Incremental Refresh Manager with change detection
+  - [x] Metadata Bridge for data governance
+  - [x] 100% offline validation system
 - [x] Expanded test suite (441 tests, 68% coverage)
 - [x] CI/CD pipeline with GitHub Actions
 - [x] Comprehensive documentation + CONTRIBUTING.md
@@ -555,12 +539,20 @@ We're actively seeking contributors for our January 2025 sprint! Check out the [
 - [ ] Complete monitoring implementation
 - [ ] Production-ready error handling
 
-### 🚀 **Phase 3: Scale (Future)**
-- [ ] Improved architecture
-- [ ] Container support
-- [ ] Machine learning integration
-- [ ] Real-time processing
-- [ ] Advanced features
+### 🚀 **Phase 3: Advanced Analytics (Q4 2025)**
+- [ ] **Tableau Integration**: Server API, Hyper files, workbook automation
+- [ ] **Qlik Integration**: QlikSense apps, associative models, script templates
+- [ ] **Advanced PowerBI Features**: Custom visuals, real-time refresh, ML integration
+- [ ] **Multi-Platform Analytics**: Unified analytics engine across BI tools
+- [ ] **Predictive Analytics**: Quality score prediction, trend analysis
+- [ ] **Natural Language Queries**: AI-powered data exploration
+
+### 🔧 **Phase 4: Enterprise Scale (2026)**
+- [ ] Container orchestration (Kubernetes)
+- [ ] Microservices architecture
+- [ ] Real-time data streaming
+- [ ] Advanced governance & compliance
+- [ ] Multi-tenant support
 
 ---
 
@@ -600,9 +592,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📊 Project Stats
 
-- **🐍 Python Files**: 18 core modules + 23 test files (verified scan)
-- **🧪 Total Tests**: 292 comprehensive tests with 100% pass rate
-- **📊 Test Coverage**: 57% achieved, targeting 70%
+- **🐍 Python Files**: 25+ core modules + 34 test files
+- **🧪 Total Tests**: 462 comprehensive tests with 100% pass rate
+- **📊 Test Coverage**: 68% achieved, targeting 70%
 - **🔒 Security Features**: Enhanced SecurityManager with rate limiting
 - **📚 Documentation**: 8 Markdown files with structured guides
 - **🌟 GitHub Integration**: Active CI/CD with automated testing
@@ -616,4 +608,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **🎯 Ready to explore Italian statistical data? Start with our [live dashboard](https://osservatorio-dashboard.streamlit.app/) or follow the [quick start guide](#-quick-start)!**
 
-**📈 Status**: 🔄 **Working Prototype** | ✅ **Actively Maintained** | 🚀 **Open Source** | 📊 **Live Dashboard** | 🧪 **292 Tests**
+**📈 Status**: 🔄 **Working Prototype** | ✅ **Actively Maintained** | 🚀 **Open Source** | 📊 **Live Dashboard** | 🧪 **462 Tests**

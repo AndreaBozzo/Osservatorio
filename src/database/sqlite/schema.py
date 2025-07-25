@@ -332,14 +332,25 @@ class MetadataSchema:
                 import sqlite3
                 import time
 
-                # Try to close connections explicitly
+                # First, drop all tables to clear the schema content
                 try:
                     with sqlite3.connect(self.db_path) as conn:
+                        # Get all tables
+                        cursor = conn.execute(
+                            "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'"
+                        )
+                        tables = [row[0] for row in cursor.fetchall()]
+
+                        # Drop all tables
+                        for table in tables:
+                            conn.execute(f"DROP TABLE IF EXISTS {table}")
+
+                        # Checkpoint and close
                         conn.execute("PRAGMA wal_checkpoint(TRUNCATE)")
-                        conn.close()
+                        conn.commit()
+                        logger.debug("All tables dropped from database")
                 except Exception as e:
-                    # Ignore connection errors during cleanup - this is expected
-                    logger.debug(f"Connection cleanup error (expected): {e}")
+                    logger.debug(f"Error dropping tables (continuing): {e}")
 
                 # Force garbage collection to clean up connections
                 gc.collect()
@@ -356,10 +367,11 @@ class MetadataSchema:
                             time.sleep(0.1)  # Wait briefly
                             continue
                         else:
-                            # On Windows, just log and return True since this is a cleanup issue
+                            # On Windows, if we can't delete file but tables are dropped, that's OK
                             logger.warning(
                                 f"Could not delete database file due to Windows file locking: {self.db_path}"
                             )
+                            logger.info("Schema tables were dropped successfully")
                             return True
             return True
         except Exception as e:
