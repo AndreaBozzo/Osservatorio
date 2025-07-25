@@ -624,7 +624,8 @@ We're actively seeking contributors for our January 2025 sprint! Check out the [
   - [Security Policy](https://github.com/AndreaBozzo/Osservatorio/wiki/Security-Policy) - Security guidelines
 
 ### 📧 Contact
-- **Project Maintainer**: Andrea Bozzo
+- **Project Lead**: Andrea Bozzo
+- **Main Collaborator**: @Gasta88
 - **Email**: [Contact via GitHub](https://github.com/AndreaBozzo)
 - **Website**: [Live Dashboard](https://osservatorio-dashboard.streamlit.app/)
 

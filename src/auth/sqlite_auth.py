@@ -81,7 +81,7 @@ class SQLiteAuthManager:
                         # Column already exists
                         pass
 
-                # Create refresh tokens table
+                # Create refresh tokens table (if not already created by JWT manager)
                 cursor.execute(
                     """
                     CREATE TABLE IF NOT EXISTS refresh_tokens (
@@ -89,8 +89,9 @@ class SQLiteAuthManager:
                         api_key_id INTEGER NOT NULL,
                         token_hash TEXT NOT NULL UNIQUE,
                         expires_at TIMESTAMP NOT NULL,
-                        is_revoked BOOLEAN DEFAULT 0,
+                        is_revoked INTEGER DEFAULT 0,
                         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        revoked_at TIMESTAMP NULL,
                         FOREIGN KEY (api_key_id) REFERENCES api_credentials (id)
                     )
                 """
@@ -151,7 +152,7 @@ class SQLiteAuthManager:
 
             # Calculate expiration
             expires_at = None
-            if expires_days:
+            if expires_days is not None:
                 expires_at = datetime.now() + timedelta(days=expires_days)
 
             # Store in database
@@ -199,6 +200,9 @@ class SQLiteAuthManager:
                 created_at=datetime.now(),
             )
 
+        except ValueError:
+            # Re-raise validation errors as-is
+            raise
         except Exception as e:
             logger.error(f"Failed to generate API key: {e}")
             raise RuntimeError(f"API key generation failed: {e}")
