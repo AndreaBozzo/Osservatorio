@@ -240,8 +240,9 @@ pytest -m fastapi
 ## Quality Metrics
 
 ### Current Test Coverage
-- **Total Tests**: 441 tests
+- **Total Tests**: 491 tests
 - **Success Rate**: 100% (0 failures)
+- **Code Coverage**: 70.34% overall
 - **Teardown Errors**: 0 (eliminated 33+ Windows file locking errors)
 - **Unit Tests**: 22 SQLite metadata tests, 45 DuckDB integration tests
 - **Integration Tests**: 18 unified repository tests
