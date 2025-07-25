@@ -19,6 +19,7 @@ import hashlib
 import secrets
 import sqlite3
 import tempfile
+import time
 import unittest
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -52,7 +53,23 @@ class TestAPIKeyManagement(unittest.TestCase):
 
     def tearDown(self):
         """Clean up test database"""
-        Path(self.temp_db.name).unlink(missing_ok=True)
+        # Close database connections properly
+        self.sqlite_manager.close_connections()
+
+        # Wait for Windows to release file locks
+        time.sleep(0.1)
+
+        # Retry file deletion with timeout
+        for attempt in range(5):
+            try:
+                Path(self.temp_db.name).unlink(missing_ok=True)
+                break
+            except PermissionError:
+                if attempt < 4:
+                    time.sleep(0.2)
+                else:
+                    # If we can't delete, at least log it
+                    print(f"Warning: Could not delete {self.temp_db.name}")
 
     def test_generate_api_key_success(self):
         """Test successful API key generation"""
@@ -200,7 +217,23 @@ class TestJWTManager(unittest.TestCase):
 
     def tearDown(self):
         """Clean up test database"""
-        Path(self.temp_db.name).unlink(missing_ok=True)
+        # Close database connections properly
+        self.sqlite_manager.close_connections()
+
+        # Wait for Windows to release file locks
+        time.sleep(0.1)
+
+        # Retry file deletion with timeout
+        for attempt in range(5):
+            try:
+                Path(self.temp_db.name).unlink(missing_ok=True)
+                break
+            except PermissionError:
+                if attempt < 4:
+                    time.sleep(0.2)
+                else:
+                    # If we can't delete, at least log it
+                    print(f"Warning: Could not delete {self.temp_db.name}")
 
     def test_create_access_token(self):
         """Test JWT access token creation"""
@@ -309,7 +342,23 @@ class TestRateLimiter(unittest.TestCase):
 
     def tearDown(self):
         """Clean up test database"""
-        Path(self.temp_db.name).unlink(missing_ok=True)
+        # Close database connections properly
+        self.sqlite_manager.close_connections()
+
+        # Wait for Windows to release file locks
+        time.sleep(0.1)
+
+        # Retry file deletion with timeout
+        for attempt in range(5):
+            try:
+                Path(self.temp_db.name).unlink(missing_ok=True)
+                break
+            except PermissionError:
+                if attempt < 4:
+                    time.sleep(0.2)
+                else:
+                    # If we can't delete, at least log it
+                    print(f"Warning: Could not delete {self.temp_db.name}")
 
     def test_rate_limit_allow_first_request(self):
         """Test that first request is allowed"""
@@ -460,7 +509,23 @@ class TestAuthenticationIntegration(unittest.TestCase):
 
     def tearDown(self):
         """Clean up test database"""
-        Path(self.temp_db.name).unlink(missing_ok=True)
+        # Close database connections properly
+        self.sqlite_manager.close_connections()
+
+        # Wait for Windows to release file locks
+        time.sleep(0.1)
+
+        # Retry file deletion with timeout
+        for attempt in range(5):
+            try:
+                Path(self.temp_db.name).unlink(missing_ok=True)
+                break
+            except PermissionError:
+                if attempt < 4:
+                    time.sleep(0.2)
+                else:
+                    # If we can't delete, at least log it
+                    print(f"Warning: Could not delete {self.temp_db.name}")
 
     def test_full_api_key_authentication_flow(self):
         """Test complete API key authentication flow"""

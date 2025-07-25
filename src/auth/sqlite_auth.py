@@ -335,23 +335,27 @@ class SQLiteAuthManager:
                 cursor = conn.cursor()
 
                 if include_revoked:
-                    where_clause = "WHERE key_prefix = ?"
+                    query = """
+                        SELECT id, service_name, scopes_json, name, is_active,
+                               expires_at, last_used, usage_count, rate_limit,
+                               created_at, updated_at, revoked_at
+                        FROM api_credentials
+                        WHERE key_prefix = ?
+                        ORDER BY created_at DESC
+                    """
                     params = (self.KEY_PREFIX,)
                 else:
-                    where_clause = "WHERE key_prefix = ? AND is_active = 1"
+                    query = """
+                        SELECT id, service_name, scopes_json, name, is_active,
+                               expires_at, last_used, usage_count, rate_limit,
+                               created_at, updated_at, revoked_at
+                        FROM api_credentials
+                        WHERE key_prefix = ? AND is_active = 1
+                        ORDER BY created_at DESC
+                    """
                     params = (self.KEY_PREFIX,)
 
-                cursor.execute(
-                    f"""
-                    SELECT id, service_name, scopes_json, name, is_active,
-                           expires_at, last_used, usage_count, rate_limit,
-                           created_at, updated_at, revoked_at
-                    FROM api_credentials
-                    {where_clause}
-                    ORDER BY created_at DESC
-                """,
-                    params,
-                )
+                cursor.execute(query, params)
 
                 keys = []
                 for row in cursor.fetchall():
