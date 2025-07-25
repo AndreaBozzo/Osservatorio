@@ -4,6 +4,7 @@ Main Streamlit App Entry Point
 Direct entry point for Streamlit Cloud without subdirectory complications
 """
 
+import gc
 import os
 import sys
 import time
@@ -338,10 +339,47 @@ def create_sample_data():
     }
 
 
-@st.cache_data(ttl=1800)
+@st.cache_data(ttl=1800, max_entries=3)
 def load_data():
-    """Carica i dati con cache"""
+    """Carica i dati con cache ottimizzata"""
     return create_sample_data()
+
+
+@st.cache_data(ttl=3600, max_entries=10)
+def get_filtered_data(category, year_start, year_end):
+    """Cache separata per dati filtrati per ridurre memory leaks"""
+    datasets = load_data()
+    if category not in datasets:
+        return pd.DataFrame()
+
+    df = datasets[category]
+    df["TIME_PERIOD"] = df["TIME_PERIOD"].astype(int)
+    return df[
+        (df["TIME_PERIOD"] >= year_start) & (df["TIME_PERIOD"] <= year_end)
+    ].copy()
+
+
+@st.cache_data(ttl=7200, max_entries=5)
+def calculate_metrics(df):
+    """Cache per calcoli metriche per evitare ricomputazioni"""
+    if df.empty:
+        return {"latest": 0, "growth": 0, "avg": 0, "quality": 0}
+
+    latest_value = df["Value"].iloc[-1]
+    growth = 0
+    if len(df) > 1:
+        growth = (
+            (df["Value"].iloc[-1] - df["Value"].iloc[-2]) / df["Value"].iloc[-2] * 100
+        )
+    avg_value = df["Value"].mean()
+    data_quality = df["Value"].notna().sum() / len(df) * 100
+
+    return {
+        "latest": latest_value,
+        "growth": growth,
+        "avg": avg_value,
+        "quality": data_quality,
+    }
 
 
 def render_header():
@@ -477,10 +515,13 @@ def render_sidebar():
     """
     )
 
-    # Quick actions
+    # Quick actions con memoria ottimizzata
     st.sidebar.subheader("⚡ Azioni Rapide")
     if st.sidebar.button("🔄 Ricarica Dati", help="Aggiorna i dati dalla cache"):
-        st.cache_data.clear()
+        # Clear solo cache specifiche invece di tutto
+        load_data.clear()
+        get_filtered_data.clear()
+        calculate_metrics.clear()
         st.rerun()
 
     # Info sul filtro temporale
@@ -501,6 +542,81 @@ def render_sidebar():
     return category, year_range
 
 
+@st.cache_data(ttl=3600, max_entries=15)
+def create_time_series_chart(df, category, info):
+    """Crea grafico temporale con cache ottimizzata"""
+    fig_line = px.line(
+        df,
+        x="TIME_PERIOD",
+        y="Value",
+        title=f"Andamento {category.title()} nel Tempo",
+        color_discrete_sequence=[info["color"]],
+        markers=True,
+    )
+    fig_line.update_layout(
+        plot_bgcolor="rgba(0,0,0,0)",
+        paper_bgcolor="rgba(0,0,0,0)",
+        font=dict(size=14, family="Inter"),
+        title_font=dict(size=18, family="Inter"),
+        xaxis=dict(title=dict(text="Anno", font=dict(size=14))),
+        yaxis=dict(title=dict(text="Valore", font=dict(size=14))),
+        hovermode="x unified",
+        margin=dict(l=20, r=20, t=60, b=20),
+    )
+    fig_line.update_traces(
+        line=dict(width=3), marker=dict(size=8, line=dict(width=2, color="white"))
+    )
+    return fig_line
+
+
+@st.cache_data(ttl=3600, max_entries=15)
+def create_bar_chart(df, category, info):
+    """Crea grafico a barre con cache ottimizzata"""
+    fig_bar = px.bar(
+        df,
+        x="TIME_PERIOD",
+        y="Value",
+        title=f"Valori {category.title()} per Anno",
+        color="Value",
+        color_continuous_scale="Viridis",
+    )
+    fig_bar.update_layout(
+        plot_bgcolor="rgba(0,0,0,0)",
+        paper_bgcolor="rgba(0,0,0,0)",
+        font=dict(size=14, family="Inter"),
+        title_font=dict(size=18, family="Inter"),
+        xaxis=dict(title=dict(text="Anno", font=dict(size=14))),
+        yaxis=dict(title=dict(text="Valore", font=dict(size=14))),
+        margin=dict(l=20, r=20, t=60, b=20),
+        showlegend=False,
+    )
+    fig_bar.update_traces(marker_line_color="rgba(0,0,0,0.1)", marker_line_width=1)
+    return fig_bar
+
+
+@st.cache_data(ttl=3600, max_entries=15)
+def create_area_chart(df, category, info):
+    """Crea grafico ad area con cache ottimizzata"""
+    fig_area = px.area(
+        df,
+        x="TIME_PERIOD",
+        y="Value",
+        title=f"Area di Trend - {category.title()}",
+        color_discrete_sequence=[info["color"]],
+    )
+    fig_area.update_layout(
+        plot_bgcolor="rgba(0,0,0,0)",
+        paper_bgcolor="rgba(0,0,0,0)",
+        font=dict(size=14, family="Inter"),
+        title_font=dict(size=18, family="Inter"),
+        xaxis=dict(title=dict(text="Anno", font=dict(size=14))),
+        yaxis=dict(title=dict(text="Valore", font=dict(size=14))),
+        margin=dict(l=20, r=20, t=60, b=20),
+    )
+    fig_area.update_traces(fill="tonexty", line=dict(width=2))
+    return fig_area
+
+
 def render_category_dashboard(category, datasets, year_range):
     """Render della dashboard per una categoria - Desktop optimized with functional filters"""
     if category not in datasets:
@@ -511,12 +627,9 @@ def render_category_dashboard(category, datasets, year_range):
     df_original = datasets[category]
     info = CATEGORIES[category]
 
-    # Apply year filter
-    df_original["TIME_PERIOD"] = df_original["TIME_PERIOD"].astype(int)
-    df = df_original[
-        (df_original["TIME_PERIOD"] >= year_range[0])
-        & (df_original["TIME_PERIOD"] <= year_range[1])
-    ].copy()
+    # Usa cache ottimizzata per dati filtrati
+    df = get_filtered_data(category, year_range[0], year_range[1])
+    df_original = datasets[category]  # Solo per confronto dimensioni
 
     # Show filter info if data is filtered
     if len(df) != len(df_original):
@@ -546,45 +659,38 @@ def render_category_dashboard(category, datasets, year_range):
         unsafe_allow_html=True,
     )
 
-    # Key metrics row
+    # Key metrics row con cache ottimizzata
+    metrics = calculate_metrics(df)
     col1, col2, col3, col4 = st.columns(4)
 
     with col1:
-        latest_value = df["Value"].iloc[-1] if not df.empty else 0
         if category == "popolazione":
-            st.metric("🏠 Valore Attuale", f"{latest_value:,.0f}", "abitanti")
+            st.metric("🏠 Valore Attuale", f"{metrics['latest']:,.0f}", "abitanti")
         elif category == "economia":
-            st.metric("💰 PIL Attuale", f"{latest_value/1000:.1f}B", "EUR")
+            st.metric("💰 PIL Attuale", f"{metrics['latest']/1000:.1f}B", "EUR")
         else:
-            st.metric("📊 Valore Attuale", f"{latest_value:.1f}%", "tasso")
+            st.metric("📊 Valore Attuale", f"{metrics['latest']:.1f}%", "tasso")
 
     with col2:
-        if len(df) > 1:
-            growth = (
-                (df["Value"].iloc[-1] - df["Value"].iloc[-2])
-                / df["Value"].iloc[-2]
-                * 100
-            )
+        if metrics["growth"] != 0:
             st.metric(
-                "📈 Variazione Annua", f"{growth:+.2f}%", "rispetto all'anno precedente"
+                "📈 Variazione Annua",
+                f"{metrics['growth']:+.2f}%",
+                "rispetto all'anno precedente",
             )
         else:
             st.metric("📈 Variazione", "N/A", "dati insufficienti")
 
     with col3:
-        avg_value = df["Value"].mean() if not df.empty else 0
         if category == "popolazione":
-            st.metric("📊 Media Periodo", f"{avg_value:,.0f}", "abitanti")
+            st.metric("📊 Media Periodo", f"{metrics['avg']:,.0f}", "abitanti")
         elif category == "economia":
-            st.metric("📊 Media Periodo", f"{avg_value/1000:.1f}B", "EUR")
+            st.metric("📊 Media Periodo", f"{metrics['avg']/1000:.1f}B", "EUR")
         else:
-            st.metric("📊 Media Periodo", f"{avg_value:.1f}%", "tasso")
+            st.metric("📊 Media Periodo", f"{metrics['avg']:.1f}%", "tasso")
 
     with col4:
-        data_quality = (
-            (df["Value"].notna().sum() / len(df) * 100) if not df.empty else 0
-        )
-        st.metric("✅ Qualità Dati", f"{data_quality:.0f}%", "completezza")
+        st.metric("✅ Qualità Dati", f"{metrics['quality']:.0f}%", "completezza")
 
     # Enhanced charts with better layout
     st.markdown("### 📈 Visualizzazioni")
@@ -595,73 +701,22 @@ def render_category_dashboard(category, datasets, year_range):
     )
 
     with tab1:
-        # Enhanced time series chart
-        fig_line = px.line(
-            df,
-            x="TIME_PERIOD",
-            y="Value",
-            title=f"Andamento {category.title()} nel Tempo (2020-2024)",
-            color_discrete_sequence=[info["color"]],
-            markers=True,
-        )
-        fig_line.update_layout(
-            plot_bgcolor="rgba(0,0,0,0)",
-            paper_bgcolor="rgba(0,0,0,0)",
-            font=dict(size=14, family="Inter"),
-            title_font=dict(size=18, family="Inter"),
-            xaxis=dict(title=dict(text="Anno", font=dict(size=14))),
-            yaxis=dict(title=dict(text="Valore", font=dict(size=14))),
-            hovermode="x unified",
-            margin=dict(l=20, r=20, t=60, b=20),
-        )
-        fig_line.update_traces(
-            line=dict(width=3), marker=dict(size=8, line=dict(width=2, color="white"))
-        )
-        st.plotly_chart(fig_line, use_container_width=True, height=400)
+        # Lazy loading per time series chart
+        with st.spinner("Generazione grafico temporale..."):
+            fig_line = create_time_series_chart(df, category, info)
+            st.plotly_chart(fig_line, use_container_width=True, height=400)
 
     with tab2:
-        # Enhanced bar chart
-        fig_bar = px.bar(
-            df,
-            x="TIME_PERIOD",
-            y="Value",
-            title=f"Valori {category.title()} per Anno",
-            color="Value",
-            color_continuous_scale="Viridis",
-        )
-        fig_bar.update_layout(
-            plot_bgcolor="rgba(0,0,0,0)",
-            paper_bgcolor="rgba(0,0,0,0)",
-            font=dict(size=14, family="Inter"),
-            title_font=dict(size=18, family="Inter"),
-            xaxis=dict(title=dict(text="Anno", font=dict(size=14))),
-            yaxis=dict(title=dict(text="Valore", font=dict(size=14))),
-            margin=dict(l=20, r=20, t=60, b=20),
-            showlegend=False,
-        )
-        fig_bar.update_traces(marker_line_color="rgba(0,0,0,0.1)", marker_line_width=1)
-        st.plotly_chart(fig_bar, use_container_width=True, height=400)
+        # Lazy loading per bar chart
+        with st.spinner("Generazione grafico a barre..."):
+            fig_bar = create_bar_chart(df, category, info)
+            st.plotly_chart(fig_bar, use_container_width=True, height=400)
 
     with tab3:
-        # Area chart for trend analysis
-        fig_area = px.area(
-            df,
-            x="TIME_PERIOD",
-            y="Value",
-            title=f"Area di Trend - {category.title()}",
-            color_discrete_sequence=[info["color"]],
-        )
-        fig_area.update_layout(
-            plot_bgcolor="rgba(0,0,0,0)",
-            paper_bgcolor="rgba(0,0,0,0)",
-            font=dict(size=14, family="Inter"),
-            title_font=dict(size=18, family="Inter"),
-            xaxis=dict(title=dict(text="Anno", font=dict(size=14))),
-            yaxis=dict(title=dict(text="Valore", font=dict(size=14))),
-            margin=dict(l=20, r=20, t=60, b=20),
-        )
-        fig_area.update_traces(fill="tonexty", line=dict(width=2))
-        st.plotly_chart(fig_area, use_container_width=True, height=400)
+        # Lazy loading per area chart
+        with st.spinner("Generazione grafico ad area..."):
+            fig_area = create_area_chart(df, category, info)
+            st.plotly_chart(fig_area, use_container_width=True, height=400)
 
     # Enhanced data table with better formatting
     st.markdown("### 📋 Dati Dettagliati")
@@ -710,9 +765,32 @@ def render_category_dashboard(category, datasets, year_range):
             st.write("Nessun dato disponibile")
 
 
+def cleanup_memory():
+    """Pulizia memoria per prevenire memory leaks"""
+    gc.collect()
+
+
+def get_memory_usage():
+    """Ottiene l'uso della memoria per monitoraggio"""
+    import psutil
+
+    try:
+        process = psutil.Process(os.getpid())
+        return process.memory_info().rss / 1024 / 1024  # MB
+    except:
+        return 0
+
+
 def main():
     """Funzione principale dell'app"""
     try:
+        # Memory monitoring per debugging
+        if st.sidebar.checkbox(
+            "🔧 Debug Memory", help="Mostra uso memoria per troubleshooting"
+        ):
+            memory_usage = get_memory_usage()
+            st.sidebar.metric("💾 Memoria (MB)", f"{memory_usage:.1f}")
+
         # Header
         render_header()
 
@@ -726,6 +804,8 @@ def main():
         # Main dashboard
         if datasets:
             render_category_dashboard(selected_category, datasets, year_range)
+            # Cleanup dopo rendering per liberare memoria
+            cleanup_memory()
         else:
             st.error("Nessun dataset disponibile")
 
@@ -733,9 +813,19 @@ def main():
         st.markdown("---")
         st.markdown("Made with ❤️ in Italy | Powered by Streamlit")
 
+        # Cache status per debugging
+        if st.sidebar.checkbox("📊 Cache Status", help="Mostra stato cache"):
+            st.sidebar.write("**Cache attive:**")
+            st.sidebar.write("- load_data")
+            st.sidebar.write("- get_filtered_data")
+            st.sidebar.write("- calculate_metrics")
+            st.sidebar.write("- chart functions")
+
     except Exception as e:
         st.error(f"Errore nell'applicazione: {str(e)}")
         st.info("Ricarica la pagina per riprovare")
+        # Cleanup anche in caso di errore
+        cleanup_memory()
 
 
 if __name__ == "__main__":
