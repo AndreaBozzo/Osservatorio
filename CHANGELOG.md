@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### 🚀 **Performance Improvements**
+- **Dashboard Memory Optimization** - Fixed issue #4 with comprehensive memory management
+  - Multi-level caching with max_entries to prevent memory leaks
+  - Lazy loading for charts with loading indicators
+  - Separate cache functions for filtered data and metrics calculations
+  - Memory cleanup with garbage collection after rendering
+  - Debug tools for memory monitoring and cache status
+  - Selective cache clearing instead of full cache flush
+  - Performance optimizations for DataFrame operations
+
+### 📚 **Documentation Updates**
+- **API Mapping Documentation** - Updated docs/api/api-mapping.md to include other datasets
+- **README Updates** - Modified readme to ensure realism and transparency
+- **PowerBI Template Lessons** - Document failed PBIT approach learnings
+- **Test Metrics Updates** - Updated test coverage metrics across documentation (491 tests, 70.34% coverage)
+
+---
+
 ## [9.0.0] - 2025-07-25 - Day 7 Complete: JWT Authentication System
 
 ### ✨ **Added (Day 7: Enterprise JWT Authentication & Security)**
