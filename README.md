@@ -364,6 +364,25 @@ is_allowed = security.rate_limit(\"user_123\", max_requests=100, window=3600)
 clean_input = security.sanitize_input(user_input)
 ```
 
+### 🔐 JWT Authentication System
+```python
+from src.auth import SQLiteAuthManager, JWTManager
+
+# Initialize authentication
+auth_manager = SQLiteAuthManager(sqlite_manager)
+jwt_manager = JWTManager(sqlite_manager)
+
+# Generate API key
+api_key = auth_manager.generate_api_key("MyApp", ["read", "write"])
+
+# Create JWT token
+token = jwt_manager.create_access_token(api_key)
+
+# CLI Management
+# python scripts/generate_api_key.py create --name "MyApp" --scopes read,write
+```
+For full documentation see [docs/security/AUTHENTICATION.md](docs/security/AUTHENTICATION.md)
+
 ### 🔄 Circuit Breaker
 ```python
 from src.utils.circuit_breaker import circuit_breaker

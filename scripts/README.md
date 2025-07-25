@@ -2,6 +2,87 @@
 
 Collezione di script per automatizzare tasks comuni del progetto.
 
+## 🔐 generate_api_key.py
+
+Script CLI per gestire l'autenticazione JWT e API keys del sistema Osservatorio.
+
+### ✨ Features
+- **🔑 API Key Management**: Crea, lista, revoca API keys
+- **🎫 JWT Integration**: Integrazione completa con JWT tokens
+- **📊 Statistics**: Visualizza statistiche d'uso
+- **🧹 Cleanup**: Pulizia tokens scaduti
+- **🔍 Testing**: Test validazione API keys
+
+### 🔧 Setup
+```bash
+# Installa dipendenze
+pip install bcrypt PyJWT cryptography
+
+# Assicurati che il database SQLite sia configurato
+python -c "from src.auth import SQLiteAuthManager; print('✅ Auth system ready')"
+```
+
+### 📖 Usage
+
+#### Crea API Key
+```bash
+# Basic API key
+python scripts/generate_api_key.py create --name "MyApp" --scopes read,write
+
+# Con scadenza
+python scripts/generate_api_key.py create --name "Analytics" --scopes read,analytics --expires-days 30
+
+# Admin key
+python scripts/generate_api_key.py create --name "Admin" --scopes admin
+```
+
+#### Lista API Keys
+```bash
+# Solo keys attive
+python scripts/generate_api_key.py list
+
+# Include keys revocate
+python scripts/generate_api_key.py list --include-revoked
+```
+
+#### Revoca API Key
+```bash
+python scripts/generate_api_key.py revoke --id 123 --reason "Security breach"
+```
+
+#### Test API Key
+```bash
+python scripts/generate_api_key.py test --key osv_your_key_here
+```
+
+#### Statistiche
+```bash
+python scripts/generate_api_key.py stats
+```
+
+#### Cleanup
+```bash
+python scripts/generate_api_key.py cleanup
+```
+
+### 🏷️ Available Scopes
+- `read` - Lettura dati (default)
+- `write` - Scrittura dati
+- `admin` - Amministrazione sistema
+- `analytics` - Accesso analytics avanzate
+- `powerbi` - Integrazione PowerBI
+- `tableau` - Integrazione Tableau
+
+### 💡 Tips
+- Le API keys hanno formato `osv_` + 32 caratteri
+- Usa `--expires-days` per keys temporanee
+- Il comando `cleanup` rimuove tokens scaduti automaticamente
+- Usa `test` per verificare validità keys prima dell'uso
+
+Per documentazione completa: [docs/security/AUTHENTICATION.md](../docs/security/AUTHENTICATION.md)
+
+---
+
 ## 🚀 create-issue.sh
 
 Script rapido e intuitivo per creare GitHub issues, creato specificamente per @Gasta88.

@@ -651,6 +651,44 @@ with sqlite_mgr.get_connection() as conn:
     print(f"Tables: {[t[0] for t in tables]}")
 ```
 
+#### 6. Testing and Cleanup Issues
+
+**Problem**: `ResourceWarning: unclosed database` or `PermissionError` in tests
+
+**Solutions**:
+```python
+# Ensure proper database cleanup in tests
+def tearDown(self):
+    # Close all database connections
+    self.sqlite_manager.close_connections()
+
+    # Wait for Windows file locks (if needed)
+    import time
+    time.sleep(0.1)
+
+    # Retry file deletion with timeout
+    for attempt in range(5):
+        try:
+            Path(self.temp_db.name).unlink(missing_ok=True)
+            break
+        except PermissionError:
+            if attempt < 4:
+                time.sleep(0.2)
+```
+
+**Problem**: `cannot start a transaction within a transaction`
+
+**Solutions**:
+The SQLiteMetadataManager automatically handles nested transactions:
+```python
+# This is now safe - nested transactions are handled automatically
+with manager.transaction() as conn1:
+    # First level transaction
+    with manager.transaction() as conn2:
+        # Nested transaction - automatically reuses existing transaction
+        pass
+```
+
 ### Debug Mode
 
 Enable debug logging for detailed troubleshooting:
@@ -704,3 +742,5 @@ auth_result = auth_middleware.authenticate_request(headers, ip, endpoint)
 **Security Audit Status**: ✅ Passed (July 2025)
 **Penetration Test**: ✅ Passed (No critical vulnerabilities)
 **Code Security Scan**: ✅ Passed (Bandit, Semgrep)
+**SQL Injection Scan**: ✅ Passed (All parameterized queries)
+**Transaction Safety**: ✅ Verified (Nested transaction handling)
