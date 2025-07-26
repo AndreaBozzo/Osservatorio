@@ -420,7 +420,9 @@ class IstatAPITester:
 
                 # Valori con caratteri speciali e accenti
                 if len(df) > 0:
-                    special_char_count = df[col].str.contains("[^\w\s]", regex=True).sum()
+                    # Versione ISTAT-friendly:
+                    special_char_pattern = r'[^\w\s\.\-\+\(\)àèéìíîòóùú/\']'
+                    special_char_count = df[col].str.contains(special_char_pattern, regex=True).sum()
                     quality_report["special_char_count"][col] = {
                         "count": int(special_char_count),
                         "percentage": round((special_char_count / len(df)) * 100, 2),
