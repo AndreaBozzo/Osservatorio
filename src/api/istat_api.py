@@ -391,6 +391,7 @@ class IstatAPITester:
                 "missing_values": {},
                 "data_types": {},
                 "type_mismatch_count": {},
+                "special_char_count": {},
                 "unique_values": {},
                 "quality_score": 0,
             }
@@ -415,6 +416,16 @@ class IstatAPITester:
                     quality_report["type_mismatch_count"][col] = {
                         "count": int(type_mismatch_count),
                         "percentage": round((type_mismatch_count / len(df)) * 100, 2),
+                    }
+
+                # Valori con caratteri speciali e accenti
+                if len(df) > 0:
+                    # Versione ISTAT-friendly:
+                    special_char_pattern = r'[^\w\s\.\-\+\(\)àèéìíîòóùú/\']'
+                    special_char_count = df[col].str.contains(special_char_pattern, regex=True).sum()
+                    quality_report["special_char_count"][col] = {
+                        "count": int(special_char_count),
+                        "percentage": round((special_char_count / len(df)) * 100, 2),
                     }
 
                 # Valori unici (se ragionevole)
