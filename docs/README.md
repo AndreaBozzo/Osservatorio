@@ -7,7 +7,7 @@
 ### 📖 Getting Started
 - **[Quick Start Guide](GETTING_STARTED.md)** - Setup in 5 minutes
 - **[Development Guide](guides/DEVELOPMENT.md)** - Contributor workflow
-- **[Testing Guide](guides/TESTING.md)** - 441 tests, 68% coverage
+- **[Testing Guide](../TESTING.md)** - 491 tests, 70.34% coverage
 
 ### 🏗️ Core Documentation
 - **[Architecture](core/ARCHITECTURE.md)** - SQLite + DuckDB design
@@ -44,7 +44,7 @@
 | Component | Status | Coverage | Performance |
 |-----------|--------|----------|-------------|
 | **DuckDB Engine** | ✅ Complete | 85% | >2k records/sec |
-| **Test Suite** | ✅ 441 tests | 68% total | 100% pass rate |
+| **Test Suite** | ✅ 491 tests | 70.34% total | 100% pass rate |
 | **Security** | ✅ Audited | 100% | 0 HIGH issues |
 | **Documentation** | 🔄 85% | Updating | User-friendly |
 | **SQLite Layer** | ⏳ Next | Planned | <10ms target |

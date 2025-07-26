@@ -106,20 +106,43 @@ class SQLiteMetadataManager:
     def transaction(self):
         """Context manager for database transactions."""
         conn = self._get_connection()
+
+        # Check if we're already in a transaction
+        in_transaction = conn.in_transaction
+
         try:
-            conn.execute("BEGIN")
+            if not in_transaction:
+                conn.execute("BEGIN")
+
             yield conn
-            conn.commit()
+
+            if not in_transaction:
+                conn.commit()
         except Exception as e:
-            conn.rollback()
-            logger.error(f"Transaction rolled back: {e}")
+            if not in_transaction:
+                conn.rollback()
+                logger.error(f"Transaction rolled back: {e}")
+            else:
+                logger.warning(f"Error in nested transaction: {e}")
             raise
 
     def close_connections(self):
         """Close all database connections."""
-        if hasattr(self._thread_local, "connection"):
-            self._thread_local.connection.close()
-            delattr(self._thread_local, "connection")
+        with self._lock:
+            # Close thread-local connection
+            if hasattr(self._thread_local, "connection"):
+                self._thread_local.connection.close()
+                delattr(self._thread_local, "connection")
+
+            # Close any connections in pool
+            for conn in self._connection_pool.values():
+                if conn:
+                    conn.close()
+            self._connection_pool.clear()
+
+            # Close schema connections if it has any
+            if hasattr(self.schema, "close_connections"):
+                self.schema.close_connections()
 
     # Dataset Registry Operations
 

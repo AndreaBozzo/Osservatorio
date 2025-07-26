@@ -59,6 +59,15 @@ This document outlines the comprehensive testing strategy for the Osservatorio I
 - `test_tableau_api.py` & `test_tableau_converter.py`: Tableau integration
 - `test_converters.py`: Data transformation utilities
 
+#### Authentication and Security (Day 7)
+- `test_auth_system.py`: JWT authentication and API keys
+  - SQLite-based authentication manager
+  - JWT token generation and validation
+  - API key management with scopes
+  - Rate limiting with SQLite tracking
+  - Security middleware validation
+  - Session management and token blacklisting
+
 ### 2. Integration Tests (`tests/integration/`)
 
 #### Unified Repository Testing (`test_unified_repository.py`)
@@ -118,6 +127,18 @@ This document outlines the comprehensive testing strategy for the Osservatorio I
 - `test_system_integration.py`: Full system integration
 - `test_api_integration.py`: External API integration
 - `test_end_to_end_pipeline.py`: Complete data pipeline testing
+
+#### FastAPI REST API Testing (Day 8 - Planned)
+- `test_fastapi_endpoints.py`: REST API endpoint validation
+  - Dataset listing with filtering and pagination
+  - Dataset details retrieval with data inclusion
+  - API key management endpoints (admin only)
+  - Usage analytics endpoints
+  - OData endpoint for PowerBI Direct Query
+  - Authentication middleware integration
+  - Error handling and HTTP status codes
+  - CORS configuration validation
+  - Request/response schema validation
 
 ### 3. Performance Tests (`tests/performance/`)
 
@@ -196,6 +217,9 @@ pytest tests/integration/test_unified_repository.py -v
 
 # Run with coverage
 pytest --cov=src --cov-report=html
+
+# FastAPI specific tests (Day 8)
+pytest tests/integration/test_fastapi_endpoints.py -v
 ```
 
 ### Test Markers
@@ -208,13 +232,17 @@ pytest -m "not slow"
 
 # Security tests only
 pytest -m security
+
+# FastAPI/API tests only
+pytest -m fastapi
 ```
 
 ## Quality Metrics
 
 ### Current Test Coverage
-- **Total Tests**: 441 tests
+- **Total Tests**: 491 tests
 - **Success Rate**: 100% (0 failures)
+- **Code Coverage**: 70.34% overall
 - **Teardown Errors**: 0 (eliminated 33+ Windows file locking errors)
 - **Unit Tests**: 22 SQLite metadata tests, 45 DuckDB integration tests
 - **Integration Tests**: 18 unified repository tests
@@ -303,5 +331,5 @@ pytest -m security
 
 ---
 
-*Last Updated: 2025-07-23 - Version 8.2.0*
-*Testing Strategy Status: Complete - Unified Repository Implementation Validated*
+*Last Updated: 2025-07-25 - Version 8.3.0*
+*Testing Strategy Status: Updated for Day 8 FastAPI implementation*

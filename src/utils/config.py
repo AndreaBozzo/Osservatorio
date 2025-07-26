@@ -72,3 +72,25 @@ class Config:
 
 # Inizializza directory al caricamento del modulo
 Config.ensure_directories()
+
+
+def get_config():
+    """Get configuration as dictionary"""
+    return {
+        "jwt_secret_key": os.getenv("JWT_SECRET_KEY"),
+        "jwt_access_token_expire_minutes": int(
+            os.getenv("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", "60")
+        ),
+        "jwt_refresh_token_expire_days": int(
+            os.getenv("JWT_REFRESH_TOKEN_EXPIRE_DAYS", "30")
+        ),
+        "rate_limit_requests_per_minute": int(
+            os.getenv("RATE_LIMIT_REQUESTS_PER_MINUTE", "60")
+        ),
+        "rate_limit_requests_per_hour": int(
+            os.getenv("RATE_LIMIT_REQUESTS_PER_HOUR", "1000")
+        ),
+        "rate_limit_requests_per_day": int(
+            os.getenv("RATE_LIMIT_REQUESTS_PER_DAY", "10000")
+        ),
+    }

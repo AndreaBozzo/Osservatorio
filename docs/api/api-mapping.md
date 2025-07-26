@@ -40,7 +40,51 @@
 - **Current Usage**: Dashboard lavoro
 - **Rate Limit**: 50 req/hour (enforced)
 
-### 4. **Discovery Endpoint** - Dataflows
+### 4. **DCIS_POPSTRRES1** - Popolazione per Struttura
+- **URL**: `https://sdmx.istat.it/SDMXWS/rest/data/DCIS_POPSTRRES1`
+- **Update Frequency**: Annuale
+- **Volume Stimato**: ~20MB
+- **Structure**:
+  - Dimensions: Territorio, Tempo, Cittadinanza, Sesso, Classe_età
+  - Measures: Valore (popolazione straniera residente)
+  - Attributes: Status, Precision
+- **Current Usage**: Dashboard popolazione straniera
+- **Rate Limit**: 50 req/hour (enforced)
+
+### 5. **DCIS_FECONDITA** - Indicatori di Fecondità
+- **URL**: `https://sdmx.istat.it/SDMXWS/rest/data/DCIS_FECONDITA`
+- **Update Frequency**: Annuale
+- **Volume Stimato**: ~15MB
+- **Structure**:
+  - Dimensions: Territorio, Tempo, Classe_età_madre
+  - Measures: Tasso_fecondità, Tasso_fecondità_totale
+  - Attributes: Status, Precision
+- **Current Usage**: Dashboard demografia, analisi fecondità
+- **Rate Limit**: 50 req/hour (enforced)
+
+### 6. **DCIS_MORTALITA1** - Tavole di Mortalità
+- **URL**: `https://sdmx.istat.it/SDMXWS/rest/data/DCIS_MORTALITA1`
+- **Update Frequency**: Annuale
+- **Volume Stimato**: ~25MB
+- **Structure**:
+  - Dimensions: Territorio, Tempo, Sesso, Classe_età
+  - Measures: Probabilità_morte, Speranza_vita
+  - Attributes: Status, Precision
+- **Current Usage**: Dashboard mortalità, tavole attuariali
+- **Rate Limit**: 50 req/hour (enforced)
+
+### 7. **DCIS_RICFAMILIARE1** - Reddito delle Famiglie
+- **URL**: `https://sdmx.istat.it/SDMXWS/rest/data/DCIS_RICFAMILIARE1`
+- **Update Frequency**: Annuale
+- **Volume Stimato**: ~30MB
+- **Structure**:
+  - Dimensions: Territorio, Tempo, Tipologia_famiglia, Quintile_reddito
+  - Measures: Reddito_equivalente, Rischio_povertà
+  - Attributes: Status, Precision
+- **Current Usage**: Dashboard condizioni socioeconomiche
+- **Rate Limit**: 50 req/hour (enforced)
+
+### 8. **Discovery Endpoint** - Dataflows
 - **URL**: `https://sdmx.istat.it/SDMXWS/rest/dataflow/IT1`
 - **Update Frequency**: Static (structure only)
 - **Volume**: ~2MB

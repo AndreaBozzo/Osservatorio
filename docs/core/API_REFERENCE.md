@@ -1,9 +1,9 @@
 # 🔌 Osservatorio API Reference
 
 > **Comprehensive API documentation for the Osservatorio ISTAT data processing platform**
-> **Version**: 8.1.0
-> **Date**: July 23, 2025
-> **Status**: Production Ready
+> **Version**: 9.1.0
+> **Date**: July 25, 2025
+> **Status**: Enterprise Ready - JWT Authentication Complete
 
 ---
 
@@ -53,17 +53,139 @@ The Osservatorio API provides programmatic access to Italian statistical data pr
 
 ## 🔐 Authentication & Security
 
-### 🛡️ Security Features
-- **Path Validation**: Prevents directory traversal attacks
-- **Input Sanitization**: XSS and injection prevention
-- **Rate Limiting**: Configurable request limits
-- **IP Blocking**: Automatic suspicious activity blocking
-- **Security Headers**: Complete HTTP security headers
+### 🔑 JWT Authentication System (Day 7)
 
-### 🔑 Authentication Methods
-- **ISTAT API**: No authentication required (public API)
-- **PowerBI API**: OAuth 2.0 with Azure AD
-- **Tableau API**: Server-based authentication
+**Enterprise-grade authentication with SQLite backend**
+
+#### **API Key Management**
+```python
+from src.auth import SQLiteAuthManager
+
+# Initialize auth manager
+auth_manager = SQLiteAuthManager(sqlite_manager)
+
+# Generate API key with scopes
+api_key = auth_manager.generate_api_key(
+    name="My Application",
+    scopes=["read", "write", "analytics"],
+    expires_days=30  # Optional expiration
+)
+
+# Verify API key
+verified_key = auth_manager.verify_api_key(api_key.key)
+print(f"Key valid: {verified_key is not None}")
+
+# List all API keys
+keys = auth_manager.list_api_keys(include_revoked=False)
+
+# Revoke API key
+success = auth_manager.revoke_api_key(api_key.id, "No longer needed")
+```
+
+#### **JWT Token Management**
+```python
+from src.auth import JWTManager
+
+# Initialize JWT manager
+jwt_manager = JWTManager(sqlite_manager, secret_key="your-secret")
+
+# Create JWT token from API key
+token = jwt_manager.create_access_token(api_key)
+print(f"Token: {token.access_token}")
+
+# Verify JWT token
+claims = jwt_manager.verify_token(token.access_token)
+print(f"Valid token for: {claims.api_key_name}")
+
+# Revoke JWT token (blacklist)
+jwt_manager.revoke_token(token.access_token, "User logout")
+```
+
+#### **Rate Limiting**
+```python
+from src.auth import SQLiteRateLimiter
+
+# Initialize rate limiter
+rate_limiter = SQLiteRateLimiter(sqlite_manager)
+
+# Check rate limit for API key
+result = rate_limiter.check_rate_limit(
+    api_key=api_key,
+    ip_address="192.168.1.100",
+    endpoint="/api/datasets"
+)
+
+if result.allowed:
+    print(f"Request allowed. Remaining: {result.remaining}")
+else:
+    print(f"Rate limited. Retry after: {result.retry_after}s")
+
+# Get rate limit headers
+headers = result.to_headers()
+```
+
+#### **Security Headers Middleware**
+```python
+from src.auth import SecurityHeadersMiddleware
+
+# Initialize security middleware
+security = SecurityHeadersMiddleware()
+
+# Apply security headers
+request_headers = {"Authorization": "Bearer " + token.access_token}
+response_headers = {}
+
+# Apply security headers to response
+secure_headers = security.apply_security_headers(response_headers)
+
+# Get security report
+report = security.get_security_report()
+print(f"CSP enabled: {report['csp_enabled']}")
+```
+
+### 🛡️ Security Features
+- **bcrypt Hashing**: API keys secured with industry-standard hashing
+- **JWT Security**: HS256/RS256 algorithms with token blacklisting
+- **SQL Injection Protection**: All queries use parameterized statements
+- **OWASP Compliance**: Security headers (CSP, HSTS, X-Frame-Options)
+- **Rate Limiting**: Sliding window algorithm with violation logging
+- **Scope-Based Access**: Fine-grained permissions (read, write, admin, analytics, powerbi, tableau)
+- **Database Transaction Safety**: Nested transaction handling with cleanup
+- **Audit Logging**: Complete security event tracking
+
+### 🔑 Available Scopes
+- `read` - Read access to datasets and analytics
+- `write` - Write access for data modifications
+- `admin` - Administrative operations and user management
+- `analytics` - Access to advanced analytics features
+- `powerbi` - PowerBI integration and template operations
+- `tableau` - Tableau integration and workbook operations
+
+### 🛠️ CLI Tools
+```bash
+# Create API key
+python scripts/generate_api_key.py create --name "Analytics App" --scopes read,analytics
+
+# List API keys
+python scripts/generate_api_key.py list
+
+# Revoke API key
+python scripts/generate_api_key.py revoke --id 123 --reason "Security breach"
+
+# Test API key
+python scripts/generate_api_key.py test --key osv_abc123...
+
+# View statistics
+python scripts/generate_api_key.py stats
+
+# Cleanup expired tokens
+python scripts/generate_api_key.py cleanup
+```
+
+### 🔒 External API Authentication
+- **ISTAT API**: No authentication required (public API with rate limiting)
+- **PowerBI API**: OAuth 2.0 with Azure AD + API key authentication
+- **Tableau API**: Server-based authentication + API key authentication
 
 ---
 

@@ -21,6 +21,14 @@ Implementato in `src/utils/circuit_breaker.py`:
 - Auto-recovery dopo fallimenti
 - Monitoring stato servizi
 
+### JWT Authentication System
+Sistema completo di autenticazione in `src/auth/`:
+- **API Keys**: Chiavi crittograficamente sicure con scopes
+- **JWT Tokens**: HS256/RS256 con blacklisting e refresh
+- **Rate Limiting**: Sliding window per protezione DDoS
+- **Security Headers**: OWASP-compliant middleware
+- **Transaction Safety**: Gestione sicura database SQLite
+
 ### Secure File Operations
 Tutte le operazioni file usano `SecurePathValidator`:
 - Validazione estensioni file (whitelist)

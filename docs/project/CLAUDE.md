@@ -16,6 +16,28 @@ This is an Italian data processing system for ISTAT (Italian National Institute 
 
 ## Development Commands
 
+### JWT Authentication Commands (NEW 25/07/2025 - Day 7 Complete)
+#### API Key Management
+- `python scripts/generate_api_key.py create --name "MyApp" --scopes read,write` - Create new API key
+- `python scripts/generate_api_key.py list` - List active API keys
+- `python scripts/generate_api_key.py revoke --id 123 --reason "Security"` - Revoke API key
+- `python scripts/generate_api_key.py test --key osv_your_key_here` - Test API key validity
+- `python scripts/generate_api_key.py stats` - Show usage statistics
+- `python scripts/generate_api_key.py cleanup` - Clean expired tokens
+
+#### Authentication Testing
+- `pytest tests/unit/test_auth_system.py -v` - Run authentication unit tests (29 tests)
+- `python test_auth_integration.py` - Run complete integration test (18 scenarios)
+- `bandit -r src/auth/` - Run security scan on authentication modules
+- `python -c "from src.auth import SQLiteAuthManager; print('✅ Auth system ready')"` - Verify auth system
+
+#### JWT Security Features
+- **API Keys**: Cryptographically secure with bcrypt hashing
+- **JWT Tokens**: HS256/RS256 with blacklisting support
+- **Rate Limiting**: Sliding window algorithm per API key/IP
+- **Security Headers**: OWASP-compliant middleware
+- **Scopes**: read, write, admin, analytics, powerbi, tableau
+
 ### Makefile Commands (Recommended)
 The project includes a comprehensive Makefile for streamlined development workflows:
 
@@ -162,8 +184,8 @@ The project includes a comprehensive Makefile for streamlined development workfl
 - **Security Status**: ✅ 0 HIGH severity issues, all MEDIUM warnings are false positives, enterprise-grade SQL injection protection
 
 ### Testing (UPDATED 23/07/2025 - Day 4 SQLite Complete)
-- `pytest` - Run all tests (441 tests total, 100% passing as of 23/07/2025)
-- `pytest --cov=src tests/` - Run tests with coverage (67% total coverage achieved)
+- `pytest` - Run all tests (491 tests total, 100% passing as of 25/07/2025)
+- `pytest --cov=src tests/` - Run tests with coverage (70.34% total coverage achieved)
 - `pytest tests/unit/` - Run unit tests only (includes 22 SQLite metadata tests)
 - `pytest tests/integration/` - Run integration tests only (includes 18 unified repository tests)
 - `pytest tests/performance/` - Run performance tests only (DuckDB performance suite)
@@ -204,11 +226,46 @@ The project includes a comprehensive Makefile for streamlined development workfl
 - **XML Parsing Security**: ET.fromstring() used instead of ET.parse() for direct XML content parsing
 - **Path Validation Integration**: All converter methods use secure path validation for file operations
 
-## Project Architecture
+## Project Architecture (Updated 25/07/2025 - Day 7 Complete)
+
+### System Architecture Overview
+```
+┌─────────────────────┐     ┌─────────────────────┐     ┌─────────────────────┐
+│   DuckDB Engine     │     │  SQLite Metadata    │     │   PowerBI Service   │
+├─────────────────────┤     ├─────────────────────┤     ├─────────────────────┤
+│ • ISTAT Analytics   │     │ • Dataset Registry  │     │ • Workspaces        │
+│ • Time Series       │     │ • User Preferences  │     │ • Datasets          │
+│ • Aggregations      │     │ • API Keys/Auth     │     │ • Reports           │
+│ • Performance Data  │     │ • Audit Logging     │     │ • Dashboards        │
+└─────────────────────┘     └─────────────────────┘     └─────────────────────┘
+         ↓                           ↓                           ↑
+    ┌────────────────────────────────┐                           │
+    │   Unified Data Repository      │                           │
+    │   (Facade Pattern)             │                           │
+    └────────────────────────────────┘                           │
+                 ↓                                               │
+    ┌────────────────────────────────────────────────────────────┤
+    │                  🔐 JWT Authentication Layer               │
+    │   API Keys • JWT Tokens • Rate Limiting • Security Headers │
+    └─────────────────────────────────────────────────────────────┘
+                                    ↓
+              ┌─────────────────────────────────────┐
+              │          REST API Layer             │
+              │    (FastAPI - Future Implementation) │
+              └─────────────────────────────────────┘
+```
 
 ### Core Components
 
-1. **Data Pipeline Flow**:
+1. **Authentication System (Day 7 - NEW!)**:
+   - `src/auth/sqlite_auth.py` - SQLite-backed API key management with bcrypt hashing
+   - `src/auth/jwt_manager.py` - JWT token creation, validation, and blacklisting
+   - `src/auth/rate_limiter.py` - Sliding window rate limiting per API key/IP
+   - `src/auth/security_middleware.py` - OWASP security headers and auth middleware
+   - `scripts/generate_api_key.py` - CLI tool for API key management
+   - `tests/unit/test_auth_system.py` - Comprehensive authentication test suite (29 tests)
+
+2. **Data Pipeline Flow**:
    - `src/api/istat_api.py` - ISTAT SDMX API client and data fetcher
    - `src/analyzers/dataflow_analyzer.py` - Analyzes available ISTAT dataflows and categorizes them
    - `src/converters/tableau_converter.py` - Converter for Tableau formats (CSV/Excel/JSON)
@@ -296,21 +353,44 @@ The project includes a comprehensive Makefile for streamlined development workfl
      - `_validate_data_quality(df)` - Data quality assessment
      - `_generate_tableau_formats(df, dataset_info)` - Multi-format generation
 
-### Directory Structure
+### Directory Structure (Updated 25/07/2025 - Day 7 Complete)
 - `src/` - Source code modules
   - `api/` - API clients (ISTAT, PowerBI, Tableau)
   - `analyzers/` - Data analysis and categorization
+  - `auth/` - **NEW! JWT Authentication System (Day 7)**
+    - `models.py` - Authentication data models (APIKey, AuthToken, TokenClaims)
+    - `sqlite_auth.py` - SQLite API key management with bcrypt
+    - `jwt_manager.py` - JWT token creation, validation, blacklisting
+    - `rate_limiter.py` - Sliding window rate limiting with SQLite
+    - `security_middleware.py` - OWASP security headers & auth middleware
   - `converters/` - Data format converters (Tableau, PowerBI)
-  - `scrapers/` - Web scraping and data extraction
-  - `database/` - NEW! Database modules (7 files)
-    - `duckdb/` - DuckDB analytics engine
+  - `database/` - Hybrid database architecture
+    - `duckdb/` - DuckDB analytics engine (7 files)
       - `manager.py` - Connection management & pooling
       - `schema.py` - ISTAT data schemas
       - `simple_adapter.py` - Lightweight interface
+      - `query_builder.py` - Fluent query interface
       - `query_optimizer.py` - Query optimization & caching
       - `partitioning.py` - Data partitioning strategies
       - `config.py` - DuckDB configuration
-  - `utils/` - Configuration, logging, security utilities, and file management
+    - `sqlite/` - SQLite metadata layer (3 files)
+      - `manager.py` - SQLite connection & transaction management
+      - `schema.py` - Metadata schema (6 tables)
+      - `repository.py` - Unified data repository facade
+  - `integrations/` - External service integrations
+    - `powerbi/` - PowerBI enterprise integration (5 files)
+      - `optimizer.py` - Star schema optimizer
+      - `templates.py` - .pbit template generator
+      - `incremental.py` - Incremental refresh manager
+      - `metadata_bridge.py` - Data governance bridge
+  - `scrapers/` - Web scraping and data extraction
+  - `utils/` - Core utilities (7 files)
+    - `security_enhanced.py` - Security management
+    - `circuit_breaker.py` - Resilience patterns
+    - `config.py` - Configuration management
+    - `logger.py` - Structured logging
+    - `secure_path.py` - Secure file operations
+    - `temp_file_manager.py` - Temporary file management
 - `data/` - Data storage
   - `raw/` - Raw ISTAT XML files
   - `processed/` - Converted files
@@ -701,7 +781,37 @@ files = converter._generate_powerbi_formats(df, dataset_info)
 - **Coverage**: Improved with DuckDB modules
 - **NEW: DuckDB**: High-performance analytics engine integrated
 
-## Recent Updates (21/07/2025) - Day 3: DuckDB Performance Testing & Optimization
+## Recent Updates (25/07/2025) - Day 7: JWT Authentication System Complete
+
+### 🔐 Major Security Implementation (Day 7)
+- **Complete JWT Authentication System** - Enterprise-grade authentication with SQLite backend
+  - SQLite API key management with bcrypt hashing and scope-based permissions
+  - JWT token system with HS256/RS256 support and token blacklisting
+  - Sliding window rate limiting per API key and IP address
+  - OWASP-compliant security headers middleware
+  - CLI tool for API key management with full CRUD operations
+- **Security Validation** - Comprehensive security audit and testing
+  - Bandit security scan: 0 high severity issues (1 minor false positive)
+  - SQL injection protection with parameterized queries
+  - Database connection cleanup and transaction safety
+  - Cross-platform testing (Windows/Linux compatibility)
+- **Testing Infrastructure** - Robust test suite for authentication
+  - 29 unit test methods covering all authentication components
+  - Integration test with 18 scenarios for complete authentication flows
+  - Database cleanup fixes for Windows file lock issues
+  - Nested transaction handling improvements
+
+### 🔧 Database & Security Improvements (Day 7)
+- **Transaction Safety** - Enhanced SQLite transaction management
+  - Automatic nested transaction detection and handling
+  - Proper connection cleanup with retry mechanism for Windows
+  - Fixed ResourceWarning and PermissionError in test cleanup
+- **SQL Security** - Complete protection against SQL injection
+  - Replaced f-string SQL construction with parameterized queries
+  - All database queries use prepared statements
+  - Security compliance verified with Bandit scan
+
+## Previous Updates (21/07/2025) - Day 3: DuckDB Performance Testing & Optimization
 
 ### 🚀 Major Additions
 - **Comprehensive Performance Testing Suite** - 7 test categories with advanced profiling (670+ lines of code)
