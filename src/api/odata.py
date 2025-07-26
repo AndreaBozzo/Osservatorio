@@ -21,6 +21,7 @@ from typing import Any, Dict, List, Optional, Union
 from xml.etree.ElementTree import Element, SubElement, tostring
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
+from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse, PlainTextResponse
 
 from src.database.sqlite.repository import get_unified_repository
@@ -387,7 +388,7 @@ def create_odata_router() -> APIRouter:
                 response_data["@odata.count"] = total_count
 
             return JSONResponse(
-                content=response_data,
+                content=jsonable_encoder(response_data),
                 headers={
                     "OData-Version": ODATA_VERSION,
                     "Content-Type": "application/json;odata.metadata=minimal",
@@ -501,7 +502,7 @@ def create_odata_router() -> APIRouter:
                 response_data["@odata.count"] = total_count
 
             return JSONResponse(
-                content=response_data,
+                content=jsonable_encoder(response_data),
                 headers={
                     "OData-Version": ODATA_VERSION,
                     "Content-Type": "application/json;odata.metadata=minimal",
@@ -589,7 +590,7 @@ def create_odata_router() -> APIRouter:
                 response_data["@odata.count"] = total_count
 
             return JSONResponse(
-                content=response_data,
+                content=jsonable_encoder(response_data),
                 headers={
                     "OData-Version": ODATA_VERSION,
                     "Content-Type": "application/json;odata.metadata=minimal",
@@ -667,7 +668,7 @@ def create_odata_router() -> APIRouter:
                 response_data["@odata.count"] = total_count
 
             return JSONResponse(
-                content=response_data,
+                content=jsonable_encoder(response_data),
                 headers={
                     "OData-Version": ODATA_VERSION,
                     "Content-Type": "application/json;odata.metadata=minimal",

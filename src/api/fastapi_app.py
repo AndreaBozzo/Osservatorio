@@ -30,6 +30,7 @@ from fastapi import (
     Response,
     status,
 )
+from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.openapi.docs import get_swagger_ui_html
@@ -129,14 +130,15 @@ app.add_middleware(GZipMiddleware, minimum_size=1000)
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request: Request, exc: HTTPException):
     """Handle HTTP exceptions with consistent error format"""
+    error_response = ErrorResponse(
+        error_type="http_error",
+        error_code=f"HTTP_{exc.status_code}",
+        detail=exc.detail,
+        instance=str(request.url),
+    )
     return JSONResponse(
         status_code=exc.status_code,
-        content=ErrorResponse(
-            error_type="http_error",
-            error_code=f"HTTP_{exc.status_code}",
-            detail=exc.detail,
-            instance=str(request.url),
-        ).dict(),
+        content=jsonable_encoder(error_response),
     )
 
 
@@ -144,14 +146,15 @@ async def http_exception_handler(request: Request, exc: HTTPException):
 async def general_exception_handler(request: Request, exc: Exception):
     """Handle unexpected exceptions"""
     logger.error(f"Unexpected error: {exc}", exc_info=True)
+    error_response = ErrorResponse(
+        error_type="internal_error",
+        error_code="INTERNAL_SERVER_ERROR",
+        detail="An unexpected error occurred",
+        instance=str(request.url),
+    )
     return JSONResponse(
         status_code=500,
-        content=ErrorResponse(
-            error_type="internal_error",
-            error_code="INTERNAL_SERVER_ERROR",
-            detail="An unexpected error occurred",
-            instance=str(request.url),
-        ).dict(),
+        content=jsonable_encoder(error_response),
     )
 
 
@@ -213,11 +216,12 @@ async def health_check(repository=Depends(get_repository)):
         )
     except Exception as e:
         logger.error(f"Health check failed: {e}")
+        error_health = HealthCheckResponse(
+            status="unhealthy", version="1.0.0", components={"error": str(e)}
+        )
         return JSONResponse(
             status_code=503,
-            content=HealthCheckResponse(
-                status="unhealthy", version="1.0.0", components={"error": str(e)}
-            ).dict(),
+            content=jsonable_encoder(error_health),
         )
 
 
@@ -460,11 +464,15 @@ async def create_auth_token(
         jwt_manager = JWTManager(sqlite_manager)
 
         # Create API key
-        api_key_data = auth_manager.create_api_key(
+        expires_days = None
+        if api_key_request.expires_at:
+            # Calculate days from now to expiration
+            expires_days = (api_key_request.expires_at - datetime.now()).days
+
+        api_key_data = auth_manager.generate_api_key(
             name=api_key_request.name,
             scopes=[scope.value for scope in api_key_request.scopes],
-            rate_limit=api_key_request.rate_limit,
-            expires_at=api_key_request.expires_at,
+            expires_days=expires_days,
         )
 
         if not api_key_data:
@@ -482,7 +490,7 @@ async def create_auth_token(
                 "id": api_key_data.id,
                 "name": api_key_data.name,
                 "scopes": api_key_data.scopes,
-                "rate_limit": api_key_data.rate_limit,
+                "rate_limit": api_key_request.rate_limit,  # Use requested rate limit
                 "is_active": api_key_data.is_active,
                 "expires_at": api_key_data.expires_at,
                 "created_at": api_key_data.created_at,
