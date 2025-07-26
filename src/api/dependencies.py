@@ -1,0 +1,369 @@
+"""
+FastAPI dependencies for Osservatorio ISTAT REST API
+
+Provides authentication, authorization, rate limiting, and other
+cross-cutting concerns as FastAPI dependencies.
+"""
+
+from datetime import datetime
+from functools import wraps
+from typing import List, Optional
+
+from fastapi import Depends, HTTPException, Request, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+
+from src.auth.jwt_manager import JWTManager
+from src.auth.models import APIKey, TokenClaims
+from src.auth.rate_limiter import SQLiteRateLimiter
+from src.auth.sqlite_auth import SQLiteAuthManager
+from src.database.sqlite.repository import get_unified_repository
+from src.utils.config import get_config
+from src.utils.logger import get_logger
+
+from .models import APIScope, ErrorResponse
+
+logger = get_logger(__name__)
+
+# Security scheme for FastAPI OpenAPI
+security = HTTPBearer(
+    scheme_name="Bearer JWT",
+    description="JWT token for API authentication. Obtain from /auth/token endpoint.",
+    auto_error=False,
+)
+
+# Global instances
+_jwt_manager: Optional[JWTManager] = None
+_auth_manager: Optional[SQLiteAuthManager] = None
+_rate_limiter: Optional[SQLiteRateLimiter] = None
+
+
+def get_jwt_manager() -> JWTManager:
+    """Get JWT manager instance (singleton)"""
+    global _jwt_manager
+    if _jwt_manager is None:
+        from src.database.sqlite.manager import get_metadata_manager
+
+        sqlite_manager = get_metadata_manager()
+        _jwt_manager = JWTManager(sqlite_manager)
+    return _jwt_manager
+
+
+def get_auth_manager() -> SQLiteAuthManager:
+    """Get authentication manager instance (singleton)"""
+    global _auth_manager
+    if _auth_manager is None:
+        from src.database.sqlite.manager import get_metadata_manager
+
+        sqlite_manager = get_metadata_manager()
+        _auth_manager = SQLiteAuthManager(sqlite_manager)
+    return _auth_manager
+
+
+def get_rate_limiter() -> SQLiteRateLimiter:
+    """Get rate limiter instance (singleton)"""
+    global _rate_limiter
+    if _rate_limiter is None:
+        from src.database.sqlite.manager import get_metadata_manager
+
+        sqlite_manager = get_metadata_manager()
+        _rate_limiter = SQLiteRateLimiter(sqlite_manager)
+    return _rate_limiter
+
+
+async def get_current_user(
+    request: Request,
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
+    jwt_manager: JWTManager = Depends(get_jwt_manager),
+    auth_manager: SQLiteAuthManager = Depends(get_auth_manager),
+) -> TokenClaims:
+    """
+    Dependency to get current authenticated user from JWT token.
+
+    Args:
+        request: FastAPI request object
+        credentials: Authorization credentials from header
+        jwt_manager: JWT manager instance
+        auth_manager: Authentication manager instance
+
+    Returns:
+        TokenClaims: Validated token claims
+
+    Raises:
+        HTTPException: If authentication fails
+    """
+    if not credentials:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authorization header required",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    try:
+        # Verify JWT token
+        token_claims = jwt_manager.verify_token(credentials.credentials)
+        if not token_claims:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid or expired token",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
+        # Get API key details
+        api_key = auth_manager.get_api_key_by_id(int(token_claims.sub))
+        if not api_key or not api_key.is_active:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="API key not found or inactive",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
+        # Update last used timestamp
+        auth_manager.update_api_key_usage(api_key.id)
+
+        # Add request context to token claims
+        setattr(token_claims, "api_key", api_key)
+        setattr(token_claims, "client_ip", request.client.host)
+        setattr(token_claims, "user_agent", request.headers.get("user-agent"))
+
+        logger.debug(f"Authenticated user: {token_claims.api_key_name}")
+        return token_claims
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Authentication error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication failed",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+
+def require_scope(required_scope: APIScope):
+    """
+    Dependency factory for scope-based authorization.
+
+    Args:
+        required_scope: Required API scope
+
+    Returns:
+        Dependency function that validates scope
+    """
+
+    def scope_dependency(
+        current_user: TokenClaims = Depends(get_current_user),
+    ) -> TokenClaims:
+        user_scopes = current_user.scope.split()
+
+        # Admin scope grants access to everything
+        if APIScope.ADMIN in user_scopes:
+            return current_user
+
+        # Check specific scope
+        if required_scope not in user_scopes:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Insufficient permissions. Required scope: {required_scope}",
+            )
+
+        return current_user
+
+    return scope_dependency
+
+
+def require_admin():
+    """Dependency that requires admin scope"""
+    return require_scope(APIScope.ADMIN)
+
+
+def require_write():
+    """Dependency that requires write scope"""
+    return require_scope(APIScope.WRITE)
+
+
+async def check_rate_limit(
+    request: Request,
+    current_user: TokenClaims = Depends(get_current_user),
+    rate_limiter: SQLiteRateLimiter = Depends(get_rate_limiter),
+):
+    """
+    Rate limiting dependency.
+
+    Args:
+        request: FastAPI request object
+        current_user: Current authenticated user
+        rate_limiter: Rate limiter instance
+
+    Raises:
+        HTTPException: If rate limit exceeded
+    """
+    try:
+        # Get API key from current user
+        api_key = getattr(current_user, "api_key", None)
+        if not api_key:
+            # Create minimal API key object for rate limiting
+            api_key = APIKey(
+                id=int(current_user.sub),
+                scopes=current_user.scope.split(),
+                rate_limit=current_user.rate_limit,
+            )
+
+        # Check rate limit
+        result = rate_limiter.check_rate_limit(
+            api_key=api_key,
+            ip_address=request.client.host,
+            endpoint=request.url.path,
+            user_agent=request.headers.get("user-agent"),
+        )
+
+        if not result.allowed:
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail="Rate limit exceeded",
+                headers=result.to_headers(),
+            )
+
+        # Add rate limit headers to response (will be handled by middleware)
+        setattr(request.state, "rate_limit_headers", result.to_headers())
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Rate limiting error: {e}")
+        # Don't fail the request on rate limiting errors
+        pass
+
+
+def get_repository():
+    """Dependency to get unified data repository"""
+    return get_unified_repository()
+
+
+def validate_pagination(page: int = 1, page_size: int = 50) -> tuple[int, int]:
+    """
+    Dependency for pagination validation.
+
+    Args:
+        page: Page number (1-based)
+        page_size: Number of items per page
+
+    Returns:
+        Tuple of validated (page, page_size)
+
+    Raises:
+        HTTPException: If pagination parameters are invalid
+    """
+    if page < 1:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Page number must be >= 1"
+        )
+
+    if page_size < 1 or page_size > 1000:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Page size must be between 1 and 1000",
+        )
+
+    return page, page_size
+
+
+def validate_dataset_id(dataset_id: str) -> str:
+    """
+    Dependency for dataset ID validation.
+
+    Args:
+        dataset_id: Dataset identifier
+
+    Returns:
+        Validated dataset ID
+
+    Raises:
+        HTTPException: If dataset ID is invalid
+    """
+    if not dataset_id or len(dataset_id.strip()) == 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Dataset ID is required"
+        )
+
+    # Basic format validation (ISTAT dataset IDs are typically alphanumeric with underscores)
+    if not dataset_id.replace("_", "").replace("-", "").isalnum():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid dataset ID format"
+        )
+
+    return dataset_id.strip()
+
+
+async def log_api_request(
+    request: Request,
+    current_user: TokenClaims = Depends(get_current_user),
+    repository=Depends(get_repository),
+):
+    """
+    Dependency to log API requests for audit purposes.
+
+    Args:
+        request: FastAPI request object
+        current_user: Current authenticated user
+        repository: Unified data repository
+    """
+    try:
+        # Extract request details
+        method = request.method
+        url = str(request.url)
+        endpoint = request.url.path
+        query_params = dict(request.query_params)
+
+        # Log the request
+        repository.metadata_manager.log_audit(
+            user_id=current_user.api_key_name or current_user.sub,
+            action="api_request",
+            resource_type="api_endpoint",
+            resource_id=endpoint,
+            details={
+                "method": method,
+                "endpoint": endpoint,
+                "query_params": query_params,
+                "client_ip": request.client.host,
+                "user_agent": request.headers.get("user-agent"),
+                "api_key_id": current_user.sub,
+            },
+        )
+
+    except Exception as e:
+        logger.error(f"Failed to log API request: {e}")
+        # Don't fail the request on logging errors
+
+
+def handle_api_errors(func):
+    """
+    Decorator for consistent API error handling.
+
+    Args:
+        func: FastAPI route function
+
+    Returns:
+        Wrapped function with error handling
+    """
+
+    @wraps(func)
+    async def wrapper(*args, **kwargs):
+        try:
+            return await func(*args, **kwargs)
+        except HTTPException:
+            # Re-raise HTTP exceptions as-is
+            raise
+        except ValueError as e:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        except Exception as e:
+            logger.error(f"Unexpected error in {func.__name__}: {e}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Internal server error",
+            )
+
+    return wrapper
+
+
+# Note: Dependencies are now used individually in endpoints
+# for better clarity and customization
