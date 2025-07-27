@@ -45,8 +45,21 @@ Le seguenti versioni ricevono aggiornamenti di sicurezza:
 - **JWT Authentication**: Secure token-based authentication
 - **API Key Management**: Cryptographically secure API keys
 - **Scope-Based Access**: Granular permission system
-- **Rate Limiting**: DDoS protection and resource management
+- **Enhanced Rate Limiting**: Advanced DoS protection with adaptive algorithms
+- **Distributed Protection**: Redis-based rate limiting across multiple instances
+- **IP Blocking**: Automatic blocking of suspicious IP addresses
+- **Security Monitoring**: Real-time threat detection and alerting
 - **Audit Logging**: Comprehensive security event tracking
+
+#### Enhanced Rate Limiting Features (v10.1.0+)
+
+- **Adaptive Rate Limiting**: Automatically adjusts limits based on API performance
+- **Suspicious Activity Detection**: AI-powered threat pattern recognition
+- **Distributed Rate Limiting**: Redis support for multi-instance deployments
+- **Real-time Security Dashboard**: Live monitoring and threat assessment
+- **Automatic IP Blocking**: Immediate response to critical threats
+
+📖 **See [Enhanced Rate Limiting Documentation](docs/security/ENHANCED_RATE_LIMITING.md) for complete details.**
 
 ### Data Protection
 
@@ -151,6 +164,12 @@ if not api_key:
 - Invalid JWT tokens per day
 - SQL injection attempts per request
 - Abnormal request patterns (continuous)
+- **Enhanced Security Metrics (v10.1.0+)**:
+  - Threat score assessment (0-100%)
+  - Blocked IP addresses count
+  - Adaptive rate limit adjustments
+  - API response time degradation
+  - Suspicious activity pattern detection
 
 ### Alerting Thresholds
 
