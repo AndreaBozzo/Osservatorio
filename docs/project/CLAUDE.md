@@ -17,17 +17,21 @@ This is an Italian data processing system for ISTAT (Italian National Institute 
 ## Development Commands
 
 ### FastAPI REST API Commands (NEW 27/07/2025 - Issue #29 Complete)
-#### FastAPI Application
-- `python -c "import sys; sys.path.append('.'); exec(open('scripts/validate_issue29_implementation.py').read())"` - Validate all Issue #29 deliverables (100% success rate)
-- `python -c "import sys; sys.path.append('.'); from src.api.fastapi_app import app; print('FastAPI ready!')"` - Test FastAPI application loading
-- `uvicorn src.api.fastapi_app:app --reload` - Run FastAPI development server
-- `python -c "import sys; sys.path.append('.'); from src.api.fastapi_app import app; import uvicorn; uvicorn.run(app, host='0.0.0.0', port=8000)"` - Run FastAPI server programmatically
+#### Quick System Verification (Human-Friendly)
+- `python scripts/health_check.py` - 🏥 Interactive system health check with visual status
+- `python scripts/api_demo.py` - 🚀 Interactive API demo for stakeholders and testing
+- `python -c "import sys; sys.path.append('.'); exec(open('scripts/validate_issue29_implementation.py').read())"` - Detailed technical validation (100% success rate)
 
-#### FastAPI Testing
-- `pytest tests/integration/test_fastapi_integration.py -v` - Run FastAPI integration tests
-- `curl http://localhost:8000/health` - Test health endpoint (requires server running)
-- `curl http://localhost:8000/docs` - Access interactive API documentation
-- `curl http://localhost:8000/openapi.json` - Get OpenAPI schema
+#### FastAPI Application
+- `python src/api/fastapi_app.py` - Start FastAPI server (simplest method)
+- `uvicorn src.api.fastapi_app:app --reload` - Run FastAPI development server with auto-reload
+- `python -c "import sys; sys.path.append('.'); from src.api.fastapi_app import app; print('FastAPI ready!')"` - Test FastAPI application loading
+
+#### FastAPI Testing & Documentation
+- `pytest tests/unit/test_fastapi_integration.py -v` - Run FastAPI integration tests
+- Visit `http://localhost:8000/docs` - Interactive Swagger UI documentation
+- Visit `http://localhost:8000/redoc` - Alternative ReDoc documentation
+- `curl http://localhost:8000/health` - Quick health check (requires server running)
 
 ### JWT Authentication Commands (NEW 25/07/2025 - Day 7 Complete)
 #### API Key Management

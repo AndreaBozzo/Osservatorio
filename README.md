@@ -72,12 +72,35 @@ streamlit run src/dashboard/streamlit_app.py
 ```
 
 ### 🎯 Quick Actions
-```bash
-# NEW! FastAPI REST API (Issue #29 Complete)
-python -c "import sys; sys.path.append('.'); exec(open('scripts/validate_issue29_implementation.py').read())"  # Validate all deliverables
-python -c "import sys; sys.path.append('.'); from src.api.fastapi_app import app; print('FastAPI ready!')"
 
-# Test API connectivity
+#### 🏥 System Verification (Human-Friendly)
+```bash
+# Interactive health check with visual status
+python scripts/health_check.py
+
+# Interactive API demo for stakeholders
+python scripts/api_demo.py
+
+# Detailed technical validation (advanced users)
+python -c "import sys; sys.path.append('.'); exec(open('scripts/validate_issue29_implementation.py').read())"
+```
+
+#### 🚀 FastAPI Server
+```bash
+# Start FastAPI server (recommended method)
+python -m uvicorn src.api.fastapi_app:app --reload --host 0.0.0.0 --port 8000
+
+# Alternative: Direct execution
+python src/api/fastapi_app.py
+
+# Then visit:
+# http://localhost:8000/docs - Interactive API documentation
+# http://localhost:8000/health - Health check endpoint
+```
+
+#### 📊 Data Processing
+```bash
+# Test ISTAT API connectivity
 python -c "import sys; sys.path.append('.'); from src.api import istat_api; print('ISTAT API module loaded')"
 
 # Convert data for Tableau
