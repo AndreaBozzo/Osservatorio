@@ -1,335 +1,293 @@
-# Testing Strategy - Osservatorio ISTAT Data Platform
+# Testing Guidelines
 
-## Overview
+## 🧪 Testing Overview
 
-This document outlines the comprehensive testing strategy for the Osservatorio ISTAT Data Platform, implementing a hybrid SQLite + DuckDB architecture with unified repository pattern. The testing approach ensures reliability, performance, and security across all system components.
+Questo documento descrive le linee guida per il testing nel progetto Osservatorio ISTAT Data Platform. Un testing completo garantisce la qualità, affidabilità e maintainability del codice.
 
-## Architecture Under Test
+## 📋 Test Strategy
 
-### Hybrid Database Architecture (ADR-002)
-- **SQLite**: Metadata, configuration, audit, user preferences (lightweight, zero-config)
-- **DuckDB**: Analytics, time series, performance data (high-performance analytics)
-- **Unified Repository**: Single facade pattern combining both databases with intelligent routing
-
-### Testing Pyramid Structure
+### Test Pyramid
 
 ```
-    /\
-   /  \  E2E & Integration Tests (High-level workflows)
-  /____\
- /      \  Integration Tests (Cross-component)
-/________\
-  Unit Tests (Component isolation)
+        /\
+       /  \    E2E Tests (Few)
+      /____\
+     /      \  Integration Tests (Some)
+    /________\
+   /          \ Unit Tests (Many)
+  /__________\
 ```
 
-## Test Categories
+### Test Categories
 
-### 1. Unit Tests (`tests/unit/`)
+| Test Type | Scope | Speed | Coverage |
+|-----------|-------|--------|----------|
+| **Unit** | Single function/class | <100ms | 80%+ |
+| **Integration** | Multiple components | <5s | 60%+ |
+| **Performance** | System performance | <30s | Key paths |
+| **E2E** | Full user workflows | <2min | Critical paths |
 
-#### Core Components
-- **SQLite Metadata Manager** (`test_sqlite_metadata.py`)
-  - Dataset registry operations
-  - User preferences management
-  - API credentials handling
-  - Audit logging functionality
-  - Schema migrations
-  - Thread safety validation
+## 🚀 Quick Start
 
-- **DuckDB Analytics Engine**
-  - `test_duckdb_basic.py`: Core functionality
-  - `test_duckdb_integration.py`: Advanced features (45 tests)
-  - `test_duckdb_query_builder.py`: Query construction and optimization
-  - `test_simple_adapter.py`: Lightweight usage patterns
+### Setup Test Environment
 
-- **Security Components** (`test_security_enhanced.py`)
-  - SQL injection prevention
-  - Path traversal protection
-  - Input sanitization
-  - Encryption/decryption operations
-
-- **Utility Components**
-  - `test_temp_file_manager.py`: File operations with Windows compatibility
-  - `test_circuit_breaker.py`: External API resilience
-  - `test_config.py`: Configuration management
-  - `test_logger.py`: Logging infrastructure
-
-#### API and Data Processing
-- `test_istat_api.py`: ISTAT API integration
-- `test_powerbi_api.py` & `test_powerbi_converter.py`: Power BI integration
-- `test_tableau_api.py` & `test_tableau_converter.py`: Tableau integration
-- `test_converters.py`: Data transformation utilities
-
-#### Authentication and Security (Day 7)
-- `test_auth_system.py`: JWT authentication and API keys
-  - SQLite-based authentication manager
-  - JWT token generation and validation
-  - API key management with scopes
-  - Rate limiting with SQLite tracking
-  - Security middleware validation
-  - Session management and token blacklisting
-
-### 2. Integration Tests (`tests/integration/`)
-
-#### Unified Repository Testing (`test_unified_repository.py`)
-**Primary test file for unified architecture validation - 18 comprehensive tests:**
-
-##### Dataset Operations
-- Complete dataset registration across both databases
-- Dataset retrieval with analytics integration
-- Multi-database listing with filtering capabilities
-- Analytics presence filtering
-
-##### User Preferences with Caching
-- Preference storage with configurable TTL
-- Cache hit/miss behavior validation
-- Cache performance benefits measurement
-- Multi-user preference isolation
-
-##### Analytics Operations
-- Query execution with automatic audit logging
-- Error handling and audit trail maintenance
-- Time series data retrieval with metadata integration
-- Cross-database query coordination
-
-##### System Monitoring
-- Real-time system status reporting
-- Database connection health checks
-- Performance metrics collection
-- Cache utilization statistics
-
-##### Cache Operations
-- TTL-based expiration validation
-- Manual cache management
-- Performance optimization verification
-
-##### Transaction Management
-- Context manager pattern implementation
-- Cross-database transaction coordination
-- Error handling and rollback scenarios
-- Transaction isolation levels
-
-##### Thread Safety
-- Concurrent operation validation (3 threads × 5 operations × 2 types = 30 operations)
-- Resource contention handling
-- Database connection pooling under load
-
-##### Performance Testing
-- Cache vs. database access speed comparison
-- Bulk operation performance validation
-- Memory usage pattern analysis
-
-##### Complete Workflow Integration
-- End-to-end scenario testing
-- Multi-user workflow validation
-- Cross-component integration verification
-
-#### Other Integration Tests
-- `test_system_integration.py`: Full system integration
-- `test_api_integration.py`: External API integration
-- `test_end_to_end_pipeline.py`: Complete data pipeline testing
-
-#### FastAPI REST API Testing (Day 8 - Planned)
-- `test_fastapi_endpoints.py`: REST API endpoint validation
-  - Dataset listing with filtering and pagination
-  - Dataset details retrieval with data inclusion
-  - API key management endpoints (admin only)
-  - Usage analytics endpoints
-  - OData endpoint for PowerBI Direct Query
-  - Authentication middleware integration
-  - Error handling and HTTP status codes
-  - CORS configuration validation
-  - Request/response schema validation
-
-### 3. Performance Tests (`tests/performance/`)
-
-#### Database Performance (`test_duckdb_performance.py`)
-- **Bulk Insert Performance**: >2k records/second validation
-- **Query Optimization**: Sub-millisecond aggregation queries
-- **Concurrency Testing**: 1-8 thread scaling validation
-- **Large Dataset Handling**: 100k+ record processing
-- **Memory Usage Patterns**: Linear scaling validation (<1KB per record)
-- **Indexing Performance**: Impact measurement and optimization
-
-#### Query Builder Performance (`test_query_builder_performance.py`)
-- **Query Caching**: 5x+ speedup validation
-- **ISTAT-Specific Patterns**: Time series, territory comparison, category trends
-- **Cache Hit Rates**: >85% for repeated analytical queries
-
-#### Scalability Testing (`test_scalability.py`)
-- **Horizontal Scaling**: Multi-user concurrent access
-- **Vertical Scaling**: Large dataset processing capabilities
-- **Resource Utilization**: Memory and CPU usage patterns
-
-## Test Infrastructure
-
-### Test Configuration (`tests/conftest.py`)
-
-#### Automatic Fixtures
-- **Silent Mode**: Reduces logging verbosity during test execution
-- **Temporary Directories**: Isolated test environments
-- **Database Cleanup**: Windows-compatible file cleanup utilities
-- **Mock Objects**: External API simulation
-
-#### Test Utilities (`tests/utils/`)
-- **Database Cleanup** (`database_cleanup.py`): Robust cleanup with Windows file locking handling
-- **Retry Logic**: Intelligent retry mechanisms for file operations
-- **Resource Management**: Proper cleanup of temporary resources
-
-## Testing Best Practices
-
-### 1. Test Isolation
-- **Database Separation**: Each test uses temporary databases
-- **File System Isolation**: Temporary directories for file operations
-- **Mock External Dependencies**: ISTAT API, Power BI, Tableau services
-- **Thread Safety**: Tests can run concurrently without interference
-
-### 2. Windows Compatibility
-- **File Locking Handling**: Robust cleanup with retry logic
-- **Path Management**: Proper Windows path handling
-- **Resource Cleanup**: Elimination of 33+ file locking errors
-
-### 3. Security Testing
-- **SQL Injection Prevention**: Parameterized query validation
-- **Input Sanitization**: Malicious input handling
-- **Path Traversal Protection**: Secure file operations
-- **Encryption Validation**: Data protection verification
-
-### 4. Performance Validation
-- **Baseline Tracking**: Performance regression detection
-- **Statistical Analysis**: Median-based performance analysis
-- **Threshold Management**: Configurable performance thresholds
-- **Historical Tracking**: 50 measurements per metric
-
-## Test Execution
-
-### Local Development
 ```bash
+# Install test dependencies
+pip install -e .
+pip install pytest pytest-cov pytest-asyncio httpx
+
 # Run all tests
-pytest
-
-# Run specific test categories
-pytest tests/unit/                    # Unit tests only
-pytest tests/integration/             # Integration tests only
-pytest tests/performance/             # Performance tests only
-
-# Run unified repository tests specifically
-pytest tests/integration/test_unified_repository.py -v
+python -m pytest
 
 # Run with coverage
-pytest --cov=src --cov-report=html
+python -m pytest --cov=src --cov-report=html
 
-# FastAPI specific tests (Day 8)
-pytest tests/integration/test_fastapi_endpoints.py -v
+# Run specific test category
+python -m pytest tests/unit/ -v
+python -m pytest tests/integration/ -v
+python -m pytest tests/performance/ -v
 ```
 
-### Test Markers
+### Test Structure
+
+```
+tests/
+├── unit/                    # Unit tests (fast, isolated)
+│   ├── test_database/      # Database layer tests
+│   ├── test_api/           # API endpoint tests
+│   ├── test_auth/          # Authentication tests
+│   └── test_utils/         # Utility function tests
+├── integration/            # Integration tests (real components)
+│   ├── test_fastapi_integration.py
+│   ├── test_database_integration.py
+│   └── test_pipeline_integration.py
+├── performance/            # Performance tests
+│   ├── test_api_performance.py
+│   └── test_database_performance.py
+└── fixtures/               # Test data and fixtures
+    ├── sample_datasets.json
+    └── test_data.sql
+```
+
+## ✅ Unit Testing
+
+### Writing Unit Tests
+
+```python
+import pytest
+from unittest.mock import Mock, patch
+from src.database.sqlite.repository import DatasetRepository
+
+class TestDatasetRepository:
+    """Unit tests for DatasetRepository class."""
+
+    @pytest.fixture
+    def mock_db(self):
+        """Mock database connection."""
+        return Mock()
+
+    @pytest.fixture
+    def repository(self, mock_db):
+        """Repository instance with mocked database."""
+        return DatasetRepository(mock_db)
+
+    def test_get_dataset_success(self, repository, mock_db):
+        """Test successful dataset retrieval."""
+        # Arrange
+        mock_db.execute.return_value.fetchone.return_value = {
+            'id': 1,
+            'dataset_id': 'TEST_DATASET',
+            'name': 'Test Dataset'
+        }
+
+        # Act
+        result = repository.get_dataset('TEST_DATASET')
+
+        # Assert
+        assert result is not None
+        assert result['dataset_id'] == 'TEST_DATASET'
+        mock_db.execute.assert_called_once()
+```
+
+### Best Practices
+
+- **Test Naming**: Descriptive names che spiegano lo scenario
+- **Arrange-Act-Assert**: Struttura chiara dei test
+- **Mock Dependencies**: Isola il codice sotto test
+- **Edge Cases**: Testa casi limite e condizioni di errore
+
+## 🔗 Integration Testing
+
+### Database Integration Tests
+
+```python
+import pytest
+from src.database.sqlite.manager import SQLiteMetadataManager
+
+class TestDatabaseIntegration:
+    """Integration tests for database layer."""
+
+    @pytest.fixture(scope="class")
+    def test_db(self):
+        """Test database with real schema."""
+        manager = SQLiteMetadataManager(":memory:")
+        manager.schema.create_schema()
+        yield manager
+        manager.close()
+
+    def test_dataset_crud_operations(self, test_db):
+        """Test complete CRUD operations for datasets."""
+        # Test implementation...
+```
+
+### API Integration Tests
+
+```python
+from fastapi.testclient import TestClient
+from src.api.fastapi_app import app
+
+class TestAPIIntegration:
+    """Integration tests for FastAPI endpoints."""
+
+    @pytest.fixture
+    def client(self):
+        return TestClient(app)
+
+    def test_dataset_list_integration(self, client, auth_token):
+        """Test dataset listing with real database."""
+        headers = {"Authorization": f"Bearer {auth_token}"}
+        response = client.get("/datasets", headers=headers)
+        assert response.status_code == 200
+```
+
+## ⚡ Performance Testing
+
+### Performance Test Examples
+
+```python
+import time
+import pytest
+
+class TestPerformance:
+    """Performance tests for critical paths."""
+
+    def test_dataset_list_performance(self, client, auth_headers):
+        """Test dataset list endpoint performance."""
+        # Target: <100ms for dataset list
+        start_time = time.time()
+
+        response = client.get("/datasets", headers=auth_headers)
+
+        end_time = time.time()
+        response_time = (end_time - start_time) * 1000
+
+        assert response.status_code == 200
+        assert response_time < 100, f"Response took {response_time}ms, target: <100ms"
+```
+
+## 📊 Test Coverage
+
+### Coverage Goals
+
+| Component | Target Coverage | Current Status |
+|-----------|----------------|----------------|
+| **Database Layer** | 90%+ | 🟢 92% |
+| **API Endpoints** | 85%+ | 🟡 78% |
+| **Authentication** | 95%+ | 🟢 96% |
+| **Utilities** | 80%+ | 🟢 85% |
+| **Overall** | 80%+ | 🟢 83% |
+
+### Coverage Commands
+
 ```bash
-# Performance tests only
-pytest -m performance
+# Generate coverage report
+python -m pytest --cov=src --cov-report=html
 
-# Slow tests excluded
-pytest -m "not slow"
+# Coverage with missing lines
+python -m pytest --cov=src --cov-report=term-missing
 
-# Security tests only
-pytest -m security
-
-# FastAPI/API tests only
-pytest -m fastapi
+# Fail if coverage below threshold
+python -m pytest --cov=src --cov-fail-under=80
 ```
 
-## Quality Metrics
+## 🏃‍♂️ Running Tests
 
-### Current Test Coverage
-- **Total Tests**: 491 tests
-- **Success Rate**: 100% (0 failures)
-- **Code Coverage**: 70.34% overall
-- **Teardown Errors**: 0 (eliminated 33+ Windows file locking errors)
-- **Unit Tests**: 22 SQLite metadata tests, 45 DuckDB integration tests
-- **Integration Tests**: 18 unified repository tests
-- **Performance Tests**: 40+ performance validation tests
+### Local Development
 
-### Security Compliance
-- **Bandit Security Scanner**: 0 HIGH severity issues
-- **SQL Injection Protection**: 100% parameterized queries
-- **Type Safety**: 83.2% average type hint coverage
-- **Code Quality**: All pre-commit hooks passing (black, isort, flake8, pytest)
+```bash
+# Quick test run (unit tests only)
+python -m pytest tests/unit/ -v
 
-### Performance Benchmarks
-- **Database Operations**: >2k records/second bulk insert
-- **Query Performance**: Sub-millisecond aggregation queries
-- **Cache Effectiveness**: 5x+ speedup for cached operations
-- **Memory Efficiency**: <1KB per record with linear scaling
-- **Concurrency**: 8-thread concurrent execution validated
+# Full test suite
+python -m pytest
 
-## Continuous Integration
+# Specific test file
+python -m pytest tests/unit/test_database/test_repository.py -v
 
-### Pre-commit Hooks
-- **Code Formatting**: black, isort
-- **Linting**: flake8, pylint
-- **Security Scanning**: bandit
-- **Test Execution**: pytest with coverage
+# Tests with specific marker
+python -m pytest -m "unit" -v
+python -m pytest -m "not slow" -v
+```
 
-### CI Pipeline Validation
-- **Multi-environment Testing**: Python 3.9+
-- **Operating System Coverage**: Windows, Linux, macOS
-- **Dependency Validation**: Requirements testing
-- **Performance Regression Detection**: Automated baseline comparison
+### pytest Configuration
 
-## Test Data Management
+```ini
+[tool:pytest]
+testpaths = tests
+addopts =
+    -v
+    --tb=short
+    --cov=src
+    --cov-report=html:htmlcov
+    --cov-fail-under=80
 
-### Synthetic Data Generation
-- **ISTAT-like Data**: Realistic test datasets
-- **Territory Codes**: Italian territorial structure simulation
-- **Time Series**: Multi-year temporal data patterns
-- **Category Hierarchies**: ISTAT classification simulation
+markers =
+    unit: Unit tests (fast, isolated)
+    integration: Integration tests
+    performance: Performance tests
+    slow: Tests that take >5 seconds
+```
 
-### Data Privacy
-- **No Real Data**: All test data is synthetic
-- **Anonymization**: No personal information in tests
-- **Cleanup Policies**: Automatic test data removal
+## 🚨 Testing Best Practices
 
-## Troubleshooting
+### Do's ✅
+
+- **Write tests first** (TDD approach when possible)
+- **Test edge cases** and error conditions
+- **Use descriptive test names**
+- **Keep tests independent**
+- **Mock external dependencies** in unit tests
+- **Test business logic** more than implementation details
+
+### Don'ts ❌
+
+- **Don't test framework code**
+- **Don't write tests that depend on order**
+- **Don't use real external services** in automated tests
+- **Don't ignore failing tests**
+- **Don't write overly complex tests**
+
+## 🔍 Debugging Tests
 
 ### Common Issues
 
-#### Windows File Locking
-- **Solution**: Implemented retry logic with exponential backoff
-- **Utility**: `safe_database_cleanup()` function
-- **Status**: Resolved - 0 teardown errors
+```bash
+# Test database issues
+pytest tests/integration/ -v -s --pdb
 
-#### Database Connection Issues
-- **Solution**: Connection pooling with proper lifecycle management
-- **Monitoring**: Real-time connection health checks
-- **Recovery**: Automatic reconnection mechanisms
+# Import path issues
+python -c "import sys; print('\n'.join(sys.path))"
 
-#### Performance Variations
-- **Solution**: Statistical baseline tracking with tolerance ranges
-- **Thresholds**: Configurable performance degradation alerts
-- **Analysis**: Median-based performance trend analysis
-
-## Future Testing Enhancements
-
-### Planned Improvements
-1. **Chaos Engineering**: Fault injection testing
-2. **Load Testing**: Stress testing under extreme loads
-3. **Data Quality Testing**: Automated data validation
-4. **Accessibility Testing**: UI/UX accessibility validation
-5. **Security Penetration Testing**: Advanced security validation
-
-### Automation Enhancements
-1. **Automated Test Generation**: AI-powered test case generation
-2. **Performance Profiling**: Automated bottleneck detection
-3. **Test Data Generation**: Dynamic synthetic data creation
-4. **Cross-browser Testing**: Multi-environment validation
-
-## Documentation Links
-
-- **Architecture Decision**: [ADR-002 Strategic Pivot to SQLite](docs/reference/adr/002-strategic-pivot-sqlite.md)
-- **Development Setup**: [CLAUDE.md](CLAUDE.md)
-- **API Documentation**: [API Reference](docs/api/)
-- **Performance Monitoring**: [scripts/performance_regression_detector.py](scripts/performance_regression_detector.py)
+# Show available fixtures
+pytest --fixtures
+```
 
 ---
 
-*Last Updated: 2025-07-25 - Version 8.3.0*
-*Testing Strategy Status: Updated for Day 8 FastAPI implementation*
+## 📞 Testing Support
+
+- **Documentation**: `docs/testing/` for detailed guides
+- **Questions**: Use GitHub Discussions
+- **Issues**: Report via GitHub Issues
+
+**Happy Testing! 🧪✨**
