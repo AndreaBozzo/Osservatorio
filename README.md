@@ -14,7 +14,7 @@
 [![JWT](https://img.shields.io/badge/Auth-JWT%20+%20API%20Keys-purple.svg)](docs/security/AUTHENTICATION.md)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Coverage](https://img.shields.io/badge/Coverage-70.34%25-yellow.svg)](tests/)
-[![Issue29](https://img.shields.io/badge/Issue%2029-Complete%20✅-brightgreen.svg)](scripts/validate_issue29_implementation.py)
+[![API](https://img.shields.io/badge/REST%20API-Production%20Ready%20🚀-brightgreen.svg)](http://localhost:8000/docs)
 
 ## 🚀 Project Status: Production-Ready Platform with Complete REST API
 
