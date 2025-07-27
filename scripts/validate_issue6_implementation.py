@@ -168,10 +168,15 @@ def validate_enhanced_features():
         print("✅ Threat level enumeration OK")
 
         # Test enhanced rate limiter initialization
+        from unittest.mock import patch
+
         mock_db = Mock(spec=SQLiteMetadataManager)
-        limiter = EnhancedRateLimiter(
-            sqlite_manager=mock_db, redis_url=None, adaptive_config=adaptive_config
-        )
+
+        # Mock the schema creation to avoid database calls
+        with patch.object(EnhancedRateLimiter, "_ensure_enhanced_schema"):
+            limiter = EnhancedRateLimiter(
+                sqlite_manager=mock_db, redis_url=None, adaptive_config=adaptive_config
+            )
         assert limiter.adaptive_config == adaptive_config
         print("✅ Enhanced rate limiter initialization OK")
 
@@ -239,13 +244,16 @@ def validate_backward_compatibility():
 
     try:
         # Test that existing rate limiter still works
-        from unittest.mock import Mock
+        from unittest.mock import Mock, patch
 
         from src.auth.rate_limiter import RateLimitConfig, SQLiteRateLimiter
         from src.database.sqlite.manager import SQLiteMetadataManager
 
         mock_db = Mock(spec=SQLiteMetadataManager)
-        basic_limiter = SQLiteRateLimiter(mock_db)
+
+        # Mock the schema creation to avoid database calls
+        with patch.object(SQLiteRateLimiter, "_ensure_rate_limit_schema"):
+            basic_limiter = SQLiteRateLimiter(mock_db)
         assert basic_limiter is not None
         print("✅ Basic rate limiter still functional")
 
