@@ -33,14 +33,21 @@ class TestFastAPIIntegration:
     def test_db_setup(self):
         """Setup test database with sample data"""
         try:
-            # Initialize test database
+            # Initialize test database with schema creation
             sqlite_manager = SQLiteMetadataManager(":memory:")
+            # Ensure schema is created
+            if hasattr(sqlite_manager, "schema"):
+                sqlite_manager.schema.create_schema()
+            else:
+                # Fallback: manually create the schema
+                sqlite_manager._create_schema()
+
             auth_manager = SQLiteAuthManager(sqlite_manager)
             jwt_manager = JWTManager(sqlite_manager)
 
             # Create test API key
-            api_key = auth_manager.create_api_key(
-                name="test_api_key", scopes=["read", "write", "admin"], rate_limit=1000
+            api_key = auth_manager.generate_api_key(
+                name="test_api_key", scopes=["read", "write", "admin"]
             )
 
             # Generate JWT token

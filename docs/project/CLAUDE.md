@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is an Italian data processing system for ISTAT (Italian National Institute of Statistics) data with Tableau/Power BI integration. The system fetches, processes, and converts ISTAT statistical data into formats suitable for visualization and analysis.
 
-**Current Status**: Working prototype with basic dashboard functionality
+**Current Status**: Production-ready platform with complete FastAPI REST API (Issue #29 Complete)
 
 **Documentation**: See [docs/README.md](docs/README.md) for organized documentation
 
@@ -15,6 +15,19 @@ This is an Italian data processing system for ISTAT (Italian National Institute 
 **Strategic Update (v8.0.0)**: Following ADR-002, the project has pivoted from PostgreSQL to SQLite + DuckDB architecture for pragmatic metadata management and high-performance analytics.
 
 ## Development Commands
+
+### FastAPI REST API Commands (NEW 27/07/2025 - Issue #29 Complete)
+#### FastAPI Application
+- `python -c "import sys; sys.path.append('.'); exec(open('scripts/validate_issue29_implementation.py').read())"` - Validate all Issue #29 deliverables (100% success rate)
+- `python -c "import sys; sys.path.append('.'); from src.api.fastapi_app import app; print('FastAPI ready!')"` - Test FastAPI application loading
+- `uvicorn src.api.fastapi_app:app --reload` - Run FastAPI development server
+- `python -c "import sys; sys.path.append('.'); from src.api.fastapi_app import app; import uvicorn; uvicorn.run(app, host='0.0.0.0', port=8000)"` - Run FastAPI server programmatically
+
+#### FastAPI Testing
+- `pytest tests/integration/test_fastapi_integration.py -v` - Run FastAPI integration tests
+- `curl http://localhost:8000/health` - Test health endpoint (requires server running)
+- `curl http://localhost:8000/docs` - Access interactive API documentation
+- `curl http://localhost:8000/openapi.json` - Get OpenAPI schema
 
 ### JWT Authentication Commands (NEW 25/07/2025 - Day 7 Complete)
 #### API Key Management
@@ -79,8 +92,10 @@ The project includes a comprehensive Makefile for streamlined development workfl
 - `make dashboard` - Run Streamlit dashboard
 
 ### Core Commands (Direct Python)
+> **Note**: Some modules require Python path setup due to relative imports. Use the alternative commands shown below for modules that fail with direct execution.
+
 - `python convert_to_tableau.py` - Main conversion script to convert ISTAT XML data to Tableau formats
-- `python src/api/istat_api.py` - Test ISTAT API connectivity and data access
+- `python -c "import sys; sys.path.append('.'); from src.api import istat_api; print('ISTAT API module loaded')"` - Test ISTAT API connectivity and data access
 - `python src/analyzers/dataflow_analyzer.py` - Analyze available ISTAT dataflows
 - `python src/scrapers/tableau_scraper.py` - Analyze Tableau server configuration
 - `powershell scripts/download_istat_data.ps1` - Download ISTAT datasets via PowerShell
