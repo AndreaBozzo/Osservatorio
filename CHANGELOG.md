@@ -14,6 +14,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [10.3.0] - 2025-07-28 - Issue #65: Codebase Cleanup - Obsolete Scrapers Removal Complete
+
+### 🧹 **Removed**
+
+#### 🗑️ **Issue #65: Obsolete Scrapers Component Cleanup**
+- **Complete Component Removal** - Eliminated disconnected scrapers with zero production usage
+  - `src/scrapers/tableau_scraper.py` (152 lines) - obsolete Tableau scraping functionality
+  - `tests/unit/test_tableau_scraper.py` (16 tests) - isolated scrapers test suite
+  - `tableauserverclient>=0.25` dependency from requirements.txt
+- **Documentation Cleanup** - Updated all references to reflect current architecture
+  - CLAUDE.md: Removed scraper command references and component descriptions
+  - README.md: Removed scrapers directory from architecture tree
+  - ARCHITECTURE.md: Removed scrapers from Business Logic Layer
+
+### 🚀 **Benefits Achieved**
+- **🧹 Cleaner Architecture**: Removed disconnected component with zero integration to production system
+- **📉 Reduced Complexity**: Eliminated unused external dependency (tableauserverclient)
+- **🎯 Focused Development**: Clear data ingestion strategy via ISTAT SDMX API (no scraping needed)
+- **📚 Better Documentation**: Architecture diagrams now reflect actual implementation
+- **⚡ Simplified Testing**: Removed isolated test suite reducing maintenance overhead
+
+### 🔍 **Impact Assessment**
+- **Zero functionality loss** - scrapers had no active usage in FastAPI endpoints or data pipelines
+- **No broken imports** - component was completely isolated from production code
+- **All existing tests pass** - factory pattern and converters work correctly
+- **Dependencies cleaned** - removed unused tableauserverclient package
+
+### 📊 **Current Architecture Alignment**
+**Production Data Flow**: FastAPI → SQLite/DuckDB → ISTAT SDMX API → PowerBI/Tableau
+*(Direct API access - no web scraping required)*
+
+---
+
 ## [10.2.0] - 2025-07-28 - Issues #59 & #62: SQLite Migration + BaseConverter Architecture Complete
 
 ### ✨ **Added**

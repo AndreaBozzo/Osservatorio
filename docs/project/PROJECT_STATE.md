@@ -1,15 +1,15 @@
 # PROJECT_STATE.md - Osservatorio Project Status & Evolution
 
-> **Ultimo aggiornamento**: 28 Luglio 2025 - ISSUES #59 & #62 COMPLETE ✅
-> **Versione**: 10.2.0 (Complete FastAPI + JWT Auth + PowerBI + SQLite Migration + BaseConverter Architecture)
+> **Ultimo aggiornamento**: 28 Luglio 2025 - ISSUES #59, #62 & #65 COMPLETE ✅
+> **Versione**: 10.3.0 (FastAPI + JWT Auth + PowerBI + SQLite Migration + BaseConverter + Codebase Cleanup)
 > **Maintainer**: Andrea Bozzo
 > **Scopo**: Stato reale del progetto con FastAPI REST API completa e architettura enterprise
 
 ## 🚀 Executive Summary
 
-**Osservatorio** ha raggiunto un **milestone enterprise-ready** con il completamento di **Issues #59 & #62: SQLite Migration + BaseConverter Architecture**. L'architettura completa **FastAPI + SQLite Migration + BaseConverter + DuckDB + PowerBI** rappresenta ora una soluzione enterprise-grade consolidata per analytics avanzati su dati statistici italiani.
+**Osservatorio** ha raggiunto un **milestone enterprise-ready** con il completamento di **Issues #59, #62 & #65: SQLite Migration + BaseConverter Architecture + Codebase Cleanup**. L'architettura **FastAPI + SQLite Migration + BaseConverter + DuckDB + PowerBI** rappresenta ora una soluzione enterprise-grade pulita e consolidata per analytics avanzati su dati statistici italiani.
 
-### 🎯 Stato Attuale (28 Luglio 2025) - ARCHITECTURE CONSOLIDATION v10.2.0 ✅
+### 🎯 Stato Attuale (28 Luglio 2025) - CLEAN ARCHITECTURE v10.3.0 ✅
 - ✅ **JSON to SQLite Migration** - **ISSUE #59 COMPLETE** (Latest)
   - Production-ready migration from JSON-based to SQLite dataset configurations
   - `scripts/migrate_json_to_sqlite.py` with comprehensive validation and backup
@@ -22,6 +22,11 @@
   - Factory pattern for centralized converter instantiation
   - PowerBI/Tableau converters now inherit from BaseIstatConverter
   - 18 comprehensive BaseConverter tests with 100% pass rate
+- ✅ **Codebase Cleanup** - **ISSUE #65 COMPLETE** (Latest)
+  - Removed obsolete scrapers component (152 lines) with zero production usage
+  - Eliminated unused `tableauserverclient` dependency
+  - Cleaned documentation to reflect actual architecture
+  - Direct ISTAT SDMX API access (no web scraping needed)
 - ✅ **FastAPI REST API Implementation** - **ISSUE #29 COMPLETE** (Day 8)
   - Complete FastAPI application with OpenAPI documentation
   - JWT authentication middleware integration
