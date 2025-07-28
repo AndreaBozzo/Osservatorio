@@ -1,9 +1,9 @@
 # 🏗️ Osservatorio - Architecture Documentation
 
 > **Comprehensive architectural documentation for the Osservatorio ISTAT data processing platform**
-> **Version**: 10.2.0
+> **Version**: 10.3.0
 > **Date**: July 28, 2025
-> **Status**: Enterprise Ready - Issues #59 & #62 Architecture Consolidation Complete
+> **Status**: Clean Architecture - Issues #59, #62 & #65 Complete, Prepared for Issue #66
 
 ---
 
@@ -164,10 +164,15 @@
 
 
 #### 🔌 Service Layer
-- **ISTAT API (`src/api/istat_api.py`)**
-  - SDMX API client with rate limiting
-  - 509+ dataset access
-  - Automatic retry and error handling
+- **ISTAT API Client (`src/api/istat_api.py`) - EVOLUTION TARGET**
+  - **Current**: Exploration tool with basic SDMX API access
+  - **Future Vision (Issue #66)**: Production-ready client with enterprise patterns
+    - Connection pooling for optimal resource management
+    - Circuit breaker pattern for resilience
+    - Repository integration for unified data access
+    - Async operations for improved performance
+    - Comprehensive testing and monitoring
+  - **509+ Dataset Access**: Complete ISTAT dataset catalog support
 
 - **PowerBI API (`src/api/powerbi_api.py`)**
   - Microsoft PowerBI Service integration
@@ -1410,7 +1415,27 @@ class EventPublisher:
 
 ### 🔮 Evolution Roadmap
 
-#### **Phase 2: Enhanced Platform (Month 1-3)**
+#### **Next Priority: Issue #66 - Production ISTAT API Client**
+
+**Architectural Vision**: Transform `src/api/istat_api.py` from exploration tool to production-ready component
+
+```
+Current State (Exploration)       →       Target State (Production)
+┌─────────────────────┐                  ┌─────────────────────┐
+│  Manual API Calls  │                  │  Connection Pool    │
+│  Basic Error Hand  │       ──→        │  Circuit Breaker    │
+│  Limited Testing   │                  │  Repository Integ   │
+│  Exploration Code  │                  │  Async Operations   │
+└─────────────────────┘                  └─────────────────────┘
+```
+
+**Integration Points**:
+- SQLite metadata layer (Issue #59 ✅)
+- DuckDB analytics engine (✅)
+- BaseConverter architecture (Issue #62 ✅)
+- Unified repository pattern (✅)
+
+#### **Phase 2: Enhanced Platform (Month 4-6)**
 ```
 Current State                    Future State
      │                              │
