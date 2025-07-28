@@ -1,9 +1,9 @@
 # 🏗️ Osservatorio - Architecture Documentation
 
 > **Comprehensive architectural documentation for the Osservatorio ISTAT data processing platform**
-> **Version**: 9.1.0
-> **Date**: July 25, 2025
-> **Status**: Enterprise Ready - Day 7 JWT Authentication Complete
+> **Version**: 10.2.0
+> **Date**: July 28, 2025
+> **Status**: Enterprise Ready - Issues #59 & #62 Architecture Consolidation Complete
 
 ---
 
@@ -95,8 +95,9 @@
 ┌─────────────────────────────────────────────────────────────────┐
 │                    🔧 Business Logic Layer                      │
 │  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐ │
-│  │   Analyzers     │  │   Converters    │  │   Scrapers      │ │
-│  │   (Analysis)    │  │   (Transform)   │  │   (Extract)     │ │
+│  │   Analyzers     │  │ 🏗️ Converters    │  │   Scrapers      │ │
+│  │   (Analysis)    │  │ (BaseConverter)  │  │   (Extract)     │ │
+│  │                 │  │ Factory Pattern  │  │                 │ │
 │  └─────────────────┘  └─────────────────┘  └─────────────────┘ │
 └─────────────────────────────────────────────────────────────────┘
                                 │
@@ -111,7 +112,7 @@
                                 │
                                 ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                    🗃️ Hybrid Storage Layer (ADR-002)            │
+│            🗃️ Hybrid Storage Layer (ADR-002) + Issue #59       │
 │  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐ │
 │  │   🗃️ SQLite      │  │   🦆 DuckDB      │  │   🔄 Unified    │ │
 │  │   (Metadata)    │  │   (Analytics)   │  │   Repository    │ │
@@ -119,6 +120,7 @@
 │  │  • User Prefs   │  │  • Time Series  │  │  • Smart Route  │ │
 │  │  • API Keys     │  │  • Aggregations │  │  • Cache Layer  │ │
 │  │  • Audit Logs   │  │  • Performance  │  │  • Transactions │ │
+│  │  • **Datasets** │  │  • Query Build  │  │  • **Migration**│ │
 │  └─────────────────┘  └─────────────────┘  └─────────────────┘ │
 └─────────────────────────────────────────────────────────────────┘
                                 │
@@ -152,10 +154,13 @@
   - **Priority Scoring**: Assigns importance scores
   - **Data Quality**: Validates data completeness
 
-- **Converters (`src/converters/`)**
-  - **PowerBIConverter**: XML → PowerBI formats
-  - **TableauConverter**: XML → Tableau formats
-  - **Multi-format Export**: CSV, Excel, JSON, Parquet
+- **Converters (`src/converters/`) - REFACTORED Issue #62**
+  - **BaseIstatConverter**: **NEW!** Abstract base class with shared XML parsing logic (342 lines)
+  - **ConverterFactory**: **NEW!** Factory pattern for centralized converter instantiation
+  - **PowerBIConverter**: XML → PowerBI formats (now inherits from BaseIstatConverter)
+  - **TableauConverter**: XML → Tableau formats (now inherits from BaseIstatConverter)
+  - **Code Reduction**: ~500 lines eliminated (~23% reduction in converter modules)
+  - **Multi-format Export**: CSV, Excel, JSON, Parquet with unified validation
 
 - **Scrapers (`src/scrapers/`)**
   - **TableauScraper**: Extracts Tableau configurations
@@ -178,9 +183,11 @@
   - RESTful API communication
 
 #### 🗃️ Hybrid Storage Layer (ADR-002)
-- **SQLite Metadata Layer (`src/database/sqlite/`)**
+- **SQLite Metadata Layer (`src/database/sqlite/`) - UPDATED Issue #59**
   - **SQLiteMetadataManager**: Thread-safe metadata management with connection pooling
   - **Schema Management**: 6-table schema for user preferences, API credentials, audit logs
+  - **Dataset Configuration**: **NEW!** `dataset_config.py` - Centralized dataset management with SQLite-first, JSON-fallback
+  - **Migration System**: **NEW!** JSON to SQLite migration with zero-downtime rollback capabilities
   - **Encryption Support**: Fernet encryption for sensitive data storage
   - **Audit Logging**: Comprehensive operation tracking and user activity monitoring
   - **Repository Pattern**: Unified interface combining SQLite and DuckDB operations
