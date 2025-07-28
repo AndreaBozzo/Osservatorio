@@ -1,303 +1,203 @@
-# Security Policy - Osservatorio ISTAT
+# Security Policy
 
-## 🛡️ Panoramica Sicurezza
+## 🛡️ Security Overview
 
-Il progetto Osservatorio ISTAT implementa multiple layer di sicurezza per proteggere dati, API e utenti. Questa policy definisce le linee guida, i controlli implementati e le procedure di security response.
+La sicurezza è una priorità fondamentale per il progetto Osservatorio ISTAT Data Platform. Questo documento descrive le nostre politiche di sicurezza, come segnalare vulnerabilità e le best practices per sviluppatori.
 
-## 🔒 Controlli di Sicurezza Implementati
+## 🚨 Reporting Security Vulnerabilities
 
-### Security Manager
-Il sistema utilizza `SecurityManager` in `src/utils/security_enhanced.py`:
+### How to Report
 
-- **Path Validation**: Protezione contro directory traversal
-- **Rate Limiting**: Controllo accessi API (ISTAT: 50 req/h, PowerBI: 100 req/h)
-- **Input Sanitization**: Validazione e sanitizzazione input utente
-- **IP Blocking**: Blocco IP per attività sospette
-- **Password Hashing**: PBKDF2 per password sicure
+**🔴 NON aprire issue pubbliche per vulnerabilità di sicurezza.**
 
-### Circuit Breaker Pattern
-Implementato in `src/utils/circuit_breaker.py`:
-- Resilienza per chiamate API esterne
-- Auto-recovery dopo fallimenti
-- Monitoring stato servizi
+Per segnalare vulnerabilità di sicurezza:
 
-### JWT Authentication System
-Sistema completo di autenticazione in `src/auth/`:
-- **API Keys**: Chiavi crittograficamente sicure con scopes
-- **JWT Tokens**: HS256/RS256 con blacklisting e refresh
-- **Rate Limiting**: Sliding window per protezione DDoS
-- **Security Headers**: OWASP-compliant middleware
-- **Transaction Safety**: Gestione sicura database SQLite
-
-### Secure File Operations
-Tutte le operazioni file usano `SecurePathValidator`:
-- Validazione estensioni file (whitelist)
-- Prevenzione path traversal (`../`)
-- Protezione nomi riservati Windows
-- Validazione percorsi assoluti
-
-## 🚨 Vulnerabilità e Mitigazioni
-
-### Input Validation
-**Rischi**: XSS, SQL Injection, Command Injection
-**Mitigazioni**:
-```python
-# Automatic input sanitization
-from src.utils.security_enhanced import security_manager
-clean_input = security_manager.sanitize_input(user_input)
-
-# Path validation
-from src.utils.secure_path import SecurePathValidator
-validator = SecurePathValidator()
-safe_path = validator.validate_path(file_path)
-```
-
-### API Security
-**Rischi**: Rate limiting bypass, unauthorized access
-**Mitigazioni**:
-- Rate limiting per endpoint (configurabile)
-- HTTPS enforcement su tutte le chiamate
-- Token validation per PowerBI
-- OAuth per Tableau
-
-### File System Security
-**Rischi**: Directory traversal, file overwrites
-**Mitigazioni**:
-- Path validation su tutti i file operations
-- Extension whitelist: `.json, .csv, .xlsx, .xml, .ps1`
-- Base directory restrictions
-- Temporary file management sicuro
-
-## 🔍 Security Scanning
-
-### Automated Scanning
-Il progetto include scanning automatico:
-
-```bash
-# Security scan con Bandit
-bandit -r src/ -f json -o security_report.json
-
-# Dependency vulnerability scan
-safety check --json --output safety_report.json
-
-# Pre-commit security hooks
-pre-commit run --all-files
-```
-
-### Manual Security Review
-Checklist per review manuale:
-- [ ] Nuove API endpoints validano input
-- [ ] File operations usano SecurePathValidator
-- [ ] Secrets non hardcoded nel codice
-- [ ] HTTPS enforcement su external calls
-- [ ] Proper error handling senza info leak
-
-## 🚨 Vulnerability Response
-
-### Severity Levels
-
-#### CRITICAL (CVSS 9.0-10.0)
-- Remote code execution
-- Data breach con PII
-- Admin privilege escalation
-**Response**: Immediate patch + security advisory
-
-#### HIGH (CVSS 7.0-8.9)
-- Local privilege escalation
-- Significant data exposure
-- Authentication bypass
-**Response**: 72h patch timeline
-
-#### MEDIUM (CVSS 4.0-6.9)
-- Information disclosure
-- DoS attacks
-- Input validation issues
-**Response**: Next release cycle
-
-#### LOW (CVSS 0.1-3.9)
-- Minor information leaks
-- Non-exploitable weaknesses
-**Response**: Best effort in future releases
-
-### Reporting Process
-
-#### Per Vulnerabilità Critiche
-1. **Email**: [inserire email sicurezza]
-2. **Encrypted**: Usa PGP se possibile
-3. **Information**:
-   - Descrizione dettagliata
-   - Steps to reproduce
-   - Potential impact
-   - Suggested fix (if any)
-
-#### Per Issues Meno Critiche
-1. GitHub Security Advisory (preferred)
-2. Private issue su GitHub
-3. Email normale per low severity
+1. **Email**: Invia una email a [security@osservatorio-istat.it](mailto:security@osservatorio-istat.it)
+2. **GitHub Security**: Usa [GitHub Security Advisories](https://github.com/AndreaBozzo/Osservatorio/security/advisories)
+3. **Private Disclosure**: Includi tutti i dettagli possibili per la riproduzione
 
 ### Response Timeline
-- **Acknowledgment**: 24h
-- **Initial assessment**: 72h
-- **Fix timeline**: Based on severity
-- **Public disclosure**: After fix released
 
-## 🔐 Development Security Guidelines
+| Timeframe | Action |
+|-----------|--------|
+| **24 hours** | Acknowledgment della segnalazione |
+| **7 days** | Valutazione iniziale e severità |
+| **30 days** | Fix development e testing |
+| **60 days** | Release patch e disclosure coordinata |
 
-### Code Security
-```python
-# ✅ Good: Input validation
-def process_file(file_path):
-    validator = SecurePathValidator()
-    safe_path = validator.validate_path(file_path)
-    return safe_open(safe_path)
+## 🔒 Supported Versions
 
-# ❌ Bad: Direct file access
-def process_file(file_path):
-    return open(file_path)  # Vulnerable to path traversal
+Le seguenti versioni ricevono aggiornamenti di sicurezza:
+
+| Version | Supported | End of Life |
+|---------|-----------|-------------|
+| 10.x.x (FastAPI) | ✅ Yes | Active |
+| 9.x.x (Streamlit) | ✅ Yes | 2024-12-31 |
+| 8.x.x | ❌ No | 2024-06-30 |
+| < 8.0 | ❌ No | End of Life |
+
+## 🛡️ Security Architecture
+
+### Authentication & Authorization
+
+#### Security Features
+
+- **JWT Authentication**: Secure token-based authentication
+- **API Key Management**: Cryptographically secure API keys
+- **Scope-Based Access**: Granular permission system
+- **Enhanced Rate Limiting**: Advanced DoS protection with adaptive algorithms
+- **Distributed Protection**: Redis-based rate limiting across multiple instances
+- **IP Blocking**: Automatic blocking of suspicious IP addresses
+- **Security Monitoring**: Real-time threat detection and alerting
+- **Audit Logging**: Comprehensive security event tracking
+
+#### Enhanced Rate Limiting Features (v10.1.0+)
+
+- **Adaptive Rate Limiting**: Automatically adjusts limits based on API performance
+- **Suspicious Activity Detection**: AI-powered threat pattern recognition
+- **Distributed Rate Limiting**: Redis support for multi-instance deployments
+- **Real-time Security Dashboard**: Live monitoring and threat assessment
+- **Automatic IP Blocking**: Immediate response to critical threats
+
+📖 **See [Enhanced Rate Limiting Documentation](docs/security/ENHANCED_RATE_LIMITING.md) for complete details.**
+
+### Data Protection
+
+#### At Rest
+- **SQLite Encryption**: Sensitive data encrypted using AES-256
+- **Configuration Security**: Secrets managed via environment variables
+- **File Permissions**: Restrictive file system permissions
+
+#### In Transit
+- **HTTPS Only**: All API communications over TLS 1.2+
+- **CORS Configuration**: Strict origin policies
+- **Header Security**: Security headers (HSTS, CSP, etc.)
+
+## 🔍 Security Testing
+
+### Automated Security Scanning
+
+```bash
+# Dependency vulnerability scanning
+pip-audit
+
+# Code security analysis
+bandit -r src/
+
+# Docker security scanning (if applicable)
+docker scan osservatorio:latest
 ```
 
-### API Security
-```python
-# ✅ Good: Rate limiting
-@security_manager.rate_limit('istat_api')
-def call_istat_api():
-    return requests.get(url, verify=True)  # HTTPS
+### Manual Security Testing
 
-# ❌ Bad: No rate limiting
-def call_istat_api():
-    return requests.get(url, verify=False)  # HTTP + no rate limit
+#### Authentication Testing
+```bash
+# Test JWT token validation
+curl -H "Authorization: Bearer invalid_token" \
+     http://localhost:8000/datasets
+
+# Test rate limiting
+for i in {1..200}; do
+  curl -H "Authorization: Bearer $TOKEN" \
+       http://localhost:8000/datasets &
+done
 ```
+
+## 🔧 Security Configuration
 
 ### Environment Variables
+
 ```bash
-# ✅ Good: Use environment variables
-POWERBI_CLIENT_SECRET=your_secret
+# .env file - NEVER commit to git
+SECRET_KEY=your-256-bit-secret-key
+JWT_SECRET_KEY=your-jwt-secret-key
+DATABASE_ENCRYPTION_KEY=your-db-encryption-key
 
-# ❌ Bad: Hardcoded secrets
-client_secret = "actual_secret_here"
+# Optional security settings
+SECURITY_HSTS_MAX_AGE=31536000
+SECURITY_CONTENT_TYPE_OPTIONS=nosniff
+SECURITY_FRAME_OPTIONS=DENY
 ```
 
-### Logging Security
+## 🚨 Security Incidents
+
+### Incident Response Plan
+
+1. **Detection**: Automated monitoring e manual reports
+2. **Assessment**: Valutazione severità e impatto
+3. **Containment**: Isolamento del problema
+4. **Eradication**: Rimozione della vulnerabilità
+5. **Recovery**: Ripristino servizi sicuri
+6. **Lessons Learned**: Post-incident review
+
+## 🔐 Developer Security Guidelines
+
+### Secure Coding Practices
+
+#### Input Validation
 ```python
-# ✅ Good: Safe logging
-logger.info(f"Processing file: {filename}")
-
-# ❌ Bad: Sensitive data in logs
-logger.info(f"API key: {api_key}")  # Never log secrets
+# Sempre validare input utente
+def validate_dataset_id(dataset_id: str) -> str:
+    if not re.match(r'^[A-Z0-9_]+$', dataset_id):
+        raise ValueError("Invalid dataset ID format")
+    return dataset_id
 ```
 
-## 🛠️ Security Tools Configuration
-
-### Bandit Configuration
-File `.bandit`:
-```yaml
-skips: ['B101']  # Skip assert_used (test files)
-exclude_dirs: ['tests', 'venv']
-```
-
-### Pre-commit Security Hooks
-File `.pre-commit-config.yaml`:
-```yaml
-repos:
-  - repo: https://github.com/PyCQA/bandit
-    rev: '1.7.5'
-    hooks:
-      - id: bandit
-        args: ['-r', 'src/']
-  - repo: https://github.com/gitguardian/ggshield
-    rev: v1.25.0
-    hooks:
-      - id: ggshield
-        language: python
-        stages: [commit]
-```
-
-### Safety Configuration
-File `pyproject.toml`:
-```toml
-[tool.safety]
-ignore = []  # Add CVE IDs to ignore if needed
-```
-
-## 📊 Security Monitoring
-
-### Metrics da Monitorare
-- Rate limiting triggers per IP
-- Failed authentication attempts
-- Suspicious file access patterns
-- API error rates anomali
-- Security scan results trends
-
-### Automated Monitoring
+#### Secret Management
 ```python
-# Security metrics collection
-from src.utils.security_enhanced import security_manager
+# Mai hardcode secrets
+# ❌ Bad
+api_key = "sk-1234567890abcdef"
 
-# Get security stats
-stats = security_manager.get_security_stats()
-# {
-#   'rate_limit_violations': 5,
-#   'blocked_ips': ['192.168.1.100'],
-#   'failed_authentications': 10
-# }
+# ✅ Good
+api_key = os.getenv("API_KEY")
+if not api_key:
+    raise ValueError("API_KEY environment variable required")
 ```
 
-### Security Alerts
-Setup alerts per:
-- Multiple rate limit violations
-- New vulnerabilities in dependencies
-- Failed security scans in CI/CD
-- Suspicious access patterns
+## 📊 Security Metrics
 
-## ✅ Security Checklist
+### Monitoring
 
-### Per Ogni Release
-- [ ] Security scan passed (bandit + safety)
-- [ ] Dependencies updated per vulnerabilities
-- [ ] Manual security review per new features
-- [ ] Secrets rotation se necessario
-- [ ] Security documentation updated
+- Failed authentication attempts per hour
+- Rate limit violations per endpoint
+- Invalid JWT tokens per day
+- SQL injection attempts per request
+- Abnormal request patterns (continuous)
+- **Enhanced Security Metrics (v10.1.0+)**:
+  - Threat score assessment (0-100%)
+  - Blocked IP addresses count
+  - Adaptive rate limit adjustments
+  - API response time degradation
+  - Suspicious activity pattern detection
 
-### Per Nuove Features
-- [ ] Input validation implementata
-- [ ] Rate limiting considerato
-- [ ] File operations use SecurePathValidator
-- [ ] Error handling non leaka informazioni
-- [ ] Tests di sicurezza inclusi
+### Alerting Thresholds
 
-### Per Dependencies
-- [ ] Security scan nuove dependencies
-- [ ] Source code review se possibile
-- [ ] Versioni pinned in requirements.txt
-- [ ] Regular updates per security patches
+| Metric | Warning | Critical |
+|--------|---------|----------|
+| Failed auth attempts | >10/hour | >50/hour |
+| Rate limit violations | >5/minute | >20/minute |
+| Invalid JWT tokens | >20/day | >100/day |
+| Error rate | >5% | >10% |
 
-## 📚 Security Training
+## 📚 Security Resources
 
-### Risorse Raccomandate
-- [OWASP Top 10](https://owasp.org/www-project-top-ten/)
-- [Python Security Best Practices](https://python.org/dev/security/)
-- [Secure Coding Guidelines](https://wiki.sei.cmu.edu/confluence/display/seccode)
+### Documentation
+- [OWASP API Security Top 10](https://owasp.org/www-project-api-security/)
+- [FastAPI Security Best Practices](https://fastapi.tiangolo.com/tutorial/security/)
+- [SQLite Security Guidelines](https://www.sqlite.org/security.html)
 
-### Team Training
-- Quarterly security awareness sessions
-- Code review security guidelines
-- Incident response procedures
-- Tool training (bandit, safety, etc.)
+### Tools
+- **Static Analysis**: `bandit`, `semgrep`
+- **Dependency Scanning**: `pip-audit`, `safety`
+- **Runtime Protection**: `rate-limiting`, `input-validation`
 
-## 📞 Contatti Security
+---
 
-- **Security Team**: [inserire contatti]
-- **Emergency Response**: [inserire contatti 24/7]
-- **PGP Keys**: [link a chiavi pubbliche]
+## 📞 Security Contact
 
-## 📝 Policy Updates
+- **Security Email**: [security@osservatorio-istat.it](mailto:security@osservatorio-istat.it)
+- **Project Maintainer**: [Andrea Bozzo](https://github.com/AndreaBozzo)
+- **Security Advisories**: [GitHub Security Tab](https://github.com/AndreaBozzo/Osservatorio/security)
 
-Questa policy viene rivista ogni 6 mesi o dopo:
-- Incident di sicurezza significativi
-- Cambio architettura/tecnologie
-- Update guidelines industry standard
-- Feedback da security audits
-
-**Last Updated**: 2025-01-20
-**Next Review**: 2025-07-20
-**Version**: 8.1.0
+**Remember: Security is everyone's responsibility! 🛡️**

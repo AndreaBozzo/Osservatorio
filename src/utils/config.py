@@ -93,4 +93,38 @@ def get_config():
         "rate_limit_requests_per_day": int(
             os.getenv("RATE_LIMIT_REQUESTS_PER_DAY", "10000")
         ),
+        # Enhanced Rate Limiting Configuration
+        "enhanced_rate_limiting_enabled": os.getenv(
+            "ENHANCED_RATE_LIMITING_ENABLED", "true"
+        ).lower()
+        == "true",
+        "redis_url": os.getenv("REDIS_URL"),  # For distributed rate limiting
+        "adaptive_rate_limiting_enabled": os.getenv(
+            "ADAPTIVE_RATE_LIMITING_ENABLED", "true"
+        ).lower()
+        == "true",
+        "response_time_threshold_ms": float(
+            os.getenv("RESPONSE_TIME_THRESHOLD_MS", "2000")
+        ),
+        "rate_limit_adjustment_factor": float(
+            os.getenv("RATE_LIMIT_ADJUSTMENT_FACTOR", "0.8")
+        ),
+        "min_adjustment_ratio": float(os.getenv("MIN_ADJUSTMENT_RATIO", "0.1")),
+        "max_adjustment_ratio": float(os.getenv("MAX_ADJUSTMENT_RATIO", "2.0")),
+        "suspicious_activity_threshold": float(
+            os.getenv("SUSPICIOUS_ACTIVITY_THRESHOLD", "0.5")
+        ),
+        "auto_block_critical_threats": os.getenv(
+            "AUTO_BLOCK_CRITICAL_THREATS", "true"
+        ).lower()
+        == "true",
+        "ip_block_duration_hours": int(os.getenv("IP_BLOCK_DURATION_HOURS", "24")),
+        "security_monitoring_enabled": os.getenv(
+            "SECURITY_MONITORING_ENABLED", "true"
+        ).lower()
+        == "true",
+        "alert_email": os.getenv("SECURITY_ALERT_EMAIL"),
+        "cleanup_data_retention_days": int(
+            os.getenv("CLEANUP_DATA_RETENTION_DAYS", "30")
+        ),
     }

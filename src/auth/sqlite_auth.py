@@ -159,6 +159,22 @@ class SQLiteAuthManager:
             with self.db.transaction() as conn:
                 cursor = conn.cursor()
 
+                # Generate unique service_name to avoid constraint conflicts
+                base_service_name = f"api_key_{name.lower().replace(' ', '_')}"
+                service_name = base_service_name
+                counter = 1
+
+                # Check if service_name already exists and make it unique
+                while True:
+                    cursor.execute(
+                        "SELECT id FROM api_credentials WHERE service_name = ?",
+                        (service_name,),
+                    )
+                    if not cursor.fetchone():
+                        break
+                    service_name = f"{base_service_name}_{counter}"
+                    counter += 1
+
                 cursor.execute(
                     """
                     INSERT INTO api_credentials
@@ -167,7 +183,7 @@ class SQLiteAuthManager:
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                     (
-                        f"api_key_{name.lower().replace(' ', '_')}",
+                        service_name,
                         key_hash,
                         security.encrypt_data(json.dumps(scopes)),  # Encrypted scopes
                         name,

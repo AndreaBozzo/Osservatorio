@@ -169,6 +169,16 @@ dmypy.json
 security-report.json
 *.har
 
+# Authentication and credentials (test files)
+*token*.txt
+*key*.txt
+*credential*.txt
+*secret*.txt
+api_key_*.json
+jwt_*.json
+auth_test_*.json
+test_auth_*.json
+
 # Documentation build files
 docs/_build/
 docs/build/
