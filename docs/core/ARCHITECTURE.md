@@ -162,9 +162,6 @@
   - **Code Reduction**: ~500 lines eliminated (~23% reduction in converter modules)
   - **Multi-format Export**: CSV, Excel, JSON, Parquet with unified validation
 
-- **Scrapers (`src/scrapers/`)**
-  - **TableauScraper**: Extracts Tableau configurations
-  - **Data Extraction**: Handles complex XML structures
 
 #### 🔌 Service Layer
 - **ISTAT API (`src/api/istat_api.py`)**

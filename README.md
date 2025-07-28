@@ -210,8 +210,6 @@ Osservatorio/                              # 🏠 Root directory
 │   │   └── tableau_converter.py           # XML → Tableau formats
 │   ├── 🔍 analyzers/                      # Data analysis (2 files)
 │   │   └── dataflow_analyzer.py           # Dataset categorization
-│   ├── 🕷️ scrapers/                       # Web scraping utilities (2 files)
-│   │   └── tableau_scraper.py             # Tableau configuration analysis
 │   ├── 🦆 database/                       # Database modules (11 files)
 │   │   ├── duckdb/                        # DuckDB analytics engine (7 files)
 │   │   │   ├── manager.py                 # Connection management & pooling

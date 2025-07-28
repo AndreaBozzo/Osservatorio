@@ -101,7 +101,6 @@ The project includes a comprehensive Makefile for streamlined development workfl
 - `python convert_to_tableau.py` - Main conversion script to convert ISTAT XML data to Tableau formats
 - `python -c "import sys; sys.path.append('.'); from src.api import istat_api; print('ISTAT API module loaded')"` - Test ISTAT API connectivity and data access
 - `python src/analyzers/dataflow_analyzer.py` - Analyze available ISTAT dataflows
-- `python src/scrapers/tableau_scraper.py` - Analyze Tableau server configuration
 - `powershell scripts/download_istat_data.ps1` - Download ISTAT datasets via PowerShell
 
 ### PowerBI Integration Commands (Enterprise-Ready)
@@ -309,7 +308,6 @@ The project includes a comprehensive Makefile for streamlined development workfl
    - `src/integrations/powerbi/metadata_bridge.py` - Data governance and lineage tracking
    - `examples/powerbi_integration_demo.py` - Complete PowerBI enterprise demo
    - `scripts/validate_powerbi_offline.py` - 100% offline validation system
-   - `src/scrapers/tableau_scraper.py` - Tableau server integration
 
 2. **Data Processing Architecture**:
    - Raw ISTAT data is fetched via SDMX API endpoints
@@ -543,7 +541,6 @@ The project includes a developing test framework with basic coverage:
    - `test_dataflow_analyzer.py` - ISTAT dataflow analysis
    - `test_istat_api.py` - ISTAT API connectivity
    - `test_powerbi_api.py` - PowerBI API integration
-   - `test_tableau_scraper.py` - Tableau server analysis
    - `test_converters.py` - Data format conversions
    - `test_secure_path.py` - Security utilities and path validation
    - `test_powerbi_converter.py` - PowerBI converter functionality (14 tests)
