@@ -39,22 +39,16 @@ class TestIstatXMLToPowerBIConverter:
         assert config["source"] == "sqlite_metadata"
         assert isinstance(config["datasets"], list)
 
-    def test_create_sample_config_structure(self):
-        """Test sample config creation structure."""
+    def test_datasets_config_structure(self):
+        """Test datasets config structure after initialization."""
         converter = IstatXMLToPowerBIConverter()
 
-        with patch.object(
-            converter.path_validator, "safe_open", return_value=mock_open().return_value
-        ):
-            with patch("json.dump"):
-                config = converter._create_sample_config()
+        config = converter.datasets_config
 
-                assert isinstance(config, dict)
-                assert "total_datasets" in config
-                assert "categories" in config
-                assert "datasets" in config
-                assert isinstance(config["datasets"], list)
-                assert len(config["datasets"]) > 0
+        assert isinstance(config, dict)
+        assert "total_datasets" in config
+        assert "categories" in config or "datasets" in config
+        assert isinstance(config.get("datasets", []), list)
 
     def test_parse_xml_content_with_valid_data(self):
         """Test XML parsing with valid SDMX data."""

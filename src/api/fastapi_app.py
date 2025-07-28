@@ -43,7 +43,9 @@ from src.utils.logger import get_logger
 
 from .dependencies import (
     check_rate_limit,
+    get_auth_manager,
     get_current_user,
+    get_jwt_manager,
     get_repository,
     handle_api_errors,
     log_api_request,
@@ -443,7 +445,9 @@ async def get_dataset_timeseries(
 async def create_auth_token(
     api_key_request: APIKeyCreate,
     repository=Depends(get_repository),
-    current_user=Depends(require_admin),
+    current_user=Depends(require_admin()),
+    auth_manager=Depends(get_auth_manager),
+    jwt_manager=Depends(get_jwt_manager),
     _rate_limit=Depends(check_rate_limit),
     _audit=Depends(log_api_request),
 ):
@@ -454,15 +458,6 @@ async def create_auth_token(
     Returns the API key (shown only once) and JWT token for immediate use.
     """
     try:
-        from src.auth.jwt_manager import JWTManager
-        from src.auth.sqlite_auth import SQLiteAuthManager
-        from src.database.sqlite.manager import get_metadata_manager
-
-        # Initialize managers
-        sqlite_manager = get_metadata_manager()
-        auth_manager = SQLiteAuthManager(sqlite_manager)
-        jwt_manager = JWTManager(sqlite_manager)
-
         # Create API key
         expires_days = None
         if api_key_request.expires_at:
@@ -513,7 +508,8 @@ async def create_auth_token(
 @handle_api_errors
 async def list_api_keys(
     repository=Depends(get_repository),
-    current_user=Depends(require_admin),
+    current_user=Depends(require_admin()),
+    auth_manager=Depends(get_auth_manager),
     _rate_limit=Depends(check_rate_limit),
     _audit=Depends(log_api_request),
 ):
@@ -524,13 +520,6 @@ async def list_api_keys(
     Returns key information without sensitive data.
     """
     try:
-        from src.auth.sqlite_auth import SQLiteAuthManager
-        from src.database.sqlite.manager import get_metadata_manager
-
-        # Initialize manager
-        sqlite_manager = get_metadata_manager()
-        auth_manager = SQLiteAuthManager(sqlite_manager)
-
         # Get all API keys
         api_keys = auth_manager.list_api_keys()
 
@@ -570,7 +559,7 @@ async def get_usage_analytics(
     endpoint: Optional[str] = Query(None, description="Filter by endpoint"),
     group_by: str = Query("day", description="Group by period (day, week, month)"),
     repository=Depends(get_repository),
-    current_user=Depends(require_admin),
+    current_user=Depends(require_admin()),
     _rate_limit=Depends(check_rate_limit),
     _audit=Depends(log_api_request),
 ):

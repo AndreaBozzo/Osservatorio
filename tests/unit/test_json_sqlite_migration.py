@@ -197,7 +197,7 @@ class TestJSONSQLiteMigration:
 
             os.chdir(original_cwd)
 
-    @patch("src.converters.powerbi_converter.create_secure_validator")
+    @patch("src.converters.base_converter.create_secure_validator")
     def test_powerbi_converter_sqlite_integration(self, mock_validator):
         """Test PowerBI converter with SQLite configuration."""
         # Mock the secure validator to avoid path issues
@@ -233,7 +233,7 @@ class TestJSONSQLiteMigration:
 
             os.chdir(original_cwd)
 
-    @patch("src.converters.tableau_converter.create_secure_validator")
+    @patch("src.converters.base_converter.create_secure_validator")
     def test_tableau_converter_sqlite_integration(self, mock_validator):
         """Test Tableau converter with SQLite configuration."""
         # Mock the secure validator to avoid path issues

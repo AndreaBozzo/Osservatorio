@@ -142,7 +142,7 @@ The project includes a comprehensive Makefile for streamlined development workfl
 - `pip install -r requirements.txt` - Install dependencies
 - `pip install -r requirements-dev.txt` - Install development dependencies
 
-### SQLite + DuckDB Hybrid Commands (UPDATED 28/07/2025 - Issue #59 Complete)
+### SQLite + DuckDB Hybrid Commands (UPDATED 28/07/2025 - Issues #59 & #62 Complete)
 #### DuckDB Analytics (Production Ready)
 - `python examples/duckdb_demo.py` - Complete DuckDB demonstration with real ISTAT data
 - `python -c "from src.database.duckdb import SimpleDuckDBAdapter; adapter = SimpleDuckDBAdapter(); adapter.create_istat_schema(); print('Schema created')"` - Quick schema setup
@@ -160,6 +160,14 @@ The project includes a comprehensive Makefile for streamlined development workfl
   - `python scripts/migrate_json_to_sqlite.py` - Migrate JSON dataset configs to SQLite with backup and validation
   - `python -c "from src.database.sqlite.dataset_config import get_dataset_config_manager; manager = get_dataset_config_manager(); print(f'Datasets: {manager.get_datasets_config()[\"total_datasets\"]}')"` - Test dataset config manager
   - `pytest tests/unit/test_json_sqlite_migration.py -v` - Run JSON migration tests (19 tests, comprehensive coverage)
+
+#### BaseConverter Architecture (NEW 28/07/2025 - Issue #62 Complete)
+- **NEW! Unified Converter Foundation (Issue #62)**:
+  - `pytest tests/unit/test_base_converter.py -v` - Run BaseConverter architecture tests (18 tests)
+  - `python -c "from src.converters.factory import create_powerbi_converter, create_tableau_converter; print('Factory pattern ready')"` - Test converter factory
+  - **Code Reduction**: ~500 lines eliminated (~23% reduction in converter modules)
+  - **Architecture**: Abstract BaseIstatConverter with PowerBI/Tableau specializations
+  - **Factory Pattern**: Centralized converter creation with `ConverterFactory.create_converter(target)`
 
 #### Unified Data Repository (Day 4 COMPLETED)
 - `python -c "from src.database.sqlite.repository import UnifiedDataRepository; repo = UnifiedDataRepository(); print('Unified repo ready')"` - Test unified data access
@@ -313,7 +321,7 @@ The project includes a comprehensive Makefile for streamlined development workfl
    - Data quality validation with completeness scoring
    - Programmatic conversion APIs for both PowerBI and Tableau
 
-3. **Configuration System (UPDATED 28/07/2025 - Issue #59 Complete)**:
+3. **Configuration System (UPDATED 28/07/2025 - Issues #59 & #62 Complete)**:
    - `src/utils/config.py` - Centralized configuration management with environment variables
    - `src/utils/logger.py` - Loguru-based logging configuration
    - `src/database/sqlite/dataset_config.py` - **NEW!** SQLite-based dataset configuration manager with caching
@@ -403,6 +411,11 @@ The project includes a comprehensive Makefile for streamlined development workfl
       - `schema.py` - Metadata schema (6 tables)
       - `repository.py` - Unified data repository facade
       - `dataset_config.py` - **NEW!** Dataset configuration manager with caching (Issue #59)
+   - `src/converters/` - **REFACTORED!** Unified converter architecture (Issue #62):
+      - `base_converter.py` - **NEW!** Abstract BaseIstatConverter with shared XML parsing logic
+      - `factory.py` - **NEW!** Factory pattern for converter instantiation
+      - `powerbi_converter.py` - **UPDATED!** Now inherits from BaseIstatConverter
+      - `tableau_converter.py` - **UPDATED!** Now inherits from BaseIstatConverter
   - `integrations/` - External service integrations
     - `powerbi/` - PowerBI enterprise integration (5 files)
       - `optimizer.py` - Star schema optimizer
@@ -432,6 +445,7 @@ The project includes a comprehensive Makefile for streamlined development workfl
     - `test_duckdb_integration.py` - NEW! Comprehensive DuckDB tests (45 tests)
     - `test_simple_adapter.py` - NEW! Simple DuckDB adapter tests
     - `test_json_sqlite_migration.py` - **NEW!** JSON to SQLite migration tests (19 tests, Issue #59)
+    - `test_base_converter.py` - **NEW!** BaseConverter architecture tests (18 tests, Issue #62)
     - `test_tableau_api.py` - Comprehensive Tableau API tests (20 tests)
     - `test_temp_file_manager.py` - Temp file management tests (26 tests)
     - `test_istat_api.py` - Enhanced ISTAT API tests (25 tests)
@@ -653,6 +667,7 @@ files = converter._generate_powerbi_formats(df, dataset_info)
 - **New**: To categorize datasets: Use `_categorize_dataset()` for automatic categorization with priority
 - **Issue #59**: To migrate JSON configs to SQLite: Run `python scripts/migrate_json_to_sqlite.py` for centralized configuration management
 - **Issue #59**: To rollback migration: Follow procedures in `docs/guides/JSON_SQLITE_MIGRATION_ROLLBACK.md` for safe rollback
+- **Issue #62**: BaseConverter architecture implemented: Use `from src.converters.factory import create_powerbi_converter, create_tableau_converter` for unified converter access
 
 ## Recent Updates (January 2025)
 
@@ -811,7 +826,7 @@ files = converter._generate_powerbi_formats(df, dataset_info)
 - **Coverage**: Improved with DuckDB modules
 - **NEW: DuckDB**: High-performance analytics engine integrated
 
-## Recent Updates (28/07/2025) - Issue #59: JSON to SQLite Migration Complete
+## Recent Updates (28/07/2025) - Issues #59 & #62: SQLite Migration + BaseConverter Architecture Complete
 
 ### 🔄 **Issue #59 Implementation - JSON to SQLite Dataset Config Migration**
 - **Complete Migration System** - Full migration from JSON-based to SQLite dataset configurations
@@ -830,11 +845,24 @@ files = converter._generate_powerbi_formats(df, dataset_info)
   - Pre/post migration validation with data integrity checks
   - Performance improvements verified through caching benchmarks
 
-### 🚀 **Migration Benefits Achieved**
-- **Centralized Configuration**: All 14 dataset configurations now stored in SQLite metadata database
-- **Performance Improved**: SQLite queries with caching vs JSON file reads for each converter initialization
-- **Backward Compatible**: Seamless fallback to JSON if SQLite unavailable, ensuring zero service disruption
-- **Production Ready**: Comprehensive testing, validation, and rollback procedures documented and tested
+### 🏗️ **Issue #62 Implementation - BaseConverter Architecture Consolidation**
+- **Complete Code Deduplication** - Unified converter foundation eliminating duplicate code
+  - Abstract BaseIstatConverter (`src/converters/base_converter.py`) - 342 lines of shared logic
+  - Factory Pattern (`src/converters/factory.py`) - Centralized converter instantiation with lazy loading
+  - PowerBI/Tableau Inheritance - Both converters now inherit from BaseIstatConverter
+  - BaseConverter Tests (`tests/unit/test_base_converter.py`) - 18 comprehensive tests with 100% pass rate
+- **Architectural Benefits** - Strategic foundation for extensible converter ecosystem
+  - **Code Reduction**: ~500 lines eliminated (~23% reduction in converter modules)
+  - **Single Source of Truth**: Unified XML parsing, configuration loading, and data validation
+  - **Extensibility**: Plugin-ready architecture for future converter types (Excel, CSV, etc.)
+  - **Maintenance**: Simplified bug fixes and feature additions across all converters
+
+### 🚀 **Combined Benefits Achieved (Issues #59 & #62)**
+- **Centralized Configuration**: All 14 dataset configurations now stored in SQLite metadata database (Issue #59)
+- **Performance Improved**: SQLite queries with caching vs JSON file reads for each converter initialization (Issue #59)
+- **Code Simplified**: ~500 lines of duplicate code eliminated with unified BaseConverter architecture (Issue #62)
+- **Backward Compatible**: Seamless fallback to JSON if SQLite unavailable, ensuring zero service disruption (Issue #59)
+- **Production Ready**: Comprehensive testing, validation, and rollback procedures documented and tested (Both issues)
 
 ## Previous Updates (25/07/2025) - Day 7: JWT Authentication System Complete
 

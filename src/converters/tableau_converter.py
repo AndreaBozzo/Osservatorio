@@ -1,60 +1,32 @@
+"""
+Tableau Converter for ISTAT SDMX data.
+Refactored to inherit from BaseIstatConverter to eliminate code duplication.
+"""
+
 import json
 import os
 import re
-import xml.etree.ElementTree as ET
 from datetime import datetime
 from pathlib import Path
+from typing import Dict
 
 import pandas as pd
 
-from src.database.sqlite.dataset_config import get_dataset_config_manager
 from src.utils.config import Config
 from src.utils.logger import get_logger
-from src.utils.secure_path import create_secure_validator
+
+from .base_converter import BaseIstatConverter
 
 logger = get_logger(__name__)
 
 
-class IstatXMLtoTableauConverter:
+class IstatXMLtoTableauConverter(BaseIstatConverter):
     def __init__(self):
-        """Converte XML SDMX ISTAT in formati Tableau-friendly"""
-        self.namespaces = {
-            "message": "http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message",
-            "generic": "http://www.sdmx.org/resources/sdmxml/schemas/v2_1/data/generic",
-            "common": "http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common",
-            "xsi": "http://www.w3.org/2001/XMLSchema-instance",
-        }
+        """Initialize Tableau converter with base functionality."""
+        super().__init__()
 
-        # Initialize secure path validator BEFORE using it
-        self.path_validator = create_secure_validator(os.getcwd())
-
-        # Initialize SQLite dataset configuration manager
-        self.config_manager = get_dataset_config_manager()
-
-        # Load datasets configuration from SQLite with fallback to JSON
-        self.datasets_config = self._load_datasets_config()
-        self.conversion_results = []
-
-    def _load_datasets_config(self):
-        """Carica configurazione dataset da SQLite con fallback a JSON."""
-        try:
-            # Try to load from SQLite first
-            logger.info(
-                "Loading dataset configuration from SQLite metadata database..."
-            )
-            config = self.config_manager.get_datasets_config()
-
-            if config and config.get("total_datasets", 0) > 0:
-                logger.info(f"✅ Loaded {config['total_datasets']} datasets from SQLite")
-                return config
-            else:
-                logger.warning("No datasets found in SQLite, falling back to JSON...")
-
-        except Exception as e:
-            logger.warning(f"Failed to load from SQLite, falling back to JSON: {e}")
-
-        # Fallback to JSON loading (legacy support)
-        return self._load_datasets_config_json()
+        # Tableau-specific setup (none needed for now)
+        logger.info("Tableau converter initialized")
 
     def _load_datasets_config_json(self):
         """Legacy: Carica configurazione dataset da file JSON."""
@@ -228,75 +200,6 @@ class IstatXMLtoTableauConverter:
                 return str(safe_path)
 
         return None
-
-    def _parse_sdmx_xml(self, xml_file):
-        """Parse file XML SDMX e estrae osservazioni"""
-        try:
-            tree = ET.parse(xml_file)
-            root = tree.getroot()
-
-            observations = []
-
-            # Rimuovi namespace dal tag per semplicità
-            def strip_namespace(tag):
-                return tag.split("}")[1] if "}" in tag else tag
-
-            # Trova tutti gli elementi nel documento
-            all_elements = root.findall(".//*")
-
-            for elem in all_elements:
-                tag_name = strip_namespace(elem.tag)
-
-                # Cerca elementi che sembrano osservazioni
-                if tag_name in ["Obs", "Observation"]:
-                    obs_data = self._extract_observation_from_element(elem)
-                    if obs_data:
-                        observations.append(obs_data)
-
-                # Cerca anche Series che contengono Obs
-                elif tag_name == "Series":
-                    series_data = dict(elem.attrib)
-
-                    # Estrai osservazioni dalla serie
-                    for child in elem:
-                        child_tag = strip_namespace(child.tag)
-                        if child_tag in ["Obs", "Observation"]:
-                            obs_data = self._extract_observation_from_element(child)
-                            if obs_data:
-                                # Aggiungi attributi della serie
-                                for key, value in series_data.items():
-                                    clean_key = key.split("}")[1] if "}" in key else key
-                                    obs_data[f"Series_{clean_key}"] = value
-                                observations.append(obs_data)
-
-            return observations
-
-        except Exception as e:
-            print(f"   ⚠️  Errore parsing XML: {e}")
-            return []
-
-    def _extract_observation_from_element(self, elem):
-        """Estrae dati da un elemento osservazione"""
-        obs_data = {}
-
-        # Estrai tutti gli attributi
-        for key, value in elem.attrib.items():
-            clean_key = key.split("}")[1] if "}" in key else key
-            obs_data[clean_key] = value
-
-        # Estrai elementi figli
-        for child in elem:
-            tag = child.tag.split("}")[1] if "}" in child.tag else child.tag
-
-            if child.text and child.text.strip():
-                obs_data[tag] = child.text.strip()
-
-            # Estrai anche attributi dei figli
-            for key, value in child.attrib.items():
-                clean_key = key.split("}")[1] if "}" in key else key
-                obs_data[f"{tag}_{clean_key}"] = value
-
-        return obs_data if obs_data else None
 
     def _create_sample_data(self, dataflow_id, name, category):
         """Crea DataFrame di esempio quando manca il file XML"""
@@ -823,119 +726,6 @@ Buona analisi! 📊
         else:
             print(f"❌ Impossibile salvare quick start: {quick_path}")
 
-    def _parse_xml_content(self, xml_content: str) -> pd.DataFrame:
-        """Parse XML content directly and return DataFrame."""
-        if not xml_content.strip():
-            return pd.DataFrame()
-
-        try:
-            root = ET.fromstring(xml_content)
-            observations = []
-
-            def strip_namespace(tag):
-                return tag.split("}")[1] if "}" in tag else tag
-
-            all_elements = root.findall(".//*")
-
-            for elem in all_elements:
-                tag_name = strip_namespace(elem.tag)
-
-                if tag_name in ["Obs", "Observation"]:
-                    obs_data = self._extract_observation_from_element(elem)
-                    if obs_data:
-                        observations.append(obs_data)
-
-                elif tag_name == "Series":
-                    series_data = {}
-                    # Extract series key attributes
-                    for key_elem in elem.findall(".//*"):
-                        key_tag = strip_namespace(key_elem.tag)
-                        if key_tag == "Value":
-                            attr_id = key_elem.get("id")
-                            attr_value = key_elem.get("value")
-                            if attr_id and attr_value:
-                                series_data[attr_id] = attr_value
-
-                    # Extract observations
-                    for obs_elem in elem.findall(".//*"):
-                        obs_tag = strip_namespace(obs_elem.tag)
-                        if obs_tag in ["Obs", "Observation"]:
-                            obs_data = self._extract_observation_from_element(obs_elem)
-                            if obs_data:
-                                obs_data.update(series_data)
-                                observations.append(obs_data)
-
-            if observations:
-                df = pd.DataFrame(observations)
-                # Standardize column names
-                if "ObsDimension_value" in df.columns:
-                    df["Time"] = df["ObsDimension_value"]
-                    df.drop("ObsDimension_value", axis=1, inplace=True)
-                if "ObsValue_value" in df.columns:
-                    df["Value"] = df["ObsValue_value"]
-                    df.drop("ObsValue_value", axis=1, inplace=True)
-                return df
-            else:
-                return pd.DataFrame()
-
-        except ET.ParseError as e:
-            print(f"❌ Errore parsing XML: {e}")
-            raise
-        except Exception as e:
-            print(f"❌ Errore generico parsing XML: {e}")
-            return pd.DataFrame()
-
-    def _categorize_dataset(
-        self, dataset_id: str, dataset_name: str
-    ) -> tuple[str, int]:
-        """Categorize dataset and return priority."""
-        name_lower = dataset_name.lower()
-
-        if any(
-            keyword in name_lower
-            for keyword in ["popolazione", "popola", "demografic", "residente"]
-        ):
-            return "popolazione", 10
-        elif any(
-            keyword in name_lower
-            for keyword in ["pil", "economia", "economico", "reddito", "prodotto"]
-        ):
-            return "economia", 9
-        elif any(
-            keyword in name_lower
-            for keyword in ["lavoro", "occupazione", "disoccupazione", "employment"]
-        ):
-            return "lavoro", 8
-        elif any(
-            keyword in name_lower
-            for keyword in [
-                "territorio",
-                "territorial",
-                "regional",
-                "comune",
-                "provincia",
-            ]
-        ):
-            return "territorio", 7
-        elif any(
-            keyword in name_lower
-            for keyword in [
-                "istruzione",
-                "education",
-                "università",
-                "scuola",
-                "studenti",
-            ]
-        ):
-            return "istruzione", 6
-        elif any(
-            keyword in name_lower
-            for keyword in ["salute", "health", "sanità", "ospedale", "medicina"]
-        ):
-            return "salute", 5
-        else:
-            return "altro", 1
-
     def _generate_tableau_formats(self, df: pd.DataFrame, dataset_info: dict) -> dict:
         """Generate multiple Tableau formats."""
         dataflow_id = dataset_info["id"]
@@ -975,55 +765,6 @@ Buona analisi! 📊
         except Exception as e:
             print(f"❌ Errore generazione formati Tableau: {e}")
             return {}
-
-    def _validate_data_quality(self, df: pd.DataFrame) -> dict:
-        """Validate data quality and return metrics."""
-        total_rows = len(df)
-        total_columns = len(df.columns)
-
-        if total_rows == 0 or total_columns == 0:
-            return {
-                "total_rows": total_rows,
-                "total_columns": total_columns,
-                "uniqueness_score": 0.0,
-                "completeness_score": 0.0,
-                "data_quality_score": 0.0,
-            }
-
-        # Calculate completeness score
-        non_null_count = df.count().sum()
-        total_cells = total_rows * total_columns
-        completeness_score = non_null_count / total_cells if total_cells > 0 else 0.0
-
-        # Calculate uniqueness score
-        unique_count = df.nunique().sum()
-        uniqueness_score = unique_count / total_cells if total_cells > 0 else 0.0
-
-        # Calculate data quality score (simplified)
-        # Consider numeric columns and valid values
-        numeric_cols = df.select_dtypes(include=[float, int]).columns
-        numeric_quality = 0.0
-
-        if len(numeric_cols) > 0:
-            numeric_df = df[numeric_cols]
-            valid_numeric = numeric_df.notna().sum().sum()
-            total_numeric = len(numeric_df) * len(numeric_cols)
-            numeric_quality = (
-                valid_numeric / total_numeric if total_numeric > 0 else 0.0
-            )
-
-        # Overall quality score
-        data_quality_score = (
-            completeness_score + numeric_quality + uniqueness_score
-        ) / 2
-
-        return {
-            "total_rows": total_rows,
-            "total_columns": total_columns,
-            "uniqueness_score": uniqueness_score,
-            "completeness_score": completeness_score,
-            "data_quality_score": data_quality_score,
-        }
 
     def convert_xml_to_tableau(
         self, xml_input: str, dataset_id: str, dataset_name: str
@@ -1089,6 +830,26 @@ Buona analisi! 📊
         except Exception as e:
             print(f"❌ Errore conversione XML to Tableau: {e}")
             return {"success": False, "error": str(e)}
+
+    # Implementation of abstract methods from BaseIstatConverter
+    def _format_output(self, df: pd.DataFrame, dataset_info: Dict) -> Dict:
+        """Format DataFrame for Tableau output."""
+        return self._generate_tableau_formats(df, dataset_info)
+
+    def _generate_metadata(self, dataset_info: Dict) -> Dict:
+        """Generate Tableau-specific metadata."""
+        return {
+            "target_platform": "tableau",
+            "supported_formats": ["csv", "excel", "json", "tds"],
+            "optimization": "hyper_ready",
+            "dataset_info": dataset_info,
+        }
+
+    def convert_xml_to_target(
+        self, xml_input: str, dataset_id: str, dataset_name: str
+    ) -> Dict:
+        """Main conversion method that implements the abstract interface."""
+        return self.convert_xml_to_tableau(xml_input, dataset_id, dataset_name)
 
 
 def main():
