@@ -14,6 +14,7 @@ from typing import Any, Dict, List, Optional
 import numpy as np
 import pandas as pd
 
+from src.database.sqlite.dataset_config import get_dataset_config_manager
 from src.utils.config import Config
 from src.utils.logger import get_logger
 from src.utils.secure_path import create_secure_validator
@@ -36,7 +37,10 @@ class IstatXMLToPowerBIConverter:
         # Initialize secure path validator BEFORE using it
         self.path_validator = create_secure_validator(os.getcwd())
 
-        # Now safe to call methods that use path_validator
+        # Initialize SQLite dataset configuration manager
+        self.config_manager = get_dataset_config_manager()
+
+        # Load datasets configuration from SQLite with fallback to JSON
         self.datasets_config = self._load_datasets_config()
         self.conversion_results = []
 
@@ -61,7 +65,28 @@ class IstatXMLToPowerBIConverter:
         logger.info("Convertitore ISTAT → PowerBI inizializzato")
 
     def _load_datasets_config(self) -> Dict:
-        """Carica configurazione dataset."""
+        """Carica configurazione dataset da SQLite con fallback a JSON."""
+        try:
+            # Try to load from SQLite first
+            logger.info(
+                "Loading dataset configuration from SQLite metadata database..."
+            )
+            config = self.config_manager.get_datasets_config()
+
+            if config and config.get("total_datasets", 0) > 0:
+                logger.info(f"✅ Loaded {config['total_datasets']} datasets from SQLite")
+                return config
+            else:
+                logger.warning("No datasets found in SQLite, falling back to JSON...")
+
+        except Exception as e:
+            logger.warning(f"Failed to load from SQLite, falling back to JSON: {e}")
+
+        # Fallback to JSON loading (legacy support)
+        return self._load_datasets_config_json()
+
+    def _load_datasets_config_json(self) -> Dict:
+        """Legacy: Carica configurazione dataset da file JSON."""
         config_files = [
             f
             for f in os.listdir(".")
@@ -70,21 +95,25 @@ class IstatXMLToPowerBIConverter:
 
         if not config_files:
             logger.warning(
-                "File configurazione non trovato, creazione configurazione di esempio..."
+                "File configurazione JSON non trovato, creazione configurazione di esempio..."
             )
             return self._create_sample_config()
 
         latest_config = sorted(config_files)[-1]
-        logger.info(f"Caricamento configurazione: {latest_config}")
+        logger.info(f"Caricamento configurazione JSON: {latest_config}")
 
         try:
             safe_file = self.path_validator.safe_open(
                 latest_config, "r", encoding="utf-8"
             )
             with safe_file as f:
-                return json.load(f)
+                config = json.load(f)
+                logger.info(
+                    f"✅ Loaded {config.get('total_datasets', 0)} datasets from JSON"
+                )
+                return config
         except Exception as e:
-            logger.error(f"Errore caricamento config: {e}")
+            logger.error(f"Errore caricamento config JSON: {e}")
             return self._create_sample_config()
 
     def _create_sample_config(self) -> Dict:
@@ -930,7 +959,9 @@ File generato da IstatXMLToPowerBIConverter v1.0
             )
 
         # Overall quality score
-        data_quality_score = (completeness_score + numeric_quality + uniqueness_score) / 2
+        data_quality_score = (
+            completeness_score + numeric_quality + uniqueness_score
+        ) / 2
 
         return {
             "total_rows": total_rows,
