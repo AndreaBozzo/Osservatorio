@@ -6,26 +6,26 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is an Italian data processing system for ISTAT (Italian National Institute of Statistics) data with Tableau/Power BI integration. The system fetches, processes, and converts ISTAT statistical data into formats suitable for visualization and analysis.
 
-**Current Status**: Production-ready platform with complete FastAPI REST API (Issue #29 Complete)
+**Current Status**: Production-ready platform with ProductionIstatClient enterprise architecture (Issue #66 Complete - 83.3% EXCELLENT Quality)
 
 **Documentation**: See [docs/README.md](docs/README.md) for organized documentation
 
 **Important**: Always refer to [PROJECT_STATE.md](docs/project/PROJECT_STATE.md) for current development context before making any changes to the codebase.
 
-**Strategic Update (v8.0.0)**: Following ADR-002, the project has pivoted from PostgreSQL to SQLite + DuckDB architecture for pragmatic metadata management and high-performance analytics.
+**Strategic Update (v11.0.0)**: ProductionIstatClient with enterprise patterns (connection pooling, circuit breaker, cache fallback) and hybrid SQLite + DuckDB architecture for optimal performance and resilience.
 
 ## Development Commands
 
-### FastAPI REST API Commands (NEW 27/07/2025 - Issue #29 Complete)
-#### Quick System Verification (Human-Friendly)
+### ProductionIstatClient Commands (NEW 29/07/2025 - Issue #66 Complete)
+#### Quality Demonstration & Verification
+- `python quality_demo.py` - 🎯 Complete quality demonstration (83.3% EXCELLENT rating)
 - `python scripts/health_check.py` - 🏥 Interactive system health check with visual status
-- `python scripts/api_demo.py` - 🚀 Interactive API demo for stakeholders and testing
-- `python -c "import sys; sys.path.append('.'); exec(open('scripts/validate_issue29_implementation.py').read())"` - Detailed technical validation (100% success rate)
+- `python -c "from src.api.production_istat_client import ProductionIstatClient; client = ProductionIstatClient(); print(client.get_status())"` - Quick client status check
 
-#### FastAPI Application
-- `python src/api/fastapi_app.py` - Start FastAPI server (simplest method)
-- `uvicorn src.api.fastapi_app:app --reload` - Run FastAPI development server with auto-reload
-- `python -c "import sys; sys.path.append('.'); from src.api.fastapi_app import app; print('FastAPI ready!')"` - Test FastAPI application loading
+#### ProductionIstatClient Testing
+- `python -c "from src.api.production_istat_client import ProductionIstatClient; print('Production client ready')"` - Test client import
+- `pytest tests/integration/test_production_istat_client.py -v` - Run production client integration tests
+- `python -c "from src.database.sqlite.repository import get_unified_repository; print('Repository ready')"` - Test repository integration
 
 #### FastAPI Testing & Documentation
 - `pytest tests/unit/test_fastapi_integration.py -v` - Run FastAPI integration tests
