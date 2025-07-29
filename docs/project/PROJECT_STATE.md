@@ -69,7 +69,7 @@
 
 ## 🚀 RELEASE v1.0.0 ROADMAP - 7 Settimane (29 Luglio - 16 Settembre 2025)
 
-### 📊 **Gap Analysis Results**
+### 📊 **Gap Analysis Results - UPDATED 29 Luglio 2025**
 **✅ COPERTI** (14/21 aree critiche): Foundation, BI Integration, Basic Security, Testing, DevOps, Documentation
 **❌ GAP CRITICI IDENTIFICATI** (8 nuovi issue creati #74-81):
 - Performance & Scalability (#74 Load Testing)
@@ -78,6 +78,16 @@
 - Production Operations (#78 Monitoring, #79 Health Checks)
 - Release Management (#80 Release Procedures)
 - API Evolution (#77 Versioning)
+
+### 🆕 **CONSOLIDATION & MODERNIZATION ISSUES** (29 Luglio 2025)
+**Legacy Cleanup & Architecture Modernization** (4 nuovi issue creati #83-87):
+- **#83**: Dataflow Analyzer Modernization - Rimuovere pattern legacy e allineare con architettura moderna (effort: days)
+- **#84**: Legacy Code Consolidation - Cleanup completo pattern embrionali per v1.0 (effort: days, priority: high)
+- **#85**: Tableau Phase 1 - Server API Integration & Authentication (effort: hours, priority: high)
+- **#86**: Tableau Phase 2 - Data Extract Generation & Publishing (effort: days, priority: high)
+- **#87**: Tableau Phase 3 - Template Generation & PowerBI Feature Parity (effort: days, priority: high)
+
+**Board Status Update**: **34 issue aperte totali** (30 precedenti + 4 nuove), con focus su consolidamento architetturale per v1.0
 
 ## 🛣️ Release Development Phases
 
@@ -105,17 +115,23 @@
 
 **Issue Core Features:**
 - ⭐ **#39**: Tableau Integration - **Completa parità BI con PowerBI**
+  - **Sub-issues**: #85 (Phase 1), #86 (Phase 2), #87 (Phase 3) - **Milestone-driven approach**
 - ⭐ **#30**: Analytics Dashboard (Gasta88) - **Operational excellence**
 - ⭐ **#5**: PowerBI Refresh Automation - **Automazione BI**
-- 🎯 **#66**: Production ISTAT Client - **API client enterprise**
+- 🎯 **#66**: Production ISTAT Client - **API client enterprise** ✅ **COMPLETED 83.3% EXCELLENT**
 
 **Gap Critici Nuovi:**
 - 🆕 **#76**: Data Backup & Recovery Strategy - **Data protection**
 - 🆕 **#77**: API Versioning & Backward Compatibility - **API evolution**
 
+**Legacy Consolidation (Priority):**
+- 🆕 **#84**: Legacy Code Consolidation - **Architecture cleanup critico per v1.0**
+- 🆕 **#83**: Dataflow Analyzer Modernization - **Eliminare pattern legacy**
+
 **Acceptance Criteria Fase 2:**
-- ✅ BI integration completa (PowerBI + Tableau)
-- ✅ Production API client implementato
+- ✅ BI integration completa (PowerBI + Tableau milestone-driven)
+- ✅ Production API client implementato ✅ **ACHIEVED**
+- ✅ Legacy code consolidato e architettura pulita
 - ✅ Data backup automatico funzionante
 - ✅ API versioning strategy attiva
 
@@ -159,12 +175,13 @@
 
 ### 🎉 **RELEASE v1.0.0 - 16 Settembre 2025**
 **Production-Ready Milestone:**
-- 📊 **32 Issue Completati** (24 esistenti + 8 gap critici)
+- 📊 **36 Issue Completati** (28 esistenti + 8 gap critici) - **UPDATED 29/07/2025**
 - 🏗️ **Enterprise Architecture** completa e testata
 - 🛡️ **Security & Compliance** production-grade
 - 📈 **Performance & Scalability** validated
 - 🔄 **DevOps & Operations** fully automated
 - 📚 **Documentation & UX** comprehensive
+- 🧹 **Legacy Code Consolidation** - Architettura pulita e moderna
 
 ### 🧪 Day 10: Quality Assurance & Documentation
 **Focus**: Production readiness

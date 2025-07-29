@@ -14,6 +14,25 @@ This is an Italian data processing system for ISTAT (Italian National Institute 
 
 **Strategic Update (v11.0.0)**: ProductionIstatClient with enterprise patterns (connection pooling, circuit breaker, cache fallback) and hybrid SQLite + DuckDB architecture for optimal performance and resilience.
 
+## 🚨 SECURITY & LEGACY CONSOLIDATION PRIORITIES (29 Luglio 2025)
+
+### **CRITICAL: Legacy Code Cleanup Required**
+Before implementing new features, address these **security and architectural concerns**:
+
+**Legacy Components to Remove/Modernize** (Issue #84):
+- ❌ **src/api/istat_api.py** - Contains deprecated `IstatAPITester` class (marked for removal)
+- ❌ **dashboard/app.py** - Uses hardcoded sample data instead of `UnifiedDataRepository`
+- ❌ **Scripts sys.path manipulation** - Multiple scripts use anti-pattern imports
+- ❌ **src/analyzers/dataflow_analyzer.py** - Legacy patterns not aligned with modern architecture (Issue #83)
+
+**Security Review Required**:
+- 🔍 **Credential Management** - Ensure no hardcoded secrets in any legacy components
+- 🔍 **Path Validation** - All legacy file operations must use `SecurePathValidator`
+- 🔍 **Database Access** - Direct SQLite connections should use `UnifiedDataRepository`
+- 🔍 **Import Patterns** - Remove all `sys.path.append()` usage for security
+
+**Before Adding New Features**: Complete Issue #84 (Legacy Consolidation) to ensure clean architectural foundation.
+
 ## Development Commands
 
 ### ProductionIstatClient Commands (NEW 29/07/2025 - Issue #66 Complete)
@@ -666,7 +685,20 @@ files = converter._generate_powerbi_formats(df, dataset_info)
 - **Issue #59**: To rollback migration: Follow procedures in `docs/guides/JSON_SQLITE_MIGRATION_ROLLBACK.md` for safe rollback
 - **Issue #62**: BaseConverter architecture implemented: Use `from src.converters.factory import create_powerbi_converter, create_tableau_converter` for unified converter access
 
-## Recent Updates (January 2025)
+## Recent Updates (July 2025)
+
+### 🚨 CRITICAL SECURITY & ARCHITECTURE UPDATES (29 Luglio 2025)
+
+**SECURITY PRIORITIES** (Issue #84 - Legacy Consolidation):
+- ❌ **DEPRECATED CODE**: `IstatAPITester` in `src/api/istat_api.py` marked for removal
+- ❌ **HARDCODED DATA**: Dashboard uses sample data instead of `UnifiedDataRepository`
+- ❌ **UNSAFE IMPORTS**: Multiple scripts use `sys.path.append()` anti-patterns
+- 🔍 **SECURITY AUDIT REQUIRED**: All legacy components need credential and path validation review
+
+**NEW TABLEAU MILESTONE APPROACH** (Issues #85-87):
+- **Phase 1** (#85): Tableau Server API Integration & Authentication (1-2 days)
+- **Phase 2** (#86): Data Extract Generation & Publishing (2-3 days)
+- **Phase 3** (#87): Template Generation & PowerBI Feature Parity (2-3 days)
 
 ### Major Achievements
 - **Dashboard Live**: [https://osservatorio-dashboard.streamlit.app/](https://osservatorio-dashboard.streamlit.app/)
@@ -675,6 +707,7 @@ files = converter._generate_powerbi_formats(df, dataset_info)
 - **Rate Limiting**: Basic API protection (ISTAT: 50 req/hr, PowerBI: 100 req/hr)
 - **Data Pipeline**: ISTAT API integration with available datasets
 - **Performance**: Caching system with 30min TTL
+- ⚠️ **LEGACY DEBT IDENTIFIED**: 4 new issues created for architecture consolidation
 
 ### 🔧 Core Components Status
 
