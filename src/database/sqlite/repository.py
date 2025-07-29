@@ -587,6 +587,19 @@ class UnifiedDataRepository:
             logger.error(f"Transaction failed: {e}")
             raise
 
+    # Convenience Methods (Aliases for backward compatibility)
+
+    def list_datasets(self, category: str = None) -> List[Dict[str, Any]]:
+        """List datasets (alias for list_datasets_complete for backward compatibility).
+
+        Args:
+            category: Optional category filter
+
+        Returns:
+            List of dataset dictionaries
+        """
+        return self.list_datasets_complete(category=category)
+
     # Cleanup
 
     def close(self):
