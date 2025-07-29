@@ -72,7 +72,7 @@ client = ProductionIstatClient()
 from src.api.production_istat_client import (
     ClientStatus,      # HEALTHY, DEGRADED, CIRCUIT_OPEN, MAINTENANCE
     BatchResult,       # Batch processing results
-    QualityResult,     # Data quality validation results  
+    QualityResult,     # Data quality validation results
     SyncResult         # Repository synchronization results
 )
 ```
@@ -158,7 +158,7 @@ result = client.fetch_dataset("DCIS_POPRES1", include_data=False)
     "size": 15420
   },
   "data": {
-    "status": "success", 
+    "status": "success",
     "content_type": "application/xml",
     "size": 125340,
     "observations_count": 1250
@@ -192,7 +192,7 @@ Fetch dataset with integrated quality validation.
 quality = client.fetch_with_quality_validation("DCIS_POPRES1")
 
 print(f"Quality Score: {quality.quality_score}/100")
-print(f"Completeness: {quality.completeness}%") 
+print(f"Completeness: {quality.completeness}%")
 print(f"Validation Errors: {len(quality.validation_errors)}")
 ```
 
@@ -207,7 +207,7 @@ Synchronize dataset to unified repository.
 # Fetch dataset first
 dataset_result = client.fetch_dataset("DCIS_POPRES1")
 
-# Sync to repository  
+# Sync to repository
 sync_result = client.sync_to_repository(dataset_result)
 
 print(f"Records synced: {sync_result.records_synced}")
@@ -239,7 +239,7 @@ The production client is exposed through FastAPI endpoints with JWT authenticati
 #### `GET /api/istat/status`
 Get client status and health metrics.
 
-**Authentication:** Required (JWT)  
+**Authentication:** Required (JWT)
 **Rate Limit:** Applied
 
 ```bash
@@ -263,7 +263,7 @@ Fetch specific dataset.
 #### `POST /api/istat/sync/{dataset_id}`
 Synchronize dataset to repository.
 
-**Authentication:** Required (Write permissions)  
+**Authentication:** Required (Write permissions)
 **Returns:** Sync results and dataset information
 
 ## Error Handling
@@ -271,7 +271,7 @@ Synchronize dataset to repository.
 ### Circuit Breaker States
 
 1. **Closed** (Normal): All requests proceed normally
-2. **Open** (Fault): Requests fail immediately, API is unavailable  
+2. **Open** (Fault): Requests fail immediately, API is unavailable
 3. **Half-Open** (Recovery): Limited requests allowed to test recovery
 
 ### Error Types
@@ -306,7 +306,7 @@ except Exception as e:
    ```python
    # ✅ Good - concurrent processing
    result = await client.fetch_dataset_batch(dataset_ids)
-   
+
    # ❌ Avoid - sequential processing
    for dataset_id in dataset_ids:
        result = client.fetch_dataset(dataset_id)
@@ -360,15 +360,15 @@ print(f"Found {len(dataflows['dataflows'])} relevant datasets")
 # Process datasets
 for dataflow in dataflows["dataflows"][:3]:
     dataset_id = dataflow["id"]
-    
+
     # Fetch with quality validation
     quality = client.fetch_with_quality_validation(dataset_id)
-    
+
     if quality.quality_score > 80:
         # High quality dataset - fetch and sync
         dataset = client.fetch_dataset(dataset_id)
         sync_result = client.sync_to_repository(dataset)
-        
+
         print(f"✅ Synced {dataset_id}: {sync_result.records_synced} records")
     else:
         print(f"⚠️  Low quality dataset {dataset_id}: {quality.quality_score}/100")
@@ -381,16 +381,16 @@ import asyncio
 
 async def process_datasets(client, dataset_ids):
     """Process multiple datasets concurrently."""
-    
+
     # Batch fetch
     batch_result = await client.fetch_dataset_batch(dataset_ids)
-    
+
     # Process successful results
     for dataset_id in batch_result.successful:
         dataset = client.fetch_dataset(dataset_id)
         sync_result = client.sync_to_repository(dataset)
         print(f"✅ {dataset_id}: {sync_result.records_synced} records")
-    
+
     # Handle failures
     for dataset_id, error in batch_result.failed:
         print(f"❌ {dataset_id}: {error}")
@@ -409,12 +409,12 @@ from src.api.dependencies import get_istat_client
 @app.get("/my-endpoint")
 async def my_endpoint(client = Depends(get_istat_client)):
     """Custom endpoint using production client."""
-    
+
     # Check client health
     health = client.health_check()
     if health["status"] != "healthy":
         raise HTTPException(503, "ISTAT API unavailable")
-    
+
     # Use client normally
     dataflows = client.fetch_dataflows(limit=5)
     return {"dataflows": dataflows["dataflows"]}
@@ -430,13 +430,13 @@ from src.api.production_istat_client import ProductionIstatClient
 
 def test_client_with_mock():
     client = ProductionIstatClient()
-    
+
     with patch.object(client, '_make_request') as mock_request:
         mock_request.return_value = Mock(
             content=b'<xml>mock response</xml>',
             headers={'content-type': 'application/xml'}
         )
-        
+
         result = client.fetch_dataflows()
         assert "dataflows" in result
 ```
@@ -451,7 +451,7 @@ def test_with_mock_server():
         # Override client base URL for testing
         client = ProductionIstatClient()
         client.base_url = f"{mock_server.get_base_url()}/SDMXWS/rest/"
-        
+
         # Test against mock server
         dataflows = client.fetch_dataflows()
         assert len(dataflows["dataflows"]) > 0
@@ -504,7 +504,7 @@ Repository sync failed for DATASET_ID: Connection error
 Monitor these metrics for production health:
 
 - **Circuit breaker state**: Should be "closed" normally
-- **Success/failure ratio**: Target >95% success rate  
+- **Success/failure ratio**: Target >95% success rate
 - **Average response time**: Target <500ms
 - **Rate limit usage**: Stay under 80% of limit
 

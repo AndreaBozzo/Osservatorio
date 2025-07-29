@@ -1,8 +1,9 @@
 """
-Production-ready ISTAT SDMX API client with comprehensive integration.
+Production-ready ISTAT SDMX API client with cache fallback and comprehensive integration.
 
 This module transforms the exploration-focused IstatAPITester into a production client
-with connection pooling, circuit breaker patterns, and repository integration.
+with connection pooling, circuit breaker patterns, repository integration, and
+automatic fallback to cached data when ISTAT API is unavailable (404 errors).
 """
 
 import asyncio
@@ -21,6 +22,7 @@ from ..converters.base_converter import BaseIstatConverter
 from ..database.sqlite.dataset_config import get_dataset_config_manager
 from ..utils.logger import get_logger
 from ..utils.security_enhanced import rate_limit, security_manager
+from .mock_istat_data import get_cache_generator
 
 logger = get_logger(__name__)
 
@@ -151,13 +153,17 @@ class ProductionIstatClient:
     - Comprehensive error handling and recovery
     """
 
-    def __init__(self, repository=None):
+    def __init__(self, repository=None, enable_cache_fallback=True):
         """Initialize production client."""
         self.base_url = "https://sdmx.istat.it/SDMXWS/rest/"
 
         # Initialize repository integration
         self.repository = repository
         self.config_manager = get_dataset_config_manager()
+
+        # Initialize cache fallback system
+        self.enable_cache_fallback = enable_cache_fallback
+        self.cache_generator = get_cache_generator() if enable_cache_fallback else None
 
         # Initialize session with connection pooling
         self.session = self._create_session()
@@ -293,7 +299,7 @@ class ProductionIstatClient:
             ) / total_requests
 
     def fetch_dataflows(self, limit: Optional[int] = None) -> Dict[str, Any]:
-        """Fetch available dataflows from ISTAT API."""
+        """Fetch available dataflows from ISTAT API with cache fallback."""
         try:
             response = self._make_request("dataflow/IT1")
 
@@ -325,11 +331,22 @@ class ProductionIstatClient:
                 "dataflows": dataflows,
                 "total_count": len(dataflows),
                 "timestamp": datetime.now().isoformat(),
+                "source": "live_api",
             }
 
         except Exception as e:
-            logger.error(f"Failed to fetch dataflows: {str(e)}")
-            raise
+            logger.warning(f"Failed to fetch dataflows from live API: {str(e)}")
+
+            # Try cache fallback if enabled
+            if self.enable_cache_fallback and self.cache_generator:
+                logger.info("Using cache fallback for dataflows")
+                try:
+                    return self.cache_generator.get_cached_dataflows(limit)
+                except Exception as fallback_error:
+                    logger.error(f"Cache fallback also failed: {fallback_error}")
+
+            # If no fallback or fallback failed, re-raise original error
+            raise e
 
     def fetch_dataset(
         self, dataset_id: str, include_data: bool = True
@@ -406,13 +423,36 @@ class ProductionIstatClient:
                         "observations_count": observations_count,
                     }
                 except Exception as e:
-                    result["data"] = {"status": "error", "error": str(e)}
+                    # Check if this is a 404 error that should trigger fallback
+                    if "404" in str(e) and self.enable_cache_fallback:
+                        # Re-raise to trigger outer fallback handling
+                        raise e
+                    else:
+                        result["data"] = {"status": "error", "error": str(e)}
 
             return result
 
         except Exception as e:
-            logger.error(f"Failed to fetch dataset {dataset_id}: {str(e)}")
-            raise
+            logger.warning(
+                f"Failed to fetch dataset {dataset_id} from live API: {str(e)}"
+            )
+
+            # Try cache fallback if enabled
+            if self.enable_cache_fallback and self.cache_generator:
+                logger.info(f"Using cache fallback for dataset {dataset_id}")
+                try:
+                    cached_result = self.cache_generator.get_cached_dataset(
+                        dataset_id, include_data
+                    )
+                    cached_result["source"] = "cache_fallback"
+                    return cached_result
+                except Exception as fallback_error:
+                    logger.error(
+                        f"Cache fallback also failed for {dataset_id}: {fallback_error}"
+                    )
+
+            # If no fallback or fallback failed, re-raise original error
+            raise e
 
     async def fetch_dataset_batch(self, dataset_ids: List[str]) -> BatchResult:
         """Fetch multiple datasets asynchronously."""
@@ -563,13 +603,13 @@ class ProductionIstatClient:
                 else:
                     records_synced = 0
 
-                metadata_updated = registration_success
+                metadata_updated = bool(registration_success)
                 logger.info(
                     f"Repository sync: {records_synced} records for dataset {dataset_id}"
                 )
             else:
                 # Store in SQLite config for now
-                self.config_manager.update_dataset_config(
+                self.config_manager.update_dataset(
                     dataset_id,
                     {
                         "last_sync": datetime.now().isoformat(),

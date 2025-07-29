@@ -189,28 +189,28 @@ from src.api.istat_api import IstatAPITester
 def explore_istat_data():
     """Old exploration workflow"""
     tester = IstatAPITester()
-    
+
     # Test connectivity
     print("Testing API connectivity...")
     connectivity = tester.test_api_connectivity()
-    
+
     # Discover datasets
     print("Discovering datasets...")
     datasets = tester.discover_available_datasets(limit=10)
-    
+
     # Test specific datasets
     for dataset in datasets[:3]:
         print(f"Testing {dataset['name']}...")
         result = tester.test_specific_dataset(dataset['id'], dataset['name'])
-        
+
         if result.get("data_test", {}).get("success"):
             # Create visualizations
             tester.create_data_preview_visualization(dataset['id'])
-            
+
             # Validate quality
             quality = tester.validate_data_quality(dataset['id'])
             print(f"Quality: {quality['quality_score'] if quality else 'N/A'}")
-    
+
     # Generate final report
     final_report = tester.run_comprehensive_test()
     print("✅ Exploration complete - check generated files")
@@ -230,47 +230,47 @@ async def ingest_istat_data():
     # Initialize production client
     repository = get_unified_repository()
     client = ProductionIstatClient(repository=repository)
-    
+
     # Health check
     health = client.health_check()
     if health["status"] != "healthy":
         raise Exception(f"ISTAT API unavailable: {health['error']}")
-    
+
     # Discover datasets
     print("Discovering datasets...")
     dataflows = client.fetch_dataflows(limit=10)
     print(f"Found {len(dataflows['dataflows'])} datasets")
-    
+
     # Quality filtering and batch processing
     high_quality_datasets = []
-    
+
     for dataflow in dataflows["dataflows"][:5]:  # Process top 5
         dataset_id = dataflow["id"]
-        
+
         # Quality validation
         quality = client.fetch_with_quality_validation(dataset_id)
-        
+
         if quality.quality_score > 80:
             high_quality_datasets.append(dataset_id)
             print(f"✅ {dataset_id}: Quality {quality.quality_score:.1f}/100")
         else:
             print(f"⚠️  {dataset_id}: Low quality ({quality.quality_score:.1f}/100)")
-    
+
     # Batch ingest high-quality datasets
     if high_quality_datasets:
         batch_result = await client.fetch_dataset_batch(high_quality_datasets)
-        
+
         # Sync successful datasets to repository
         for dataset_id in batch_result.successful:
             dataset_result = client.fetch_dataset(dataset_id)
             sync_result = client.sync_to_repository(dataset_result)
-            
+
             print(f"📊 {dataset_id}: {sync_result.records_synced} records synced")
-        
+
         # Report failures
         for dataset_id, error in batch_result.failed:
             print(f"❌ {dataset_id}: {error}")
-    
+
     print("✅ Production ingestion complete")
 
 if __name__ == "__main__":
