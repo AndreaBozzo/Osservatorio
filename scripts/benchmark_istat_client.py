@@ -13,6 +13,10 @@ from datetime import datetime
 from typing import List, Dict, Any
 from contextlib import contextmanager
 
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from src.api.production_istat_client import ProductionIstatClient
 from src.api.istat_api import IstatAPITester
 from src.database.sqlite.repository import get_unified_repository
