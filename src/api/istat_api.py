@@ -917,6 +917,10 @@ def main():
     print("🇮🇹 ISTAT API TESTER & VALIDATOR")
     print("Sviluppato per integrazione Tableau")
     print("=" * 50)
+    print("⚠️  DEPRECATION WARNING: This exploration tool is being replaced by ProductionIstatClient")
+    print("🔄 For production use, please use: src.api.production_istat_client.ProductionIstatClient")
+    print("📚 This tool remains available for manual testing and exploration only")
+    print("=" * 50)
 
     tester = IstatAPITester()
 
