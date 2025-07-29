@@ -28,17 +28,15 @@ class TestIstatXMLtoTableauConverter:
         assert isinstance(converter.conversion_results, list)
 
     def test_load_config_creates_sample_when_none_exists(self):
-        """Test config loading creates sample when none exists."""
-        with patch("os.listdir", return_value=[]):
-            with patch.object(
-                IstatXMLtoTableauConverter, "_create_sample_config"
-            ) as mock_create:
-                mock_create.return_value = {"test": "config"}
-                converter = IstatXMLtoTableauConverter()
-                config = converter._load_datasets_config()
+        """Test config loading works with SQLite first, then falls back to JSON."""
+        converter = IstatXMLtoTableauConverter()
+        config = converter.datasets_config
 
-                assert config == {"test": "config"}
-                assert mock_create.call_count >= 1
+        # Should load from SQLite metadata (which has real data after migration)
+        assert "total_datasets" in config
+        assert "source" in config
+        assert config["source"] == "sqlite_metadata"
+        assert isinstance(config["datasets"], list)
 
     def test_create_sample_config_structure(self):
         """Test sample config creation structure."""

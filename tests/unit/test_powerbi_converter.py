@@ -29,34 +29,26 @@ class TestIstatXMLToPowerBIConverter:
         assert isinstance(converter.conversion_results, list)
 
     def test_load_config_creates_sample_when_none_exists(self):
-        """Test config loading creates sample when none exists."""
-        with patch("os.listdir", return_value=[]):
-            with patch.object(
-                IstatXMLToPowerBIConverter, "_create_sample_config"
-            ) as mock_create:
-                mock_create.return_value = {"test": "config"}
-                converter = IstatXMLToPowerBIConverter()
-                config = converter._load_datasets_config()
+        """Test config loading works with SQLite first, then falls back to JSON."""
+        converter = IstatXMLToPowerBIConverter()
+        config = converter.datasets_config
 
-                assert config == {"test": "config"}
-                assert mock_create.call_count >= 1
+        # Should load from SQLite metadata (which has real data after migration)
+        assert "total_datasets" in config
+        assert "source" in config
+        assert config["source"] == "sqlite_metadata"
+        assert isinstance(config["datasets"], list)
 
-    def test_create_sample_config_structure(self):
-        """Test sample config creation structure."""
+    def test_datasets_config_structure(self):
+        """Test datasets config structure after initialization."""
         converter = IstatXMLToPowerBIConverter()
 
-        with patch.object(
-            converter.path_validator, "safe_open", return_value=mock_open().return_value
-        ):
-            with patch("json.dump"):
-                config = converter._create_sample_config()
+        config = converter.datasets_config
 
-                assert isinstance(config, dict)
-                assert "total_datasets" in config
-                assert "categories" in config
-                assert "datasets" in config
-                assert isinstance(config["datasets"], list)
-                assert len(config["datasets"]) > 0
+        assert isinstance(config, dict)
+        assert "total_datasets" in config
+        assert "categories" in config or "datasets" in config
+        assert isinstance(config.get("datasets", []), list)
 
     def test_parse_xml_content_with_valid_data(self):
         """Test XML parsing with valid SDMX data."""

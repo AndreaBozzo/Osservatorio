@@ -1,9 +1,9 @@
 # 🔌 Osservatorio API Reference
 
 > **Comprehensive API documentation for the Osservatorio ISTAT data processing platform**
-> **Version**: 9.1.0
-> **Date**: July 25, 2025
-> **Status**: Enterprise Ready - JWT Authentication Complete
+> **Version**: 10.2.0
+> **Date**: July 28, 2025
+> **Status**: Enterprise Ready - Issues #59 & #62 Architecture Consolidation Complete
 
 ---
 
@@ -431,17 +431,44 @@ def publish_data_source(name: str, file_path: str) -> Dict[str, Any]
 
 ---
 
-## 🔄 Data Converters
+## 🔄 Data Converters - REFACTORED Issue #62
+
+### 🏗️ NEW! BaseConverter Architecture
+
+#### 📝 Abstract Class: `BaseIstatConverter`
+
+**NEW!** Unified converter foundation eliminating code duplication between PowerBI and Tableau converters.
+
+```python
+from src.converters.base_converter import BaseIstatConverter
+from src.converters.factory import ConverterFactory, create_powerbi_converter, create_tableau_converter
+
+# Factory pattern - recommended approach
+converter = ConverterFactory.create_converter("powerbi")
+# or
+converter = create_powerbi_converter()
+```
+
+#### 🎯 Shared Base Functionality
+- **Unified XML Parsing**: Single implementation for SDMX XML processing
+- **Configuration Loading**: SQLite-first with JSON fallback (Issue #59 integration)
+- **Data Quality Validation**: Consistent validation across all converters
+- **Dataset Categorization**: Shared categorization logic with priority scoring
+- **Security**: Unified secure path validation and error handling
 
 ### 📝 Class: `IstatXMLToPowerBIConverter`
 
-Converts ISTAT XML data to PowerBI-compatible formats.
+Converts ISTAT XML data to PowerBI-compatible formats. **UPDATED!** Now inherits from `BaseIstatConverter`.
 
 #### 🔧 Initialization
 ```python
+# Direct instantiation (legacy)
 from src.converters.powerbi_converter import IstatXMLToPowerBIConverter
-
 converter = IstatXMLToPowerBIConverter()
+
+# Factory pattern (recommended)
+from src.converters.factory import create_powerbi_converter
+converter = create_powerbi_converter()
 ```
 
 #### 🔍 Methods
@@ -542,13 +569,17 @@ def _validate_data_quality(df: pd.DataFrame) -> Dict[str, Any]
 
 ### 📝 Class: `IstatXMLtoTableauConverter`
 
-Converts ISTAT XML data to Tableau-compatible formats.
+Converts ISTAT XML data to Tableau-compatible formats. **UPDATED!** Now inherits from `BaseIstatConverter`.
 
 #### 🔧 Initialization
 ```python
+# Direct instantiation (legacy)
 from src.converters.tableau_converter import IstatXMLtoTableauConverter
-
 converter = IstatXMLtoTableauConverter()
+
+# Factory pattern (recommended)
+from src.converters.factory import create_tableau_converter
+converter = create_tableau_converter()
 ```
 
 #### 🔍 Methods
@@ -673,11 +704,11 @@ def unblock_ip(ip: str) -> None
 
 ---
 
-## 🗃️ SQLite Metadata Layer
+## 🗃️ SQLite Metadata Layer - UPDATED Issue #59
 
 ### 📝 Overview
 
-The SQLite Metadata Layer provides thread-safe, lightweight storage for application metadata, user preferences, API credentials, and audit logging. It implements the metadata portion of the hybrid SQLite + DuckDB architecture (ADR-002).
+The SQLite Metadata Layer provides thread-safe, lightweight storage for application metadata, user preferences, API credentials, audit logging, and **dataset configuration management**. It implements the metadata portion of the hybrid SQLite + DuckDB architecture (ADR-002) with **NEW!** centralized dataset configuration capabilities.
 
 ### 🏗️ Core Components
 
@@ -696,7 +727,38 @@ manager.register_dataset(
     source="ISTAT SDMX",
     metadata={"last_updated": "2025-07-23", "quality": 0.95}
 )
+```
 
+#### 🆕 DatasetConfigManager (Issue #59)
+
+**NEW!** Centralized dataset configuration management with SQLite-first, JSON-fallback approach.
+
+```python
+from src.database.sqlite.dataset_config import get_dataset_config_manager
+
+# Get singleton instance
+config_manager = get_dataset_config_manager()
+
+# Load dataset configuration (automatically tries SQLite first, then JSON)
+datasets_config = config_manager.get_datasets_config()
+
+# Check configuration source
+print(f"Config loaded from: {datasets_config.get('source', 'unknown')}")
+print(f"Total datasets: {datasets_config.get('total_datasets', 0)}")
+```
+
+#### 🎯 Configuration Loading Strategy
+1. **SQLite First**: Attempts to load from `dataset_registry` table
+2. **JSON Fallback**: Falls back to JSON files if SQLite empty/unavailable
+3. **Caching**: 5-minute cache to improve performance
+4. **Zero Downtime**: Seamless fallback ensures continuous operation
+
+#### 🔄 Migration Support (Issue #59)
+- **Migration Script**: `scripts/migrate_json_to_sqlite.py` for production-safe migration
+- **Backup Strategy**: Automatic JSON backup with timestamp organization
+- **Rollback Capability**: Complete rollback support with < 15 minutes recovery time
+
+```python
 # Store user preferences with encryption
 manager.set_user_preference(
     user_id="user123",

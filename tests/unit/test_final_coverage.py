@@ -55,37 +55,6 @@ class TestFinalCoveragePush:
         assert "state" in stats
         assert "failure_count" in stats
 
-    def test_tableau_scraper_methods(self):
-        """Test tableau scraper additional methods."""
-        from src.scrapers.tableau_scraper import TableauIstatScraper
-
-        config = {
-            "result": {
-                "user": {"id": "test_user"},
-                "site": {
-                    "urlName": "test_site",
-                    "settings": {
-                        "webEditingEnabled": True,
-                        "flowAutoSaveEnabled": True,
-                    },
-                    "dataManagementEnabled": True,
-                    "runNowEnabled": True,
-                    "extractEncryptionMode": "enforced",
-                },
-                "server": {"oauthSettings": {}},
-            }
-        }
-
-        scraper = TableauIstatScraper(config)
-
-        # Test URL extraction
-        url = scraper._extract_base_url()
-        assert isinstance(url, str)
-
-        # Test capabilities analysis
-        capabilities = scraper._analyze_server_capabilities()
-        assert isinstance(capabilities, dict)
-
     @patch("builtins.print")
     def test_istat_api_print_methods(self, mock_print):
         """Test ISTAT API methods that use print."""

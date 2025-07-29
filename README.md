@@ -4,7 +4,7 @@
 
 [![Python](https://img.shields.io/badge/Python-3.13.3-blue.svg)](https://www.python.org/downloads/)
 [![Status](https://img.shields.io/badge/Status-Development%20Ready-orange.svg)](docs/project/PROJECT_STATE.md)
-[![Tests](https://img.shields.io/badge/Tests-491%20passing-green.svg)](tests/)
+[![Tests](https://img.shields.io/badge/Tests-521%20passing-green.svg)](tests/)
 [![Dashboard](https://img.shields.io/badge/Dashboard-Live%20✅-green.svg)](https://osservatorio-dashboard.streamlit.app/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-REST%20API%20Complete%20✅-green.svg)](src/api/fastapi_app.py)
 [![Security](https://img.shields.io/badge/Security-JWT%20Auth%20🔐-green.svg)](src/auth/)
@@ -16,11 +16,14 @@
 [![Coverage](https://img.shields.io/badge/Coverage-70.34%25-yellow.svg)](tests/)
 [![API](https://img.shields.io/badge/REST%20API-Production%20Ready%20🚀-brightgreen.svg)](http://localhost:8000/docs)
 
-## 🚀 Project Status: Production-Ready Platform with Complete REST API
+## 🚀 Project Status: Enterprise-Ready Platform with Architecture Consolidation
 
-**✅ FastAPI REST API Complete**: Italian statistical data platform with full API implementation and enterprise architecture.
+**✅ Clean Architecture Complete**: Italian statistical data platform with SQLite migration, unified converter architecture, and codebase cleanup.
 
-### 🎯 What's Working Now (Day 8 Complete - Issue #29)
+### 🎯 What's Working Now (Latest - Issues #59, #62 & #65 Complete)
+- ✅ **SQLite Configuration Migration**: JSON to SQLite migration with zero-downtime rollback (Issue #59)
+- ✅ **Unified Converter Architecture**: BaseConverter eliminating ~500 lines duplicate code (Issue #62)
+- ✅ **Codebase Cleanup**: Removed obsolete scrapers component (~152 lines) with zero production usage (Issue #65)
 - ✅ **FastAPI REST API**: Complete multi-user API with OpenAPI documentation (Issue #29 - 100% success)
 - ✅ **OData v4 PowerBI Integration**: Direct Query endpoint for real-time PowerBI connectivity
 - ✅ **JWT Authentication System**: API key management with bcrypt hashing and rate limiting
@@ -28,7 +31,7 @@
 - ✅ **Security Foundation**: OWASP headers, SQL injection protection, audit logging
 - ✅ **PowerBI Data Pipeline**: Star schema generation, data optimization, and processing
 - ✅ **High-Performance Analytics**: DuckDB engine processing >2k records/sec
-- ✅ **Comprehensive Testing**: 491 tests passing (70.34% coverage)
+- ✅ **Comprehensive Testing**: 521 tests passing (focused on active components)
 - ✅ **SQLite + DuckDB Architecture**: Hybrid metadata + analytics database system
 - ✅ **ISTAT Data Integration**: Complete pipeline from ISTAT API to analytics-ready data
 
@@ -208,8 +211,6 @@ Osservatorio/                              # 🏠 Root directory
 │   │   └── tableau_converter.py           # XML → Tableau formats
 │   ├── 🔍 analyzers/                      # Data analysis (2 files)
 │   │   └── dataflow_analyzer.py           # Dataset categorization
-│   ├── 🕷️ scrapers/                       # Web scraping utilities (2 files)
-│   │   └── tableau_scraper.py             # Tableau configuration analysis
 │   ├── 🦆 database/                       # Database modules (11 files)
 │   │   ├── duckdb/                        # DuckDB analytics engine (7 files)
 │   │   │   ├── manager.py                 # Connection management & pooling
