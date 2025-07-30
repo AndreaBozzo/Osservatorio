@@ -31,19 +31,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
 
-    services:
-      # Start FastAPI application for testing
-      api:
-        image: python:3.11
-        ports:
-          - 8000:8000
-        env:
-          PYTHONPATH: /workspace
-        options: >-
-          --health-cmd "curl -f http://localhost:8000/health || exit 1"
-          --health-interval 30s
-          --health-timeout 10s
-          --health-retries 5
 
     steps:
     - name: Checkout code
