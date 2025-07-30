@@ -377,5 +377,12 @@ def handle_api_errors(func):
     return wrapper
 
 
+def get_dataflow_service():
+    """Get DataflowAnalysisService instance as FastAPI dependency."""
+    from src.services.service_factory import get_dataflow_analysis_service
+
+    return get_dataflow_analysis_service()
+
+
 # Note: Dependencies are now used individually in endpoints
 # for better clarity and customization

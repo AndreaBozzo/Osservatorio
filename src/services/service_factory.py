@@ -11,7 +11,7 @@ from typing import Optional
 from ..api.production_istat_client import ProductionIstatClient
 from ..database.sqlite.repository import UnifiedDataRepository, get_unified_repository
 from ..utils.logger import get_logger
-from ..utils.temp_file_manager import TempFileManager, get_temp_file_manager
+from ..utils.temp_file_manager import TempFileManager, get_temp_manager
 from .dataflow_analysis_service import DataflowAnalysisService
 
 
@@ -89,7 +89,7 @@ def create_dataflow_analysis_service(
 
     if temp_file_manager is None:
         logger.debug("Creating default TempFileManager")
-        temp_file_manager = get_temp_file_manager()
+        temp_file_manager = get_temp_manager()
 
     # Create and configure the service
     service = DataflowAnalysisService(
@@ -121,7 +121,7 @@ def initialize_services() -> ServiceContainer:
         # Create core dependencies
         istat_client = ProductionIstatClient()
         repository = get_unified_repository()
-        temp_file_manager = get_temp_file_manager()
+        temp_file_manager = get_temp_manager()
 
         # Register core services
         container.register(ProductionIstatClient, istat_client)

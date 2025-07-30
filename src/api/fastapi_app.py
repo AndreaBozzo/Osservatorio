@@ -55,12 +55,15 @@ from .dependencies import (
     validate_dataset_id,
     validate_pagination,
 )
-from .models import (
+from .models import (  # Dataflow Analysis Models
     APIKeyCreate,
     APIKeyListResponse,
     APIKeyResponse,
     APIResponse,
     APIScope,
+    BulkAnalysisResponse,
+    CategorizationRulesListResponse,
+    DataflowAnalysisResponse,
     Dataset,
     DatasetDetailResponse,
     DatasetListResponse,
@@ -620,6 +623,11 @@ async def get_usage_analytics(
 # Include OData router for PowerBI integration
 odata_router = create_odata_router()
 app.include_router(odata_router, prefix="/odata", tags=["OData"])
+
+# Include Dataflow Analysis router
+from .dataflow_analysis_api import router as dataflow_router
+
+app.include_router(dataflow_router, prefix="/api", tags=["Dataflow Analysis"])
 
 
 # OpenAPI customization
