@@ -2,7 +2,7 @@ name: Performance Testing
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main, issue-74-performance-load-testing ]
   pull_request:
     branches: [ main ]
   schedule:
