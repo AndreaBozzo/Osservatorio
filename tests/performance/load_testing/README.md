@@ -15,9 +15,11 @@ This suite implements all acceptance criteria from Issue #74:
 - ✅ **Resource utilization monitoring during load**
 - ✅ **Performance reports with actionable insights**
 
-## Current Limitations (Pragmatic Implementation)
+## ⚠️ GitHub Workflow Status (UPDATED 30 July 2025)
 
-> **Note**: This performance testing suite is currently configured for pragmatic functionality during development phase.
+> **IMPORTANT**: The GitHub Actions performance testing workflow (Issue #74) has been **REMOVED** due to unsatisfactory implementation. The workflow experienced persistent failures and was deemed inadequate for production use.
+>
+> **LOCAL TESTING REMAINS AVAILABLE**: All performance testing code, scripts, and local execution capabilities remain fully functional and can be used for development and manual testing purposes.
 
 ### Currently Tested Endpoints
 
@@ -43,12 +45,13 @@ For practical CI/CD functionality:
 
 ### Future Improvements
 
-These limitations will be addressed in future iterations:
+These improvements may be addressed in future iterations:
 
 1. **Issue**: Populate test databases with realistic ISTAT data
 2. **Issue**: Configure DuckDB environment for CI/CD
 3. **Issue**: Implement mock data endpoints for testing
 4. **Issue**: Optimize API response times for production SLAs
+5. **NEW**: Re-implement CI/CD performance testing with a more robust approach
 
 ## Quick Start
 
