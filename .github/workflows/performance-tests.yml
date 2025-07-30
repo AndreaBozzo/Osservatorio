@@ -1,0 +1,281 @@
+name: Performance Testing
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Run performance tests daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      test_type:
+        description: 'Type of performance test to run'
+        required: true
+        default: 'full-suite'
+        type: choice
+        options:
+          - full-suite
+          - api-only
+          - database-only
+          - load-only
+      establish_baselines:
+        description: 'Establish new performance baselines'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  performance-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    services:
+      # Start FastAPI application for testing
+      api:
+        image: python:3.11
+        ports:
+          - 8000:8000
+        env:
+          PYTHONPATH: /workspace
+        options: >-
+          --health-cmd "curl -f http://localhost:8000/health || exit 1"
+          --health-interval 30s
+          --health-timeout 10s
+          --health-retries 5
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y sqlite3 curl
+
+    - name: Install Python dependencies
+      run: |
+        pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install -r requirements-dev.txt
+        pip install -r requirements-performance.txt
+
+    - name: Setup test databases
+      run: |
+        # Create test SQLite database
+        python -c "
+        import sqlite3
+        conn = sqlite3.connect('data/databases/osservatorio_metadata.db')
+        conn.execute('CREATE TABLE IF NOT EXISTS datasets (id TEXT PRIMARY KEY, category TEXT, name TEXT)')
+        conn.execute('CREATE TABLE IF NOT EXISTS dataset_metadata (dataset_id TEXT, key TEXT, value TEXT)')
+        # Insert sample data
+        for i in range(100):
+            conn.execute('INSERT OR IGNORE INTO datasets VALUES (?, ?, ?)', (f'dataset_{i}', 'test', f'Test Dataset {i}'))
+        conn.commit()
+        conn.close()
+        "
+
+        # Create test DuckDB database
+        mkdir -p data/databases
+        touch data/databases/osservatorio.duckdb
+
+    - name: Start FastAPI application
+      run: |
+        # Start the API server in background
+        cd src
+        python -m uvicorn api.fastapi_app:app --host 0.0.0.0 --port 8000 &
+        sleep 10
+
+        # Verify API is running
+        curl -f http://localhost:8000/health
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+
+    - name: Run performance tests
+      id: perf_tests
+      run: |
+        # Determine test type
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          TEST_TYPE="${{ github.event.inputs.test_type }}"
+          ESTABLISH_BASELINES="${{ github.event.inputs.establish_baselines }}"
+        elif [ "${{ github.event_name }}" = "schedule" ]; then
+          TEST_TYPE="full-suite"
+          ESTABLISH_BASELINES="true"
+        else
+          TEST_TYPE="api-only"  # Faster tests for PR/push
+          ESTABLISH_BASELINES="false"
+        fi
+
+        # Build command
+        CMD="python scripts/run_performance_tests.py"
+        CMD="$CMD --base-url http://localhost:8000"
+        CMD="$CMD --ci-mode"
+        CMD="$CMD --max-failures 2"
+        CMD="$CMD --min-health-score 75"
+        CMD="$CMD --sla-compliance-threshold 0.90"
+        CMD="$CMD --save-artifacts"
+
+        if [ "$TEST_TYPE" = "full-suite" ]; then
+          CMD="$CMD --full-suite"
+        elif [ "$TEST_TYPE" = "api-only" ]; then
+          CMD="$CMD --api-only"
+        elif [ "$TEST_TYPE" = "database-only" ]; then
+          CMD="$CMD --database-only"
+        elif [ "$TEST_TYPE" = "load-only" ]; then
+          CMD="$CMD --load-only"
+        fi
+
+        if [ "$ESTABLISH_BASELINES" = "true" ]; then
+          CMD="$CMD --establish-baselines"
+        fi
+
+        echo "Running: $CMD"
+        $CMD
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+
+    - name: Upload performance results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: performance-results-${{ github.run_number }}
+        path: |
+          data/performance_results/
+          !data/performance_results/*.db
+        retention-days: 30
+
+    - name: Generate performance badge
+      if: github.ref == 'refs/heads/main'
+      run: |
+        # Extract health score from latest report
+        HEALTH_SCORE=$(ls -t data/performance_results/comprehensive_performance_report_*.json | head -1 | xargs cat | jq -r '.health_score // 0')
+
+        # Determine badge color
+        if [ "$HEALTH_SCORE" -ge 90 ]; then
+          COLOR="brightgreen"
+        elif [ "$HEALTH_SCORE" -ge 75 ]; then
+          COLOR="yellow"
+        elif [ "$HEALTH_SCORE" -ge 50 ]; then
+          COLOR="orange"
+        else
+          COLOR="red"
+        fi
+
+        # Create badge JSON
+        echo "{\"schemaVersion\": 1, \"label\": \"performance\", \"message\": \"${HEALTH_SCORE}/100\", \"color\": \"${COLOR}\"}" > performance-badge.json
+
+    - name: Update performance badge
+      if: github.ref == 'refs/heads/main'
+      uses: actions/upload-artifact@v4
+      with:
+        name: performance-badge
+        path: performance-badge.json
+
+    - name: Comment PR with performance results
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          const path = require('path');
+
+          // Find latest performance report
+          const resultDir = 'data/performance_results';
+          const files = fs.readdirSync(resultDir).filter(f => f.startsWith('comprehensive_performance_report_') && f.endsWith('.json'));
+
+          if (files.length === 0) {
+            console.log('No performance report found');
+            return;
+          }
+
+          const latestFile = files.sort().reverse()[0];
+          const reportPath = path.join(resultDir, latestFile);
+          const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+
+          // Create comment body
+          const healthScore = report.health_score || 0;
+          const compliance = (report.sla_compliance?.overall_compliance_rate || 1.0) * 100;
+          const insights = report.overall_insights?.slice(0, 3) || [];
+          const recommendations = report.actionable_recommendations?.slice(0, 3) || [];
+
+          let status = '✅';
+          if (healthScore < 75) status = '⚠️';
+          if (healthScore < 50) status = '❌';
+
+          const body = `## ${status} Performance Test Results
+
+          **Health Score**: ${healthScore}/100
+          **SLA Compliance**: ${compliance.toFixed(1)}%
+          **Test Duration**: ${(report.suite_duration_seconds || 0).toFixed(1)}s
+
+          ### Key Insights
+          ${insights.map(i => `- ${i}`).join('\n')}
+
+          ### Recommendations
+          ${recommendations.map(r => `- ${r}`).join('\n')}
+
+          <details>
+          <summary>View detailed results</summary>
+
+          **Tests Completed**: ${report.test_summary?.tests_completed?.join(', ') || 'N/A'}
+
+          **Regression Alerts**: ${report.regression_alerts?.length || 0}
+
+          </details>
+          `;
+
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: body
+          });
+
+    - name: Fail job if performance tests failed
+      if: failure() && steps.perf_tests.outcome == 'failure'
+      run: |
+        echo "❌ Performance tests failed - check results above"
+        exit 1
+
+  performance-regression-check:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    needs: performance-tests
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Download performance results
+      uses: actions/download-artifact@v4
+      with:
+        name: performance-results-${{ github.run_number }}
+        path: data/performance_results/
+
+    - name: Check for performance regressions
+      run: |
+        # This would compare current results against baseline
+        # For now, just check if any critical regression alerts exist
+
+        LATEST_REPORT=$(ls -t data/performance_results/comprehensive_performance_report_*.json | head -1)
+
+        if [ -f "$LATEST_REPORT" ]; then
+          CRITICAL_ALERTS=$(cat "$LATEST_REPORT" | jq -r '.regression_alerts[] | select(.severity == "critical") | .description' | wc -l)
+
+          if [ "$CRITICAL_ALERTS" -gt 0 ]; then
+            echo "❌ Found $CRITICAL_ALERTS critical performance regressions"
+            echo "This PR introduces significant performance degradation"
+            exit 1
+          else
+            echo "✅ No critical performance regressions detected"
+          fi
+        else
+          echo "⚠️ No performance report found - skipping regression check"
+        fi
