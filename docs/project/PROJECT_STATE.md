@@ -1,40 +1,46 @@
 # PROJECT_STATE.md - Osservatorio Project Status & Evolution
 
-> **Ultimo aggiornamento**: 28 Luglio 2025 - ISSUES #59, #62 & #65 COMPLETE ✅
-> **Versione**: 10.3.0 (FastAPI + JWT Auth + PowerBI + SQLite Migration + BaseConverter + Codebase Cleanup)
+> **Ultimo aggiornamento**: 29 Luglio 2025 - Release v1.0.0 Roadmap Definita
+> **Versione Target**: 1.0.0 (Production-Ready Release)
+> **Timeline**: 7 settimane (29 Luglio - 16 Settembre 2025)
 > **Maintainer**: Andrea Bozzo
-> **Scopo**: Stato reale del progetto con FastAPI REST API completa e architettura enterprise
+> **Scopo**: Roadmap completa verso prima release production-ready con gap analysis e correzioni
 
 ## 🚀 Executive Summary
 
-**Osservatorio** ha raggiunto un **milestone enterprise-ready** con il completamento di **Issues #59, #62 & #65: SQLite Migration + BaseConverter Architecture + Codebase Cleanup**. L'architettura **FastAPI + SQLite Migration + BaseConverter + DuckDB + PowerBI** rappresenta ora una soluzione enterprise-grade pulita e consolidata per analytics avanzati su dati statistici italiani.
+**Osservatorio** è in fase di preparazione per la **Release v1.0.0 Production-Ready**. Dopo un'analisi gap completa, sono stati identificati 8 gap critici e creati i corrispondenti issue (#74-81) per garantire una release enterprise-grade con tutte le caratteristiche necessarie per deployment production su larga scala.
 
-### 🎯 Stato Attuale (28 Luglio 2025) - CLEAN ARCHITECTURE v10.3.0 ✅
-- ✅ **JSON to SQLite Migration** - **ISSUE #59 COMPLETE** (Latest)
-  - Production-ready migration from JSON-based to SQLite dataset configurations
-  - `scripts/migrate_json_to_sqlite.py` with comprehensive validation and backup
-  - Zero-downtime migration with rollback capabilities (recovery < 15 minutes)
-  - Performance improved: SQLite queries with caching vs JSON file reads
-  - 19 comprehensive migration tests with 100% pass rate
-- ✅ **BaseConverter Architecture** - **ISSUE #62 COMPLETE** (Latest)
-  - Unified converter foundation eliminating ~500 lines of duplicate code (~23% reduction)
-  - Abstract BaseIstatConverter with shared XML parsing logic (342 lines)
-  - Factory pattern for centralized converter instantiation
-  - PowerBI/Tableau converters now inherit from BaseIstatConverter
-  - 18 comprehensive BaseConverter tests with 100% pass rate
-- ✅ **Codebase Cleanup** - **ISSUE #65 COMPLETE** (Latest)
-  - Removed obsolete scrapers component (152 lines) with zero production usage
-  - Eliminated unused `tableauserverclient` dependency
-  - Cleaned documentation to reflect actual architecture
-  - Direct ISTAT SDMX API access (no web scraping needed)
-- ✅ **FastAPI REST API Implementation** - **ISSUE #29 COMPLETE** (Day 8)
+### 🎯 Stato Attuale (29 Luglio 2025) - FOUNDATION IMPROVEMENTS v10.3.0 ✅
+- ✅ **Enhanced Security System** - **ISSUE #6 COMPLETE** (PR #61 merged)
+  - Distributed rate limiting with Redis support + SQLite fallback
+  - Adaptive limiting based on API response times (>2000ms triggers reduction)
+  - IP blocking with threat classification (Low/Medium/High/Critical)
+  - Security dashboard at `/api/security/dashboard` with real-time monitoring
+  - 100% backward compatible with existing authentication
+- ✅ **FastAPI Testing Suite** - **ISSUE #50 COMPLETE** (PR #61 merged)
+  - FastAPI test client with authentication testing
+  - Endpoint validation for all REST API routes
+  - Performance and load testing infrastructure
+  - Request/response schema validation
+- ✅ **OData v4 PowerBI Integration** - **ISSUE #51 COMPLETE** (PR #61 merged)
+  - OData v4 compliant REST endpoint for PowerBI Direct Query
+  - Field projection, filtering, and pagination support
+  - Performance optimization for large datasets
+  - Metadata endpoint for schema discovery
+- ✅ **Enterprise Architecture Foundation** - Previous milestones integrated
+  - JSON to SQLite Migration (Issue #59) - Centralized configuration management
+  - BaseConverter Architecture (Issue #62) - Unified converter foundation
+  - Codebase Cleanup (Issue #65) - Streamlined architecture
+  - JWT Authentication System - Enterprise-grade security
+  - PowerBI Integration Suite - Complete BI platform integration
+- ✅ **FastAPI REST API Implementation** - **ISSUE #29 COMPLETE** (PR #61 merged)
   - Complete FastAPI application with OpenAPI documentation
   - JWT authentication middleware integration
   - Dataset management endpoints (/datasets, /datasets/{id}, /datasets/{id}/timeseries)
   - OData v4 endpoint for PowerBI Direct Query
   - API key management endpoints (/auth/token, /auth/keys)
   - Usage analytics endpoints (/analytics/usage)
-  - Rate limiting and security middleware
+  - Enhanced rate limiting and security middleware
   - CORS configuration and error handling
   - **Performance targets achieved**: <100ms dataset list, <200ms dataset detail, <500ms OData queries
   - **100% acceptance criteria met**: All 8 deliverables validated and working
@@ -52,27 +58,130 @@
 - ✅ **PowerBI Enterprise Integration**: API Client, Star Schema Optimizer, Template Generator, Incremental Refresh, Metadata Bridge
 - ✅ **SQLite Metadata Layer**: 6 tabelle con thread-safety e enhanced transaction management
 - ✅ **DuckDB Analytics**: Query Builder, cache intelligente, >10x speedup
-- ✅ **Test Coverage**: 537+ tests, 100% passing (added 19 migration + 18 BaseConverter tests)
-- ✅ **Documentation**: Comprehensive API documentation with authentication guides
-- 🎯 **Next**: Monitoring & Analytics Dashboard (Day 9) + Enhanced documentation
+- ✅ **Test Coverage**: 537+ tests, 100% passing (enhanced with security and foundation improvements)
+- ✅ **Documentation**: Complete security and architecture documentation with implementation guides
+- 🔄 **Foundation Improvements in Progress** (PR #73 open):
+  - **Issue #59**: JSON to SQLite configuration migration with rollback support
+  - **Issue #62**: BaseConverter architecture eliminating ~500 lines duplicate code
+  - **Issue #65**: Scrapers cleanup removing obsolete components
+  - **Issue #50**: Enhanced FastAPI integration testing (partial)
+- 🎯 **RELEASE v1.0.0 ROADMAP**: 7 settimane, 32 issue totali (24 esistenti + 8 gap critici), 4 fasi strutturate per production readiness completa
 
-## 🛣️ Next Development Phases
+## 🚀 RELEASE v1.0.0 ROADMAP - 7 Settimane (29 Luglio - 16 Settembre 2025)
 
-### ✅ Day 8: FastAPI REST API Layer (COMPLETED - Issue #29)
-**Focus**: Complete REST API implementation - **100% SUCCESS RATE**
-- ✅ Core endpoints (/datasets, /auth, /analytics, /powerbi)
-- ✅ OData endpoint for PowerBI direct connection
-- ✅ OpenAPI documentation with Swagger UI
-- ✅ Authentication middleware integration
-- ✅ Performance optimization and caching
-- ✅ **Validation Results**: 8/8 deliverables working, all performance targets achieved
+### 📊 **Gap Analysis Results - UPDATED 29 Luglio 2025**
+**✅ COPERTI** (14/21 aree critiche): Foundation, BI Integration, Basic Security, Testing, DevOps, Documentation
+**❌ GAP CRITICI IDENTIFICATI** (8 nuovi issue creati #74-81):
+- Performance & Scalability (#74 Load Testing)
+- Production Reliability (#75 Error Handling)
+- Data Management (#76 Backup Strategy, #81 GDPR Compliance)
+- Production Operations (#78 Monitoring, #79 Health Checks)
+- Release Management (#80 Release Procedures)
+- API Evolution (#77 Versioning)
 
-### 📈 Day 9: Monitoring & Analytics Dashboard
-**Focus**: Usage analytics and monitoring
-- Usage tracking & analytics views in SQLite
-- Dashboard updates with authentication metrics
-- Rate limiting statistics and security alerts
-- Export functionality for audit reports
+### 🆕 **CONSOLIDATION & MODERNIZATION ISSUES** (29 Luglio 2025)
+**Legacy Cleanup & Architecture Modernization** (4 nuovi issue creati #83-87):
+- **#83**: Dataflow Analyzer Modernization - Rimuovere pattern legacy e allineare con architettura moderna (effort: days)
+- **#84**: Legacy Code Consolidation - Cleanup completo pattern embrionali per v1.0 (effort: days, priority: high)
+- **#85**: Tableau Phase 1 - Server API Integration & Authentication (effort: hours, priority: high)
+- **#86**: Tableau Phase 2 - Data Extract Generation & Publishing (effort: days, priority: high)
+- **#87**: Tableau Phase 3 - Template Generation & PowerBI Feature Parity (effort: days, priority: high)
+
+**Board Status Update**: **34 issue aperte totali** (30 precedenti + 4 nuove), con focus su consolidamento architetturale per v1.0
+
+## 🛣️ Release Development Phases
+
+### 🏗️ **FASE 1: Foundation (Settimane 1-2, 5-12 Agosto)**
+**Obiettivo**: Consolidare foundation architecture e performance
+
+**Issue Prioritarie da Completare:**
+- 🔄 **PR #73**: #59 (SQLite Migration), #62 (BaseConverter), #65 (Scrapers Cleanup) - **IN CORSO**
+- ⭐ **#3**: Enhanced Data Validation (Gasta88) - **Foundation critica**
+- ⭐ **#63**: Unified Data Ingestion Framework - **Architettura unificata**
+- ⭐ **#53**: Docker Production Deployment - **Deploy readiness**
+
+**Gap Critici Nuovi:**
+- 🆕 **#74**: Load Testing & Performance Benchmarking - **Performance foundation**
+- 🆕 **#75**: Production Error Handling & Resilience - **Reliability foundation**
+
+**Acceptance Criteria Fase 1:**
+- ✅ Foundation architecture consolidata e testata
+- ✅ Performance baseline stabilita (<100ms API, <10ms DB)
+- ✅ Error handling production-ready implementato
+- ✅ Docker deployment funzionante
+
+### 🎯 **FASE 2: Core Features (Settimane 3-4, 12-26 Agosto)**
+**Obiettivo**: Completare feature core e BI integration
+
+**Issue Core Features:**
+- ⭐ **#39**: Tableau Integration - **Completa parità BI con PowerBI**
+  - **Sub-issues**: #85 (Phase 1), #86 (Phase 2), #87 (Phase 3) - **Milestone-driven approach**
+- ⭐ **#30**: Analytics Dashboard (Gasta88) - **Operational excellence**
+- ⭐ **#5**: PowerBI Refresh Automation - **Automazione BI**
+- 🎯 **#66**: Production ISTAT Client - **API client enterprise** ✅ **COMPLETED 83.3% EXCELLENT**
+
+**Gap Critici Nuovi:**
+- 🆕 **#76**: Data Backup & Recovery Strategy - **Data protection**
+- 🆕 **#77**: API Versioning & Backward Compatibility - **API evolution**
+
+**Legacy Consolidation (Priority):**
+- 🆕 **#84**: Legacy Code Consolidation - **Architecture cleanup critico per v1.0**
+- 🆕 **#83**: Dataflow Analyzer Modernization - **Eliminare pattern legacy**
+
+**Acceptance Criteria Fase 2:**
+- ✅ BI integration completa (PowerBI + Tableau milestone-driven)
+- ✅ Production API client implementato ✅ **ACHIEVED**
+- ✅ Legacy code consolidato e architettura pulita
+- ✅ Data backup automatico funzionante
+- ✅ API versioning strategy attiva
+
+### 🛡️ **FASE 3: Production Readiness (Settimane 5-6, 26 Agosto - 9 Settembre)**
+**Obiettivo**: Security hardening e production operations
+
+**Issue Production Readiness:**
+- ⭐ **#70**: Production Security Audit - **Security hardening**
+- ⭐ **#69**: End-to-End Testing Suite - **Quality assurance**
+- ⭐ **#71**: CI/CD Pipeline Automation - **DevOps automation**
+- ⭐ **#67**: System-wide Dependency Injection - **Architecture enterprise**
+
+**Gap Critici Nuovi:**
+- 🆕 **#78**: Production Logging & Monitoring - **Observability**
+- 🆕 **#79**: Health Checks & Readiness Probes - **Orchestration**
+
+**Acceptance Criteria Fase 3:**
+- ✅ Security audit completato (0 HIGH severity)
+- ✅ End-to-end testing pipeline attivo
+- ✅ Production monitoring e alerting operativo
+- ✅ Health checks per orchestration pronti
+
+### 🚀 **FASE 4: Release Preparation (Settimana 7, 9-16 Settembre)**
+**Obiettivo**: Release management e compliance finale
+
+**Issue Release Preparation:**
+- ⭐ **#52**: OpenAPI Documentation - **Developer experience**
+- ⭐ **#72**: Operation Runbooks - **Operational knowledge**
+- ⭐ **#68**: Setup Wizard & UX - **User experience**
+- 📊 **#64**: Pipeline Health Dashboard - **Operations dashboard**
+
+**Gap Critici Nuovi:**
+- 🆕 **#80**: Release Management & Rollback Procedures - **Release safety**
+- 🆕 **#81**: GDPR Compliance & Data Privacy - **Legal compliance**
+
+**Acceptance Criteria Fase 4:**
+- ✅ Release procedures automatizzati
+- ✅ GDPR compliance implementato
+- ✅ Documentation completa per production
+- ✅ User experience ottimizzata
+
+### 🎉 **RELEASE v1.0.0 - 16 Settembre 2025**
+**Production-Ready Milestone:**
+- 📊 **36 Issue Completati** (28 esistenti + 8 gap critici) - **UPDATED 29/07/2025**
+- 🏗️ **Enterprise Architecture** completa e testata
+- 🛡️ **Security & Compliance** production-grade
+- 📈 **Performance & Scalability** validated
+- 🔄 **DevOps & Operations** fully automated
+- 📚 **Documentation & UX** comprehensive
+- 🧹 **Legacy Code Consolidation** - Architettura pulita e moderna
 
 ### 🧪 Day 10: Quality Assurance & Documentation
 **Focus**: Production readiness
@@ -440,5 +549,6 @@
 **Morale**: 📈 High - pragmatic approach appreciated
 **Blockers**: None identified
 
-*Last updated: 23 July 2025 - Version 8.1.0*
-*Next update: After Day 4 completion*
+*Last updated: 29 July 2025 - Release v1.0.0 Roadmap*
+*Next update: Weekly sprint reviews, final update at Release v1.0.0*
+*Target Release Date: 16 Settembre 2025*
