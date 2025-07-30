@@ -493,6 +493,97 @@ class UnifiedDataRepository:
             logger.error(f"Failed to get time series for {dataset_id}: {e}")
             return []
 
+    # Categorization Rules Operations
+
+    def get_categorization_rules(
+        self, category: str = None, active_only: bool = True
+    ) -> List[Dict[str, Any]]:
+        """Get categorization rules for dataflow analysis.
+
+        Args:
+            category: Optional category filter
+            active_only: Whether to return only active rules
+
+        Returns:
+            List of categorization rules
+        """
+        try:
+            return self.metadata_manager.get_categorization_rules(category, active_only)
+        except Exception as e:
+            logger.error(f"Failed to get categorization rules: {e}")
+            return []
+
+    def create_categorization_rule(
+        self,
+        rule_id: str,
+        category: str,
+        keywords: List[str],
+        priority: int = 5,
+        description: str = None,
+    ) -> bool:
+        """Create a new categorization rule.
+
+        Args:
+            rule_id: Unique rule identifier
+            category: Target category
+            keywords: List of keywords for matching
+            priority: Rule priority (higher = more important)
+            description: Optional description
+
+        Returns:
+            bool: True if rule created successfully
+        """
+        try:
+            return self.metadata_manager.create_categorization_rule(
+                rule_id, category, keywords, priority, description
+            )
+        except Exception as e:
+            logger.error(f"Failed to create categorization rule: {e}")
+            return False
+
+    def update_categorization_rule(
+        self,
+        rule_id: str,
+        keywords: List[str] = None,
+        priority: int = None,
+        is_active: bool = None,
+        description: str = None,
+    ) -> bool:
+        """Update an existing categorization rule.
+
+        Args:
+            rule_id: Rule identifier to update
+            keywords: Optional new keywords list
+            priority: Optional new priority
+            is_active: Optional active status
+            description: Optional new description
+
+        Returns:
+            bool: True if rule updated successfully
+        """
+        try:
+            return self.metadata_manager.update_categorization_rule(
+                rule_id, keywords, priority, is_active, description
+            )
+        except Exception as e:
+            logger.error(f"Failed to update categorization rule: {e}")
+            return False
+
+    def delete_categorization_rule(self, rule_id: str) -> bool:
+        """Delete a categorization rule.
+
+        Args:
+            rule_id: Rule identifier to delete
+
+        Returns:
+            bool: True if rule deleted successfully
+        """
+        try:
+            return self.metadata_manager.delete_categorization_rule(rule_id)
+        except Exception as e:
+            logger.error(f"Failed to delete categorization rule: {e}")
+            return False
+
     # System Operations
 
     def get_system_status(self) -> Dict[str, Any]:

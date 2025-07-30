@@ -546,3 +546,115 @@ class TestDataflowAnalysisService:
 
         filters2 = AnalysisFilters(max_results=2000)
         assert filters2.max_results == 1000  # Should be clamped to maximum
+
+    # Database Integration Tests for Categorization Rules
+
+    @pytest.mark.asyncio
+    async def test_get_categorization_rules_from_database(self, service):
+        """Test loading categorization rules from database."""
+        # Mock repository to return sample rules
+        sample_rules = [
+            {
+                "rule_id": "test_rule",
+                "category": "popolazione",
+                "keywords": ["test", "popolazione"],
+                "priority": 10,
+                "is_active": True,
+                "created_at": datetime.now(),
+                "updated_at": datetime.now(),
+            }
+        ]
+        service.repository.get_categorization_rules = MagicMock(
+            return_value=sample_rules
+        )
+
+        # Clear cache to force database load
+        service._categorization_rules = None
+        service._rules_cache_time = None
+
+        rules = await service._get_categorization_rules()
+
+        assert len(rules) == 1
+        assert rules[0].id == "test_rule"
+        assert rules[0].category == DataflowCategory.POPOLAZIONE
+        assert "test" in rules[0].keywords
+        service.repository.get_categorization_rules.assert_called_once_with(
+            active_only=True
+        )
+
+    @pytest.mark.asyncio
+    async def test_categorization_rules_cache(self, service):
+        """Test categorization rules caching mechanism."""
+        # Mock repository
+        service.repository.get_categorization_rules = MagicMock(return_value=[])
+
+        # First call should hit database
+        await service._get_categorization_rules()
+        assert service.repository.get_categorization_rules.call_count == 1
+
+        # Second call should use cache
+        await service._get_categorization_rules()
+        assert service.repository.get_categorization_rules.call_count == 1  # Still 1
+
+        # Clear cache and call again should hit database
+        service._categorization_rules = None
+        service._rules_cache_time = None
+        await service._get_categorization_rules()
+        assert service.repository.get_categorization_rules.call_count == 2
+
+    @pytest.mark.asyncio
+    async def test_fallback_rules_on_database_error(self, service):
+        """Test fallback to hardcoded rules when database fails."""
+        # Mock repository to raise exception
+        service.repository.get_categorization_rules = MagicMock(
+            side_effect=Exception("Database error")
+        )
+
+        # Clear cache to force database load
+        service._categorization_rules = None
+        service._rules_cache_time = None
+
+        rules = await service._get_categorization_rules()
+
+        # Should return fallback rules
+        assert len(rules) > 0
+        assert all(isinstance(rule.category, DataflowCategory) for rule in rules)
+        service.repository.get_categorization_rules.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_invalid_category_in_database_rule(self, service):
+        """Test handling of invalid category in database rules."""
+        # Mock repository to return rule with invalid category
+        sample_rules = [
+            {
+                "rule_id": "valid_rule",
+                "category": "popolazione",
+                "keywords": ["test"],
+                "priority": 10,
+                "is_active": True,
+                "created_at": datetime.now(),
+                "updated_at": datetime.now(),
+            },
+            {
+                "rule_id": "invalid_rule",
+                "category": "invalid_category",
+                "keywords": ["test"],
+                "priority": 5,
+                "is_active": True,
+                "created_at": datetime.now(),
+                "updated_at": datetime.now(),
+            },
+        ]
+        service.repository.get_categorization_rules = MagicMock(
+            return_value=sample_rules
+        )
+
+        # Clear cache
+        service._categorization_rules = None
+        service._rules_cache_time = None
+
+        rules = await service._get_categorization_rules()
+
+        # Should only include valid rule
+        assert len(rules) == 1
+        assert rules[0].id == "valid_rule"

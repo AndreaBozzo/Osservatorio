@@ -476,9 +476,52 @@ class DataflowAnalysisService:
         ):
             return self._categorization_rules
 
-        # Load from database (placeholder - would use repository)
-        # For now, return hardcoded rules similar to legacy implementation
-        rules = [
+        # Load from database using repository
+        try:
+            rules_data = self.repository.get_categorization_rules(active_only=True)
+            rules = []
+
+            for rule_data in rules_data:
+                # Convert database row to CategorizationRule model
+                try:
+                    rule = CategorizationRule(
+                        id=rule_data["rule_id"],
+                        category=DataflowCategory(rule_data["category"]),
+                        keywords=rule_data["keywords"],
+                        priority=rule_data["priority"],
+                        is_active=rule_data["is_active"],
+                        created_at=rule_data.get("created_at"),
+                        updated_at=rule_data.get("updated_at"),
+                    )
+                    rules.append(rule)
+                except ValueError as e:
+                    self.logger.warning(
+                        f"Invalid category in rule {rule_data.get('rule_id', 'unknown')}: {e}"
+                    )
+                    continue
+
+            if not rules:
+                self.logger.warning(
+                    "No categorization rules found in database, using fallback rules"
+                )
+                # Fallback to ensure service still works
+                rules = self._get_fallback_rules()
+
+            # Cache the rules
+            self._categorization_rules = rules
+            self._rules_cache_time = now
+
+            self.logger.info(f"Loaded {len(rules)} categorization rules from database")
+            return rules
+
+        except Exception as e:
+            self.logger.error(f"Failed to load rules from database: {e}")
+            # Fallback to hardcoded rules to ensure service continues working
+            return self._get_fallback_rules()
+
+    def _get_fallback_rules(self) -> List[CategorizationRule]:
+        """Get fallback categorization rules when database is unavailable."""
+        return [
             CategorizationRule(
                 id="pop_rule",
                 category=DataflowCategory.POPOLAZIONE,
@@ -491,6 +534,8 @@ class DataflowAnalysisService:
                     "nascite",
                     "morti",
                     "stranieri",
+                    "cittadini",
+                    "anagrafe",
                 ],
                 priority=10,
             ),
@@ -507,6 +552,8 @@ class DataflowAnalysisService:
                     "price",
                     "reddito",
                     "income",
+                    "consumi",
+                    "spesa",
                 ],
                 priority=9,
             ),
@@ -520,6 +567,8 @@ class DataflowAnalysisService:
                     "employment",
                     "unemploy",
                     "forze_lavoro",
+                    "attività",
+                    "occupati",
                 ],
                 priority=8,
             ),
@@ -532,28 +581,44 @@ class DataflowAnalysisService:
                     "comune",
                     "territorial",
                     "geographic",
+                    "territorio",
+                    "amministrativo",
+                    "enti_locali",
                 ],
                 priority=7,
             ),
             CategorizationRule(
                 id="edu_rule",
                 category=DataflowCategory.ISTRUZIONE,
-                keywords=["istruzione", "scuola", "università", "education", "student"],
+                keywords=[
+                    "istruzione",
+                    "scuola",
+                    "università",
+                    "education",
+                    "student",
+                    "studenti",
+                    "formazione",
+                    "educazione",
+                ],
                 priority=6,
             ),
             CategorizationRule(
                 id="health_rule",
                 category=DataflowCategory.SALUTE,
-                keywords=["sanita", "salute", "ospedale", "health", "medical"],
+                keywords=[
+                    "sanita",
+                    "salute",
+                    "ospedale",
+                    "health",
+                    "medical",
+                    "sanitario",
+                    "medico",
+                    "cure",
+                    "prevenzione",
+                ],
                 priority=5,
             ),
         ]
-
-        # Cache the rules
-        self._categorization_rules = rules
-        self._rules_cache_time = now
-
-        return rules
 
     async def _save_dataflow_sample(
         self, dataflow_id: str, xml_content: str
