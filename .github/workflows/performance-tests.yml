@@ -56,6 +56,9 @@ jobs:
 
     - name: Setup test databases
       run: |
+        # Create directories first
+        mkdir -p data/databases
+
         # Create test SQLite database
         python -c "
         import sqlite3
@@ -70,20 +73,22 @@ jobs:
         "
 
         # Create test DuckDB database
-        mkdir -p data/databases
         touch data/databases/osservatorio.duckdb
 
     - name: Start FastAPI application
       run: |
         # Start the API server in background
-        cd src
-        python -m uvicorn api.fastapi_app:app --host 0.0.0.0 --port 8000 &
-        sleep 10
+        python -c "
+        import sys
+        sys.path.insert(0, '.')
+        import uvicorn
+        from src.api.fastapi_app import app
+        uvicorn.run(app, host='0.0.0.0', port=8000, log_level='warning')
+        " &
+        sleep 15
 
         # Verify API is running
         curl -f http://localhost:8000/health
-      env:
-        PYTHONPATH: ${{ github.workspace }}
 
     - name: Run performance tests
       id: perf_tests
