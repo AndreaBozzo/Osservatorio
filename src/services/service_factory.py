@@ -5,8 +5,9 @@ This module provides factory functions to create service instances
 with proper dependency injection, following the dependency inversion principle.
 """
 
+from datetime import datetime
 from functools import lru_cache
-from typing import Optional
+from typing import Any, Dict, Optional
 
 from ..api.production_istat_client import ProductionIstatClient
 from ..database.sqlite.repository import UnifiedDataRepository, get_unified_repository
@@ -41,6 +42,49 @@ class ServiceContainer:
     def has(self, service_type: type) -> bool:
         """Check if a service is registered."""
         return service_type in self._services
+
+    def health_check(self) -> Dict[str, Any]:
+        """
+        Perform health check on registered services.
+
+        Returns:
+            Dict containing health status of all services
+        """
+        health_status = {
+            "status": "healthy",
+            "timestamp": datetime.now().isoformat(),
+            "services": {},
+            "registered_count": len(self._services),
+        }
+
+        for service_type, service_instance in self._services.items():
+            service_name = service_type.__name__
+
+            try:
+                # Check if service has its own health_check method
+                if hasattr(service_instance, "health_check"):
+                    service_health = service_instance.health_check()
+                    health_status["services"][service_name] = service_health
+                elif hasattr(service_instance, "get_status"):
+                    service_health = service_instance.get_status()
+                    health_status["services"][service_name] = service_health
+                else:
+                    # Basic check - service exists and is not None
+                    health_status["services"][service_name] = {
+                        "status": "healthy"
+                        if service_instance is not None
+                        else "unhealthy",
+                        "type": str(type(service_instance)),
+                    }
+
+            except Exception as e:
+                health_status["services"][service_name] = {
+                    "status": "unhealthy",
+                    "error": str(e),
+                }
+                health_status["status"] = "degraded"
+
+        return health_status
 
 
 # Global service container instance

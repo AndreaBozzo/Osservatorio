@@ -21,9 +21,9 @@ from src.services.models import (
     CategorizationRule,
     ConnectionType,
     DataflowTest,
+    DataflowTestResult,
     IstatDataflow,
     RefreshFrequency,
-    TestResult,
 )
 
 
@@ -83,7 +83,7 @@ class TestDataflowAnalysisAPI:
             observations_count=500,
         )
 
-        test_result = TestResult(dataflow=dataflow, test=test)
+        test_result = DataflowTestResult(dataflow=dataflow, test=test)
 
         return AnalysisResult(
             total_analyzed=1,

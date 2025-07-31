@@ -106,6 +106,46 @@ class LegacyDataflowAnalyzerAdapter:
             self.logger.error(f"Legacy adapter parse error: {e}", exc_info=True)
             return {}
 
+    async def analyze_dataflows_xml(self, xml_content: str) -> Dict:
+        """
+        Legacy async method: Analyze dataflows from XML content.
+
+        This method provides async interface for XML analysis while using
+        the modern service internally.
+        """
+        try:
+            filters = AnalysisFilters(include_tests=False, max_results=100)
+            result = await self.service.analyze_dataflows_from_xml(xml_content, filters)
+            self._analysis_result = result
+
+            # Convert to legacy format
+            legacy_format = {
+                "total_analyzed": result.total_analyzed,
+                "categories": {},
+                "timestamp": result.analysis_timestamp.isoformat(),
+            }
+
+            for category, dataflows in result.categorized_dataflows.items():
+                legacy_format["categories"][category.value] = []
+                for df in dataflows:
+                    legacy_format["categories"][category.value].append(
+                        {
+                            "id": df.id,
+                            "name_it": df.name_it,
+                            "name_en": df.name_en,
+                            "display_name": df.display_name,
+                            "description": df.description,
+                            "category": df.category.value,
+                            "relevance_score": df.relevance_score,
+                        }
+                    )
+
+            return legacy_format
+
+        except Exception as e:
+            self.logger.error(f"Legacy adapter analysis error: {e}", exc_info=True)
+            return {"error": str(e), "total_analyzed": 0, "categories": {}}
+
     def find_top_dataflows_by_category(
         self, categorized_dataflows: Dict, top_n: int = 5
     ) -> Dict:

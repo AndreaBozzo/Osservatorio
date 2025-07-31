@@ -23,8 +23,8 @@ from .models import (
     CategoryResult,
     DataflowCategory,
     DataflowTest,
+    DataflowTestResult,
     IstatDataflow,
-    TestResult,
 )
 
 
@@ -220,22 +220,33 @@ class DataflowAnalysisService:
         self.logger.info(f"Testing dataflow access: {dataflow_id}")
 
         try:
-            # Use ProductionIstatClient instead of direct requests
-            response_data = await self.istat_client.get_dataflow_data(dataflow_id)
+            # Use ProductionIstatClient to fetch dataset (synchronous call)
+            response = self.istat_client.fetch_dataset(dataflow_id)
 
-            test = DataflowTest(
-                dataflow_id=dataflow_id,
-                data_access_success=True,
-                status_code=200,
-                size_bytes=len(response_data.encode("utf-8")),
-            )
+            if response.get("success", False) and response.get("data"):
+                response_data = response["data"]
+
+                test = DataflowTest(
+                    dataflow_id=dataflow_id,
+                    data_access_success=True,
+                    status_code=200,
+                    size_bytes=len(str(response_data).encode("utf-8")),
+                )
+            else:
+                error_msg = response.get("error_message", "Failed to fetch dataset")
+                return DataflowTest(
+                    dataflow_id=dataflow_id,
+                    data_access_success=False,
+                    error_message=error_msg,
+                )
 
             # Try to parse XML and count observations
             try:
-                root = ET.fromstring(response_data)
-                obs_count = len(root.findall('.//*[local-name()="Obs"]'))
+                root = ET.fromstring(str(response_data))
+                # Use simple tag matching instead of XPath local-name() which isn't supported
+                obs_count = len(root.findall(".//Obs"))
                 if obs_count == 0:
-                    obs_count = len(root.findall('.//*[local-name()="Observation"]'))
+                    obs_count = len(root.findall(".//Observation"))
 
                 test.observations_count = obs_count
                 self.logger.info(f"Found {obs_count} observations in {dataflow_id}")
@@ -248,7 +259,7 @@ class DataflowAnalysisService:
             # Save sample if requested
             if save_sample and not test.parse_error:
                 sample_path = await self._save_dataflow_sample(
-                    dataflow_id, response_data
+                    dataflow_id, str(response_data)
                 )
                 test.sample_file = str(sample_path) if sample_path else None
 
@@ -260,7 +271,9 @@ class DataflowAnalysisService:
                 dataflow_id=dataflow_id, data_access_success=False, error_message=str(e)
             )
 
-    async def bulk_analyze(self, request: BulkAnalysisRequest) -> List[TestResult]:
+    async def bulk_analyze(
+        self, request: BulkAnalysisRequest
+    ) -> List[DataflowTestResult]:
         """
         Perform bulk analysis of multiple dataflows.
 
@@ -277,7 +290,7 @@ class DataflowAnalysisService:
         # Create semaphore to limit concurrent requests
         semaphore = asyncio.Semaphore(request.max_concurrent)
 
-        async def analyze_single(dataflow_id: str) -> Optional[TestResult]:
+        async def analyze_single(dataflow_id: str) -> Optional[DataflowTestResult]:
             async with semaphore:
                 try:
                     # Get basic dataflow info (this would typically come from XML parse)
@@ -300,7 +313,7 @@ class DataflowAnalysisService:
                     else:
                         test = DataflowTest(dataflow_id=dataflow_id)
 
-                    return TestResult(dataflow=dataflow, test=test)
+                    return DataflowTestResult(dataflow=dataflow, test=test)
 
                 except Exception as e:
                     self.logger.error(f"Failed to analyze dataflow {dataflow_id}: {e}")
@@ -311,7 +324,7 @@ class DataflowAnalysisService:
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
         # Filter out None results and exceptions
-        valid_results = [r for r in results if isinstance(r, TestResult)]
+        valid_results = [r for r in results if isinstance(r, DataflowTestResult)]
 
         self.logger.info(
             f"Bulk analysis completed: {len(valid_results)}/{len(request.dataflow_ids)} successful"
@@ -406,7 +419,10 @@ class DataflowAnalysisService:
                     description = desc_elem.text or ""
             else:
                 for name_elem in dataflow_elem.findall(".//Name"):
-                    lang = name_elem.get("lang", "")
+                    # Handle both xml:lang and lang attributes
+                    lang = name_elem.get(
+                        "{http://www.w3.org/XML/1998/namespace}lang", ""
+                    ) or name_elem.get("lang", "")
                     if lang == "it":
                         name_it = name_elem.text
                     elif lang == "en":
@@ -449,13 +465,15 @@ class DataflowAnalysisService:
 
         return categorized
 
-    async def _test_dataflows(self, dataflows: List[IstatDataflow]) -> List[TestResult]:
+    async def _test_dataflows(
+        self, dataflows: List[IstatDataflow]
+    ) -> List[DataflowTestResult]:
         """Test data access for list of dataflows."""
         results = []
 
         for dataflow in dataflows:
             test = await self.test_dataflow_access(dataflow.id)
-            result = TestResult(dataflow=dataflow, test=test)
+            result = DataflowTestResult(dataflow=dataflow, test=test)
             results.append(result)
 
             # Rate limiting - respect ISTAT API limits
@@ -517,7 +535,11 @@ class DataflowAnalysisService:
         except Exception as e:
             self.logger.error(f"Failed to load rules from database: {e}")
             # Fallback to hardcoded rules to ensure service continues working
-            return self._get_fallback_rules()
+            rules = self._get_fallback_rules()
+            # Cache the fallback rules too
+            self._categorization_rules = rules
+            self._rules_cache_time = now
+            return rules
 
     def _get_fallback_rules(self) -> List[CategorizationRule]:
         """Get fallback categorization rules when database is unavailable."""

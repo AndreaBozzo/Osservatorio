@@ -12,8 +12,8 @@ from .models import (
     CategoryResult,
     DataflowCategory,
     DataflowTest,
+    DataflowTestResult,
     IstatDataflow,
-    TestResult,
 )
 
 __all__ = [
@@ -24,5 +24,5 @@ __all__ = [
     "AnalysisFilters",
     "CategoryResult",
     "DataflowTest",
-    "TestResult",
+    "DataflowTestResult",
 ]

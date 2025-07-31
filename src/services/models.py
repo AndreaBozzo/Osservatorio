@@ -9,7 +9,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator, model_validator, validator
 
 
 class DataflowCategory(str, Enum):
@@ -46,8 +46,8 @@ class IstatDataflow(BaseModel):
     id: str = Field(..., description="ISTAT dataflow identifier")
     name_it: Optional[str] = Field(None, description="Italian name")
     name_en: Optional[str] = Field(None, description="English name")
-    display_name: str = Field(
-        ..., description="Display name (Italian preferred, English fallback)"
+    display_name: Optional[str] = Field(
+        None, description="Display name (Italian preferred, English fallback)"
     )
     description: Optional[str] = Field("", description="Dataflow description")
     category: DataflowCategory = Field(
@@ -56,16 +56,12 @@ class IstatDataflow(BaseModel):
     relevance_score: int = Field(0, description="Calculated relevance score")
     created_at: Optional[datetime] = Field(None, description="Analysis timestamp")
 
-    @validator("display_name", pre=True, always=True)
-    def set_display_name(cls, v, values):
+    @model_validator(mode="after")
+    def set_display_name(self):
         """Set display name from available names."""
-        if v:
-            return v
-        return (
-            values.get("name_it")
-            or values.get("name_en")
-            or values.get("id", "Unknown")
-        )
+        if not self.display_name:
+            self.display_name = self.name_it or self.name_en or self.id or "Unknown"
+        return self
 
 
 class DataflowTest(BaseModel):
@@ -94,7 +90,7 @@ class DataflowTest(BaseModel):
         return self.data_access_success and not self.parse_error
 
 
-class TestResult(BaseModel):
+class DataflowTestResult(BaseModel):
     """Complete test result for a dataflow including metadata."""
 
     dataflow: IstatDataflow = Field(..., description="Dataflow information")
@@ -106,55 +102,54 @@ class TestResult(BaseModel):
     suggested_refresh: RefreshFrequency = Field(RefreshFrequency.QUARTERLY)
     priority: float = Field(0.0, description="Calculated priority score")
 
-    @validator("tableau_ready", pre=True, always=True)
-    def set_tableau_ready(cls, v, values):
-        """Determine if dataflow is Tableau-ready based on test results."""
-        test = values.get("test")
-        if test:
-            return test.is_successful
-        return False
+    @model_validator(mode="after")
+    def set_computed_fields(self):
+        """Set computed fields based on dataflow and test results."""
+        # Set tableau_ready
+        if hasattr(self, "test") and self.test:
+            self.tableau_ready = self.test.is_successful
+        else:
+            self.tableau_ready = False
 
-    @validator("suggested_connection", pre=True, always=True)
-    def set_suggested_connection(cls, v, values):
-        """Suggest connection type based on data size."""
-        test = values.get("test")
-        if test and test.size_mb > 50:
-            return ConnectionType.BIGQUERY_EXTRACT
-        elif test and test.size_mb > 5:
-            return ConnectionType.GOOGLE_SHEETS_IMPORT
-        return ConnectionType.DIRECT_CONNECTION
+        # Set suggested_connection
+        if hasattr(self, "test") and self.test and self.test.size_mb > 50:
+            self.suggested_connection = ConnectionType.BIGQUERY_EXTRACT
+        elif hasattr(self, "test") and self.test and self.test.size_mb > 5:
+            self.suggested_connection = ConnectionType.GOOGLE_SHEETS_IMPORT
+        else:
+            self.suggested_connection = ConnectionType.DIRECT_CONNECTION
 
-    @validator("suggested_refresh", pre=True, always=True)
-    def set_suggested_refresh(cls, v, values):
-        """Suggest refresh frequency based on category."""
-        dataflow = values.get("dataflow")
-        if not dataflow:
-            return RefreshFrequency.QUARTERLY
+        # Set suggested_refresh
+        if hasattr(self, "dataflow") and self.dataflow:
+            frequency_map = {
+                DataflowCategory.POPOLAZIONE: RefreshFrequency.MONTHLY,
+                DataflowCategory.ECONOMIA: RefreshFrequency.QUARTERLY,
+                DataflowCategory.LAVORO: RefreshFrequency.MONTHLY,
+                DataflowCategory.TERRITORIO: RefreshFrequency.YEARLY,
+                DataflowCategory.ISTRUZIONE: RefreshFrequency.YEARLY,
+                DataflowCategory.SALUTE: RefreshFrequency.QUARTERLY,
+            }
+            self.suggested_refresh = frequency_map.get(
+                self.dataflow.category, RefreshFrequency.QUARTERLY
+            )
+        else:
+            self.suggested_refresh = RefreshFrequency.QUARTERLY
 
-        frequency_map = {
-            DataflowCategory.POPOLAZIONE: RefreshFrequency.MONTHLY,
-            DataflowCategory.ECONOMIA: RefreshFrequency.QUARTERLY,
-            DataflowCategory.LAVORO: RefreshFrequency.MONTHLY,
-            DataflowCategory.TERRITORIO: RefreshFrequency.YEARLY,
-            DataflowCategory.ISTRUZIONE: RefreshFrequency.YEARLY,
-            DataflowCategory.SALUTE: RefreshFrequency.QUARTERLY,
-        }
-        return frequency_map.get(dataflow.category, RefreshFrequency.QUARTERLY)
+        # Calculate priority
+        if (
+            hasattr(self, "dataflow")
+            and hasattr(self, "test")
+            and self.dataflow
+            and self.test
+        ):
+            base_score = self.dataflow.relevance_score
+            size_bonus = min(5, self.test.size_mb / 10)
+            obs_bonus = min(5, self.test.observations_count / 1000)
+            self.priority = base_score + size_bonus + obs_bonus
+        else:
+            self.priority = 0.0
 
-    @validator("priority", pre=True, always=True)
-    def calculate_priority(cls, v, values):
-        """Calculate priority score based on relevance and test results."""
-        dataflow = values.get("dataflow")
-        test = values.get("test")
-
-        if not dataflow or not test:
-            return 0.0
-
-        base_score = dataflow.relevance_score
-        size_bonus = min(5, test.size_mb / 10)
-        obs_bonus = min(5, test.observations_count / 1000)
-
-        return base_score + size_bonus + obs_bonus
+        return self
 
 
 class CategoryResult(BaseModel):
@@ -167,20 +162,19 @@ class CategoryResult(BaseModel):
     )
     confidence: float = Field(0.0, description="Confidence in categorization (0-1)")
 
-    @validator("confidence", pre=True, always=True)
-    def calculate_confidence(cls, v, values):
+    @model_validator(mode="after")
+    def calculate_confidence(self):
         """Calculate confidence based on score and keywords."""
-        score = values.get("relevance_score", 0)
-        keywords = values.get("matched_keywords", [])
-
-        if score == 0:
-            return 0.0
-
-        # Higher confidence with more keywords and higher score
-        keyword_factor = min(1.0, len(keywords) / 3)  # Max confidence with 3+ keywords
-        score_factor = min(1.0, score / 50)  # Normalize score to 0-1
-
-        return (keyword_factor + score_factor) / 2
+        if self.relevance_score == 0:
+            self.confidence = 0.0
+        else:
+            # Higher confidence with more keywords and higher score
+            keyword_factor = min(
+                1.0, len(self.matched_keywords) / 3
+            )  # Max confidence with 3+ keywords
+            score_factor = min(1.0, self.relevance_score / 50)  # Normalize score to 0-1
+            self.confidence = (keyword_factor + score_factor) / 2
+        return self
 
 
 class AnalysisFilters(BaseModel):
@@ -196,7 +190,8 @@ class AnalysisFilters(BaseModel):
         False, description="Only return Tableau-ready dataflows"
     )
 
-    @validator("max_results")
+    @field_validator("max_results")
+    @classmethod
     def validate_max_results(cls, v):
         """Ensure reasonable limits on result count."""
         return min(max(1, v), 1000)  # Between 1 and 1000
@@ -209,7 +204,7 @@ class AnalysisResult(BaseModel):
     categorized_dataflows: Dict[DataflowCategory, List[IstatDataflow]] = Field(
         default_factory=dict, description="Dataflows grouped by category"
     )
-    test_results: List[TestResult] = Field(
+    test_results: List[DataflowTestResult] = Field(
         default_factory=list, description="Test results for analyzed dataflows"
     )
     tableau_ready_count: int = Field(0, description="Number of Tableau-ready dataflows")
@@ -220,11 +215,13 @@ class AnalysisResult(BaseModel):
         default_factory=dict, description="Performance metrics from analysis"
     )
 
-    @validator("tableau_ready_count", pre=True, always=True)
-    def count_tableau_ready(cls, v, values):
+    @model_validator(mode="after")
+    def count_tableau_ready(self):
         """Count Tableau-ready dataflows from test results."""
-        test_results = values.get("test_results", [])
-        return sum(1 for result in test_results if result.tableau_ready)
+        self.tableau_ready_count = sum(
+            1 for result in self.test_results if result.tableau_ready
+        )
+        return self
 
     def get_top_by_category(
         self, category: DataflowCategory, limit: int = 5
@@ -253,7 +250,8 @@ class BulkAnalysisRequest(BaseModel):
     save_samples: bool = Field(False, description="Whether to save sample data files")
     max_concurrent: int = Field(5, description="Maximum concurrent requests")
 
-    @validator("max_concurrent")
+    @field_validator("max_concurrent")
+    @classmethod
     def validate_concurrent_limit(cls, v):
         """Ensure reasonable concurrency limits."""
         return min(max(1, v), 10)  # Between 1 and 10
@@ -270,7 +268,8 @@ class CategorizationRule(BaseModel):
     created_at: Optional[datetime] = Field(None, description="Rule creation time")
     updated_at: Optional[datetime] = Field(None, description="Last update time")
 
-    @validator("keywords")
+    @field_validator("keywords")
+    @classmethod
     def validate_keywords(cls, v):
         """Ensure keywords are non-empty and lowercase."""
         return [keyword.lower().strip() for keyword in v if keyword.strip()]

@@ -21,8 +21,8 @@ from src.services.models import (
     CategoryResult,
     DataflowCategory,
     DataflowTest,
+    DataflowTestResult,
     IstatDataflow,
-    TestResult,
 )
 
 
@@ -32,8 +32,8 @@ class TestDataflowAnalysisService:
     @pytest.fixture
     def mock_istat_client(self):
         """Mock ProductionIstatClient."""
-        client = AsyncMock()
-        client.get_dataflow_data = AsyncMock()
+        client = Mock()
+        client.fetch_dataset = Mock()
         client.get_status = Mock(return_value={"status": "healthy"})
         return client
 
@@ -218,7 +218,9 @@ class TestDataflowAnalysisService:
     # Test dataflow testing
 
     @pytest.mark.asyncio
-    async def test_test_dataflow_access_success(self, service, mock_istat_client):
+    async def test_test_dataflow_access_success(
+        self, mock_repository, mock_temp_manager
+    ):
         """Test successful dataflow access testing."""
         # Mock successful API response
         mock_response_data = """<?xml version="1.0"?>
@@ -228,7 +230,20 @@ class TestDataflowAnalysisService:
             <Obs value="3000"/>
         </Data>"""
 
-        mock_istat_client.get_dataflow_data.return_value = mock_response_data
+        # Create a simple mock client that works properly
+        mock_client = Mock()
+        mock_client.fetch_dataset.return_value = {
+            "success": True,
+            "data": mock_response_data,
+            "dataset_id": "DCIS_POPRES1",
+        }
+
+        # Create service with the proper mock
+        service = DataflowAnalysisService(
+            istat_client=mock_client,
+            repository=mock_repository,
+            temp_file_manager=mock_temp_manager,
+        )
 
         result = await service.test_dataflow_access("DCIS_POPRES1", save_sample=False)
 
@@ -246,7 +261,11 @@ class TestDataflowAnalysisService:
     ):
         """Test dataflow access testing with sample saving."""
         mock_response_data = '<Data><Obs value="1000"/></Data>'
-        mock_istat_client.get_dataflow_data.return_value = mock_response_data
+        mock_istat_client.fetch_dataset.return_value = {
+            "success": True,
+            "data": mock_response_data,
+            "dataset_id": "TEST_DF",
+        }
 
         with patch("builtins.open", create=True) as mock_open:
             mock_file = MagicMock()
@@ -262,7 +281,11 @@ class TestDataflowAnalysisService:
     async def test_test_dataflow_access_parse_error(self, service, mock_istat_client):
         """Test handling of XML parse errors during testing."""
         # Mock response with invalid XML
-        mock_istat_client.get_dataflow_data.return_value = "Invalid XML content"
+        mock_istat_client.fetch_dataset.return_value = {
+            "success": True,
+            "data": "Invalid XML content",
+            "dataset_id": "BAD_DF",
+        }
 
         result = await service.test_dataflow_access("BAD_DF")
 
@@ -276,7 +299,7 @@ class TestDataflowAnalysisService:
     async def test_test_dataflow_access_api_error(self, service, mock_istat_client):
         """Test handling of API errors during testing."""
         # Mock API client to raise exception
-        mock_istat_client.get_dataflow_data.side_effect = Exception("API Error")
+        mock_istat_client.fetch_dataset.side_effect = Exception("API Error")
 
         result = await service.test_dataflow_access("ERROR_DF")
 
@@ -293,9 +316,11 @@ class TestDataflowAnalysisService:
     ):
         """Test complete analysis workflow from XML."""
         # Mock successful API responses for testing
-        mock_istat_client.get_dataflow_data.return_value = (
-            '<Data><Obs value="1000"/></Data>'
-        )
+        mock_istat_client.fetch_dataset.return_value = {
+            "success": True,
+            "data": '<Data><Obs value="1000"/></Data>',
+            "dataset_id": "test",
+        }
 
         filters = AnalysisFilters(include_tests=True, max_results=10)
         result = await service.analyze_dataflows_from_xml(sample_xml_content, filters)
@@ -345,9 +370,11 @@ class TestDataflowAnalysisService:
     async def test_bulk_analyze(self, service, mock_istat_client):
         """Test bulk analysis of multiple dataflows."""
         # Mock API responses
-        mock_istat_client.get_dataflow_data.return_value = (
-            '<Data><Obs value="1000"/></Data>'
-        )
+        mock_istat_client.fetch_dataset.return_value = {
+            "success": True,
+            "data": '<Data><Obs value="1000"/></Data>',
+            "dataset_id": "test",
+        }
 
         request = BulkAnalysisRequest(
             dataflow_ids=["DF1", "DF2", "DF3"], include_tests=True, max_concurrent=2
@@ -357,7 +384,7 @@ class TestDataflowAnalysisService:
 
         assert len(results) == 3
         for result in results:
-            assert isinstance(result, TestResult)
+            assert isinstance(result, DataflowTestResult)
             assert result.dataflow.id in ["DF1", "DF2", "DF3"]
 
     @pytest.mark.asyncio
@@ -470,13 +497,32 @@ class TestDataflowAnalysisService:
 
     def test_analysis_result_get_summary_stats(self):
         """Test getting summary statistics."""
+        # Create test results to drive the tableau_ready_count calculation
+        test_results = [
+            DataflowTestResult(
+                dataflow=IstatDataflow(id="POP1", name_it="Popolazione 1"),
+                test=DataflowTest(dataflow_id="POP1", data_access_success=True),
+                tableau_ready=True,
+            ),
+            DataflowTestResult(
+                dataflow=IstatDataflow(id="ECO1", name_it="Economia 1"),
+                test=DataflowTest(dataflow_id="ECO1", data_access_success=True),
+                tableau_ready=True,
+            ),
+        ]
+
         result = AnalysisResult(
             total_analyzed=5,
             categorized_dataflows={
-                DataflowCategory.POPOLAZIONE: [Mock(), Mock()],
-                DataflowCategory.ECONOMIA: [Mock()],
+                DataflowCategory.POPOLAZIONE: [
+                    IstatDataflow(id="POP1", name_it="Popolazione 1"),
+                    IstatDataflow(id="POP2", name_it="Popolazione 2"),
+                ],
+                DataflowCategory.ECONOMIA: [
+                    IstatDataflow(id="ECO1", name_it="Economia 1")
+                ],
             },
-            tableau_ready_count=2,
+            test_results=test_results,
         )
 
         stats = result.get_summary_stats()
@@ -503,7 +549,7 @@ class TestDataflowAnalysisService:
         assert df3.display_name == "DF3"
 
     def test_test_result_model_validation(self):
-        """Test TestResult model field validation."""
+        """Test DataflowTestResult model field validation."""
         dataflow = IstatDataflow(
             id="DF1", display_name="Test DF", category=DataflowCategory.POPOLAZIONE
         )
@@ -515,7 +561,7 @@ class TestDataflowAnalysisService:
             observations_count=500,
         )
 
-        result = TestResult(dataflow=dataflow, test=test)
+        result = DataflowTestResult(dataflow=dataflow, test=test)
 
         assert result.tableau_ready is True  # Should be True for successful test
         assert result.suggested_connection.value == "direct_connection"  # Small file

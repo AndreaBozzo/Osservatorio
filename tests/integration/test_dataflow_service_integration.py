@@ -18,7 +18,12 @@ from src.services.legacy_adapter import (
     LegacyDataflowAnalyzerAdapter,
     create_legacy_adapter,
 )
-from src.services.models import AnalysisFilters, BulkAnalysisRequest, DataflowCategory
+from src.services.models import (
+    AnalysisFilters,
+    BulkAnalysisRequest,
+    DataflowCategory,
+    DataflowTest,
+)
 from src.services.service_factory import (
     create_dataflow_analysis_service,
     get_service_container,
@@ -128,7 +133,7 @@ class TestDataflowServiceIntegration:
         # Mock ISTAT client to avoid real API calls
         with patch.object(service, "test_dataflow_access") as mock_test:
             # Mock successful test results
-            mock_test.return_value = Mock(
+            mock_test.return_value = DataflowTest(
                 dataflow_id="test",
                 data_access_success=True,
                 status_code=200,
@@ -137,7 +142,6 @@ class TestDataflowServiceIntegration:
                 parse_error=False,
                 sample_file=None,
                 error_message=None,
-                is_successful=True,
             )
 
             # Read XML content
@@ -309,13 +313,12 @@ class TestDataflowServiceIntegration:
 
         # Mock the individual test method to avoid real API calls
         with patch.object(service, "test_dataflow_access") as mock_test:
-            mock_test.return_value = Mock(
+            mock_test.return_value = DataflowTest(
                 dataflow_id="test",
                 data_access_success=True,
                 size_bytes=1024,
                 observations_count=100,
                 parse_error=False,
-                is_successful=True,
             )
 
             request = BulkAnalysisRequest(
@@ -442,7 +445,7 @@ class TestDataflowServiceIntegration:
     # Test logging and monitoring
 
     @pytest.mark.asyncio
-    async def test_service_logging_integration(self, caplog):
+    async def test_service_logging_integration(self, capsys):
         """Test that service logging works correctly."""
         service = create_dataflow_analysis_service()
 
@@ -453,10 +456,14 @@ class TestDataflowServiceIntegration:
             </Dataflow>
         </DataSet>"""
 
+        # Run analysis
         await service.analyze_dataflows_from_xml(simple_xml)
 
+        # Capture stdout/stderr (where loguru outputs)
+        captured = capsys.readouterr()
+        output = captured.out + captured.err
+
         # Check that log messages were generated
-        assert any(
-            "Starting dataflow analysis" in record.message for record in caplog.records
-        )
-        assert any("Analysis completed" in record.message for record in caplog.records)
+        assert "Starting dataflow analysis" in output
+        assert "Analysis completed" in output
+        assert service is not None  # Verify service was created
