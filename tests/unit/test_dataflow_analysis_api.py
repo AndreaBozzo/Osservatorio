@@ -215,6 +215,44 @@ class TestDataflowAnalysisAPI:
         finally:
             app.dependency_overrides.clear()
 
+    def test_analyze_dataflow_file_read_error(self, client, mock_user, tmp_path):
+        """Test dataflow analysis with file read error."""
+        from src.api.dependencies import (
+            check_rate_limit,
+            get_current_user,
+            get_dataflow_service,
+            log_api_request,
+        )
+
+        # Mock service
+        mock_service = AsyncMock()
+
+        app.dependency_overrides[get_current_user] = lambda: mock_user
+        app.dependency_overrides[check_rate_limit] = lambda: None
+        app.dependency_overrides[log_api_request] = lambda: None
+        app.dependency_overrides[get_dataflow_service] = lambda: mock_service
+
+        # Create a file but make it unreadable by mocking open to raise exception
+        test_file = tmp_path / "test.xml"
+        test_file.write_text("<?xml version='1.0'?><root></root>")
+
+        try:
+            with patch(
+                "builtins.open", side_effect=PermissionError("Permission denied")
+            ):
+                response = client.post(
+                    "/api/analysis/dataflow",
+                    json={"xml_file_path": str(test_file)},
+                    headers={"Authorization": "Bearer test_token"},
+                )
+
+                assert response.status_code == 400
+                data = response.json()
+                assert "Failed to read XML file" in data["detail"]
+
+        finally:
+            app.dependency_overrides.clear()
+
     def test_analyze_dataflow_service_error(
         self, client, mock_user, sample_xml_content
     ):
@@ -253,11 +291,104 @@ class TestDataflowAnalysisAPI:
         self, client, mock_user, sample_xml_content, sample_analysis_result
     ):
         """Test successful XML file upload and analysis."""
-        # The upload endpoint has a bug - it calls analyze_dataflow but doesn't pass all dependencies
-        # For now, we need to skip this test until the API bug is fixed
-        pytest.skip(
-            "Upload endpoint has a bug - calls analyze_dataflow without required dependencies"
+        from src.api.dependencies import (
+            check_rate_limit,
+            get_current_user,
+            get_dataflow_service,
+            log_api_request,
         )
+
+        # Mock service
+        mock_service = AsyncMock()
+        mock_service.analyze_dataflows_from_xml.return_value = sample_analysis_result
+
+        app.dependency_overrides[get_current_user] = lambda: mock_user
+        app.dependency_overrides[check_rate_limit] = lambda: None
+        app.dependency_overrides[log_api_request] = lambda: None
+        app.dependency_overrides[get_dataflow_service] = lambda: mock_service
+
+        try:
+            # Create XML file content as bytes
+            xml_bytes = sample_xml_content.encode("utf-8")
+
+            response = client.post(
+                "/api/analysis/dataflow/upload",
+                files={"file": ("test.xml", xml_bytes, "application/xml")},
+                data={
+                    "categories": "popolazione,economia",
+                    "min_relevance_score": "5",
+                    "max_results": "50",
+                    "include_tests": "true",
+                    "only_tableau_ready": "false",
+                },
+                headers={"Authorization": "Bearer test_token"},
+            )
+
+            assert response.status_code == 200
+            data = response.json()
+            assert data["success"] is True
+            assert data["total_analyzed"] == 1
+
+        finally:
+            app.dependency_overrides.clear()
+
+    def test_upload_invalid_categories(self, client, mock_user, sample_xml_content):
+        """Test upload with invalid category values."""
+        from src.api.dependencies import (
+            check_rate_limit,
+            get_current_user,
+            log_api_request,
+        )
+
+        app.dependency_overrides[get_current_user] = lambda: mock_user
+        app.dependency_overrides[check_rate_limit] = lambda: None
+        app.dependency_overrides[log_api_request] = lambda: None
+
+        try:
+            xml_bytes = sample_xml_content.encode("utf-8")
+
+            response = client.post(
+                "/api/analysis/dataflow/upload",
+                files={"file": ("test.xml", xml_bytes, "application/xml")},
+                data={"categories": "invalid_category,another_invalid"},
+                headers={"Authorization": "Bearer test_token"},
+            )
+
+            assert response.status_code == 400
+            data = response.json()
+            assert "Invalid category" in data["detail"]
+
+        finally:
+            app.dependency_overrides.clear()
+
+    def test_upload_unicode_decode_error(self, client, mock_user):
+        """Test upload with non-UTF-8 file."""
+        from src.api.dependencies import (
+            check_rate_limit,
+            get_current_user,
+            log_api_request,
+        )
+
+        app.dependency_overrides[get_current_user] = lambda: mock_user
+        app.dependency_overrides[check_rate_limit] = lambda: None
+        app.dependency_overrides[log_api_request] = lambda: None
+
+        try:
+            # Create invalid UTF-8 content
+            invalid_bytes = b"\x80\x81\x82\x83"  # Invalid UTF-8 sequence
+
+            response = client.post(
+                "/api/analysis/dataflow/upload",
+                files={"file": ("test.xml", invalid_bytes, "application/xml")},
+                headers={"Authorization": "Bearer test_token"},
+            )
+
+            assert response.status_code == 400
+            data = response.json()
+            assert "File must be UTF-8 encoded" in data["detail"]
+
+        finally:
+            app.dependency_overrides.clear()
 
     def test_upload_non_xml_file(self, client, mock_user):
         """Test uploading non-XML file."""
@@ -384,6 +515,83 @@ class TestDataflowAnalysisAPI:
             assert response.status_code == 422
             data = response.json()
             assert "Maximum 50 dataflow IDs allowed" in str(data["detail"])
+
+        finally:
+            app.dependency_overrides.clear()
+
+    def test_bulk_analyze_result_processing_error(self, client, mock_user):
+        """Test bulk analysis with result processing errors."""
+        from src.api.dependencies import (
+            check_rate_limit,
+            get_current_user,
+            get_dataflow_service,
+            log_api_request,
+        )
+
+        # Mock service
+        mock_service = AsyncMock()
+
+        # Create a mock result that will cause processing error
+        mock_bad_result = MagicMock()
+        mock_bad_result.dataflow.id = "BAD_DF"
+        # Missing required attributes to cause error during API model conversion
+        del mock_bad_result.dataflow.name_it  # This will cause AttributeError
+
+        mock_service.bulk_analyze.return_value = [mock_bad_result]
+
+        app.dependency_overrides[get_current_user] = lambda: mock_user
+        app.dependency_overrides[check_rate_limit] = lambda: None
+        app.dependency_overrides[log_api_request] = lambda: None
+        app.dependency_overrides[get_dataflow_service] = lambda: mock_service
+
+        try:
+            response = client.post(
+                "/api/analysis/dataflow/bulk",
+                json={
+                    "dataflow_ids": ["BAD_DF"],
+                    "include_tests": True,
+                },
+                headers={"Authorization": "Bearer test_token"},
+            )
+
+            assert response.status_code == 200
+            data = response.json()
+            assert data["success"] is True
+            assert data["failed_count"] == 1
+            assert len(data["errors"]) > 0
+            assert "Failed to process result" in data["errors"][0]
+
+        finally:
+            app.dependency_overrides.clear()
+
+    def test_bulk_analyze_service_error(self, client, mock_user):
+        """Test bulk analysis with service error."""
+        from src.api.dependencies import (
+            check_rate_limit,
+            get_current_user,
+            get_dataflow_service,
+            log_api_request,
+        )
+
+        # Mock service to raise exception
+        mock_service = AsyncMock()
+        mock_service.bulk_analyze.side_effect = Exception("Service error")
+
+        app.dependency_overrides[get_current_user] = lambda: mock_user
+        app.dependency_overrides[check_rate_limit] = lambda: None
+        app.dependency_overrides[log_api_request] = lambda: None
+        app.dependency_overrides[get_dataflow_service] = lambda: mock_service
+
+        try:
+            response = client.post(
+                "/api/analysis/dataflow/bulk",
+                json={"dataflow_ids": ["TEST_DF"]},
+                headers={"Authorization": "Bearer test_token"},
+            )
+
+            assert response.status_code == 500
+            data = response.json()
+            assert "Bulk analysis failed" in data["detail"]
 
         finally:
             app.dependency_overrides.clear()
@@ -751,6 +959,137 @@ class TestCategorizationRulesAPI:
             assert response.status_code == 404
             data = response.json()
             assert "not found" in data["detail"]
+
+        finally:
+            app.dependency_overrides.clear()
+
+    def test_get_categorization_rules_database_error(self, client, mock_user):
+        """Test get categorization rules with database error."""
+        from src.api.dependencies import (
+            check_rate_limit,
+            get_current_user,
+            log_api_request,
+        )
+        from src.database.sqlite.repository import get_unified_repository
+
+        # Mock repository to raise exception
+        mock_repo = MagicMock()
+        mock_repo.get_categorization_rules.side_effect = Exception("Database error")
+
+        app.dependency_overrides[get_current_user] = lambda: mock_user
+        app.dependency_overrides[check_rate_limit] = lambda: None
+        app.dependency_overrides[log_api_request] = lambda: None
+        app.dependency_overrides[get_unified_repository] = lambda: mock_repo
+
+        try:
+            response = client.get(
+                "/api/analysis/rules",
+                headers={"Authorization": "Bearer test_token"},
+            )
+
+            assert response.status_code == 500
+            data = response.json()
+            assert "Failed to retrieve rules" in data["detail"]
+
+        finally:
+            app.dependency_overrides.clear()
+
+    def test_create_categorization_rule_database_error(self, client, mock_user):
+        """Test create categorization rule with database error."""
+        from src.api.dependencies import (
+            check_rate_limit,
+            log_api_request,
+            require_write,
+        )
+        from src.database.sqlite.repository import get_unified_repository
+
+        # Mock repository to raise exception
+        mock_repo = MagicMock()
+        mock_repo.create_categorization_rule.side_effect = Exception("Database error")
+
+        app.dependency_overrides[require_write] = lambda: mock_user
+        app.dependency_overrides[check_rate_limit] = lambda: None
+        app.dependency_overrides[log_api_request] = lambda: None
+        app.dependency_overrides[get_unified_repository] = lambda: mock_repo
+
+        try:
+            response = client.post(
+                "/api/analysis/rules",
+                json={
+                    "rule_id": "test_rule",
+                    "category": "popolazione",
+                    "keywords": ["test"],
+                    "priority": 5,
+                },
+                headers={"Authorization": "Bearer test_token"},
+            )
+
+            assert response.status_code == 500
+            data = response.json()
+            assert "Failed to create rule" in data["detail"]
+
+        finally:
+            app.dependency_overrides.clear()
+
+    def test_update_categorization_rule_database_error(self, client, mock_user):
+        """Test update categorization rule with database error."""
+        from src.api.dependencies import (
+            check_rate_limit,
+            log_api_request,
+            require_write,
+        )
+        from src.database.sqlite.repository import get_unified_repository
+
+        # Mock repository to raise exception
+        mock_repo = MagicMock()
+        mock_repo.update_categorization_rule.side_effect = Exception("Database error")
+
+        app.dependency_overrides[require_write] = lambda: mock_user
+        app.dependency_overrides[check_rate_limit] = lambda: None
+        app.dependency_overrides[log_api_request] = lambda: None
+        app.dependency_overrides[get_unified_repository] = lambda: mock_repo
+
+        try:
+            response = client.put(
+                "/api/analysis/rules/test_rule",
+                json={"priority": 7},
+                headers={"Authorization": "Bearer test_token"},
+            )
+
+            assert response.status_code == 500
+            data = response.json()
+            assert "Failed to update rule" in data["detail"]
+
+        finally:
+            app.dependency_overrides.clear()
+
+    def test_delete_categorization_rule_database_error(self, client, mock_user):
+        """Test delete categorization rule with database error."""
+        from src.api.dependencies import (
+            check_rate_limit,
+            log_api_request,
+            require_write,
+        )
+        from src.database.sqlite.repository import get_unified_repository
+
+        # Mock repository to raise exception
+        mock_repo = MagicMock()
+        mock_repo.delete_categorization_rule.side_effect = Exception("Database error")
+
+        app.dependency_overrides[require_write] = lambda: mock_user
+        app.dependency_overrides[check_rate_limit] = lambda: None
+        app.dependency_overrides[log_api_request] = lambda: None
+        app.dependency_overrides[get_unified_repository] = lambda: mock_repo
+
+        try:
+            response = client.delete(
+                "/api/analysis/rules/test_rule",
+                headers={"Authorization": "Bearer test_token"},
+            )
+
+            assert response.status_code == 500
+            data = response.json()
+            assert "Failed to delete rule" in data["detail"]
 
         finally:
             app.dependency_overrides.clear()

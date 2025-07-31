@@ -263,8 +263,82 @@ async def upload_and_analyze_xml(
             only_tableau_ready=only_tableau_ready,
         )
 
-        # Use the existing analyze function
-        return await analyze_dataflow(request, current_user)
+        # Get service and call analyze_dataflow with all dependencies
+        service = get_dataflow_analysis_service()
+
+        # Create analysis filters
+        filters = AnalysisFilters(
+            categories=request.categories,
+            min_relevance_score=request.min_relevance_score,
+            max_results=request.max_results,
+            include_tests=request.include_tests,
+            only_tableau_ready=request.only_tableau_ready,
+        )
+
+        # Perform analysis using service directly
+        result = await service.analyze_dataflows_from_xml(request.xml_content, filters)
+
+        # Convert service models to API models (same logic as analyze_dataflow)
+        categorized_dataflows = {}
+        for category, dataflows in result.categorized_dataflows.items():
+            categorized_dataflows[category.value] = [
+                DataflowInfo(
+                    id=df.id,
+                    name_it=df.name_it,
+                    name_en=df.name_en,
+                    display_name=df.display_name,
+                    description=df.description,
+                    category=df.category,
+                    relevance_score=df.relevance_score,
+                    created_at=df.created_at,
+                )
+                for df in dataflows
+            ]
+
+        # Convert test results
+        test_results = []
+        for test_result in result.test_results:
+            api_test_result = TableauReadyDataflow(
+                dataflow=DataflowInfo(
+                    id=test_result.dataflow.id,
+                    name_it=test_result.dataflow.name_it,
+                    name_en=test_result.dataflow.name_en,
+                    display_name=test_result.dataflow.display_name,
+                    description=test_result.dataflow.description,
+                    category=test_result.dataflow.category,
+                    relevance_score=test_result.dataflow.relevance_score,
+                    created_at=test_result.dataflow.created_at,
+                ),
+                test=DataflowTestInfo(
+                    dataflow_id=test_result.test.dataflow_id,
+                    data_access_success=test_result.test.data_access_success,
+                    status_code=test_result.test.status_code,
+                    size_bytes=test_result.test.size_bytes,
+                    size_mb=test_result.test.size_mb,
+                    observations_count=test_result.test.observations_count,
+                    sample_file=test_result.test.sample_file,
+                    parse_error=test_result.test.parse_error,
+                    error_message=test_result.test.error_message,
+                    tested_at=test_result.test.tested_at,
+                    is_successful=test_result.test.is_successful,
+                ),
+                tableau_ready=test_result.tableau_ready,
+                suggested_connection=test_result.suggested_connection,
+                suggested_refresh=test_result.suggested_refresh,
+                priority=test_result.priority,
+            )
+            test_results.append(api_test_result)
+
+        return DataflowAnalysisResponse(
+            success=True,
+            message=f"Successfully analyzed {result.total_analyzed} dataflows",
+            total_analyzed=result.total_analyzed,
+            categorized_dataflows=categorized_dataflows,
+            test_results=test_results,
+            tableau_ready_count=result.tableau_ready_count,
+            analysis_timestamp=result.analysis_timestamp,
+            performance_metrics=result.performance_metrics,
+        )
 
     except UnicodeDecodeError:
         raise HTTPException(
