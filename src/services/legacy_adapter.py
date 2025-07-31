@@ -512,6 +512,22 @@ Write-Host "📁 File salvati in: $outputDir" -ForegroundColor Cyan
             ],
         }
 
+    # Private methods for backward compatibility with tests
+    def _extract_dataflow_info(self, dataflow_elem, namespaces):
+        """Legacy compatibility method - delegates to modern service."""
+        # This is a compatibility shim for tests that expect this method
+        return self.service._extract_dataflow_info(dataflow_elem, namespaces)
+
+    async def _categorize_dataflows(self, dataflows):
+        """Legacy compatibility method - delegates to modern service."""
+        # This is a compatibility shim for tests that expect this method
+        return await self.service._categorize_dataflows(dataflows)
+
+    async def _test_single_dataflow(self, dataflow_id, save_sample=False):
+        """Legacy compatibility method - delegates to modern service."""
+        # This is a compatibility shim for tests that expect this method
+        return await self.service.test_dataflow_access(dataflow_id, save_sample)
+
 
 # Factory function for easy migration
 def create_legacy_adapter() -> LegacyDataflowAnalyzerAdapter:

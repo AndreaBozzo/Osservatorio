@@ -59,8 +59,9 @@ class TestLegacyDataflowAnalyzerAdapter:
         )
 
         test = DataflowTest(
-            dataflow=dataflow,
-            success=True,
+            dataflow_id="DCIS_POPRES1",  # Required field
+            data_access_success=True,
+            status_code=200,
             response_time_ms=150,
             observations_count=1000,
             size_bytes=50000,
