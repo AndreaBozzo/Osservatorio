@@ -1,13 +1,19 @@
 # CLAUDE.md - Developer Context & Commands
 
 This file provides essential guidance to Claude Code when working with this repository.
+***DO NOT MODIFY BELOW***
+A few rules for Claude:
+1- Use tokens efficiently
+2-Refer to PROJECT_STATE.md to track progresses.
+3-Best practices, always.
+***DO NOT MODIFY ABOVE***
 
 ## Project Overview
 
 Osservatorio is an enterprise-grade Italian data processing platform for ISTAT statistical data with PowerBI/Tableau integration. In active development with ProductionIstatClient architecture (v11.0.0).
 
-**Status**: Production-ready (Issue #66 Complete - 83.3% EXCELLENT Quality)
-**Architecture**: ProductionIstatClient + Hybrid SQLite/DuckDB + JWT Auth
+**Status**: In-Development
+**Architecture**: ProductionIstatClient + Hybrid SQLite/DuckDB + JWT Auth + REST API + Dataflow Optimizer
 **Documentation**: [docs/README.md](docs/README.md) for complete documentation
 
 ## Essential Commands
