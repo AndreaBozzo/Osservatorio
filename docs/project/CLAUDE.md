@@ -193,6 +193,8 @@ The project includes a comprehensive Makefile for streamlined development workfl
 - `python -c "from src.database.sqlite.repository import get_unified_repository; repo = get_unified_repository(); print(repo.get_system_status())"` - Get hybrid system status
 
 ### DuckDB Performance Testing Commands (NEW 21/07/2025)
+> **NOTE**: GitHub Actions performance workflow (Issue #74) was removed due to unsatisfactory implementation. Local performance tests remain available.
+
 - `pytest tests/performance/test_duckdb_performance.py -v` - Run comprehensive performance test suite (7 categories)
 - `pytest tests/performance/test_duckdb_performance.py::TestDuckDBPerformance::test_bulk_insert_performance -v` - Test bulk insert performance (1k-100k records)
 - `pytest tests/performance/test_duckdb_performance.py::TestDuckDBPerformance::test_query_optimization_performance -v` - Test query optimizer with cache analysis
@@ -202,6 +204,8 @@ The project includes a comprehensive Makefile for streamlined development workfl
 - `pytest tests/performance/test_duckdb_performance.py::TestDuckDBPerformance::test_memory_usage_patterns -v` - Test memory usage patterns and scaling
 
 ### Performance Regression Detection Commands (NEW 21/07/2025)
+> **NOTE**: GitHub Actions workflow removed (Issue #74). Local regression detection scripts remain functional.
+
 - `python scripts/performance_regression_detector.py` - Run complete performance regression analysis
 - `python -c "from scripts.performance_regression_detector import PerformanceRegressionDetector; detector = PerformanceRegressionDetector(); print('Detector ready')"` - Initialize regression detector
 - `python -c "from scripts.performance_regression_detector import PerformanceRegressionDetector; detector = PerformanceRegressionDetector(); metrics = detector.run_performance_tests(); print(f'Collected {len(metrics)} metrics')"` - Run performance tests only

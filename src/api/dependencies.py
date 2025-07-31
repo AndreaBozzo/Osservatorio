@@ -46,7 +46,9 @@ def get_jwt_manager() -> JWTManager:
         from src.database.sqlite.manager import get_metadata_manager
 
         sqlite_manager = get_metadata_manager()
-        _jwt_manager = JWTManager(sqlite_manager)
+        config = get_config()
+        jwt_secret = config.get("jwt_secret_key")
+        _jwt_manager = JWTManager(sqlite_manager, secret_key=jwt_secret)
     return _jwt_manager
 
 
