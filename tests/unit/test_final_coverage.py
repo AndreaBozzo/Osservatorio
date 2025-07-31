@@ -67,20 +67,15 @@ class TestFinalCoveragePush:
         assert hasattr(tester, "session")
         assert hasattr(tester, "test_results")
 
-    def test_dataflow_analyzer_basic_methods(self):
-        """Test dataflow analyzer basic functionality."""
-        from src.analyzers.dataflow_analyzer import IstatDataflowAnalyzer
+    def test_legacy_adapter_basic_methods(self):
+        """Test legacy adapter basic functionality."""
+        from src.services.legacy_adapter import LegacyDataflowAnalyzerAdapter
 
-        analyzer = IstatDataflowAnalyzer()
+        adapter = LegacyDataflowAnalyzerAdapter()
 
         # Test initialization
-        assert hasattr(analyzer, "session")
-        assert hasattr(analyzer, "base_url")
-
-        # Test URL building
-        if hasattr(analyzer, "build_dataflow_url"):
-            url = analyzer.build_dataflow_url()
-            assert isinstance(url, str)
+        assert hasattr(adapter, "base_url")
+        assert hasattr(adapter, "service")
 
     def test_converter_initialization_coverage(self):
         """Test converter initialization edge cases."""
@@ -228,20 +223,18 @@ class TestFinalCoveragePush:
                 result is not None or result is None
             )  # Just check it returns something
 
-    def test_dataflow_analyzer_utilities(self):
-        """Test dataflow analyzer utility methods."""
-        from src.analyzers.dataflow_analyzer import IstatDataflowAnalyzer
+    def test_legacy_adapter_utilities(self):
+        """Test legacy adapter utility methods."""
+        from src.services.legacy_adapter import LegacyDataflowAnalyzerAdapter
 
-        analyzer = IstatDataflowAnalyzer()
+        adapter = LegacyDataflowAnalyzerAdapter()
 
-        # Test if utility methods exist and can be called
-        if hasattr(analyzer, "get_priority_score"):
-            score = analyzer.get_priority_score("test")
-            assert isinstance(score, int)
+        # Test service access
+        assert hasattr(adapter, "service")
 
-        # Test session setup
-        assert hasattr(analyzer, "session")
-        assert analyzer.session is not None
+        # Test legacy compatibility attributes
+        assert hasattr(adapter, "base_url")
+        assert adapter.base_url == "https://sdmx.istat.it/SDMXWS/rest/"
 
     def test_additional_secure_operations(self):
         """Test additional secure operations."""

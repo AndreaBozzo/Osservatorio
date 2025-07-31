@@ -11,8 +11,8 @@ from unittest.mock import Mock, mock_open, patch
 import pandas as pd
 import pytest
 
-from src.analyzers.dataflow_analyzer import IstatDataflowAnalyzer
 from src.api.istat_api import IstatAPITester
+from src.services.legacy_adapter import LegacyDataflowAnalyzerAdapter
 from src.utils.config import Config
 
 
@@ -43,7 +43,7 @@ class TestEndToEndPipeline:
             mock_instance.get.return_value = mock_response
 
             # Test analyzer
-            analyzer = IstatDataflowAnalyzer()
+            analyzer = LegacyDataflowAnalyzerAdapter()
 
             # Change to temp directory for test
             original_cwd = Path.cwd()
@@ -229,7 +229,7 @@ class TestEndToEndPipeline:
         # Test with invalid XML
         invalid_xml = "<?xml version='1.0'?><invalid>broken xml"
 
-        analyzer = IstatDataflowAnalyzer()
+        analyzer = LegacyDataflowAnalyzerAdapter()
 
         # Test parsing invalid XML
         invalid_file = temp_dir / "invalid.xml"
@@ -348,7 +348,7 @@ class TestEndToEndPipeline:
             datasets.append(dataset)
 
         # Test batch processing
-        analyzer = IstatDataflowAnalyzer()
+        analyzer = LegacyDataflowAnalyzerAdapter()
 
         # Test priority calculation for multiple datasets
         for dataset in datasets:

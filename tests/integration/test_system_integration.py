@@ -10,9 +10,9 @@ from unittest.mock import MagicMock, Mock, patch
 import pandas as pd
 import pytest
 
-from src.analyzers.dataflow_analyzer import IstatDataflowAnalyzer
 from src.api.istat_api import IstatAPITester
 from src.api.powerbi_api import PowerBIAPIClient
+from src.services.legacy_adapter import LegacyDataflowAnalyzerAdapter
 from src.utils.config import Config
 from src.utils.logger import get_logger
 
@@ -24,7 +24,7 @@ class TestSystemIntegration:
     def test_complete_data_pipeline_flow(self, temp_dir):
         """Test complete data pipeline from analysis to PowerBI."""
         # Setup components
-        analyzer = IstatDataflowAnalyzer()
+        analyzer = LegacyDataflowAnalyzerAdapter()
         api_tester = IstatAPITester()
         config = Config()
         logger = get_logger("test")
@@ -210,7 +210,7 @@ class TestSystemIntegration:
 
     def test_error_handling_integration(self):
         """Test error handling across system components."""
-        analyzer = IstatDataflowAnalyzer()
+        analyzer = LegacyDataflowAnalyzerAdapter()
 
         # Test with invalid XML
         invalid_xml = "<?xml version='1.0'?><invalid>unclosed tag"
@@ -273,7 +273,7 @@ class TestSystemIntegration:
         def process_dataset(dataset_id):
             try:
                 # Simulate data processing
-                analyzer = IstatDataflowAnalyzer()
+                analyzer = LegacyDataflowAnalyzerAdapter()
 
                 # Create test data
                 test_data = pd.DataFrame(
@@ -322,7 +322,7 @@ class TestSystemIntegration:
         initial_memory = process.memory_info().rss / 1024 / 1024  # MB
 
         # Perform memory-intensive operations
-        analyzer = IstatDataflowAnalyzer()
+        analyzer = LegacyDataflowAnalyzerAdapter()
 
         # Generate large dataset
         large_data = pd.DataFrame(
@@ -351,7 +351,7 @@ class TestSystemIntegration:
     def test_end_to_end_workflow(self, temp_dir):
         """Test complete end-to-end workflow."""
         # 1. Initialize components
-        analyzer = IstatDataflowAnalyzer()
+        analyzer = LegacyDataflowAnalyzerAdapter()
         config = Config()
         logger = get_logger("test")
 

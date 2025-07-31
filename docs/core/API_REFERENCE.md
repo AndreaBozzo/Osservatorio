@@ -1168,9 +1168,9 @@ Analyzes and categorizes ISTAT dataflows.
 
 #### 🔧 Initialization
 ```python
-from src.analyzers.dataflow_analyzer import DataflowAnalyzer
+from src.services.dataflow_analysis_service import DataflowAnalysisService
 
-analyzer = DataflowAnalyzer()
+service = DataflowAnalysisService()
 ```
 
 #### 🔍 Methods

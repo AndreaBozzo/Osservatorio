@@ -14,8 +14,8 @@ import pandas as pd
 import psutil
 import pytest
 
-from src.analyzers.dataflow_analyzer import IstatDataflowAnalyzer
 from src.api.istat_api import IstatAPITester
+from src.services.legacy_adapter import LegacyDataflowAnalyzerAdapter
 
 
 @pytest.mark.performance
@@ -24,7 +24,7 @@ class TestScalabilityPerformance:
 
     def test_dataflow_parsing_performance(self, temp_dir):
         """Test dataflow parsing performance with large XML files."""
-        analyzer = IstatDataflowAnalyzer()
+        analyzer = LegacyDataflowAnalyzerAdapter()
 
         # Generate large XML file with many dataflows
         large_xml = self._generate_large_dataflow_xml(num_dataflows=1000)
@@ -111,7 +111,7 @@ class TestScalabilityPerformance:
 
     def test_memory_usage_scaling(self, temp_dir):
         """Test memory usage with increasing data sizes."""
-        analyzer = IstatDataflowAnalyzer()
+        analyzer = LegacyDataflowAnalyzerAdapter()
 
         # Test with different data sizes
         data_sizes = [100, 500, 1000, 2000]
@@ -247,7 +247,7 @@ class TestScalabilityPerformance:
 
     def test_categorization_performance(self):
         """Test categorization performance with many datasets."""
-        analyzer = IstatDataflowAnalyzer()
+        analyzer = LegacyDataflowAnalyzerAdapter()
 
         # Generate many datasets
         num_datasets = 5000
@@ -284,7 +284,7 @@ class TestScalabilityPerformance:
 
     def test_batch_processing_performance(self, temp_dir):
         """Test batch processing performance."""
-        analyzer = IstatDataflowAnalyzer()
+        analyzer = LegacyDataflowAnalyzerAdapter()
 
         # Generate batch of datasets
         batch_size = 100

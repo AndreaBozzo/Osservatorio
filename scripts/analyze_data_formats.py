@@ -26,8 +26,8 @@ from typing import Any, Dict, List, Tuple
 # Add src to path for imports
 sys.path.append(str(Path(__file__).parent.parent))
 
-from src.analyzers.dataflow_analyzer import IstatDataflowAnalyzer
 from src.api.istat_api import IstatAPITester
+from src.services.legacy_adapter import LegacyDataflowAnalyzerAdapter
 from src.utils.logger import get_logger
 from src.utils.temp_file_manager import TempFileManager
 
@@ -39,7 +39,7 @@ class DataFormatAnalyzer:
 
     def __init__(self):
         self.api_client = IstatAPITester()
-        self.analyzer = IstatDataflowAnalyzer()
+        self.analyzer = LegacyDataflowAnalyzerAdapter()
         self.temp_manager = TempFileManager()
 
     def analyze_istat_datasets(self, sample_size: int = 10) -> Dict[str, Any]:

@@ -9,8 +9,8 @@ from unittest.mock import Mock, patch
 import pytest
 import requests
 
-from src.analyzers.dataflow_analyzer import IstatDataflowAnalyzer
 from src.api.istat_api import IstatAPITester
+from src.services.legacy_adapter import LegacyDataflowAnalyzerAdapter
 
 
 @pytest.mark.integration
@@ -187,7 +187,7 @@ class TestAPIIntegration:
 
     def test_xml_parsing_integration(self, sample_dataflow_xml):
         """Test XML parsing integration."""
-        analyzer = IstatDataflowAnalyzer()
+        analyzer = LegacyDataflowAnalyzerAdapter()
 
         # Test parsing with actual XML structure
         root = ET.fromstring(sample_dataflow_xml)
@@ -276,7 +276,7 @@ class TestAPIIntegration:
     ):
         """Test comprehensive integration workflow."""
         tester = IstatAPITester()
-        analyzer = IstatDataflowAnalyzer()
+        analyzer = LegacyDataflowAnalyzerAdapter()
 
         # Step 1: Test connectivity
         mock_requests_session.get.return_value.status_code = 200
