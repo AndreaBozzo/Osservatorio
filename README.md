@@ -10,10 +10,10 @@
 
 ## 🎯 What is Osservatorio?
 
-**Osservatorio** makes Italian statistical data accessible to everyone. Whether you're a researcher, analyst, or decision-maker, our platform provides reliable access to ISTAT's 509+ datasets with enterprise-grade processing and visualization capabilities.
+**Osservatorio** makes Italian statistical data accessible to everyone. Whether you're a researcher, analyst, or decision-maker, our platform provides reliable access to ISTAT's 509+ datasets with in-development enterprise-grade processing and visualization capabilities.
 
 ### ✨ Key Benefits
-- **🚀 Production-Ready**: 83.3% EXCELLENT quality rating with comprehensive testing
+- **🚀 In-Development**: 83.3% EXCELLENT quality rating with comprehensive testing
 - **⚡ High Performance**: <100ms cache response, 55x faster batch processing
 - **🛡️ Enterprise Security**: Circuit breaker, rate limiting, comprehensive monitoring
 - **🔄 Fault Tolerant**: Automatic fallback systems ensure continuous availability

@@ -150,50 +150,85 @@ batch = await client.fetch_dataset_batch(ids)   # Concurrent batch processing
 
 ---
 
+## 📁 Current Directory Structure
+
+### Source Code Organization (`src/`)
+```
+src/
+├── analyzers/          # Data analysis (minimal)
+├── api/               # API clients & endpoints
+│   ├── production_istat_client.py    # Main ISTAT client
+│   ├── powerbi_api.py                # PowerBI integration
+│   ├── tableau_api.py                # Tableau integration
+│   ├── dataflow_analysis_api.py      # Analysis endpoints
+│   └── fastapi_app.py                # FastAPI application
+├── auth/              # JWT Authentication System
+│   ├── sqlite_auth.py    # API key management
+│   ├── jwt_manager.py    # JWT tokens
+│   ├── rate_limiter.py   # Rate limiting
+│   └── security_middleware.py # Security headers
+├── converters/        # Data format converters
+│   ├── base_converter.py      # Unified foundation
+│   ├── powerbi_converter.py   # PowerBI formats
+│   ├── tableau_converter.py   # Tableau formats
+│   └── factory.py             # Factory pattern
+├── database/          # Hybrid database architecture
+│   ├── duckdb/        # Analytics engine
+│   │   ├── manager.py          # Connection management
+│   │   ├── query_builder.py    # Query interface
+│   │   └── simple_adapter.py   # Lightweight interface
+│   └── sqlite/        # Metadata & configuration
+│       ├── repository.py       # Unified repository
+│       ├── dataset_config.py   # Configuration manager
+│       └── manager.py          # SQLite management
+├── integrations/      # External service integrations
+│   └── powerbi/       # PowerBI enterprise features
+├── services/          # Business logic services
+│   └── dataflow_analysis_service.py
+└── utils/             # Core utilities
+    ├── config.py           # Configuration
+    ├── logger.py           # Logging
+    ├── secure_path.py      # Path validation
+    ├── circuit_breaker.py  # Resilience patterns
+    └── temp_file_manager.py # File management
+```
+
 ## 🔮 Evolution Path
 
-### Immediate Capabilities (Issue #66 Complete)
+### Current State (v11.0.0)
 - ✅ Production-ready ISTAT client with enterprise patterns
 - ✅ Hybrid storage architecture (SQLite + DuckDB)
-- ✅ Comprehensive resilience and monitoring
-- ✅ Quality demonstration with measurable metrics
+- ✅ JWT authentication system with rate limiting
+- ✅ BaseConverter architecture with factory pattern
+- ✅ Comprehensive testing (540+ tests, 83.3% quality)
 
-### Next Phase (Issue #67)
-- Building on production-ready foundation
-- Extended repository capabilities
-- Enhanced batch processing optimization
-- Advanced monitoring and analytics
-
-### Future Considerations
-- **Microservices**: When scaling beyond single-node requirements
-- **PostgreSQL**: When concurrent users exceed SQLite capabilities
-- **Container Orchestration**: When multi-environment deployment needed
-- **Advanced Analytics**: ML/AI integration for predictive insights
+### Development Principles
+- **Security First**: All components use secure patterns (path validation, JWT, rate limiting)
+- **Resilience**: Circuit breakers, cache fallback, graceful degradation
+- **Performance**: Hybrid storage optimized for different workloads
+- **Maintainability**: Unified architectures (BaseConverter, Repository pattern)
 
 ---
 
 ## 📋 Architecture Decisions
 
-### ADR-001: ProductionIstatClient Architecture
-- **Status**: Implemented (Issue #66)
-- **Decision**: Enterprise patterns over simple API wrapper
-- **Benefits**: Resilience, performance, monitoring, cache fallback
-
-### ADR-002: Hybrid Storage Strategy
-- **Status**: Active
+### ADR-001: Hybrid Database Strategy
 - **Decision**: SQLite metadata + DuckDB analytics
-- **Benefits**: Optimal performance per use case, single-file deployment
+- **Benefits**: Optimal performance per use case, file-based deployment
 
-### ADR-003: Quality-First Development
-- **Status**: Active
-- **Decision**: Measurable quality metrics with continuous assessment
-- **Benefits**: 83.3% EXCELLENT quality rating, production readiness
+### ADR-002: BaseConverter Architecture
+- **Decision**: Unified converter foundation with inheritance
+- **Benefits**: Code reduction (~500 lines), maintainability, extensibility
+
+### ADR-003: ProductionIstatClient Design
+- **Decision**: Enterprise patterns (circuit breaker, connection pooling)
+- **Benefits**: Resilience, monitoring, cache fallback capability
 
 ---
 
 **Architecture Status**: ✅ Production-Ready
 **Quality Rating**: 83.3% EXCELLENT
-**Next Phase**: Issue #67 implementation ready
+**Test Coverage**: 540+ tests, 100% passing rate
 
-*Last Updated: July 29, 2025*
+*Last Updated: July 31, 2025*
 *Version: 11.0.0*
