@@ -15,18 +15,16 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List
 
-# Use proper package imports
+# Use proper package imports - Issue #84: IstatAPITester removed
 try:
-    from osservatorio_istat.api.istat_api import IstatAPITester
     from osservatorio_istat.api.production_istat_client import ProductionIstatClient
     from osservatorio_istat.database.sqlite.repository import get_unified_repository
 except ImportError:
     # Development mode fallback
     import sys
 
-    # Issue #84: Removed unsafe sys.path manipulation
+    # Issue #84: Removed unsafe sys.path manipulation  
     # Use proper package imports or run from project root
-    from src.api.istat_api import IstatAPITester
     from src.api.production_istat_client import ProductionIstatClient
     from src.database.sqlite.repository import get_unified_repository
 

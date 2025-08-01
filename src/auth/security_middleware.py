@@ -69,9 +69,10 @@ class SecurityHeadersConfig:
             "gyroscope": [],
         }
 
-        # CORS settings
+        # CORS settings - Issue #84: Use centralized configuration
+        from ..utils.config import Config
         self.cors_enabled = True
-        self.cors_allow_origins = ["https://localhost:3000"]  # Adjust for frontend
+        self.cors_allow_origins = Config.CORS_ALLOW_ORIGINS
         self.cors_allow_methods = ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
         self.cors_allow_headers = ["Content-Type", "Authorization", "X-API-Key"]
         self.cors_max_age = 86400  # 24 hours

@@ -54,8 +54,9 @@ class LegacyDataflowAnalyzerAdapter:
         self._service: Optional[DataflowAnalysisService] = None
         self._analysis_result = None
 
-        # Legacy attributes for compatibility
-        self.base_url = "https://sdmx.istat.it/SDMXWS/rest/"
+        # Legacy attributes for compatibility - Issue #84: Use centralized config
+        from ..utils.config import Config
+        self.base_url = Config.ISTAT_SDMX_BASE_URL
 
         self.logger.warning(
             "🚨 DEPRECATED: LegacyDataflowAnalyzerAdapter used. Migrate to DataflowAnalysisService."
@@ -462,10 +463,14 @@ Category breakdown:
 
     def _generate_powershell_script(self, datasets: List[Dict]) -> str:
         """Generate PowerShell download script."""
-        script = """# Script PowerShell per download dataset ISTAT
+        # Issue #84: Use centralized configuration
+        from ..utils.config import Config
+        base_url = Config.ISTAT_SDMX_BASE_URL.rstrip('/') + '/data/'
+        
+        script = f"""# Script PowerShell per download dataset ISTAT
 # Generato automaticamente
 
-$baseUrl = "https://sdmx.istat.it/SDMXWS/rest/data/"
+$baseUrl = "{base_url}" """
 $outputDir = "istat_data"
 
 # Crea directory output

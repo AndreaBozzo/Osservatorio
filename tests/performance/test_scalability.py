@@ -14,7 +14,7 @@ import pandas as pd
 import psutil
 import pytest
 
-from src.api.istat_api import IstatAPITester
+from src.api.production_istat_client import ProductionIstatClient
 from src.services.legacy_adapter import LegacyDataflowAnalyzerAdapter
 
 

@@ -360,10 +360,11 @@ class DataflowAnalysisService:
         try:
             root = ET.fromstring(xml_content)
 
-            # SDMX namespaces
+            # SDMX namespaces - Issue #84: Use centralized configuration
+            from ..utils.config import Config
             namespaces = {
-                "str": "http://www.sdmx.org/resources/sdmxml/schemas/v2_1/structure",
-                "com": "http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common",
+                "str": Config.SDMX_NAMESPACES["structure"],
+                "com": Config.SDMX_NAMESPACES["common"],
             }
 
             dataflows = []

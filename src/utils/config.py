@@ -22,11 +22,41 @@ class Config:
     CACHE_DIR = DATA_DIR / "cache"
     LOGS_DIR = BASE_DIR / "logs"
 
-    # ISTAT API
+    # ISTAT API URLs - Issue #84: Centralized URL management
     ISTAT_API_BASE_URL = os.getenv(
         "ISTAT_API_BASE_URL", "https://esploradati.istat.it/SDMXWS/rest"
     )
+    ISTAT_SDMX_BASE_URL = os.getenv(
+        "ISTAT_SDMX_BASE_URL", "https://sdmx.istat.it/SDMXWS/rest/"
+    )
     ISTAT_API_TIMEOUT = int(os.getenv("ISTAT_API_TIMEOUT", "30"))
+    
+    # SDMX XML Namespace URLs - Issue #84: Centralized XML namespace management
+    SDMX_NAMESPACES = {
+        "message": "http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message",
+        "generic": "http://www.sdmx.org/resources/sdmxml/schemas/v2_1/data/generic", 
+        "common": "http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common",
+        "structure": "http://www.sdmx.org/resources/sdmxml/schemas/v2_1/structure",
+        "xsi": "http://www.w3.org/2001/XMLSchema-instance",
+        "xml": "http://www.w3.org/XML/1998/namespace"
+    }
+    
+    # External Service URLs - Issue #84: Centralized external service URLs
+    POWERBI_API_BASE_URL = os.getenv(
+        "POWERBI_API_BASE_URL", "https://api.powerbi.com/v1.0/myorg"
+    )
+    MICROSOFT_LOGIN_BASE_URL = os.getenv(
+        "MICROSOFT_LOGIN_BASE_URL", "https://login.microsoftonline.com"
+    )
+    POWERBI_SCOPE_URL = os.getenv(
+        "POWERBI_SCOPE_URL", "https://analysis.windows.net/powerbi/api/.default"
+    )
+    
+    # Development URLs - Issue #84: Centralized development configuration
+    CORS_ALLOW_ORIGINS = os.getenv(
+        "CORS_ALLOW_ORIGINS", "https://localhost:3000"
+    ).split(",")
+    REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 
     # Tableau
     TABLEAU_SERVER_URL = os.getenv("TABLEAU_SERVER_URL")

@@ -33,6 +33,53 @@ except ImportError:
 # Tests should run from project root via pytest
 
 
+# Issue #84: Proper client fixtures to replace IstatAPITester usage
+@pytest.fixture
+def production_client():
+    """Create a ProductionIstatClient instance for testing."""
+    from src.api.production_istat_client import ProductionIstatClient
+    
+    client = ProductionIstatClient(enable_cache_fallback=True)
+    yield client
+    # Cleanup
+    if hasattr(client, 'close'):
+        client.close()
+
+
+@pytest.fixture
+def mock_client():
+    """Create a mocked ProductionIstatClient for unit tests."""
+    from unittest.mock import Mock
+    
+    mock_client = Mock()
+    mock_client.base_url = "https://sdmx.istat.it/SDMXWS/rest/"
+    mock_client.get_status.return_value = {"status": "ok", "metrics": {}}
+    mock_client.fetch_dataset.return_value = {"status": "success", "data": {}}
+    
+    return mock_client
+
+
+@pytest.fixture  
+def unified_repository():
+    """Create a UnifiedDataRepository instance for testing."""
+    from src.database.sqlite.repository import get_unified_repository
+    
+    repo = get_unified_repository() 
+    yield repo
+    # Cleanup
+    if hasattr(repo, 'close'):
+        repo.close()
+
+
+@pytest.fixture
+def legacy_adapter(production_client):
+    """Create a LegacyDataflowAnalyzerAdapter for testing."""
+    from src.services.legacy_adapter import LegacyDataflowAnalyzerAdapter
+    
+    adapter = LegacyDataflowAnalyzerAdapter(production_client)
+    return adapter
+
+
 @pytest.fixture(autouse=True)
 def silent_temp_file_manager():
     """Enable silent mode for TempFileManager during tests."""

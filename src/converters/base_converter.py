@@ -27,13 +27,9 @@ class BaseIstatConverter(ABC):
 
     def __init__(self):
         """Initialize the base converter with common components."""
-        # Common SDMX namespaces
-        self.namespaces = {
-            "message": "http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message",
-            "generic": "http://www.sdmx.org/resources/sdmxml/schemas/v2_1/data/generic",
-            "common": "http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common",
-            "xsi": "http://www.w3.org/2001/XMLSchema-instance",
-        }
+        # Common SDMX namespaces - Issue #84: Use centralized configuration
+        from ..utils.config import Config
+        self.namespaces = Config.SDMX_NAMESPACES.copy()
 
         # Initialize secure path validator
         self.path_validator = create_secure_validator(os.getcwd())

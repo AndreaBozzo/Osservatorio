@@ -11,7 +11,7 @@ from unittest.mock import Mock, mock_open, patch
 import pandas as pd
 import pytest
 
-from src.api.istat_api import IstatAPITester
+from src.api.production_istat_client import ProductionIstatClient
 from src.services.legacy_adapter import LegacyDataflowAnalyzerAdapter
 from src.utils.config import Config
 

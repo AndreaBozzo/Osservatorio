@@ -155,7 +155,9 @@ class ProductionIstatClient:
 
     def __init__(self, repository=None, enable_cache_fallback=True):
         """Initialize production client."""
-        self.base_url = "https://sdmx.istat.it/SDMXWS/rest/"
+        # Issue #84: Use centralized configuration
+        from ..utils.config import Config
+        self.base_url = Config.ISTAT_SDMX_BASE_URL
 
         # Initialize repository integration
         self.repository = repository
@@ -182,14 +184,10 @@ class ProductionIstatClient:
             "last_request_time": None,
         }
 
-        # XML parsing namespaces (shared with converters)
-        self.namespaces = {
-            "message": "http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message",
-            "generic": "http://www.sdmx.org/resources/sdmxml/schemas/v2_1/data/generic",
-            "common": "http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common",
-            "str": "http://www.sdmx.org/resources/sdmxml/schemas/v2_1/structure",
-            "xsi": "http://www.w3.org/2001/XMLSchema-instance",
-        }
+        # XML parsing namespaces (shared with converters) - Issue #84: Use centralized config
+        self.namespaces = Config.SDMX_NAMESPACES.copy()
+        # Add structure namespace alias for backwards compatibility
+        self.namespaces["str"] = Config.SDMX_NAMESPACES["structure"]
 
     def _create_session(self) -> requests.Session:
         """Create session with connection pooling and retry logic."""

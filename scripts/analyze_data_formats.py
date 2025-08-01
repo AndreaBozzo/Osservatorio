@@ -22,9 +22,9 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
-# Use proper package imports
+# Use proper package imports - Issue #84: IstatAPITester removed  
 try:
-    from osservatorio_istat.api.istat_api import IstatAPITester
+    from osservatorio_istat.api.production_istat_client import ProductionIstatClient
     from osservatorio_istat.services.legacy_adapter import LegacyDataflowAnalyzerAdapter
     from osservatorio_istat.utils.logger import get_logger
     from osservatorio_istat.utils.temp_file_manager import TempFileManager
@@ -34,7 +34,7 @@ except ImportError:
 
     # Issue #84: Removed unsafe sys.path manipulation
     # Use proper package imports or run from project root
-    from src.api.istat_api import IstatAPITester
+    from src.api.production_istat_client import ProductionIstatClient
     from src.services.legacy_adapter import LegacyDataflowAnalyzerAdapter
     from src.utils.logger import get_logger
     from src.utils.temp_file_manager import TempFileManager

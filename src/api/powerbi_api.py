@@ -25,7 +25,8 @@ class PowerBIAPIClient:
 
     def __init__(self):
         """Inizializza il client PowerBI."""
-        self.base_url = "https://api.powerbi.com/v1.0/myorg"
+        # Issue #84: Use centralized configuration
+        self.base_url = Config.POWERBI_API_BASE_URL
         self.client_id = Config.POWERBI_CLIENT_ID
         self.client_secret = Config.POWERBI_CLIENT_SECRET
         self.tenant_id = Config.POWERBI_TENANT_ID
@@ -41,9 +42,9 @@ class PowerBIAPIClient:
             self.app = None
             return
 
-        # Configurazione MSAL
-        self.authority = f"https://login.microsoftonline.com/{self.tenant_id}"
-        self.scope = ["https://analysis.windows.net/powerbi/api/.default"]
+        # Configurazione MSAL - Issue #84: Use centralized configuration
+        self.authority = f"{Config.MICROSOFT_LOGIN_BASE_URL}/{self.tenant_id}"
+        self.scope = [Config.POWERBI_SCOPE_URL]
 
         # Inizializza app MSAL
         self.app = msal.ConfidentialClientApplication(

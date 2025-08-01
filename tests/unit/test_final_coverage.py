@@ -55,17 +55,13 @@ class TestFinalCoveragePush:
         assert "state" in stats
         assert "failure_count" in stats
 
+    @pytest.mark.skip(reason="IstatAPITester removed in Issue #84")
     @patch("builtins.print")
     def test_istat_api_print_methods(self, mock_print):
         """Test ISTAT API methods that use print."""
-        from src.api.istat_api import IstatAPITester
-
-        tester = IstatAPITester()
-
-        # These methods might have print statements we can cover
-        assert hasattr(tester, "base_url")
-        assert hasattr(tester, "session")
-        assert hasattr(tester, "test_results")
+        # Issue #84: IstatAPITester has been removed
+        # This test is now obsolete
+        pass
 
     def test_legacy_adapter_basic_methods(self):
         """Test legacy adapter basic functionality."""
