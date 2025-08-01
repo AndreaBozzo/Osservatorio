@@ -26,7 +26,7 @@ from typing import List, Optional
 from src.auth.jwt_manager import JWTManager
 from src.auth.models import APIKey
 from src.auth.sqlite_auth import SQLiteAuthManager
-from src.database.sqlite.manager import SQLiteMetadataManager
+from src.database.sqlite.repository import get_unified_repository
 from src.utils.logger import get_logger
 
 # Add src to path for imports
@@ -43,8 +43,9 @@ class APIKeyManager:
     def __init__(self):
         """Initialize API key manager"""
         try:
-            # Initialize SQLite database
-            self.sqlite_manager = SQLiteMetadataManager()
+            # Issue #84: Use UnifiedDataRepository instead of direct manager access
+            self.repository = get_unified_repository()
+            self.sqlite_manager = self.repository.metadata_manager
 
             # Initialize auth manager
             self.auth_manager = SQLiteAuthManager(self.sqlite_manager)

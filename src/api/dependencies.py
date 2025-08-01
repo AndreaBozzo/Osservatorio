@@ -43,12 +43,11 @@ def get_jwt_manager() -> JWTManager:
     """Get JWT manager instance (singleton)"""
     global _jwt_manager
     if _jwt_manager is None:
-        from src.database.sqlite.manager import get_metadata_manager
-
-        sqlite_manager = get_metadata_manager()
+        # Issue #84: Use UnifiedDataRepository instead of direct manager access
+        repository = get_unified_repository()
         config = get_config()
         jwt_secret = config.get("jwt_secret_key")
-        _jwt_manager = JWTManager(sqlite_manager, secret_key=jwt_secret)
+        _jwt_manager = JWTManager(repository.metadata_manager, secret_key=jwt_secret)
     return _jwt_manager
 
 
@@ -56,10 +55,9 @@ def get_auth_manager() -> SQLiteAuthManager:
     """Get authentication manager instance (singleton)"""
     global _auth_manager
     if _auth_manager is None:
-        from src.database.sqlite.manager import get_metadata_manager
-
-        sqlite_manager = get_metadata_manager()
-        _auth_manager = SQLiteAuthManager(sqlite_manager)
+        # Issue #84: Use UnifiedDataRepository instead of direct manager access
+        repository = get_unified_repository()
+        _auth_manager = SQLiteAuthManager(repository.metadata_manager)
     return _auth_manager
 
 
@@ -67,10 +65,9 @@ def get_rate_limiter() -> SQLiteRateLimiter:
     """Get rate limiter instance (singleton)"""
     global _rate_limiter
     if _rate_limiter is None:
-        from src.database.sqlite.manager import get_metadata_manager
-
-        sqlite_manager = get_metadata_manager()
-        _rate_limiter = SQLiteRateLimiter(sqlite_manager)
+        # Issue #84: Use UnifiedDataRepository instead of direct manager access
+        repository = get_unified_repository()
+        _rate_limiter = SQLiteRateLimiter(repository.metadata_manager)
     return _rate_limiter
 
 

@@ -16,11 +16,11 @@ Features:
 
 import json
 import shutil
-import sqlite3
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
+from src.database.sqlite.repository import get_unified_repository
 from src.database.sqlite.schema import MetadataSchema, create_metadata_schema
 from src.utils.logger import get_logger
 from src.utils.secure_path import create_secure_validator
@@ -39,6 +39,8 @@ class JSONToSQLiteMigrator:
         """
         self.path_validator = create_secure_validator(Path.cwd())
         self.schema = create_metadata_schema(db_path)
+        # Issue #84: Use UnifiedDataRepository for database operations
+        self.repository = get_unified_repository()
         self.migration_report = {
             "started_at": datetime.now().isoformat(),
             "json_files_found": [],
@@ -193,31 +195,32 @@ class JSONToSQLiteMigrator:
             True if migration successful, False otherwise.
         """
         try:
-            conn = sqlite3.connect(self.schema.db_path)
-            try:
-                # Prepare dataset data for SQLite insertion
-                dataset_data = {
-                    "dataset_id": dataset.get("dataflow_id"),
-                    "name": dataset.get("name", ""),
-                    "category": dataset.get("category", ""),
-                    "description": dataset.get("description", dataset.get("name", "")),
-                    "istat_agency": dataset.get("agency", "ISTAT"),
-                    "priority": dataset.get("priority", 5),
-                    "is_active": True,
-                    "metadata_json": json.dumps(dataset, ensure_ascii=False),
-                    "quality_score": dataset.get("quality", 0.0),
-                    "record_count": dataset.get("record_count", 0),
-                }
+            # Issue #84: Use UnifiedDataRepository instead of direct SQLite connection
+            # Prepare dataset data for SQLite insertion
+            dataset_data = {
+                "dataset_id": dataset.get("dataflow_id"),
+                "name": dataset.get("name", ""),
+                "category": dataset.get("category", ""),
+                "description": dataset.get("description", dataset.get("name", "")),
+                "istat_agency": dataset.get("agency", "ISTAT"),
+                "priority": dataset.get("priority", 5),
+                "is_active": True,
+                "metadata_json": json.dumps(dataset, ensure_ascii=False),
+                "quality_score": dataset.get("quality", 0.0),
+                "record_count": dataset.get("record_count", 0),
+            }
 
-                # Check if dataset already exists
-                cursor = conn.execute(
-                    "SELECT id FROM dataset_registry WHERE dataset_id = ?",
-                    (dataset_data["dataset_id"],),
-                )
-                existing = cursor.fetchone()
+            # Check if dataset already exists using repository
+            existing_dataset = self.repository.metadata_manager.get_dataset(
+                dataset_data["dataset_id"]
+            )
 
-                if existing:
-                    # Update existing dataset
+            if existing_dataset:
+                # Update existing dataset - use direct SQL for complex update
+                import sqlite3
+
+                conn = sqlite3.connect(self.schema.db_path)
+                try:
                     update_sql = """
                         UPDATE dataset_registry
                         SET name = ?, category = ?, description = ?, istat_agency = ?,
@@ -239,58 +242,42 @@ class JSONToSQLiteMigrator:
                             dataset_data["dataset_id"],
                         ),
                     )
+                    conn.commit()
                     migration_type = "updated"
-                    record_id = existing[0]
-                else:
-                    # Insert new dataset
-                    insert_sql = """
-                        INSERT INTO dataset_registry
-                        (dataset_id, name, category, description, istat_agency,
-                         priority, is_active, metadata_json, quality_score, record_count)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    """
-                    cursor = conn.execute(
-                        insert_sql,
-                        (
-                            dataset_data["dataset_id"],
-                            dataset_data["name"],
-                            dataset_data["category"],
-                            dataset_data["description"],
-                            dataset_data["istat_agency"],
-                            dataset_data["priority"],
-                            dataset_data["is_active"],
-                            dataset_data["metadata_json"],
-                            dataset_data["quality_score"],
-                            dataset_data["record_count"],
-                        ),
-                    )
-                    migration_type = "inserted"
-                    record_id = cursor.lastrowid
-
-                conn.commit()
-
-                # Record migration details for reporting and rollback
-                migration_record = {
-                    "dataset_id": dataset_data["dataset_id"],
-                    "migration_type": migration_type,
-                    "record_id": record_id,
-                    "source_file": source_file,
-                    "migrated_at": datetime.now().isoformat(),
-                }
-                self.migration_report["datasets_migrated"].append(migration_record)
-
-                # Store rollback data
-                if migration_type == "updated":
-                    # For rollback, we'd need the original data (could be stored)
-                    pass
-
-                logger.debug(
-                    f"Migrated dataset {dataset_data['dataset_id']} ({migration_type})"
+                    record_id = existing_dataset.get("id", 0)
+                finally:
+                    conn.close()
+            else:
+                # Insert new dataset using repository method
+                success = self.repository.metadata_manager.register_dataset(
+                    dataset_id=dataset_data["dataset_id"],
+                    name=dataset_data["name"],
+                    category=dataset_data["category"],
+                    description=dataset_data["description"],
+                    metadata=json.loads(dataset_data["metadata_json"]),
                 )
-                return True
+                migration_type = "inserted"
+                record_id = 1 if success else 0
 
-            finally:
-                conn.close()
+            # Record migration details for reporting and rollback
+            migration_record = {
+                "dataset_id": dataset_data["dataset_id"],
+                "migration_type": migration_type,
+                "record_id": record_id,
+                "source_file": source_file,
+                "migrated_at": datetime.now().isoformat(),
+            }
+            self.migration_report["datasets_migrated"].append(migration_record)
+
+            # Store rollback data
+            if migration_type == "updated":
+                # For rollback, we'd need the original data (could be stored)
+                pass
+
+            logger.debug(
+                f"Migrated dataset {dataset_data['dataset_id']} ({migration_type})"
+            )
+            return True
 
         except Exception as e:
             logger.error(
@@ -316,24 +303,26 @@ class JSONToSQLiteMigrator:
                 logger.error("Failed to backup JSON files, aborting migration")
                 return False
 
-            # Process each JSON config file
+            # Process each JSON config file with transaction support
             total_datasets = 0
             successful_datasets = 0
 
-            for config_file in config_files:
-                logger.info(f"Processing: {config_file}")
+            # Issue #84: Add proper transaction handling for data consistency
+            with self.repository.transaction():
+                for config_file in config_files:
+                    logger.info(f"Processing: {config_file}")
 
-                # Validate JSON config
-                is_valid, config_data = self.validate_json_config(config_file)
-                if not is_valid:
-                    logger.error(f"Invalid JSON config: {config_file}")
-                    continue
+                    # Validate JSON config
+                    is_valid, config_data = self.validate_json_config(config_file)
+                    if not is_valid:
+                        logger.error(f"Invalid JSON config: {config_file}")
+                        continue
 
-                # Migrate each dataset in the config
-                for dataset in config_data["datasets"]:
-                    total_datasets += 1
-                    if self.migrate_dataset_to_sqlite(dataset, str(config_file)):
-                        successful_datasets += 1
+                    # Migrate each dataset in the config
+                    for dataset in config_data["datasets"]:
+                        total_datasets += 1
+                        if self.migrate_dataset_to_sqlite(dataset, str(config_file)):
+                            successful_datasets += 1
 
             # Update migration report
             self.migration_report["completed_at"] = datetime.now().isoformat()
@@ -357,28 +346,24 @@ class JSONToSQLiteMigrator:
             True if validation successful, False otherwise.
         """
         try:
-            conn = sqlite3.connect(self.schema.db_path)
-            try:
-                # Count total datasets in SQLite
-                cursor = conn.execute("SELECT COUNT(*) FROM dataset_registry")
-                sqlite_count = cursor.fetchone()[0]
+            # Issue #84: Use UnifiedDataRepository list_datasets method
+            # Count total datasets in SQLite using repository
+            datasets = self.repository.metadata_manager.list_datasets(active_only=False)
+            sqlite_count = len(datasets) if datasets else 0
 
-                # Count total datasets from migration report
-                report_count = len(self.migration_report["datasets_migrated"])
+            # Count total datasets from migration report
+            report_count = len(self.migration_report["datasets_migrated"])
 
-                if sqlite_count >= report_count:
-                    logger.info(
-                        f"Migration validation successful: {sqlite_count} datasets in SQLite"
-                    )
-                    return True
-                else:
-                    logger.error(
-                        f"Migration validation failed: {sqlite_count} in SQLite vs {report_count} expected"
-                    )
-                    return False
-
-            finally:
-                conn.close()
+            if sqlite_count >= report_count:
+                logger.info(
+                    f"Migration validation successful: {sqlite_count} datasets in SQLite"
+                )
+                return True
+            else:
+                logger.error(
+                    f"Migration validation failed: {sqlite_count} in SQLite vs {report_count} expected"
+                )
+                return False
 
         except Exception as e:
             logger.error(f"Migration validation failed: {e}")
