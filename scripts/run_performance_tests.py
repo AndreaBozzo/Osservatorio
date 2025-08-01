@@ -8,6 +8,13 @@ This script provides command-line interface for running performance tests:
 - CI/CD integration
 - Regression detection
 - Report generation
+
+Usage:
+    # Issue #84: Use proper package imports
+    python -m scripts.run_performance_tests
+    
+    # Legacy support (run from project root):
+    python scripts/run_performance_tests.py
 """
 
 import argparse
@@ -17,9 +24,15 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-# Add project root to path
-project_root = Path(__file__).parent.parent
-sys.path.insert(0, str(project_root))
+# Issue #84: Use scripts package path setup
+try:
+    from . import setup_project_path
+    setup_project_path()
+except ImportError:
+    # Fallback for legacy usage
+    project_root = Path(__file__).parent.parent
+    if str(project_root) not in sys.path:
+        sys.path.insert(0, str(project_root))
 
 from tests.performance.load_testing.comprehensive_performance_suite import (
     PerformanceTestSuite,

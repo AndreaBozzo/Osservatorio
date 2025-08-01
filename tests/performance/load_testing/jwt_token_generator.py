@@ -5,6 +5,10 @@ This module generates valid JWT tokens for performance testing by:
 - Reading existing API keys from SQLite database
 - Using the actual JWT manager to create valid tokens
 - Providing tokens with appropriate scopes for testing
+
+Usage:
+    # Issue #84: Run from project root
+    python -m tests.performance.load_testing.jwt_token_generator
 """
 
 import logging
@@ -14,14 +18,23 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-# Add project root to path
-project_root = Path(__file__).parent.parent.parent.parent
-sys.path.insert(0, str(project_root))
-
-from src.auth.jwt_manager import JWTManager
-from src.auth.models import APIKey
-from src.database.sqlite.manager import get_metadata_manager
-from src.utils.logger import get_logger
+# Issue #84: Use proper imports without sys.path manipulation
+try:
+    # Try direct imports when run as module
+    from src.auth.jwt_manager import JWTManager
+    from src.auth.models import APIKey
+    from src.database.sqlite.manager import get_metadata_manager
+    from src.utils.logger import get_logger
+except ImportError:
+    # Fallback for legacy usage
+    project_root = Path(__file__).parent.parent.parent.parent
+    if str(project_root) not in sys.path:
+        sys.path.insert(0, str(project_root))
+    
+    from src.auth.jwt_manager import JWTManager
+    from src.auth.models import APIKey
+    from src.database.sqlite.manager import get_metadata_manager
+    from src.utils.logger import get_logger
 
 logger = get_logger(__name__)
 

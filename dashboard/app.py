@@ -14,10 +14,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-# Issue #84 - Dashboard path setup for proper imports
-dashboard_root = Path(__file__).parent.parent
-if str(dashboard_root) not in sys.path:
-    sys.path.insert(0, str(dashboard_root))
+# Issue #84 - Day 3: Removed sys.path manipulation
+# Dashboard now uses proper package imports only
 
 import pandas as pd
 import plotly.express as px

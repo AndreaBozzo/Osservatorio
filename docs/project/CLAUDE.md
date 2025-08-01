@@ -61,25 +61,29 @@ and automation, work in progress.
 
 ### Data Processing
 - `python -c "from src.services.dataflow_analysis_service import DataflowAnalysisService; print('Service ready')"` - Dataflow service
-- `python scripts/organize_data_files.py` - Organize data files
-- `python scripts/cleanup_temp_files.py` - Clean temporary files
+- `python -m scripts.organize_data_files` - Organize data files (Issue #84: modernized)
+- `python -m scripts.cleanup_temp_files` - Clean temporary files (Issue #84: modernized)
 
 ### PowerBI Integration
-- `python examples/powerbi_integration_demo.py` - PowerBI demo
-- `python scripts/validate_powerbi_offline.py` - Offline validation
+- `python -m examples.powerbi_integration_demo` - PowerBI demo (Issue #84: modernized)
+- `python -m scripts.validate_powerbi_offline` - Offline validation (Issue #84: modernized)
 - `pytest tests/unit/test_powerbi_api.py -v` - PowerBI tests
 - `pytest tests/integration/test_powerbi_integration.py -v` - Integration tests
 
 ### CI/CD & Dashboard
-- `python scripts/test_ci.py --strategy auto` - CI tests with fallback
+- `python -m scripts.test_ci --strategy auto` - CI tests with fallback (Issue #84: modernized)
 - `streamlit run dashboard/app.py` - Run dashboard locally
 - **Live Dashboard**: [https://osservatorio-dashboard.streamlit.app/](https://osservatorio-dashboard.streamlit.app/)
 
-### Utilities
-- `python scripts/cleanup_temp_files.py` - Clean temp files
-- `python scripts/organize_data_files.py` - Organize data files
-- `python scripts/health_check.py` - System health check
-- `python scripts/generate_test_data.py` - Generate test data
+### Utilities (Issue #84: All scripts modernized)
+- `python -m scripts.cleanup_temp_files` - Clean temp files
+- `python -m scripts.organize_data_files` - Organize data files  
+- `python -m scripts.health_check` - System health check
+- `python -m scripts.generate_test_data` - Generate test data
+- `python -m scripts.run_performance_tests` - Performance testing
+- `python -m scripts.validate_issue6_implementation` - Issue #6 validation
+
+**📖 See [Script Usage Guide](../scripts/SCRIPT_USAGE_GUIDE.md) for complete documentation**
 
 ### Development Environment
 - **Python Version**: 3.13.3 (verified 20/07/2025)

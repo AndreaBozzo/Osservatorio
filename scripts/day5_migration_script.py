@@ -58,8 +58,7 @@ class Day5MigrationScript:
     def migrate_json_configs_to_sqlite(self) -> bool:
         """Migrate JSON configuration files to SQLite metadata."""
         try:
-            # Import here to avoid module issues
-            sys.path.insert(0, str(self.project_root))
+            # Issue #84: Use proper imports without sys.path manipulation
             from src.database.sqlite.repository import UnifiedDataRepository
 
             repo = UnifiedDataRepository()
@@ -122,8 +121,7 @@ class Day5MigrationScript:
     def validate_migration(self) -> bool:
         """Validate that migration was successful."""
         try:
-            # Import here to avoid module issues
-            sys.path.insert(0, str(self.project_root))
+            # Issue #84: Use proper imports without sys.path manipulation
             from src.database.sqlite.repository import UnifiedDataRepository
 
             repo = UnifiedDataRepository()

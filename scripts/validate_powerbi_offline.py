@@ -1,6 +1,13 @@
 """
 Script di validazione offline per componenti PowerBI Day 6.
 Simula connessioni Microsoft e valida logica senza autenticazione reale.
+
+Usage:
+    # Issue #84: Use proper package imports
+    python -m scripts.validate_powerbi_offline
+    
+    # Legacy support (run from project root):
+    python scripts/validate_powerbi_offline.py
 """
 
 import json
@@ -14,9 +21,15 @@ from unittest.mock import Mock, patch
 
 import pandas as pd
 
-# Add project root to Python path
-project_root = Path(__file__).parent.parent
-sys.path.insert(0, str(project_root))
+# Issue #84: Use scripts package path setup
+try:
+    from . import setup_project_path
+    setup_project_path()
+except ImportError:
+    # Fallback for legacy usage
+    project_root = Path(__file__).parent.parent
+    if str(project_root) not in sys.path:
+        sys.path.insert(0, str(project_root))
 
 
 # Mock MSAL per evitare dipendenza da credenziali Microsoft

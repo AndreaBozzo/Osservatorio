@@ -4,6 +4,13 @@ Validation Script for Issue #6: Enhanced Rate Limiting and API Protection
 
 This script validates that all components of the enhanced rate limiting system
 are working correctly and integrated properly with the existing codebase.
+
+Usage:
+    # Issue #84: Use proper package imports
+    python -m scripts.validate_issue6_implementation
+    
+    # Legacy support (run from project root):
+    python scripts/validate_issue6_implementation.py
 """
 
 import json
@@ -12,9 +19,15 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
-# Add project root to path
-project_root = Path(__file__).parent.parent
-sys.path.insert(0, str(project_root))
+# Issue #84: Use scripts package path setup
+try:
+    from . import setup_project_path
+    setup_project_path()
+except ImportError:
+    # Fallback for legacy usage
+    project_root = Path(__file__).parent.parent
+    if str(project_root) not in sys.path:
+        sys.path.insert(0, str(project_root))
 
 
 def validate_file_structure():

@@ -10,27 +10,36 @@ This demo showcases the complete PowerBI integration capabilities:
 - Metadata bridge functionality
 
 Usage:
+    # Issue #84: Use proper package imports
+    python -m examples.powerbi_integration_demo
+    
+    # Legacy support (run from project root):
     python examples/powerbi_integration_demo.py
 """
 
-import sys
-from pathlib import Path
-
-# Add both project root and src to Python path
-project_root = Path(__file__).parent.parent
-sys.path.insert(0, str(project_root))
-sys.path.insert(0, str(project_root / "src"))
-
 import json
+import sys
 from datetime import datetime, timedelta
+from pathlib import Path
 
 import pandas as pd
 
-from database.sqlite.repository import UnifiedDataRepository
-from integrations.powerbi.incremental import IncrementalRefreshManager
-from integrations.powerbi.metadata_bridge import MetadataBridge
-from integrations.powerbi.optimizer import PowerBIOptimizer
-from integrations.powerbi.templates import TemplateGenerator
+# Issue #84: Proper package imports without sys.path manipulation
+try:
+    # Try package imports first (when run as module)
+    from src.database.sqlite.repository import UnifiedDataRepository
+    from src.integrations.powerbi.incremental import IncrementalRefreshManager
+except ImportError:
+    # Fallback for legacy usage (when run as script)
+    project_root = Path(__file__).parent.parent
+    if str(project_root) not in sys.path:
+        sys.path.insert(0, str(project_root))
+    
+    from src.database.sqlite.repository import UnifiedDataRepository
+    from src.integrations.powerbi.incremental import IncrementalRefreshManager
+    from src.integrations.powerbi.metadata_bridge import MetadataBridge
+    from src.integrations.powerbi.optimizer import PowerBIOptimizer
+    from src.integrations.powerbi.templates import TemplateGenerator
 
 
 def setup_demo_data(repository: UnifiedDataRepository) -> str:

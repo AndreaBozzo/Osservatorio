@@ -19,6 +19,8 @@ import json
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, Tuple
 
+from ...utils.config import Config
+
 import pandas as pd
 
 from src.api.powerbi_api import PowerBIAPIClient
@@ -234,7 +236,7 @@ class MetadataBridge:
             lineage.add_transformation(
                 "data_extraction",
                 "Extracted from ISTAT SDMX API",
-                {"api_endpoint": "https://sdmx.istat.it/SDMXWS/rest/data/"},
+                {"api_endpoint": f"{Config.ISTAT_SDMX_BASE_URL.rstrip('/')}/data/"},
             )
 
             lineage.add_transformation(
