@@ -56,6 +56,7 @@ class LegacyDataflowAnalyzerAdapter:
 
         # Legacy attributes for compatibility - Issue #84: Use centralized config
         from ..utils.config import Config
+
         self.base_url = Config.ISTAT_SDMX_BASE_URL
 
         self.logger.warning(
@@ -465,18 +466,19 @@ Category breakdown:
         """Generate PowerShell download script."""
         # Issue #84: Use centralized configuration
         from ..utils.config import Config
-        base_url = Config.ISTAT_SDMX_BASE_URL.rstrip('/') + '/data/'
-        
+
+        base_url = Config.ISTAT_SDMX_BASE_URL.rstrip("/") + "/data/"
+
         script = f"""# Script PowerShell per download dataset ISTAT
 # Generato automaticamente
 
-$baseUrl = "{base_url}" """
+$baseUrl = "{base_url}"
 $outputDir = "istat_data"
 
 # Crea directory output
-if (-not (Test-Path $outputDir)) {
+if (-not (Test-Path $outputDir)) {{
     New-Item -ItemType Directory -Path $outputDir
-}
+}}
 
 Write-Host "🇮🇹 Download dataset ISTAT in corso..." -ForegroundColor Green
 
