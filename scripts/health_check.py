@@ -15,7 +15,8 @@ from pathlib import Path
 import requests
 
 # Add src to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent))
+# Issue #84: Removed unsafe sys.path manipulation
+# Use proper package imports or run from project root
 
 
 def print_header():

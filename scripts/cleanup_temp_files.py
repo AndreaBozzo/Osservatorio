@@ -8,11 +8,12 @@ import argparse
 import sys
 from pathlib import Path
 
-# Aggiungi src al path
-sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
-
 from utils.logger import get_logger
 from utils.temp_file_manager import get_temp_manager
+
+# Aggiungi src al path
+# Issue #84: Removed unsafe sys.path manipulation
+
 
 logger = get_logger(__name__)
 
@@ -82,7 +83,6 @@ def main():
 
         # Simula cosa verrebbe eliminato
         import time
-        from pathlib import Path
 
         temp_dir = Path(temp_manager.base_temp_dir)
         if temp_dir.exists():

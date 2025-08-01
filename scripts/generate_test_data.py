@@ -11,11 +11,12 @@ from pathlib import Path
 
 import pandas as pd
 
-# Aggiungi src al path
-sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
-
 from utils.logger import get_logger
 from utils.secure_path import create_secure_validator
+
+# Aggiungi src al path
+# Issue #84: Removed unsafe sys.path manipulation
+
 
 logger = get_logger(__name__)
 

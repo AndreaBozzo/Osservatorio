@@ -14,10 +14,23 @@ from unittest.mock import Mock, patch
 import pandas as pd
 import pytest
 
-# Add the project root to Python path
-sys.path.insert(0, str(Path(__file__).parent.parent))
+# Use proper package imports
+try:
+    from osservatorio_istat.utils.config import Config
+except ImportError:
+    # Development mode fallback
+    import sys
+    from pathlib import Path
+    
+    # Issue #84: Safe path addition for tests
+    project_root = Path(__file__).parent.parent
+    if str(project_root) not in sys.path:
+        sys.path.insert(0, str(project_root))
+    
+    from src.utils.config import Config
 
-from src.utils.config import Config
+# Issue #84: Removed unsafe sys.path manipulation
+# Tests should run from project root via pytest
 
 
 @pytest.fixture(autouse=True)

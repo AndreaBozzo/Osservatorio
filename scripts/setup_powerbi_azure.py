@@ -11,11 +11,12 @@ from datetime import datetime
 from pathlib import Path
 from urllib.parse import urlparse
 
-# Aggiungi il path del progetto
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
 from src.api.powerbi_api import PowerBIAPIClient
 from src.utils.config import Config
+
+# Aggiungi il path del progetto
+# Issue #84: Removed unsafe sys.path manipulation
+# Use proper package imports or run from project root
 
 
 class PowerBISetupWizard:

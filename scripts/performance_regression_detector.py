@@ -9,9 +9,6 @@ import json
 import os
 import statistics
 import subprocess
-
-# Add src to path
-import sys
 import time
 from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
@@ -20,9 +17,15 @@ from typing import Dict, List, Optional, Tuple
 
 import pandas as pd
 
-sys.path.append(str(Path(__file__).parent.parent / "src"))
+# Use proper package imports
+try:
+    from osservatorio_istat.utils.logger import get_logger
+except ImportError:
+    # Development mode fallback
+    import sys
 
-from utils.logger import get_logger
+    # Issue #84: Removed unsafe sys.path manipulation
+    from utils.logger import get_logger
 
 logger = get_logger(__name__)
 

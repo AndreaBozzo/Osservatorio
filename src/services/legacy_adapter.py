@@ -28,6 +28,28 @@ class LegacyDataflowAnalyzerAdapter:
 
     def __init__(self):
         """Initialize the adapter with modern service."""
+        import warnings
+
+        # Issue #84 - CRITICAL DEPRECATION WARNING
+        warnings.warn(
+            "\n"
+            + "=" * 80
+            + "\n"
+            + "⚠️  CRITICAL DEPRECATION WARNING - Issue #84\n"
+            + "LegacyDataflowAnalyzerAdapter is DEPRECATED for v1.0.0\n"
+            + "\n"
+            + "🔄 MIGRATION REQUIRED:\n"
+            + "  - Replace with DataflowAnalysisService directly\n"
+            + "  - Use get_dataflow_analysis_service() factory\n"
+            + "  - Update imports and method calls\n"
+            + "\n"
+            + "This adapter will be REMOVED in v1.0.0 for architecture cleanliness.\n"
+            + "=" * 80
+            + "\n",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+
         self.logger = get_logger(__name__)
         self._service: Optional[DataflowAnalysisService] = None
         self._analysis_result = None
@@ -35,8 +57,8 @@ class LegacyDataflowAnalyzerAdapter:
         # Legacy attributes for compatibility
         self.base_url = "https://sdmx.istat.it/SDMXWS/rest/"
 
-        self.logger.info(
-            "Legacy adapter initialized - will use modern DataflowAnalysisService"
+        self.logger.warning(
+            "🚨 DEPRECATED: LegacyDataflowAnalyzerAdapter used. Migrate to DataflowAnalysisService."
         )
 
     @property

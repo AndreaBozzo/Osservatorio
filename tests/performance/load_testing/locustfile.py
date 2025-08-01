@@ -19,16 +19,20 @@ from typing import Dict, List
 
 from locust import HttpUser, between, task
 
-# Import JWT token generator
+# Import JWT token generator with proper relative imports
 try:
     from .jwt_token_generator import PerformanceJWTGenerator
 except ImportError:
-    # Fallback for direct execution
-    import sys
-    from pathlib import Path
+    # Fallback for direct execution - use relative import
+    try:
+        from jwt_token_generator import PerformanceJWTGenerator
+    except ImportError:
+        # Final fallback for development
+        import sys
+        from pathlib import Path
 
-    sys.path.append(str(Path(__file__).parent))
-    from jwt_token_generator import PerformanceJWTGenerator
+        # Issue #84: Removed unsafe sys.path manipulation
+        from jwt_token_generator import PerformanceJWTGenerator
 
 # Test data for realistic scenarios
 SAMPLE_DATASETS = [

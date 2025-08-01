@@ -11,9 +11,9 @@ from pathlib import Path
 
 import pytest
 
-# Add project root to path
+# Use proper test imports - no sys.path manipulation needed for tests
+# Tests should run via pytest from project root
 project_root = Path(__file__).parent.parent.parent
-sys.path.append(str(project_root))
 
 
 class TestPerformanceBenchmark:
@@ -204,7 +204,6 @@ class TestPerformanceRegression:
         """Test that performance hasn't regressed significantly."""
         import json
         import time
-        from pathlib import Path
 
         from src.api.production_istat_client import ProductionIstatClient
 

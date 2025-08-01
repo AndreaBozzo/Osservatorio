@@ -53,6 +53,12 @@ Osservatorio is an enterprise-grade Italian data processing platform for ISTAT s
 - `make clean` - Clean temp files
 - `make dashboard` - Run Streamlit dashboard
 
+### Data Ingestion
+- `python scripts/download_istat_data.ps1`
+Primordial ingestion layer with a shell script, needs to be
+revamped/rehauled for unified pipeline, orchestration
+and automation, work in progress.
+
 ### Data Processing
 - `python -c "from src.services.dataflow_analysis_service import DataflowAnalysisService; print('Service ready')"` - Dataflow service
 - `python scripts/organize_data_files.py` - Organize data files

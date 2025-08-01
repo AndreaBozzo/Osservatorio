@@ -8,10 +8,11 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
-# Aggiungi il path del progetto
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
 from src.utils.config import Config
+
+# Aggiungi il path del progetto
+# Issue #84: Removed unsafe sys.path manipulation
+# Use proper package imports or run from project root
 
 
 def validate_step1_2():

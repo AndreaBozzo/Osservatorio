@@ -289,5 +289,6 @@ def main():
 
 if __name__ == "__main__":
     # Add project root to Python path
-    sys.path.insert(0, str(Path(__file__).parent.parent))
+    # Issue #84: Removed unsafe sys.path manipulation
+    # Use proper package imports or run from project root
     sys.exit(main())

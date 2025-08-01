@@ -11,12 +11,14 @@ from typing import Dict, List, Optional
 
 import pandas as pd
 
-# Aggiungi il path del progetto
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
 from src.api.powerbi_api import PowerBIAPIClient
 from src.utils.config import Config
 from src.utils.logger import get_logger
+
+# Aggiungi il path del progetto
+# Issue #84: Removed unsafe sys.path manipulation
+# Use proper package imports or run from project root
+
 
 logger = get_logger(__name__)
 

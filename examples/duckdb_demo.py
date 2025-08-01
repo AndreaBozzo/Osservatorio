@@ -4,15 +4,22 @@ This script demonstrates how to use the new DuckDB functionality
 for high-performance analytics on ISTAT statistical data.
 """
 
-import sys
 from pathlib import Path
 
 import pandas as pd
 
-# Add src to path for imports
-sys.path.append(str(Path(__file__).parent.parent / "src"))
+# Use proper package imports
+try:
+    from osservatorio_istat.database.duckdb.simple_adapter import (
+        create_adapter,
+        create_file_adapter,
+    )
+except ImportError:
+    # Development mode fallback
+    import sys
 
-from database.duckdb.simple_adapter import create_adapter, create_file_adapter
+    # Issue #84: Removed unsafe sys.path manipulation
+    from database.duckdb.simple_adapter import create_adapter, create_file_adapter
 
 
 def demo_basic_functionality():

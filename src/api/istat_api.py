@@ -17,13 +17,27 @@ from ..utils.temp_file_manager import get_temp_manager
 class IstatAPITester:
     def __init__(self):
         """Inizializza il tester API ISTAT"""
-        # Issue #66 - This exploration tool is deprecated
+        # Issue #84 - CRITICAL: This class is DEPRECATED and will be REMOVED in v1.0.0
         warnings.warn(
-            "IstatAPITester is deprecated and will be removed in a future version. "
-            "Use ProductionIstatClient for production workflows. "
-            "See docs/migration/ISTAT_API_MIGRATION.md for migration guide.",
+            "\n"
+            + "=" * 80
+            + "\n"
+            + "⚠️  CRITICAL DEPRECATION WARNING - Issue #84\n"
+            + "IstatAPITester is DEPRECATED and will be REMOVED in v1.0.0\n"
+            + "\n"
+            + "🔄 MIGRATION REQUIRED:\n"
+            + "  - Replace with ProductionIstatClient for production workflows\n"
+            + "  - Use MockIstatData for testing/development\n"
+            + "  - See docs/migration/ISTAT_API_MIGRATION.md\n"
+            + "\n"
+            + "This class compromises architecture cleanliness for v1.0.0 release.\n"
+            + "=" * 80
+            + "\n",
             DeprecationWarning,
             stacklevel=2,
+        )
+        print(
+            "\n🚨 DEPRECATED: IstatAPITester used. See warning above for migration path."
         )
         self.base_url = "https://sdmx.istat.it/SDMXWS/rest/"
         self.session = requests.Session()

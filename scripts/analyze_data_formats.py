@@ -17,19 +17,27 @@ Usage:
 import argparse
 import json
 import os
-import sys
 import xml.etree.ElementTree as ET
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
-# Add src to path for imports
-sys.path.append(str(Path(__file__).parent.parent))
+# Use proper package imports
+try:
+    from osservatorio_istat.api.istat_api import IstatAPITester
+    from osservatorio_istat.services.legacy_adapter import LegacyDataflowAnalyzerAdapter
+    from osservatorio_istat.utils.logger import get_logger
+    from osservatorio_istat.utils.temp_file_manager import TempFileManager
+except ImportError:
+    # Development mode fallback
+    import sys
 
-from src.api.istat_api import IstatAPITester
-from src.services.legacy_adapter import LegacyDataflowAnalyzerAdapter
-from src.utils.logger import get_logger
-from src.utils.temp_file_manager import TempFileManager
+    # Issue #84: Removed unsafe sys.path manipulation
+    # Use proper package imports or run from project root
+    from src.api.istat_api import IstatAPITester
+    from src.services.legacy_adapter import LegacyDataflowAnalyzerAdapter
+    from src.utils.logger import get_logger
+    from src.utils.temp_file_manager import TempFileManager
 
 logger = get_logger(__name__)
 
@@ -38,7 +46,15 @@ class DataFormatAnalyzer:
     """Analizza formati dati ISTAT per database design"""
 
     def __init__(self):
-        self.api_client = IstatAPITester()
+        # Issue #84: Migrated from IstatAPITester to ProductionIstatClient
+        try:
+            from osservatorio_istat.api.production_istat_client import (
+                ProductionIstatClient,
+            )
+        except ImportError:
+            from src.api.production_istat_client import ProductionIstatClient
+
+        self.api_client = ProductionIstatClient(enable_cache_fallback=True)
         self.analyzer = LegacyDataflowAnalyzerAdapter()
         self.temp_manager = TempFileManager()
 
@@ -68,7 +84,8 @@ class DataFormatAnalyzer:
         try:
             # Get all available dataflows
             logger.info("Discovering available datasets...")
-            dataflows = self.api_client.discover_available_datasets()
+            dataflows_result = self.api_client.get_dataflows()
+            dataflows = dataflows_result.get("dataflows", [])
             analysis_results["total_datasets"] = len(dataflows)
 
             # Analyze sample of datasets in detail
@@ -86,9 +103,11 @@ class DataFormatAnalyzer:
                 )
 
                 try:
-                    # Fetch sample data
-                    test_result = self.api_client.test_specific_dataset(dataset_id)
-                    xml_data = test_result.get("data", "")
+                    # Fetch sample data using production client
+                    dataset_result = self.api_client.fetch_dataset(
+                        dataset_id, include_data=True
+                    )
+                    xml_data = dataset_result.get("data", {}).get("content", "")
 
                     # Analyze structure
                     structure = self._analyze_xml_structure(xml_data)

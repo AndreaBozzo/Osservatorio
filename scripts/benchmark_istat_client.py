@@ -9,17 +9,26 @@ across various operations and generates detailed performance reports.
 import asyncio
 import os
 import statistics
-import sys
 import time
 from contextlib import contextmanager
 from datetime import datetime
+from pathlib import Path
 from typing import Any, Dict, List
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# Use proper package imports
+try:
+    from osservatorio_istat.api.istat_api import IstatAPITester
+    from osservatorio_istat.api.production_istat_client import ProductionIstatClient
+    from osservatorio_istat.database.sqlite.repository import get_unified_repository
+except ImportError:
+    # Development mode fallback
+    import sys
 
-from src.api.istat_api import IstatAPITester
-from src.api.production_istat_client import ProductionIstatClient
-from src.database.sqlite.repository import get_unified_repository
+    # Issue #84: Removed unsafe sys.path manipulation
+    # Use proper package imports or run from project root
+    from src.api.istat_api import IstatAPITester
+    from src.api.production_istat_client import ProductionIstatClient
+    from src.database.sqlite.repository import get_unified_repository
 
 
 class PerformanceBenchmark:
@@ -30,15 +39,18 @@ class PerformanceBenchmark:
         self.results = {}
         self.repository = get_unified_repository()
 
-        # Initialize clients
-        self.production_client = ProductionIstatClient(repository=self.repository)
-        self.legacy_tester = IstatAPITester()
+        # Initialize production client only (Issue #84: IstatAPITester deprecated)
+        self.production_client = ProductionIstatClient(
+            repository=self.repository, enable_cache_fallback=True
+        )
+        # Legacy tester removed for v1.0.0 clean architecture
 
         # Test datasets for benchmarking
         self.test_datasets = ["DCIS_POPRES1", "DCIS_POPSTRRES1", "DCIS_FECONDITA"]
 
-        print("🚀 Performance Benchmark Suite Initialized")
+        print("🚀 ProductionIstatClient Benchmark Suite Initialized (Issue #84)")
         print(f"📊 Test datasets: {len(self.test_datasets)}")
+        print("⚠️  Legacy client removed for v1.0.0 architecture compliance")
         print("=" * 60)
 
     @contextmanager

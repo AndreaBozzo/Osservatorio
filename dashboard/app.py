@@ -8,13 +8,190 @@ import gc
 import os
 import sys
 import time
+import traceback
+from contextlib import contextmanager
 from datetime import datetime
 from pathlib import Path
+from typing import Any, Dict, Optional
+
+# Issue #84 - Dashboard path setup for proper imports
+dashboard_root = Path(__file__).parent.parent
+if str(dashboard_root) not in sys.path:
+    sys.path.insert(0, str(dashboard_root))
 
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
+
+
+# Issue #84 - Day 1: Structured Error Handling and Logging
+class DashboardErrorHandler:
+    """
+    Structured error handling and logging for dashboard operations
+    """
+
+    def __init__(self):
+        from src.utils.logger import get_logger
+
+        self.logger = get_logger(__name__)
+
+    @contextmanager
+    def error_boundary(self, operation: str, user_message: str = None):
+        """
+        Context manager for structured error handling
+
+        Args:
+            operation: Description of the operation being performed
+            user_message: User-friendly message to display on error
+        """
+        try:
+            self.logger.info(f"Dashboard: Starting {operation}")
+            yield
+            self.logger.info(f"Dashboard: Completed {operation}")
+        except Exception as e:
+            error_id = f"ERR_{int(time.time())}"
+            self.logger.error(
+                f"Dashboard: Error in {operation} [ID: {error_id}]: {str(e)}",
+                extra={
+                    "operation": operation,
+                    "error_id": error_id,
+                    "error_type": type(e).__name__,
+                    "traceback": traceback.format_exc(),
+                },
+            )
+
+            # Display user-friendly error
+            if user_message:
+                st.error(f"⚠️ {user_message} (Error ID: {error_id})")
+            else:
+                st.error(f"⚠️ Errore durante: {operation} (Error ID: {error_id})")
+
+            # In development, show more details
+            if os.getenv("STREAMLIT_ENV") == "development":
+                with st.expander("🔧 Dettagli Tecnici (Solo Development)"):
+                    st.code(f"Error: {str(e)}")
+                    st.code(f"Type: {type(e).__name__}")
+                    st.code(traceback.format_exc())
+
+            raise  # Re-raise for proper exception handling
+
+    def log_user_action(self, action: str, details: Dict[str, Any] = None):
+        """Log user actions for analytics and debugging"""
+        self.logger.info(
+            f"Dashboard: User action - {action}",
+            extra={
+                "action": action,
+                "timestamp": datetime.now().isoformat(),
+                "details": details or {},
+                "user_agent": st.context.headers.get("user-agent", "unknown"),
+            },
+        )
+
+    def log_performance_metric(
+        self, metric_name: str, value: float, unit: str = "seconds"
+    ):
+        """Log performance metrics"""
+        self.logger.info(
+            f"Dashboard: Performance metric - {metric_name}: {value} {unit}",
+            extra={
+                "metric_name": metric_name,
+                "value": value,
+                "unit": unit,
+                "timestamp": datetime.now().isoformat(),
+            },
+        )
+
+
+# Global error handler instance
+error_handler = DashboardErrorHandler()
+
+
+# Issue #84 - Day 1: Dependency Injection System
+class DashboardDependencies:
+    """
+    Dependency injection container for dashboard components
+    """
+
+    def __init__(self):
+        self._repository = None
+        self._client = None
+        self._logger = None
+        self._initialized = False
+
+    def initialize(self):
+        """Initialize all dependencies lazily"""
+        if self._initialized:
+            return
+
+        from src.api.production_istat_client import ProductionIstatClient
+        from src.database.sqlite.repository import get_unified_repository
+        from src.utils.logger import get_logger
+
+        try:
+            self._logger = get_logger(__name__)
+            self._logger.info("Dashboard: Initializing dependencies")
+
+            # Initialize repository
+            self._repository = get_unified_repository()
+
+            # Initialize client with repository
+            self._client = ProductionIstatClient(
+                repository=self._repository, enable_cache_fallback=True
+            )
+
+            self._initialized = True
+            self._logger.info("Dashboard: Dependencies initialized successfully")
+
+        except Exception as e:
+            if self._logger:
+                self._logger.error(f"Dashboard: Failed to initialize dependencies: {e}")
+            raise
+
+    @property
+    def repository(self):
+        """Get unified data repository instance"""
+        if not self._initialized:
+            self.initialize()
+        return self._repository
+
+    @property
+    def client(self):
+        """Get production ISTAT client instance"""
+        if not self._initialized:
+            self.initialize()
+        return self._client
+
+    @property
+    def logger(self):
+        """Get logger instance"""
+        if not self._logger:
+            from src.utils.logger import get_logger
+
+            self._logger = get_logger(__name__)
+        return self._logger
+
+    def cleanup(self):
+        """Cleanup all dependencies"""
+        if self._client:
+            try:
+                self._client.close()
+                self._logger.info("Dashboard: Client closed")
+            except:
+                pass
+
+        if self._repository:
+            try:
+                self._repository.close()
+                self._logger.info("Dashboard: Repository closed")
+            except:
+                pass
+
+        self._initialized = False
+
+
+# Global dependencies container
+dependencies = DashboardDependencies()
 
 # Configurazione pagina - DEVE essere il primo comando Streamlit
 st.set_page_config(
@@ -303,46 +480,250 @@ CATEGORIES = {
 }
 
 
-def create_sample_data():
-    """Crea dati di esempio per la demo"""
-    # Dati di esempio per popolazione
-    population_data = {
-        "TIME_PERIOD": [2020, 2021, 2022, 2023, 2024],
-        "TERRITORIO": ["Italia", "Italia", "Italia", "Italia", "Italia"],
-        "Value": [59641488, 59236213, 58940425, 58997201, 59000000],
-        "UNIT_MEASURE": ["NUM", "NUM", "NUM", "NUM", "NUM"],
-        "SEX": ["TOTAL", "TOTAL", "TOTAL", "TOTAL", "TOTAL"],
-    }
+def create_production_data():
+    """
+    Issue #84 - Day 1: Dashboard Modernization with Dependency Injection
+    Uses dependency injection for UnifiedDataRepository and ProductionIstatClient
+    """
+    logger = dependencies.logger
+    logger.info("Dashboard: Loading production data via injected dependencies")
 
-    # Dati di esempio per economia
-    economy_data = {
-        "TIME_PERIOD": [2020, 2021, 2022, 2023, 2024],
-        "TERRITORIO": ["Italia", "Italia", "Italia", "Italia", "Italia"],
-        "Value": [1653000, 1775000, 1897000, 1952000, 2010000],
-        "UNIT_MEASURE": ["EUR_MIO", "EUR_MIO", "EUR_MIO", "EUR_MIO", "EUR_MIO"],
-        "SECTOR": ["TOTAL", "TOTAL", "TOTAL", "TOTAL", "TOTAL"],
-    }
+    try:
+        # Use dependency injection
+        repository = dependencies.repository
+        client = dependencies.client
 
-    # Dati di esempio per lavoro
-    work_data = {
-        "TIME_PERIOD": [2020, 2021, 2022, 2023, 2024],
-        "TERRITORIO": ["Italia", "Italia", "Italia", "Italia", "Italia"],
-        "Value": [58.1, 58.2, 58.8, 59.5, 60.1],
-        "UNIT_MEASURE": ["PC", "PC", "PC", "PC", "PC"],
-        "AGECLASS": ["15-64", "15-64", "15-64", "15-64", "15-64"],
-    }
+        result_data = {}
 
-    return {
-        "popolazione": pd.DataFrame(population_data),
-        "economia": pd.DataFrame(economy_data),
-        "lavoro": pd.DataFrame(work_data),
-    }
+        # Dataset mapping for dashboard categories
+        dataset_mapping = {
+            "popolazione": "DCIS_POPRES1",
+            "economia": "DCCN_PILN",
+            "lavoro": "DCCV_TAXOCCU",
+        }
+
+        for category, dataset_id in dataset_mapping.items():
+            try:
+                logger.info(
+                    f"Dashboard: Fetching {category} data for dataset {dataset_id}"
+                )
+
+                # Fetch data through ProductionIstatClient + Repository
+                dataset_result = client.fetch_dataset(dataset_id, include_data=True)
+
+                if dataset_result and dataset_result.get("status") == "success":
+                    data_content = dataset_result.get("data", {})
+
+                    # Try to get from repository first (cached/processed data)
+                    try:
+                        repo_data = repository.get_dataset_time_series(
+                            dataset_id, limit=10
+                        )
+                        if repo_data and len(repo_data) > 0:
+                            logger.info(
+                                f"Dashboard: Using repository data for {category}"
+                            )
+                            # Convert repository data to DataFrame
+                            df_data = {
+                                "TIME_PERIOD": [
+                                    row.get("year", 2023) for row in repo_data
+                                ],
+                                "TERRITORIO": [
+                                    row.get("territory", "Italia") for row in repo_data
+                                ],
+                                "Value": [row.get("value", 0) for row in repo_data],
+                                "UNIT_MEASURE": [
+                                    row.get("unit", "NUM") for row in repo_data
+                                ],
+                                "CATEGORY": [category.upper()] * len(repo_data),
+                            }
+                            result_data[category] = pd.DataFrame(df_data)
+                            continue
+                    except Exception as repo_e:
+                        logger.warning(
+                            f"Dashboard: Repository data not available for {category}: {repo_e}"
+                        )
+
+                    # Fallback to client cache/mock data
+                    if (
+                        "observations" in data_content
+                        and len(data_content["observations"]) > 0
+                    ):
+                        obs = data_content["observations"][
+                            :10
+                        ]  # Limit to 10 most recent
+                        logger.info(
+                            f"Dashboard: Using client data for {category} ({len(obs)} observations)"
+                        )
+
+                        df_data = {
+                            "TIME_PERIOD": [
+                                obs_item.get("TIME_PERIOD", 2023) for obs_item in obs
+                            ],
+                            "TERRITORIO": [
+                                obs_item.get("GEO", "Italia") for obs_item in obs
+                            ],
+                            "Value": [
+                                float(obs_item.get("OBS_VALUE", 0)) for obs_item in obs
+                            ],
+                            "UNIT_MEASURE": [
+                                obs_item.get("UNIT_MEASURE", "NUM") for obs_item in obs
+                            ],
+                            "CATEGORY": [category.upper()] * len(obs),
+                        }
+                        result_data[category] = pd.DataFrame(df_data)
+                    else:
+                        raise Exception(f"No observations found for {dataset_id}")
+
+                else:
+                    raise Exception(f"Dataset fetch failed for {dataset_id}")
+
+            except Exception as e:
+                logger.error(f"Dashboard: Error loading {category} data: {e}")
+                st.warning(
+                    f"⚠️ {category.title()}: Usando dati di backup - {str(e)[:50]}..."
+                )
+
+                # Structured fallback data (realistic but minimal)
+                fallback_values = {
+                    "popolazione": [59000000, 59100000, 59200000],
+                    "economia": [1800000, 1850000, 1900000],
+                    "lavoro": [58.5, 59.0, 59.5],
+                }
+
+                fallback_data = {
+                    "TIME_PERIOD": [2022, 2023, 2024],
+                    "TERRITORIO": ["Italia"] * 3,
+                    "Value": fallback_values.get(category, [100, 102, 104]),
+                    "UNIT_MEASURE": ["NUM"] * 3,
+                    "CATEGORY": [category.upper()] * 3,
+                }
+                result_data[category] = pd.DataFrame(fallback_data)
+
+        logger.info(
+            f"Dashboard: Successfully loaded data for {len(result_data)} categories"
+        )
+        return result_data
+
+    except Exception as e:
+        logger.error(f"Dashboard: Critical error in data loading: {e}")
+        st.error(f"⚠️ Errore critico nel caricamento dati: {str(e)[:100]}...")
+
+        # Emergency fallback - minimal but functional
+        return {
+            "popolazione": pd.DataFrame(
+                {
+                    "TIME_PERIOD": [2024],
+                    "TERRITORIO": ["Italia"],
+                    "Value": [59000000],
+                    "UNIT_MEASURE": ["NUM"],
+                    "CATEGORY": ["POPOLAZIONE"],
+                }
+            ),
+            "economia": pd.DataFrame(
+                {
+                    "TIME_PERIOD": [2024],
+                    "TERRITORIO": ["Italia"],
+                    "Value": [1900000],
+                    "UNIT_MEASURE": ["EUR_MIO"],
+                    "CATEGORY": ["ECONOMIA"],
+                }
+            ),
+            "lavoro": pd.DataFrame(
+                {
+                    "TIME_PERIOD": [2024],
+                    "TERRITORIO": ["Italia"],
+                    "Value": [59.5],
+                    "UNIT_MEASURE": ["PC"],
+                    "CATEGORY": ["LAVORO"],
+                }
+            ),
+        }
+
+    finally:
+        # Dependencies are managed by the DI container, no manual cleanup needed
+        pass
 
 
 @st.cache_data(ttl=1800, max_entries=3)
 def load_data():
-    """Carica i dati con cache ottimizzata"""
-    return create_sample_data()
+    """
+    Issue #84: Load production data with intelligent caching.
+    Replaced hardcoded sample data with real ISTAT data sources.
+    """
+    return create_production_data()
+
+
+def refresh_real_time_data(force_refresh: bool = False):
+    """
+    Issue #84 - Day 1: Real-time data integration
+    Provides real-time data refresh capabilities for the dashboard
+    """
+    from src.utils.logger import get_logger
+
+    logger = get_logger(__name__)
+
+    if force_refresh:
+        logger.info("Dashboard: Forcing real-time data refresh")
+        # Clear cache to force fresh data
+        load_data.clear()
+        get_filtered_data.clear()
+        calculate_metrics.clear()
+
+        # Clear Streamlit session state if exists
+        if hasattr(st.session_state, "last_refresh"):
+            del st.session_state.last_refresh
+
+        st.session_state.last_refresh = datetime.now()
+        return True
+
+    # Check if data is stale (older than 30 minutes)
+    if hasattr(st.session_state, "last_refresh"):
+        time_since_refresh = datetime.now() - st.session_state.last_refresh
+        if time_since_refresh.total_seconds() > 1800:  # 30 minutes
+            logger.info("Dashboard: Data is stale, refreshing automatically")
+            return refresh_real_time_data(force_refresh=True)
+
+    return False
+
+
+def get_data_freshness_status():
+    """
+    Issue #84 - Day 1: Data freshness monitoring
+    Returns the freshness status of the dashboard data
+    """
+    if not hasattr(st.session_state, "last_refresh"):
+        return {
+            "status": "unknown",
+            "last_refresh": "Mai aggiornato",
+            "staleness": "unknown",
+            "color": "gray",
+        }
+
+    time_since_refresh = datetime.now() - st.session_state.last_refresh
+    minutes_ago = int(time_since_refresh.total_seconds() / 60)
+
+    if minutes_ago < 5:
+        return {
+            "status": "fresh",
+            "last_refresh": f"{minutes_ago} minuti fa",
+            "staleness": "Dati molto recenti",
+            "color": "green",
+        }
+    elif minutes_ago < 30:
+        return {
+            "status": "recent",
+            "last_refresh": f"{minutes_ago} minuti fa",
+            "staleness": "Dati recenti",
+            "color": "blue",
+        }
+    else:
+        return {
+            "status": "stale",
+            "last_refresh": f"{minutes_ago} minuti fa",
+            "staleness": "Dati da aggiornare",
+            "color": "orange",
+        }
 
 
 @st.cache_data(ttl=3600, max_entries=10)
@@ -515,14 +896,46 @@ def render_sidebar():
     """
     )
 
-    # Quick actions con memoria ottimizzata
-    st.sidebar.subheader("⚡ Azioni Rapide")
-    if st.sidebar.button("🔄 Ricarica Dati", help="Aggiorna i dati dalla cache"):
-        # Clear solo cache specifiche invece di tutto
-        load_data.clear()
-        get_filtered_data.clear()
-        calculate_metrics.clear()
+    # Real-time data controls (Issue #84 - Day 1)
+    st.sidebar.subheader("🔄 Controlli Real-time")
+
+    # Data freshness indicator
+    freshness = get_data_freshness_status()
+    st.sidebar.markdown(
+        f"""
+    <div style="background: linear-gradient(135deg, #{freshness['color']}20, #{freshness['color']}10);
+                padding: 0.8rem; border-radius: 8px; margin: 0.5rem 0;">
+        <div style="font-size: 0.9rem; font-weight: 600;">
+            🟢 Status: {freshness['staleness']}
+        </div>
+        <div style="font-size: 0.8rem; color: #666;">
+            Ultimo aggiornamento: {freshness['last_refresh']}
+        </div>
+    </div>
+    """,
+        unsafe_allow_html=True,
+    )
+
+    # Real-time refresh button
+    if st.sidebar.button(
+        "🔄 Aggiorna Real-time", help="Forza aggiornamento dati in tempo reale"
+    ):
+        with st.spinner("Aggiornamento dati in corso..."):
+            refresh_real_time_data(force_refresh=True)
+        st.sidebar.success("✅ Dati aggiornati!")
         st.rerun()
+
+    # Auto-refresh check
+    auto_refresh = st.sidebar.checkbox(
+        "🔄 Auto-aggiornamento",
+        value=False,
+        help="Aggiorna automaticamente i dati ogni 30 minuti",
+    )
+
+    if auto_refresh:
+        # Check and refresh if needed
+        if refresh_real_time_data(force_refresh=False):
+            st.rerun()
 
     # Info sul filtro temporale
     if st.sidebar.button("ℹ️ Info Filtro", help="Come funziona il filtro temporale"):
@@ -782,50 +1195,112 @@ def get_memory_usage():
 
 
 def main():
-    """Funzione principale dell'app"""
-    try:
+    """
+    Issue #84 - Day 1: Dashboard Modernization
+    Main function with structured error handling and logging
+    """
+    start_time = time.time()
+
+    with error_handler.error_boundary(
+        "dashboard_initialization", "Errore durante l'inizializzazione del dashboard"
+    ):
+        error_handler.log_user_action(
+            "dashboard_access",
+            {
+                "timestamp": datetime.now().isoformat(),
+                "user_ip": st.context.session_id
+                if hasattr(st.context, "session_id")
+                else "unknown",
+            },
+        )
+
         # Memory monitoring per debugging
         if st.sidebar.checkbox(
             "🔧 Debug Memory", help="Mostra uso memoria per troubleshooting"
         ):
             memory_usage = get_memory_usage()
             st.sidebar.metric("💾 Memoria (MB)", f"{memory_usage:.1f}")
+            error_handler.log_performance_metric("memory_usage", memory_usage, "MB")
 
-        # Header
-        render_header()
+        # Header rendering
+        with error_handler.error_boundary(
+            "header_rendering", "Errore nel caricamento header"
+        ):
+            render_header()
 
-        # Sidebar
-        selected_category, year_range = render_sidebar()
+        # Sidebar rendering
+        with error_handler.error_boundary(
+            "sidebar_rendering", "Errore nel caricamento sidebar"
+        ):
+            selected_category, year_range = render_sidebar()
+            error_handler.log_user_action(
+                "category_selected",
+                {"category": selected_category, "year_range": year_range},
+            )
 
-        # Load data
-        with st.spinner("Caricamento dati..."):
-            datasets = load_data()
+        # Data loading with performance tracking
+        data_load_start = time.time()
+        with error_handler.error_boundary(
+            "data_loading", "Errore nel caricamento dati"
+        ):
+            with st.spinner("Caricamento dati via UnifiedDataRepository..."):
+                datasets = load_data()
 
-        # Main dashboard
+            data_load_time = time.time() - data_load_start
+            error_handler.log_performance_metric("data_load_time", data_load_time)
+
+        # Main dashboard rendering
         if datasets:
-            render_category_dashboard(selected_category, datasets, year_range)
-            # Cleanup dopo rendering per liberare memoria
-            cleanup_memory()
+            with error_handler.error_boundary(
+                "dashboard_rendering", "Errore nella visualizzazione dashboard"
+            ):
+                render_category_dashboard(selected_category, datasets, year_range)
+                # Cleanup dopo rendering per liberare memoria
+                cleanup_memory()
         else:
-            st.error("Nessun dataset disponibile")
+            error_handler.logger.warning("Dashboard: No datasets available")
+            st.error("⚠️ Nessun dataset disponibile - controllare configurazione")
 
         # Footer
         st.markdown("---")
-        st.markdown("Made with ❤️ in Italy | Powered by Streamlit")
+        st.markdown("Made with ❤️ in Italy | Powered by Streamlit & Issue #84")
 
-        # Cache status per debugging
-        if st.sidebar.checkbox("📊 Cache Status", help="Mostra stato cache"):
-            st.sidebar.write("**Cache attive:**")
-            st.sidebar.write("- load_data")
-            st.sidebar.write("- get_filtered_data")
-            st.sidebar.write("- calculate_metrics")
-            st.sidebar.write("- chart functions")
+        # Development debugging tools
+        if st.sidebar.checkbox("🔧 Debug Tools", help="Strumenti debug (solo sviluppo)"):
+            with st.sidebar.expander("📊 Cache Status"):
+                st.write("**Cache attive:**")
+                st.write("- load_data (TTL: 30min)")
+                st.write("- get_filtered_data (TTL: 60min)")
+                st.write("- calculate_metrics (TTL: 120min)")
+                st.write("- chart functions (TTL: 60min)")
 
-    except Exception as e:
-        st.error(f"Errore nell'applicazione: {str(e)}")
-        st.info("Ricarica la pagina per riprovare")
-        # Cleanup anche in caso di errore
-        cleanup_memory()
+            with st.sidebar.expander("⚡ Performance Metrics"):
+                total_time = time.time() - start_time
+                st.write(f"**Tempo totale rendering:** {total_time:.2f}s")
+                st.write(f"**Data load time:** {data_load_time:.2f}s")
+                st.write(f"**Memory usage:** {get_memory_usage():.1f}MB")
+
+        # Log total performance
+        total_time = time.time() - start_time
+        error_handler.log_performance_metric("total_dashboard_render_time", total_time)
+        error_handler.log_user_action(
+            "dashboard_rendered_successfully",
+            {
+                "total_time": total_time,
+                "categories_loaded": len(datasets) if datasets else 0,
+            },
+        )
+
+        # Register cleanup on session end
+        def cleanup_on_exit():
+            dependencies.cleanup()
+
+        # Add cleanup to session state if not already added
+        if "cleanup_registered" not in st.session_state:
+            import atexit
+
+            atexit.register(cleanup_on_exit)
+            st.session_state.cleanup_registered = True
 
 
 if __name__ == "__main__":

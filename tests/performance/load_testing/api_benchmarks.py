@@ -25,15 +25,19 @@ import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
-# Import JWT token generator
+# Import JWT token generator with proper relative imports
 try:
     from .jwt_token_generator import PerformanceJWTGenerator
 except ImportError:
-    # Fallback for direct execution
-    import sys
+    # Fallback for direct execution - use relative import
+    try:
+        from jwt_token_generator import PerformanceJWTGenerator
+    except ImportError:
+        # Final fallback for development
+        import sys
 
-    sys.path.append(str(Path(__file__).parent))
-    from jwt_token_generator import PerformanceJWTGenerator
+        # Issue #84: Removed unsafe sys.path manipulation
+        from jwt_token_generator import PerformanceJWTGenerator
 
 
 @dataclass

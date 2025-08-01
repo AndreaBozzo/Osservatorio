@@ -23,14 +23,16 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import List, Optional
 
-# Add src to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
 from src.auth.jwt_manager import JWTManager
 from src.auth.models import APIKey
 from src.auth.sqlite_auth import SQLiteAuthManager
 from src.database.sqlite.manager import SQLiteMetadataManager
 from src.utils.logger import get_logger
+
+# Add src to path for imports
+# Issue #84: Removed unsafe sys.path manipulation
+# Use proper package imports or run from project root
+
 
 logger = get_logger(__name__)
 

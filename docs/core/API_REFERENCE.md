@@ -191,16 +191,18 @@ python scripts/generate_api_key.py cleanup
 
 ## 🇮🇹 ISTAT API Client
 
-### 📝 Class: `IstatAPITester`
+### 📝 Class: `ProductionIstatClient` (Recommended)
+
+> **⚠️ NOTE**: `IstatAPITester` is deprecated (Issue #84). Use `ProductionIstatClient` for all new implementations.
 
 Main client for interacting with the ISTAT SDMX API.
 
 #### 🔧 Initialization
 ```python
-from src.api.istat_api import IstatAPITester
+from src.api.production_istat_client import ProductionIstatClient
 
-# Initialize client
-client = IstatAPITester()
+# Initialize production client (Issue #84: Replaced IstatAPITester)
+client = ProductionIstatClient(enable_cache_fallback=True)
 ```
 
 #### 🔍 Methods
