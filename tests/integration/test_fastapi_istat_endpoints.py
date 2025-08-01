@@ -7,7 +7,6 @@ Tests the 4 production ISTAT endpoints:
 - GET /api/istat/dataset/{dataset_id}
 - POST /api/istat/sync/{dataset_id}
 """
-
 import json
 from unittest.mock import Mock, patch
 

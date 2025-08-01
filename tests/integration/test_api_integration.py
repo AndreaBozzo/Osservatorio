@@ -2,7 +2,6 @@
 Integration tests for API connectivity and data fetching.
 Issue #84: Migrated from IstatAPITester to ProductionIstatClient
 """
-
 import time
 import xml.etree.ElementTree as ET
 from unittest.mock import Mock, patch

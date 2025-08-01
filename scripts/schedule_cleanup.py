@@ -3,17 +3,12 @@
 Script per schedulare la pulizia automatica dei file temporanei.
 Supporta sia cron (Linux/Mac) che Task Scheduler (Windows).
 """
-
 import argparse
 import os
 import sys
 from pathlib import Path
 
 from utils.logger import get_logger
-
-# Aggiungi src al path
-# Issue #84: Removed unsafe sys.path manipulation
-
 
 logger = get_logger(__name__)
 

@@ -8,7 +8,6 @@ Tests all components with proper mocking and real validation:
 - Security monitoring dashboard
 - Configuration management
 """
-
 import json
 import time
 from contextlib import contextmanager

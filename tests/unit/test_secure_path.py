@@ -1,7 +1,6 @@
 """
 Unit tests for secure path validation utilities.
 """
-
 import os
 import tempfile
 from pathlib import Path

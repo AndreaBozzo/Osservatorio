@@ -4,7 +4,6 @@ Domain models for dataflow analysis service.
 This module contains Pydantic models that represent the domain objects
 used in dataflow analysis operations.
 """
-
 from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional

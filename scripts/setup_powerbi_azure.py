@@ -2,7 +2,6 @@
 Script di setup per configurazione Azure AD e PowerBI.
 Guida l'utente attraverso la configurazione completa.
 """
-
 import json
 import os
 import sys
@@ -13,10 +12,6 @@ from urllib.parse import urlparse
 
 from src.api.powerbi_api import PowerBIAPIClient
 from src.utils.config import Config
-
-# Aggiungi il path del progetto
-# Issue #84: Removed unsafe sys.path manipulation
-# Use proper package imports or run from project root
 
 
 class PowerBISetupWizard:

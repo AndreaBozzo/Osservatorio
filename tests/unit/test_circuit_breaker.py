@@ -3,7 +3,6 @@
 Test suite for circuit_breaker.py
 Currently 0% coverage - high priority for coverage improvement
 """
-
 import time
 from datetime import datetime, timedelta
 from unittest.mock import MagicMock, Mock, patch

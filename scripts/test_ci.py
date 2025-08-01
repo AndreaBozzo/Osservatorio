@@ -3,7 +3,6 @@
 Script CI/CD unificato per test automatici
 Supporta diverse strategie di test con fallback automatico
 """
-
 import argparse
 import subprocess
 import sys
@@ -19,10 +18,11 @@ class CITestRunner:
         self.strategy = strategy
         self.timeout = timeout
         self.project_root = Path(__file__).parent.parent
-        
+
         # Issue #84: Use scripts package path setup instead of sys.path manipulation
         try:
             from . import setup_project_path
+
             setup_project_path()
         except ImportError:
             # Fallback for legacy usage

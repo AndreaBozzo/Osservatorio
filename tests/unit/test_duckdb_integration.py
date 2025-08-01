@@ -7,7 +7,6 @@ This module tests all aspects of the DuckDB implementation:
 - Data partitioning strategies
 - Error handling and edge cases
 """
-
 import os
 import tempfile
 from datetime import datetime, timedelta

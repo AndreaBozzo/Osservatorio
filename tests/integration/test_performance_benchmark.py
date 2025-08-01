@@ -4,15 +4,12 @@ Performance benchmark integration tests.
 Tests that integrate the benchmark script into the test suite
 and validate performance regression detection.
 """
-
 import subprocess
 import sys
 from pathlib import Path
 
 import pytest
 
-# Use proper test imports - no sys.path manipulation needed for tests
-# Tests should run via pytest from project root
 project_root = Path(__file__).parent.parent.parent
 
 

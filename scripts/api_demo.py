@@ -5,7 +5,6 @@
 A human-friendly script to demonstrate and test the FastAPI endpoints.
 Perfect for showcasing the API capabilities to stakeholders.
 """
-
 import json
 import time
 from datetime import datetime
@@ -13,7 +12,13 @@ from typing import Any, Dict
 
 import requests
 
-BASE_URL = "http://localhost:8000"
+try:
+    from src.utils.config import Config
+
+    BASE_URL = Config.API_BASE_URL
+except ImportError:
+    # Fallback for development
+    BASE_URL = "http://localhost:8000"
 
 
 def print_banner():

@@ -1,7 +1,6 @@
 """
 Validazione Step 1.2: Verifica setup PowerBI completo
 """
-
 import json
 import os
 import sys
@@ -9,10 +8,6 @@ from datetime import datetime
 from pathlib import Path
 
 from src.utils.config import Config
-
-# Aggiungi il path del progetto
-# Issue #84: Removed unsafe sys.path manipulation
-# Use proper package imports or run from project root
 
 
 def validate_step1_2():

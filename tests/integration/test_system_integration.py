@@ -1,7 +1,6 @@
 """
 System integration tests for the complete ISTAT data processing pipeline.
 """
-
 import json
 import tempfile
 from pathlib import Path

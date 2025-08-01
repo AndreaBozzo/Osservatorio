@@ -1,7 +1,6 @@
 """
 Unit tests for configuration module.
 """
-
 import os
 import tempfile
 from pathlib import Path

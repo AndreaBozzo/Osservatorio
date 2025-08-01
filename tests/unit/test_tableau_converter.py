@@ -1,7 +1,6 @@
 """
 Unit tests for Tableau converter functionality.
 """
-
 import json
 import tempfile
 import xml.etree.ElementTree as ET

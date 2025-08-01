@@ -2,7 +2,6 @@
 Test cases for BaseIstatConverter
 Tests the abstract base class functionality shared by PowerBI and Tableau converters.
 """
-
 import json
 import os
 import tempfile

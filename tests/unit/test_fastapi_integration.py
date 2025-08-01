@@ -4,7 +4,6 @@ Integration tests for FastAPI REST API
 Tests all endpoints, authentication, rate limiting, and OData functionality
 to ensure production readiness and compliance with issue #29 requirements.
 """
-
 import json
 from datetime import datetime, timedelta
 from typing import Any, Dict

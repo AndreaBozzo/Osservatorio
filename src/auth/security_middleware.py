@@ -9,11 +9,13 @@ OWASP-compliant security headers middleware:
 - Permissions-Policy and Feature-Policy
 - CORS configuration for cross-origin requests
 """
-
 import hashlib
 import secrets
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Set, Union
+
+from fastapi import Request, Response
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from src.utils.logger import get_logger
 
@@ -71,6 +73,7 @@ class SecurityHeadersConfig:
 
         # CORS settings - Issue #84: Use centralized configuration
         from ..utils.config import Config
+
         self.cors_enabled = True
         self.cors_allow_origins = Config.CORS_ALLOW_ORIGINS
         self.cors_allow_methods = ["GET", "POST", "PUT", "DELETE", "OPTIONS"]

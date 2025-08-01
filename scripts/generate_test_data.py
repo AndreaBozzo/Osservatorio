@@ -3,7 +3,6 @@
 Script per generare dati di test per CI/CD
 Evita chiamate API ISTAT live durante i test automatici
 """
-
 import json
 import sys
 from datetime import datetime
@@ -13,10 +12,6 @@ import pandas as pd
 
 from utils.logger import get_logger
 from utils.secure_path import create_secure_validator
-
-# Aggiungi src al path
-# Issue #84: Removed unsafe sys.path manipulation
-
 
 logger = get_logger(__name__)
 

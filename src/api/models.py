@@ -4,14 +4,12 @@ Pydantic models for Osservatorio ISTAT FastAPI REST API
 Defines request/response models for all API endpoints with validation,
 documentation, and OpenAPI schema generation.
 """
-
 from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, ConfigDict, Field, validator
 
-# Import dataflow analysis models
 from src.services.models import ConnectionType, DataflowCategory, RefreshFrequency
 
 

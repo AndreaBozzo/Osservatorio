@@ -14,7 +14,6 @@ Test Categories:
 - Security tests for attack scenarios
 - Performance tests for rate limiting
 """
-
 import hashlib
 import secrets
 import sqlite3
@@ -28,8 +27,6 @@ from unittest.mock import Mock, patch
 import pytest
 
 from src.auth.jwt_manager import JWTManager
-
-# Import authentication components
 from src.auth.models import APIKey, AuthToken, TokenClaims
 from src.auth.rate_limiter import RateLimitConfig, SQLiteRateLimiter
 from src.auth.security_middleware import (

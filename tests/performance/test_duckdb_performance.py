@@ -3,7 +3,6 @@
 This module provides detailed performance benchmarks specifically for DuckDB
 operations in the ISTAT data processing pipeline.
 """
-
 import gc
 import os
 import sys

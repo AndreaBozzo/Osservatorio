@@ -1,7 +1,6 @@
 """
 Unit tests for data conversion functionality.
 """
-
 import json
 import os
 import tempfile
@@ -11,9 +10,6 @@ from unittest.mock import Mock, mock_open, patch
 
 import pandas as pd
 import pytest
-
-# Since converters might be in main files, we'll import them differently
-# This is a test for the conversion logic that might be in the main scripts
 
 
 class TestDataConversion:

@@ -7,7 +7,6 @@ This module tests the performance characteristics of the query builder:
 - Concurrent query handling
 - Large dataset performance
 """
-
 import gc
 import os
 import tempfile

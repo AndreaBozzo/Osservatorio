@@ -8,7 +8,6 @@ Real-time security monitoring and alerting system:
 - Performance monitoring
 - Security alert system
 """
-
 import json
 from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta

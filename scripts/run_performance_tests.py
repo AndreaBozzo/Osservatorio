@@ -12,11 +12,10 @@ This script provides command-line interface for running performance tests:
 Usage:
     # Issue #84: Use proper package imports
     python -m scripts.run_performance_tests
-    
+
     # Legacy support (run from project root):
     python scripts/run_performance_tests.py
 """
-
 import argparse
 import json
 import sys
@@ -24,9 +23,9 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-# Issue #84: Use scripts package path setup
 try:
     from . import setup_project_path
+
     setup_project_path()
 except ImportError:
     # Fallback for legacy usage

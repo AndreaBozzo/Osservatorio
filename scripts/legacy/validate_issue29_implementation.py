@@ -14,7 +14,6 @@ import os
 import time
 from datetime import datetime, timedelta
 
-# Set fixed JWT secret key for consistent authentication
 os.environ["JWT_SECRET_KEY"] = "test-secret-key-for-final-validation-12345"
 
 from fastapi.testclient import TestClient

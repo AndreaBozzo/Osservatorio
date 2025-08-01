@@ -1,7 +1,6 @@
 """
 Script per testare l'upload dei dataset ISTAT in PowerBI.
 """
-
 import json
 import os
 import sys
@@ -14,11 +13,6 @@ import pandas as pd
 from src.api.powerbi_api import PowerBIAPIClient
 from src.utils.config import Config
 from src.utils.logger import get_logger
-
-# Aggiungi il path del progetto
-# Issue #84: Removed unsafe sys.path manipulation
-# Use proper package imports or run from project root
-
 
 logger = get_logger(__name__)
 

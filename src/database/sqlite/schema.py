@@ -11,7 +11,6 @@ Tables:
 - audit_log: System audit trail and logging
 - system_config: Application configuration and settings
 """
-
 import json
 import sqlite3
 from datetime import datetime

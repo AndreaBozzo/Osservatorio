@@ -11,7 +11,6 @@ Test scenarios:
 - OData endpoints for PowerBI
 - Concurrent user simulation (1-1000 users)
 """
-
 import json
 import random
 import time
@@ -19,7 +18,6 @@ from typing import Dict, List
 
 from locust import HttpUser, between, task
 
-# Import JWT token generator with proper relative imports
 try:
     from .jwt_token_generator import PerformanceJWTGenerator
 except ImportError:

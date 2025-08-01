@@ -4,7 +4,6 @@ Database cleanup utilities for tests.
 Provides robust file cleanup for SQLite and DuckDB files on Windows,
 handling common permission errors and file locking issues.
 """
-
 import gc
 import logging
 import sqlite3

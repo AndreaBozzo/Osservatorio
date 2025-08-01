@@ -5,11 +5,10 @@ Simula connessioni Microsoft e valida logica senza autenticazione reale.
 Usage:
     # Issue #84: Use proper package imports
     python -m scripts.validate_powerbi_offline
-    
+
     # Legacy support (run from project root):
     python scripts/validate_powerbi_offline.py
 """
-
 import json
 import os
 import sys
@@ -21,9 +20,9 @@ from unittest.mock import Mock, patch
 
 import pandas as pd
 
-# Issue #84: Use scripts package path setup
 try:
     from . import setup_project_path
+
     setup_project_path()
 except ImportError:
     # Fallback for legacy usage

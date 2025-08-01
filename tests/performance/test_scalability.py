@@ -1,7 +1,6 @@
 """
 Performance and scalability tests for the ISTAT data processing system.
 """
-
 import tempfile
 import threading
 import time

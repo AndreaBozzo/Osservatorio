@@ -3,7 +3,6 @@
 This module provides a circuit breaker pattern to prevent cascading failures
 and improve system resilience when dealing with external dependencies.
 """
-
 import logging
 import time
 from datetime import datetime, timedelta
@@ -11,7 +10,6 @@ from enum import Enum
 from functools import wraps
 from typing import Any, Callable, Dict, Optional, Type, Union
 
-# Setup logging
 logger = logging.getLogger(__name__)
 
 

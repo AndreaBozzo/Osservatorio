@@ -3,7 +3,6 @@
 Tests core DuckDB functionality without the complex manager wrapper.
 Focuses on ensuring DuckDB works correctly for ISTAT data processing.
 """
-
 import os
 import tempfile
 from pathlib import Path

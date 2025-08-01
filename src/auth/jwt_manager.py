@@ -8,7 +8,6 @@ Provides secure JWT token generation and validation:
 - Token blacklisting for secure logout
 - Scope-based claims validation
 """
-
 import hashlib
 import json
 import secrets

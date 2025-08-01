@@ -12,7 +12,9 @@ import msal
 import pandas as pd
 import requests
 
+from ..utils.circuit_breaker import CircuitBreaker
 from ..utils.config import Config
+from ..utils.error_handler import ErrorCategory, handle_error
 from ..utils.logger import get_logger
 from ..utils.secure_path import SecurePathValidator, create_secure_validator
 from ..utils.security_enhanced import rate_limit, security_manager
@@ -59,6 +61,14 @@ class PowerBIAPIClient:
                 "Content-Type": "application/json",
                 "User-Agent": "Osservatorio-PowerBI-Client/1.0",
             }
+        )
+
+        # Initialize circuit breaker for PowerBI API
+        self.circuit_breaker = CircuitBreaker(
+            failure_threshold=3,
+            recovery_timeout=60,
+            expected_exception=(requests.RequestException, msal.exceptions.MsalError),
+            name="PowerBI_API",
         )
 
         # Initialize secure path validator
@@ -129,8 +139,14 @@ class PowerBIAPIClient:
             ):
                 raise Exception("Rate limit exceeded for PowerBI API workspaces")
 
-            response = self.session.get(f"{self.base_url}/groups")
-            response.raise_for_status()
+            # Use circuit breaker for external API call
+            @self.circuit_breaker
+            def make_request():
+                response = self.session.get(f"{self.base_url}/groups")
+                response.raise_for_status()
+                return response
+
+            response = make_request()
 
             workspaces = response.json().get("value", [])
             logger.info(f"Recuperati {len(workspaces)} workspace")

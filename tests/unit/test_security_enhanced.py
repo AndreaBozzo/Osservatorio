@@ -1,5 +1,4 @@
 """Tests for the enhanced security manager."""
-
 import time
 from pathlib import Path
 from unittest.mock import MagicMock, patch

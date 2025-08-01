@@ -8,20 +8,19 @@ are working correctly and integrated properly with the existing codebase.
 Usage:
     # Issue #84: Use proper package imports
     python -m scripts.validate_issue6_implementation
-    
+
     # Legacy support (run from project root):
     python scripts/validate_issue6_implementation.py
 """
-
 import json
 import os
 import sys
 from datetime import datetime
 from pathlib import Path
 
-# Issue #84: Use scripts package path setup
 try:
     from . import setup_project_path
+
     setup_project_path()
 except ImportError:
     # Fallback for legacy usage

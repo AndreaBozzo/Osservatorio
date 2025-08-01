@@ -3,16 +3,10 @@
 This module provides configuration settings and utilities for DuckDB,
 which is used for high-performance analytics on ISTAT statistical data.
 """
-
 import os
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-# from src.utils.logger import get_logger
-
-# logger = get_logger(__name__)
-
-# Base configuration
 BASE_DIR = Path(__file__).parent.parent.parent.parent
 DATA_DIR = BASE_DIR / "data"
 DB_DIR = DATA_DIR / "databases"

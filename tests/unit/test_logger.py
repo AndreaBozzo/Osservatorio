@@ -1,7 +1,6 @@
 """
 Unit tests for logger module.
 """
-
 import os
 import tempfile
 from pathlib import Path

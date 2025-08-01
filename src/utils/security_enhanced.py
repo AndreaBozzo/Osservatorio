@@ -6,7 +6,6 @@ This module provides centralized security features including:
 - Input sanitization
 - Security headers management
 """
-
 import base64
 import hashlib
 import logging
@@ -20,7 +19,6 @@ from typing import Dict, List, Optional, Set, Tuple
 
 from cryptography.fernet import Fernet
 
-# Setup logging
 logger = logging.getLogger(__name__)
 
 

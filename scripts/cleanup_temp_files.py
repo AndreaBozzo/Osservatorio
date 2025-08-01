@@ -3,17 +3,12 @@
 Script per pulizia dei file temporanei del sistema ISTAT.
 Può essere eseguito manualmente o schedulato via cron/task scheduler.
 """
-
 import argparse
 import sys
 from pathlib import Path
 
 from utils.logger import get_logger
 from utils.temp_file_manager import get_temp_manager
-
-# Aggiungi src al path
-# Issue #84: Removed unsafe sys.path manipulation
-
 
 logger = get_logger(__name__)
 

@@ -7,7 +7,6 @@ operational during API outages or connectivity issues.
 
 This is NOT mock data - it's real ISTAT data stored locally as fallback.
 """
-
 import json
 import random
 import xml.etree.ElementTree as ET

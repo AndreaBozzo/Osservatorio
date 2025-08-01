@@ -10,7 +10,6 @@ Usage:
     # Issue #84: Run from project root
     python -m tests.performance.load_testing.jwt_token_generator
 """
-
 import logging
 import os
 import sys
@@ -18,7 +17,6 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-# Issue #84: Use proper imports without sys.path manipulation
 try:
     # Try direct imports when run as module
     from src.auth.jwt_manager import JWTManager
@@ -30,7 +28,7 @@ except ImportError:
     project_root = Path(__file__).parent.parent.parent.parent
     if str(project_root) not in sys.path:
         sys.path.insert(0, str(project_root))
-    
+
     from src.auth.jwt_manager import JWTManager
     from src.auth.models import APIKey
     from src.database.sqlite.manager import get_metadata_manager

@@ -3,7 +3,6 @@
 Script per organizzare i file di dati secondo le best practices.
 Sposta i file temporanei nella directory appropriata e mantiene la struttura pulita.
 """
-
 import argparse
 import glob
 import shutil
@@ -13,10 +12,6 @@ from pathlib import Path
 
 from utils.logger import get_logger
 from utils.temp_file_manager import get_temp_manager
-
-# Aggiungi src al path
-# Issue #84: Removed unsafe sys.path manipulation
-
 
 logger = get_logger(__name__)
 

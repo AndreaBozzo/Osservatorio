@@ -3,7 +3,6 @@ Authentication models for Osservatorio ISTAT Data Platform
 
 Data models for API keys, JWT tokens, and authentication claims.
 """
-
 from dataclasses import dataclass
 from datetime import datetime
 from typing import List, Optional

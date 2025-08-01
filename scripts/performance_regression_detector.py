@@ -4,7 +4,6 @@ This module provides automated performance regression detection by comparing
 current performance metrics with historical baselines and detecting significant
 degradations in system performance.
 """
-
 import json
 import os
 import statistics
@@ -17,7 +16,6 @@ from typing import Dict, List, Optional, Tuple
 
 import pandas as pd
 
-# Use proper package imports
 try:
     from osservatorio_istat.utils.logger import get_logger
 except ImportError:

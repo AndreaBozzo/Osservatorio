@@ -8,7 +8,6 @@ This module provides comprehensive database performance testing for:
 - Memory usage during database operations
 - Concurrent database access testing
 """
-
 import json
 import sqlite3
 import statistics

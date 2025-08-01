@@ -15,7 +15,6 @@ Performance targets:
 - OData Query: <500ms for 10k records
 - Authentication: <50ms per request
 """
-
 import time
 from datetime import datetime
 from typing import Any, Dict, List, Optional
@@ -37,6 +36,7 @@ from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.openapi.utils import get_openapi
 from fastapi.responses import FileResponse, JSONResponse
 
+from src.auth.security_middleware import SecurityHeadersMiddleware
 from src.database.sqlite.repository import get_unified_repository
 from src.utils.config import get_config
 from src.utils.logger import get_logger
@@ -121,7 +121,9 @@ app = FastAPI(
     openapi_url="/openapi.json",
 )
 
-# Middleware
+# Middleware - Order matters: security headers first, then CORS, then compression
+app.add_middleware(SecurityHeadersMiddleware)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=config.get("cors_origins", ["*"]),

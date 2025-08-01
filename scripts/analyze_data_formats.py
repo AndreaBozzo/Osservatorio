@@ -13,7 +13,6 @@ Usage:
     python scripts/analyze_data_formats.py --dataset DCIS_POPRES1
     python scripts/analyze_data_formats.py --format json
 """
-
 import argparse
 import json
 import os
@@ -22,7 +21,6 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
-# Use proper package imports - Issue #84: IstatAPITester removed
 try:
     from osservatorio_istat.api.production_istat_client import ProductionIstatClient
     from osservatorio_istat.services.service_factory import (

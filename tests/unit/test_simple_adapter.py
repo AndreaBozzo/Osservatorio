@@ -2,7 +2,6 @@
 
 Tests the lightweight DuckDB adapter for immediate use.
 """
-
 import os
 import tempfile
 

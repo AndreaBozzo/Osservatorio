@@ -9,7 +9,6 @@ This module provides automated performance regression detection with:
 - Performance trend analysis
 - CI/CD integration capabilities
 """
-
 import json
 import sqlite3
 import statistics

@@ -1,7 +1,6 @@
 """
 Unit tests for PowerBI API client.
 """
-
 import json
 from datetime import datetime, timedelta
 from unittest.mock import MagicMock, Mock, patch

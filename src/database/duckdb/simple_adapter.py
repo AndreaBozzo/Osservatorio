@@ -4,7 +4,6 @@ This is a lightweight adapter that provides essential DuckDB functionality
 without the complex manager wrapper. It can be used immediately for ISTAT
 data processing while the full manager implementation is being stabilized.
 """
-
 import os
 import tempfile
 from pathlib import Path

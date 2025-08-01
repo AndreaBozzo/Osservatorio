@@ -5,7 +5,6 @@ Provides a lightweight mock server that simulates ISTAT API responses
 for integration testing in CI/CD environments where external API access
 may be limited or unreliable.
 """
-
 import json
 import threading
 import time

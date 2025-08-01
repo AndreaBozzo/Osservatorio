@@ -2,7 +2,6 @@
 Unit tests for temp_file_manager module.
 Testing TempFileManager class with comprehensive coverage.
 """
-
 import os
 import tempfile
 import threading

@@ -4,7 +4,6 @@ Integration tests for DataflowAnalysisService.
 Tests the service with real dependencies and end-to-end workflows
 to ensure proper integration with the rest of the system.
 """
-
 import asyncio
 import json
 import tempfile
@@ -14,8 +13,6 @@ from unittest.mock import Mock, patch
 import pytest
 
 from src.services.dataflow_analysis_service import DataflowAnalysisService
-
-# Using modern DataflowAnalysisService
 from src.services.models import (
     AnalysisFilters,
     BulkAnalysisRequest,

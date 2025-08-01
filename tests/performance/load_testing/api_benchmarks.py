@@ -8,7 +8,6 @@ This module provides automated benchmarking for API endpoints with:
 - Memory usage monitoring
 - Performance regression detection
 """
-
 import asyncio
 import json
 import statistics
@@ -25,7 +24,6 @@ import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
-# Import JWT token generator with proper relative imports
 try:
     from .jwt_token_generator import PerformanceJWTGenerator
 except ImportError:

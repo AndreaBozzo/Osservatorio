@@ -1,7 +1,6 @@
 """
 Integration tests for end-to-end data pipeline.
 """
-
 import json
 import shutil
 import tempfile

@@ -15,7 +15,6 @@ Usage:
     python scripts/generate_api_key.py revoke --id 123
     python scripts/generate_api_key.py test --key osv_abc123...
 """
-
 import argparse
 import json
 import sys
@@ -28,11 +27,6 @@ from src.auth.models import APIKey
 from src.auth.sqlite_auth import SQLiteAuthManager
 from src.database.sqlite.repository import get_unified_repository
 from src.utils.logger import get_logger
-
-# Add src to path for imports
-# Issue #84: Removed unsafe sys.path manipulation
-# Use proper package imports or run from project root
-
 
 logger = get_logger(__name__)
 

@@ -12,7 +12,6 @@ Architecture Integration:
 - Leverages DuckDB analytics engine for star schema generation
 - Integrates with SQLite metadata for tracking and configuration
 """
-
 import json
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, Tuple, Union

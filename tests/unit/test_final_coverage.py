@@ -2,7 +2,6 @@
 Final coverage push to reach 60% target.
 Simple working tests for missing coverage.
 """
-
 from unittest.mock import Mock, patch
 
 import pytest

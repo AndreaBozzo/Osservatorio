@@ -2,7 +2,6 @@
 Base converter class for ISTAT SDMX data processing.
 Eliminates code duplication between PowerBI and Tableau converters.
 """
-
 import json
 import os
 import re

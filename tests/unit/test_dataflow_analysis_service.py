@@ -4,7 +4,6 @@ Unit tests for DataflowAnalysisService.
 Tests the modern dataflow analysis service with proper mocking
 of dependencies and comprehensive coverage of all functionality.
 """
-
 import asyncio
 from datetime import datetime
 from typing import Dict, List

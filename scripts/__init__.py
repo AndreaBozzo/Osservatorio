@@ -7,13 +7,13 @@ eliminating the need for sys.path manipulation patterns.
 
 Usage:
     Run scripts from project root using Python module syntax:
-    
+
     # OLD (deprecated):
     python scripts/script_name.py
-    
+
     # NEW (recommended):
     python -m scripts.script_name
-    
+
 Available Scripts:
     - analyze_data_formats: ISTAT data formats analysis
     - benchmark_istat_client: Performance benchmarking
@@ -40,26 +40,24 @@ Architecture Notes:
     - Proper Python packaging standards compliance
     - Easier testing and distribution
 """
-
 import sys
 from pathlib import Path
 
-# Issue #84: Proper package-level path setup (only if needed)
-# This replaces individual sys.path manipulations in each script
+
 def setup_project_path():
     """
     Setup project path for scripts package.
-    
+
     This function provides a centralized way to handle path setup
     for the entire scripts package, replacing individual sys.path
     manipulations in each script file.
     """
     project_root = Path(__file__).parent.parent
-    
+
     # Only add to path if not already present
     if str(project_root) not in sys.path:
         sys.path.insert(0, str(project_root))
-    
+
     return project_root
 
 

@@ -4,7 +4,6 @@ Unit tests for SQLite metadata layer.
 Tests the SQLite metadata manager, schema creation, and CRUD operations
 for the hybrid SQLite + DuckDB architecture.
 """
-
 import json
 import tempfile
 import threading

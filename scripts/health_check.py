@@ -5,7 +5,6 @@
 A human-friendly script to verify that all components are working correctly.
 Run this script to get a quick overview of system health.
 """
-
 import os
 import sys
 import time
@@ -14,18 +13,24 @@ from pathlib import Path
 
 import requests
 
-# Add src to path for imports
-# Issue #84: Removed unsafe sys.path manipulation
-# Use proper package imports or run from project root
+from utils import (
+    ScriptContext,
+    get_script_config,
+    print_error,
+    print_step,
+    print_success,
+    print_warning,
+    setup_script_logging,
+)
 
 
 def print_header():
-    """Print a nice header"""
-    print("🏥" + "=" * 60)
-    print("  OSSERVATORIO ISTAT - SYSTEM HEALTH CHECK")
-    print("  " + datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-    print("=" * 62)
-    print()
+    """Print the health check header"""
+    print("🏥 Osservatorio Health Check")
+    print("=" * 30)
+    print(
+        f"System health verification at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+    )
 
 
 def print_section(title):
