@@ -11,9 +11,18 @@ help:  ## Show available commands
 
 # Installation
 install:  ## Install project dependencies
-	pip install -r requirements.txt
-	pip install -r requirements-dev.txt
+	pip install -e .
+	pip install -e .[dev]
 	pre-commit install
+
+install-performance:  ## Install performance testing dependencies
+	pip install -e .[performance]
+
+install-security:  ## Install security testing dependencies
+	pip install -e .[security]
+
+install-all:  ## Install all optional dependencies
+	pip install -e .[dev,performance,security]
 
 # Core Testing Commands
 test-fast:  ## Run fast unit tests (~20s)
@@ -73,14 +82,29 @@ pre-commit:  ## Run pre-commit hooks manually
 pre-commit-critical:  ## Run only critical pre-commit checks
 	pre-commit run pytest-critical
 
-lint:  ## Run linting tools
+lint:  ## Run all linting tools
+	ruff check .
 	black --check .
 	isort --check-only --profile=black .
 	flake8 .
 
-format:  ## Format code with black and isort
+format:  ## Format code with modern tools
+	ruff --fix .
 	black .
 	isort --profile=black .
+
+type-check:  ## Run type checking with mypy
+	mypy src/
+
+security-check:  ## Run security analysis
+	bandit -r src/
+	safety check
+
+quality:  ## Run all quality checks
+	@$(MAKE) format
+	@$(MAKE) lint
+	@$(MAKE) type-check
+	@$(MAKE) security-check
 
 # Performance and Benchmarks
 benchmark:  ## Run performance benchmarks

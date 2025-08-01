@@ -14,21 +14,15 @@ Test Categories:
 - Security tests for attack scenarios
 - Performance tests for rate limiting
 """
-import hashlib
-import secrets
-import sqlite3
 import tempfile
 import time
 import unittest
 from datetime import datetime, timedelta
 from pathlib import Path
-from unittest.mock import Mock, patch
-
-import pytest
 
 from src.auth.jwt_manager import JWTManager
-from src.auth.models import APIKey, AuthToken, TokenClaims
-from src.auth.rate_limiter import RateLimitConfig, SQLiteRateLimiter
+from src.auth.models import APIKey
+from src.auth.rate_limiter import SQLiteRateLimiter
 from src.auth.security_middleware import (
     AuthenticationMiddleware,
     SecurityHeadersMiddleware,
@@ -162,7 +156,7 @@ class TestAPIKeyManagement(unittest.TestCase):
         """Test listing API keys"""
         # Create multiple keys
         key1 = self.auth_manager.generate_api_key("App1", ["read"])
-        key2 = self.auth_manager.generate_api_key("App2", ["write"])
+        _ = self.auth_manager.generate_api_key("App2", ["write"])
 
         # List active keys
         active_keys = self.auth_manager.list_api_keys(include_revoked=False)
@@ -442,7 +436,7 @@ class TestSecurityMiddleware(unittest.TestCase):
 
     def setUp(self):
         """Set up security middleware"""
-        self.middleware = SecurityHeadersMiddleware()
+        self.middleware = SecurityHeadersMiddleware(app=None)
 
     def test_apply_security_headers(self):
         """Test security headers application"""

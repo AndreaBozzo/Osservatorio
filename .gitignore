@@ -151,7 +151,11 @@ osservatorio_temp/
 # pytest
 .pytest_cache/
 .coverage
+.coverage.*
 htmlcov/
+htmlcov_*/
+*.coverage
+performance_results.json
 
 # Performance testing
 data/performance_baselines.json

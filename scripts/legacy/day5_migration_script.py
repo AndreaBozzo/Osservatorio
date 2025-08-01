@@ -8,11 +8,10 @@ pattern with SQLite metadata + DuckDB analytics.
 """
 import json
 import shutil
-import sqlite3
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
 class Day5MigrationScript:
@@ -21,7 +20,7 @@ class Day5MigrationScript:
     def __init__(self):
         self.project_root = Path(__file__).parent.parent
         self.backup_dir = self.project_root / "data" / "migration_backups"
-        self.migration_log: List[Dict[str, Any]] = []
+        self.migration_log: list[dict[str, Any]] = []
 
     def create_migration_backup(self) -> str:
         """Create backup before migration."""
@@ -73,7 +72,7 @@ class Day5MigrationScript:
             for config_file in config_files:
                 config_path = self.project_root / config_file
                 if config_path.exists():
-                    with open(config_path, "r", encoding="utf-8") as f:
+                    with open(config_path, encoding="utf-8") as f:
                         config_data = json.load(f)
 
                     # Extract dataset information
