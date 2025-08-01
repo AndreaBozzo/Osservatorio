@@ -10,37 +10,40 @@ A few rules for Claude:
 
 ## Project Overview
 
-Osservatorio is an enterprise-grade Italian data processing platform for ISTAT statistical data with PowerBI/Tableau integration. In active development with ProductionIstatClient architecture (v11.0.0).
+Osservatorio is an Italian statistical data processing platform with FastAPI backend and modern development infrastructure. Infrastructure modernization completed (Day 1-7), data ingestion layer still in development.
 
-**Status**: In-Development
-**Architecture**: ProductionIstatClient + Hybrid SQLite/DuckDB + JWT Auth + REST API + Dataflow Optimizer
-**Documentation**: [docs/README.md](docs/README.md) for complete documentation
+**Status**: Infrastructure Ready, Data Layer In Development
+**Architecture**: FastAPI + Basic Auth + DuckDB/SQLite + Modern DevOps (Docker, CI/CD)
+**Current Branch**: issue-83-dataflow-analyzer-modernization
+**Missing**: Production data ingestion pipeline, full ISTAT integration
+**Documentation**: [README.md](../../README.md) and [docs/](../)
 
 ## Essential Commands
 
-### System Status & Health
-- `python quality_demo.py` - Quality demonstration (83.3% EXCELLENT)
-- `python scripts/health_check.py` - Interactive health check
-- `make status` - Project status overview
+### Modern Development Commands
 - `make help` - Show all available commands
+- `make install` - Install with modern dependency management
+- `make test-fast` - Fast unit tests
+- `make quality` - Run all quality checks (lint, format, security)
+- `docker-compose up -d` - Start development environment
 
-### Testing
-- `make test-fast` - Fast unit tests (~20s)
-- `make test` - Optimized development workflow (~30s)
-- `pytest tests/integration/test_production_istat_client.py -v` - Production client tests
-- `pytest` - Run all tests (540+ tests, 100% passing)
+### Testing & Validation
+- `pytest tests/unit/` - Unit tests
+- `pytest tests/integration/` - Integration tests
+- `pytest tests/performance/` - Performance benchmarks
+- `make security-check` - Security scanning with Bandit
 
-### JWT Authentication
-- `python scripts/generate_api_key.py create --name "MyApp" --scopes read,write` - Create API key
-- `python scripts/generate_api_key.py list` - List API keys
-- `pytest tests/unit/test_auth_system.py -v` - Auth tests (29 tests)
-- `bandit -r src/auth/` - Security scan
+### FastAPI Development
+- `uvicorn src.api.fastapi_app:app --reload` - Start FastAPI server
+- `curl http://localhost:8000/health` - Health check
+- `curl http://localhost:8000/docs` - OpenAPI documentation
+- `pytest tests/unit/test_fastapi_integration.py -v` - API tests
 
-### Core Development
-- `python -c "from src.api.production_istat_client import ProductionIstatClient; print('Production client ready')"` - Test client
-- `python -c "from src.database.sqlite.repository import get_unified_repository; print('Repository ready')"` - Test repository
-- `python examples/duckdb_demo.py` - DuckDB demonstration
-- `python examples/powerbi_integration_demo.py` - PowerBI demo
+### Infrastructure (Day 1-7 Completed)
+- All utility files modernized (.pre-commit-config.yaml, pyproject.toml, Dockerfile, etc.)
+- GitHub Actions CI/CD pipeline configured
+- Multi-stage Docker builds ready
+- Security middleware and authentication system implemented
 
 ### Makefile Commands (Recommended)
 - `make help` - Show all commands
@@ -77,7 +80,7 @@ and automation, work in progress.
 
 ### Utilities (Issue #84: All scripts modernized)
 - `python -m scripts.cleanup_temp_files` - Clean temp files
-- `python -m scripts.organize_data_files` - Organize data files  
+- `python -m scripts.organize_data_files` - Organize data files
 - `python -m scripts.health_check` - System health check
 - `python -m scripts.generate_test_data` - Generate test data
 - `python -m scripts.run_performance_tests` - Performance testing
