@@ -22,10 +22,12 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
-# Use proper package imports - Issue #84: IstatAPITester removed  
+# Use proper package imports - Issue #84: IstatAPITester removed
 try:
     from osservatorio_istat.api.production_istat_client import ProductionIstatClient
-    from osservatorio_istat.services.legacy_adapter import LegacyDataflowAnalyzerAdapter
+    from osservatorio_istat.services.service_factory import (
+        get_dataflow_analysis_service,
+    )
     from osservatorio_istat.utils.logger import get_logger
     from osservatorio_istat.utils.temp_file_manager import TempFileManager
 except ImportError:
@@ -35,7 +37,7 @@ except ImportError:
     # Issue #84: Removed unsafe sys.path manipulation
     # Use proper package imports or run from project root
     from src.api.production_istat_client import ProductionIstatClient
-    from src.services.legacy_adapter import LegacyDataflowAnalyzerAdapter
+    from src.services.service_factory import get_dataflow_analysis_service
     from src.utils.logger import get_logger
     from src.utils.temp_file_manager import TempFileManager
 
@@ -47,15 +49,10 @@ class DataFormatAnalyzer:
 
     def __init__(self):
         # Issue #84: Migrated from IstatAPITester to ProductionIstatClient
-        try:
-            from osservatorio_istat.api.production_istat_client import (
-                ProductionIstatClient,
-            )
-        except ImportError:
-            from src.api.production_istat_client import ProductionIstatClient
+        # ProductionIstatClient already imported at module level
 
         self.api_client = ProductionIstatClient(enable_cache_fallback=True)
-        self.analyzer = LegacyDataflowAnalyzerAdapter()
+        self.analyzer = get_dataflow_analysis_service()
         self.temp_manager = TempFileManager()
 
     def analyze_istat_datasets(self, sample_size: int = 10) -> Dict[str, Any]:

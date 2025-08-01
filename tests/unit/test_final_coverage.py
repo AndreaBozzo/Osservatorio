@@ -55,24 +55,6 @@ class TestFinalCoveragePush:
         assert "state" in stats
         assert "failure_count" in stats
 
-    @pytest.mark.skip(reason="IstatAPITester removed in Issue #84")
-    @patch("builtins.print")
-    def test_istat_api_print_methods(self, mock_print):
-        """Test ISTAT API methods that use print."""
-        # Issue #84: IstatAPITester has been removed
-        # This test is now obsolete
-        pass
-
-    def test_legacy_adapter_basic_methods(self):
-        """Test legacy adapter basic functionality."""
-        from src.services.legacy_adapter import LegacyDataflowAnalyzerAdapter
-
-        adapter = LegacyDataflowAnalyzerAdapter()
-
-        # Test initialization
-        assert hasattr(adapter, "base_url")
-        assert hasattr(adapter, "service")
-
     def test_converter_initialization_coverage(self):
         """Test converter initialization edge cases."""
         from src.converters.powerbi_converter import IstatXMLToPowerBIConverter
@@ -218,19 +200,6 @@ class TestFinalCoveragePush:
             assert (
                 result is not None or result is None
             )  # Just check it returns something
-
-    def test_legacy_adapter_utilities(self):
-        """Test legacy adapter utility methods."""
-        from src.services.legacy_adapter import LegacyDataflowAnalyzerAdapter
-
-        adapter = LegacyDataflowAnalyzerAdapter()
-
-        # Test service access
-        assert hasattr(adapter, "service")
-
-        # Test legacy compatibility attributes
-        assert hasattr(adapter, "base_url")
-        assert adapter.base_url == "https://sdmx.istat.it/SDMXWS/rest/"
 
     def test_additional_secure_operations(self):
         """Test additional secure operations."""

@@ -28,7 +28,6 @@ class BaseIstatConverter(ABC):
     def __init__(self):
         """Initialize the base converter with common components."""
         # Common SDMX namespaces - Issue #84: Use centralized configuration
-        from ..utils.config import Config
         self.namespaces = Config.SDMX_NAMESPACES.copy()
 
         # Initialize secure path validator
@@ -42,9 +41,8 @@ class BaseIstatConverter(ABC):
         self.conversion_results = []
 
     def _load_datasets_config(self) -> Dict:
-        """Load dataset configuration from SQLite with JSON fallback."""
+        """Load dataset configuration from SQLite metadata database."""
         try:
-            # Try to load from SQLite first
             logger.info(
                 "Loading dataset configuration from SQLite metadata database..."
             )
@@ -54,50 +52,21 @@ class BaseIstatConverter(ABC):
                 logger.info(f"✅ Loaded {config['total_datasets']} datasets from SQLite")
                 return config
             else:
-                logger.warning(
-                    "SQLite config empty or invalid, falling back to JSON..."
-                )
-                return self._load_json_fallback_config()
+                logger.warning("SQLite config empty, returning minimal config")
+                return {
+                    "total_datasets": 0,
+                    "categories": {},
+                    "datasets": [],
+                    "source": "sqlite_empty",
+                }
 
         except Exception as e:
-            logger.warning(f"SQLite config loading failed: {e}")
-            logger.info("Falling back to JSON configuration...")
-            return self._load_json_fallback_config()
-
-    def _load_json_fallback_config(self) -> Dict:
-        """Load configuration from JSON files as fallback."""
-        try:
-            # Look for JSON config files
-            for json_file in [
-                "tableau_istat_datasets_config.json",
-                "istat_datasets_config.json",
-            ]:
-                if os.path.exists(json_file):
-                    logger.info(f"Loading configuration from {json_file}")
-                    with open(json_file, "r", encoding="utf-8") as f:
-                        config = json.load(f)
-                        config["source"] = "json fallback"
-                        logger.info(
-                            f"✅ Loaded {config.get('total_datasets', 0)} datasets from JSON"
-                        )
-                        return config
-
-            # Return minimal config if no files found
-            logger.warning("No configuration files found, using minimal config")
+            logger.error(f"SQLite config loading failed: {e}")
             return {
                 "total_datasets": 0,
                 "categories": {},
                 "datasets": [],
-                "source": "minimal fallback",
-            }
-
-        except Exception as e:
-            logger.error(f"Failed to load JSON fallback config: {e}")
-            return {
-                "total_datasets": 0,
-                "categories": {},
-                "datasets": [],
-                "source": "error fallback",
+                "source": "sqlite_error",
             }
 
     def _parse_sdmx_xml(self, xml_file: str) -> List[Dict]:

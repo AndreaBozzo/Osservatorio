@@ -14,10 +14,8 @@ from unittest.mock import Mock, patch
 import pytest
 
 from src.services.dataflow_analysis_service import DataflowAnalysisService
-from src.services.legacy_adapter import (
-    LegacyDataflowAnalyzerAdapter,
-    create_legacy_adapter,
-)
+
+# Using modern DataflowAnalysisService
 from src.services.models import (
     AnalysisFilters,
     BulkAnalysisRequest,
@@ -196,97 +194,7 @@ class TestDataflowServiceIntegration:
         assert all_dataflows["DCIS_POPRES1"].relevance_score > 0
         assert all_dataflows["DCCN_PILN"].relevance_score > 0
 
-    # Test legacy adapter integration
-
-    def test_legacy_adapter_maintains_compatibility(
-        self, sample_dataflow_xml_file, temp_dir
-    ):
-        """Test that legacy adapter maintains API compatibility."""
-        # Change to temp directory for file operations
-        import os
-
-        original_cwd = os.getcwd()
-
-        try:
-            os.chdir(temp_dir)
-
-            # Copy XML file to expected location
-            dataflow_xml = temp_dir / "dataflow_response.xml"
-            dataflow_xml.write_text(sample_dataflow_xml_file.read_text())
-
-            # Create legacy adapter
-            adapter = create_legacy_adapter()
-
-            # Test legacy API methods work
-            categorized = adapter.parse_dataflow_xml("dataflow_response.xml")
-            assert isinstance(categorized, dict)
-            assert len(categorized) > 0
-
-            # Test top dataflows method
-            top_dataflows = adapter.find_top_dataflows_by_category(categorized, top_n=2)
-            assert isinstance(top_dataflows, dict)
-
-            # Test that we get expected categories
-            assert "popolazione" in categorized
-            assert "economia" in categorized
-
-        finally:
-            os.chdir(original_cwd)
-
-    def test_legacy_adapter_generates_tableau_files(self, temp_dir):
-        """Test that legacy adapter can generate Tableau files."""
-        import os
-
-        original_cwd = os.getcwd()
-
-        try:
-            os.chdir(temp_dir)
-
-            adapter = create_legacy_adapter()
-
-            # Create sample tested dataflows data
-            tested_dataflows = [
-                {
-                    "id": "DCIS_POPRES1",
-                    "name": "Popolazione residente",
-                    "category": "popolazione",
-                    "relevance_score": 20,
-                    "tests": {
-                        "data_access": {
-                            "success": True,
-                            "status_code": 200,
-                            "size_bytes": 1024000,
-                        },
-                        "observations_count": 1000,
-                        "sample_file": "sample_DCIS_POPRES1.xml",
-                    },
-                }
-            ]
-
-            # Create Tableau-ready dataset list
-            tableau_ready = adapter.create_tableau_ready_dataset_list(tested_dataflows)
-            assert len(tableau_ready) == 1
-
-            # Generate implementation guide
-            files = adapter.generate_tableau_implementation_guide(tableau_ready)
-
-            # Check files were created
-            assert "config_file" in files
-            assert "powershell_script" in files
-            assert "prep_flow" in files
-
-            # Verify files exist
-            if files["config_file"]:
-                config_path = Path(files["config_file"])
-                assert config_path.exists()
-
-                # Verify JSON content
-                config_data = json.loads(config_path.read_text())
-                assert "datasets" in config_data
-                assert "timestamp" in config_data
-
-        finally:
-            os.chdir(original_cwd)
+    # Using modern service for dataflow testing
 
     # Test service context manager
 

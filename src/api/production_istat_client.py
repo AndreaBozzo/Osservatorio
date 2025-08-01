@@ -157,6 +157,7 @@ class ProductionIstatClient:
         """Initialize production client."""
         # Issue #84: Use centralized configuration
         from ..utils.config import Config
+
         self.base_url = Config.ISTAT_SDMX_BASE_URL
 
         # Initialize repository integration
@@ -425,6 +426,9 @@ class ProductionIstatClient:
                     if "404" in str(e) and self.enable_cache_fallback:
                         # Re-raise to trigger outer fallback handling
                         raise e
+                    elif not self.enable_cache_fallback:
+                        # If cache fallback is disabled, re-raise the exception
+                        raise e
                     else:
                         result["data"] = {"status": "error", "error": str(e)}
 
@@ -656,6 +660,48 @@ class ProductionIstatClient:
                 "client_status": self.status.value,
                 "timestamp": datetime.now().isoformat(),
             }
+
+    def test_api_connectivity(self) -> List[Dict[str, Any]]:
+        """Test API connectivity to multiple endpoints."""
+        test_endpoints = [
+            ("dataflow/IT1", "Dataflow endpoint"),
+            ("datastructure/IT1", "Data structure endpoint"),
+            ("data/IT1", "Data endpoint"),
+        ]
+
+        results = []
+
+        for endpoint, description in test_endpoints:
+            try:
+                start_time = time.time()
+                response = self._make_request(endpoint, timeout=10)
+                response_time = time.time() - start_time
+
+                results.append(
+                    {
+                        "endpoint": endpoint,
+                        "description": description,
+                        "success": True,
+                        "status_code": response.status_code,
+                        "response_time": response_time,
+                        "timestamp": datetime.now().isoformat(),
+                    }
+                )
+
+            except Exception as e:
+                results.append(
+                    {
+                        "endpoint": endpoint,
+                        "description": description,
+                        "success": False,
+                        "status_code": 0,
+                        "response_time": 0.0,
+                        "error": str(e),
+                        "timestamp": datetime.now().isoformat(),
+                    }
+                )
+
+        return results
 
     def close(self):
         """Clean up resources."""

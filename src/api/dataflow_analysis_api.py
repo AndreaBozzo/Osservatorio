@@ -244,9 +244,16 @@ async def upload_and_analyze_xml(
             from src.services.models import DataflowCategory
 
             try:
-                category_list = [
-                    DataflowCategory(cat.strip()) for cat in categories.split(",")
-                ]
+                category_list = []
+                valid_categories = [c.value for c in DataflowCategory]
+                for cat in categories.split(","):
+                    cat = cat.strip()
+                    # Validate category exists in enum
+                    if cat not in valid_categories:
+                        raise ValueError(
+                            f"'{cat}' is not a valid category. Valid categories: {valid_categories}"
+                        )
+                    category_list.append(DataflowCategory(cat))
             except ValueError as e:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,

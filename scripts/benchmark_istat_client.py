@@ -9,24 +9,21 @@ across various operations and generates detailed performance reports.
 import asyncio
 import os
 import statistics
+
+# Development mode imports
+import sys
 import time
 from contextlib import contextmanager
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List
 
-# Use proper package imports - Issue #84: IstatAPITester removed
-try:
-    from osservatorio_istat.api.production_istat_client import ProductionIstatClient
-    from osservatorio_istat.database.sqlite.repository import get_unified_repository
-except ImportError:
-    # Development mode fallback
-    import sys
+# Add project root to path
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
 
-    # Issue #84: Removed unsafe sys.path manipulation  
-    # Use proper package imports or run from project root
-    from src.api.production_istat_client import ProductionIstatClient
-    from src.database.sqlite.repository import get_unified_repository
+from src.api.production_istat_client import ProductionIstatClient
+from src.database.sqlite.repository import get_unified_repository
 
 
 class PerformanceBenchmark:

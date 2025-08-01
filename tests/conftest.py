@@ -19,30 +19,29 @@ try:
     from osservatorio_istat.utils.config import Config
 except ImportError:
     # Development mode fallback
-    import sys
-    from pathlib import Path
-    
+    # sys and Path already imported at module level
+
     # Issue #84: Safe path addition for tests
     project_root = Path(__file__).parent.parent
     if str(project_root) not in sys.path:
         sys.path.insert(0, str(project_root))
-    
+
     from src.utils.config import Config
 
 # Issue #84: Removed unsafe sys.path manipulation
 # Tests should run from project root via pytest
 
 
-# Issue #84: Proper client fixtures to replace IstatAPITester usage
+# Modern client fixtures for testing
 @pytest.fixture
 def production_client():
     """Create a ProductionIstatClient instance for testing."""
     from src.api.production_istat_client import ProductionIstatClient
-    
+
     client = ProductionIstatClient(enable_cache_fallback=True)
     yield client
     # Cleanup
-    if hasattr(client, 'close'):
+    if hasattr(client, "close"):
         client.close()
 
 
@@ -50,34 +49,37 @@ def production_client():
 def mock_client():
     """Create a mocked ProductionIstatClient for unit tests."""
     from unittest.mock import Mock
-    
+
     mock_client = Mock()
     mock_client.base_url = "https://sdmx.istat.it/SDMXWS/rest/"
     mock_client.get_status.return_value = {"status": "ok", "metrics": {}}
     mock_client.fetch_dataset.return_value = {"status": "success", "data": {}}
-    
+
     return mock_client
 
 
-@pytest.fixture  
+@pytest.fixture
 def unified_repository():
     """Create a UnifiedDataRepository instance for testing."""
     from src.database.sqlite.repository import get_unified_repository
-    
-    repo = get_unified_repository() 
+
+    repo = get_unified_repository()
     yield repo
     # Cleanup
-    if hasattr(repo, 'close'):
+    if hasattr(repo, "close"):
         repo.close()
 
 
 @pytest.fixture
-def legacy_adapter(production_client):
-    """Create a LegacyDataflowAnalyzerAdapter for testing."""
-    from src.services.legacy_adapter import LegacyDataflowAnalyzerAdapter
-    
-    adapter = LegacyDataflowAnalyzerAdapter(production_client)
-    return adapter
+def dataflow_analysis_service():
+    """Create a DataflowAnalysisService for testing."""
+    from src.services.service_factory import get_dataflow_analysis_service
+
+    service = get_dataflow_analysis_service()
+    yield service
+    # Cleanup if needed
+    if hasattr(service, "close"):
+        service.close()
 
 
 @pytest.fixture(autouse=True)
