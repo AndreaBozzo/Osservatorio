@@ -77,7 +77,12 @@ class MetadataSchema:
                 usage_count INTEGER DEFAULT 0,
                 rate_limit INTEGER DEFAULT 100,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                scopes_json TEXT DEFAULT '[]',
+                name TEXT,
+                key_prefix TEXT,
+                revoked_at TIMESTAMP,
+                last_refresh TIMESTAMP
             )
         """,
         "audit_log": """

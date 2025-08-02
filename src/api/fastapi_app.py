@@ -43,7 +43,10 @@ from src.utils.logger import get_logger
 
 from .dependencies import (
     check_rate_limit,
+    get_auth_manager,
     get_current_user,
+    get_istat_client,
+    get_jwt_manager,
     get_repository,
     handle_api_errors,
     log_api_request,
@@ -67,6 +70,7 @@ from .models import (
     UsageAnalyticsResponse,
 )
 from .odata import create_odata_router
+from .production_istat_client import ProductionIstatClient
 
 logger = get_logger(__name__)
 config = get_config()
@@ -443,7 +447,9 @@ async def get_dataset_timeseries(
 async def create_auth_token(
     api_key_request: APIKeyCreate,
     repository=Depends(get_repository),
-    current_user=Depends(require_admin),
+    current_user=Depends(require_admin()),
+    auth_manager=Depends(get_auth_manager),
+    jwt_manager=Depends(get_jwt_manager),
     _rate_limit=Depends(check_rate_limit),
     _audit=Depends(log_api_request),
 ):
@@ -454,15 +460,6 @@ async def create_auth_token(
     Returns the API key (shown only once) and JWT token for immediate use.
     """
     try:
-        from src.auth.jwt_manager import JWTManager
-        from src.auth.sqlite_auth import SQLiteAuthManager
-        from src.database.sqlite.manager import get_metadata_manager
-
-        # Initialize managers
-        sqlite_manager = get_metadata_manager()
-        auth_manager = SQLiteAuthManager(sqlite_manager)
-        jwt_manager = JWTManager(sqlite_manager)
-
         # Create API key
         expires_days = None
         if api_key_request.expires_at:
@@ -513,7 +510,8 @@ async def create_auth_token(
 @handle_api_errors
 async def list_api_keys(
     repository=Depends(get_repository),
-    current_user=Depends(require_admin),
+    current_user=Depends(require_admin()),
+    auth_manager=Depends(get_auth_manager),
     _rate_limit=Depends(check_rate_limit),
     _audit=Depends(log_api_request),
 ):
@@ -524,13 +522,6 @@ async def list_api_keys(
     Returns key information without sensitive data.
     """
     try:
-        from src.auth.sqlite_auth import SQLiteAuthManager
-        from src.database.sqlite.manager import get_metadata_manager
-
-        # Initialize manager
-        sqlite_manager = get_metadata_manager()
-        auth_manager = SQLiteAuthManager(sqlite_manager)
-
         # Get all API keys
         api_keys = auth_manager.list_api_keys()
 
@@ -570,7 +561,7 @@ async def get_usage_analytics(
     endpoint: Optional[str] = Query(None, description="Filter by endpoint"),
     group_by: str = Query("day", description="Group by period (day, week, month)"),
     repository=Depends(get_repository),
-    current_user=Depends(require_admin),
+    current_user=Depends(require_admin()),
     _rate_limit=Depends(check_rate_limit),
     _audit=Depends(log_api_request),
 ):
@@ -668,6 +659,183 @@ def custom_openapi():
 app.openapi = custom_openapi
 
 
+# ISTAT API Integration Endpoints
+@app.get("/api/istat/status", tags=["ISTAT API"], summary="Get ISTAT API client status")
+@handle_api_errors
+async def get_istat_status(
+    current_user=Depends(get_current_user),
+    istat_client=Depends(get_istat_client),
+    _rate_limit=Depends(check_rate_limit),
+    _audit=Depends(log_api_request),
+):
+    """
+    Get current status of the production ISTAT API client.
+
+    Returns client health, metrics, and operational status including:
+    - Connection status and circuit breaker state
+    - Rate limiting information
+    - Performance metrics
+    - Recent request statistics
+    """
+    try:
+        status = istat_client.get_status()
+        health = istat_client.health_check()
+
+        return {
+            "client_status": status,
+            "api_health": health,
+            "timestamp": datetime.now().isoformat(),
+        }
+    except Exception as e:
+        logger.error(f"Failed to get ISTAT client status: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=f"ISTAT API client error: {str(e)}",
+        )
+
+
+@app.get(
+    "/api/istat/dataflows", tags=["ISTAT API"], summary="List available ISTAT dataflows"
+)
+@handle_api_errors
+async def list_istat_dataflows(
+    limit: Optional[int] = Query(
+        None, ge=1, le=100, description="Limit number of dataflows"
+    ),
+    current_user=Depends(get_current_user),
+    istat_client=Depends(get_istat_client),
+    _rate_limit=Depends(check_rate_limit),
+    _audit=Depends(log_api_request),
+):
+    """
+    List available ISTAT SDMX dataflows.
+
+    Fetches current list of available statistical dataflows from ISTAT API
+    with optional limit for pagination.
+    """
+    try:
+        result = istat_client.fetch_dataflows(limit=limit)
+        return result
+    except Exception as e:
+        logger.error(f"Failed to fetch ISTAT dataflows: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=f"ISTAT API error: {str(e)}",
+        )
+
+
+@app.get(
+    "/api/istat/dataset/{dataset_id}",
+    tags=["ISTAT API"],
+    summary="Fetch specific ISTAT dataset",
+)
+@handle_api_errors
+async def fetch_istat_dataset(
+    dataset_id: str = Path(..., description="ISTAT dataset identifier"),
+    include_data: bool = Query(True, description="Include dataset data in response"),
+    with_quality: bool = Query(False, description="Include data quality validation"),
+    current_user=Depends(get_current_user),
+    istat_client=Depends(get_istat_client),
+    _rate_limit=Depends(check_rate_limit),
+    _audit=Depends(log_api_request),
+):
+    """
+    Fetch specific dataset from ISTAT API.
+
+    Retrieves dataset structure and optionally data from ISTAT SDMX API.
+    Can include data quality validation for comprehensive analysis.
+    """
+    try:
+        if with_quality:
+            # Fetch with quality validation
+            quality_result = istat_client.fetch_with_quality_validation(dataset_id)
+            dataset_result = istat_client.fetch_dataset(
+                dataset_id, include_data=include_data
+            )
+
+            return {
+                "dataset": dataset_result,
+                "quality": {
+                    "quality_score": quality_result.quality_score,
+                    "completeness": quality_result.completeness,
+                    "consistency": quality_result.consistency,
+                    "validation_errors": quality_result.validation_errors,
+                    "timestamp": quality_result.timestamp.isoformat(),
+                },
+            }
+        else:
+            # Standard fetch
+            result = istat_client.fetch_dataset(dataset_id, include_data=include_data)
+            return result
+
+    except Exception as e:
+        logger.error(f"Failed to fetch ISTAT dataset {dataset_id}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=f"ISTAT API error: {str(e)}",
+        )
+
+
+@app.post(
+    "/api/istat/sync/{dataset_id}",
+    tags=["ISTAT API"],
+    summary="Sync dataset to repository",
+)
+@handle_api_errors
+async def sync_istat_dataset(
+    dataset_id: str = Path(..., description="ISTAT dataset identifier"),
+    current_user=Depends(require_write),  # Requires write permissions
+    istat_client=Depends(get_istat_client),
+    _rate_limit=Depends(check_rate_limit),
+    _audit=Depends(log_api_request),
+):
+    """
+    Synchronize ISTAT dataset to local repository.
+
+    Fetches dataset from ISTAT API and synchronizes it with the local
+    SQLite metadata and DuckDB analytics storage.
+
+    Requires write permissions.
+    """
+    try:
+        # Fetch dataset with data
+        dataset_result = istat_client.fetch_dataset(dataset_id, include_data=True)
+
+        if dataset_result.get("data", {}).get("status") != "success":
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Failed to fetch dataset data from ISTAT API",
+            )
+
+        # Sync to repository
+        sync_result = istat_client.sync_to_repository(dataset_result)
+
+        return {
+            "sync_result": {
+                "dataset_id": sync_result.dataset_id,
+                "records_synced": sync_result.records_synced,
+                "sync_time": sync_result.sync_time,
+                "metadata_updated": sync_result.metadata_updated,
+                "timestamp": sync_result.timestamp.isoformat(),
+            },
+            "dataset_info": {
+                "observations_count": dataset_result.get("data", {}).get(
+                    "observations_count", 0
+                ),
+                "data_size": dataset_result.get("data", {}).get("size", 0),
+            },
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to sync ISTAT dataset {dataset_id}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=f"Sync error: {str(e)}",
+        )
+
+
 # Startup and shutdown events
 @app.on_event("startup")
 async def startup_event():
@@ -679,6 +847,11 @@ async def startup_event():
         repository = get_unified_repository()
         status = repository.get_system_status()
         logger.info(f"System status: {status}")
+
+        # Initialize ISTAT client
+        istat_client = get_istat_client()
+        istat_health = istat_client.health_check()
+        logger.info(f"ISTAT API client status: {istat_health.get('status', 'unknown')}")
 
         logger.info("FastAPI application started successfully")
     except Exception as e:
@@ -695,6 +868,12 @@ async def shutdown_event():
         # Close repository connections
         repository = get_unified_repository()
         repository.close()
+
+        # Close ISTAT client
+        from .dependencies import _istat_client
+
+        if _istat_client:
+            _istat_client.close()
 
         logger.info("FastAPI application shutdown complete")
     except Exception as e:

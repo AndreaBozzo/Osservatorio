@@ -21,6 +21,7 @@ from src.utils.config import get_config
 from src.utils.logger import get_logger
 
 from .models import APIScope, ErrorResponse
+from .production_istat_client import ProductionIstatClient
 
 logger = get_logger(__name__)
 
@@ -35,6 +36,7 @@ security = HTTPBearer(
 _jwt_manager: Optional[JWTManager] = None
 _auth_manager: Optional[SQLiteAuthManager] = None
 _rate_limiter: Optional[SQLiteRateLimiter] = None
+_istat_client: Optional[ProductionIstatClient] = None
 
 
 def get_jwt_manager() -> JWTManager:
@@ -44,7 +46,9 @@ def get_jwt_manager() -> JWTManager:
         from src.database.sqlite.manager import get_metadata_manager
 
         sqlite_manager = get_metadata_manager()
-        _jwt_manager = JWTManager(sqlite_manager)
+        config = get_config()
+        jwt_secret = config.get("jwt_secret_key")
+        _jwt_manager = JWTManager(sqlite_manager, secret_key=jwt_secret)
     return _jwt_manager
 
 
@@ -68,6 +72,15 @@ def get_rate_limiter() -> SQLiteRateLimiter:
         sqlite_manager = get_metadata_manager()
         _rate_limiter = SQLiteRateLimiter(sqlite_manager)
     return _rate_limiter
+
+
+def get_istat_client() -> ProductionIstatClient:
+    """Get production ISTAT client instance (singleton)"""
+    global _istat_client
+    if _istat_client is None:
+        repository = get_unified_repository()
+        _istat_client = ProductionIstatClient(repository=repository)
+    return _istat_client
 
 
 async def get_current_user(

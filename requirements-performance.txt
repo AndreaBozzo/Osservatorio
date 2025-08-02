@@ -1,0 +1,27 @@
+# Performance testing dependencies
+# Install with: pip install -r requirements-performance.txt
+
+# Include development dependencies
+-r requirements-dev.txt
+
+# Load testing frameworks
+locust>=2.17.0
+
+# Performance monitoring and profiling
+psutil>=5.9.0
+memory-profiler>=0.60.0
+py-spy>=0.3.14
+line-profiler>=4.1.0
+
+# Performance metrics and reporting
+matplotlib>=3.7.0
+seaborn>=0.12.0
+plotly>=5.17.0
+scipy>=1.11.0
+
+# Async testing
+httpx>=0.25.0
+aiohttp>=3.9.0
+
+# Database performance
+sqlalchemy-utils>=0.41.0

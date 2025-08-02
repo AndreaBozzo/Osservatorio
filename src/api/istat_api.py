@@ -1,5 +1,6 @@
 import json
 import time
+import warnings
 from datetime import datetime
 
 import matplotlib.pyplot as plt
@@ -17,6 +18,14 @@ from ..utils.data_quality_limits import columns_limits
 class IstatAPITester:
     def __init__(self):
         """Inizializza il tester API ISTAT"""
+        # Issue #66 - This exploration tool is deprecated
+        warnings.warn(
+            "IstatAPITester is deprecated and will be removed in a future version. "
+            "Use ProductionIstatClient for production workflows. "
+            "See docs/migration/ISTAT_API_MIGRATION.md for migration guide.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         self.base_url = "https://sdmx.istat.it/SDMXWS/rest/"
         self.session = requests.Session()
         self.session.headers.update(
@@ -412,9 +421,7 @@ class IstatAPITester:
 
                 # Valori diversi dal loro data type
                 if len(df) > 0:
-                    type_mismatch_count = (
-                        df[col].apply(type) != df[col].dtype
-                    ).sum()
+                    type_mismatch_count = (df[col].apply(type) != df[col].dtype).sum()
                     quality_report["type_mismatch_count"][col] = {
                         "count": int(type_mismatch_count),
                         "percentage": round((type_mismatch_count / len(df)) * 100, 2),
@@ -423,8 +430,10 @@ class IstatAPITester:
                 # Valori con caratteri speciali e accenti
                 if len(df) > 0:
                     # Versione ISTAT-friendly:
-                    special_char_pattern = r'[^\w\s\.\-\+\(\)àèéìíîòóùú/\']'
-                    special_char_count = df[col].str.contains(special_char_pattern, regex=True).sum()
+                    special_char_pattern = r"[^\w\s\.\-\+\(\)àèéìíîòóùú/\']"
+                    special_char_count = (
+                        df[col].str.contains(special_char_pattern, regex=True).sum()
+                    )
                     quality_report["special_char_count"][col] = {
                         "count": int(special_char_count),
                         "percentage": round((special_char_count / len(df)) * 100, 2),
@@ -940,6 +949,14 @@ def main():
     """Funzione principale per test API ISTAT"""
     print("🇮🇹 ISTAT API TESTER & VALIDATOR")
     print("Sviluppato per integrazione Tableau")
+    print("=" * 50)
+    print(
+        "⚠️  DEPRECATION WARNING: This exploration tool is being replaced by ProductionIstatClient"
+    )
+    print(
+        "🔄 For production use, please use: src.api.production_istat_client.ProductionIstatClient"
+    )
+    print("📚 This tool remains available for manual testing and exploration only")
     print("=" * 50)
 
     tester = IstatAPITester()

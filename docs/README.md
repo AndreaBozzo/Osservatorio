@@ -12,6 +12,8 @@
 ### 🏗️ Core Documentation
 - **[Architecture](core/ARCHITECTURE.md)** - SQLite + DuckDB design
 - **[API Reference](core/API_REFERENCE.md)** - Endpoints & examples
+- **[FastAPI REST API](api/FASTAPI_REST_API.md)** - Complete FastAPI documentation
+- **[Performance Testing Suite](api/PERFORMANCE_TESTING_SUITE.md)** - Issue #74 Complete
 - **[Performance](core/PERFORMANCE.md)** - Benchmarks & optimization
 
 ### 📋 Project Management
