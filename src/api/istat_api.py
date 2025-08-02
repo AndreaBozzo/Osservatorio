@@ -9,6 +9,7 @@ import requests
 from ..utils.secure_path import create_secure_validator
 from ..utils.security_enhanced import rate_limit, security_manager
 from ..utils.temp_file_manager import get_temp_manager
+from ..utils.data_quality_limits import columns_limits
 
 # seaborn removed - using matplotlib directly
 
@@ -393,6 +394,7 @@ class IstatAPITester:
                 "type_mismatch_count": {},
                 "special_char_count": {},
                 "unique_values": {},
+                "out_of_range": {},
                 "quality_score": 0,
             }
 
@@ -435,6 +437,28 @@ class IstatAPITester:
                         "count": int(unique_count),
                         "percentage": round((unique_count / len(df)) * 100, 2),
                     }
+
+                # Valori fuori limite
+                if len(df) > 0:
+                    if df[col].dtype == "datetime64[ns]":
+                        continue
+                    column_limits = columns_limits.get(col, {})
+                    unique_count = df[col].nunique()
+                    if column_limits == {}:
+                        print(f"❌ Nessun limite impostato per colonna: {col}")
+                        continue
+                    min_threshold = column_limits.get("min", None)
+                    max_threshold = column_limits.get("max", None)
+                    valid_values = column_limits.get("valid_values", [])
+                    if df[col].dtype == "float64" or df[col].dtype == "int64":
+                        oor_values = df[df[col] < min_threshold | df[col] > max_threshold][col].nunique()
+                    else:
+                        oor_values = df[df[col].isin(valid_values) == False][col].nunique()
+                    if int(oor_values) > 0:
+                        quality_report["out_of_range"][col] = {
+                            "count": len(oor_values),
+                            "percentage": round((int(oor_values) / unique_count) * 100, 2),
+                        }
 
             # Calcola punteggio qualità
             completeness_score = 100 - (
