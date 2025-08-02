@@ -7,7 +7,7 @@ This module defines the database schema optimized for ISTAT data analysis:
 """
 
 from datetime import datetime
-from typing import Any, Dict, List, Optional, cast
+from typing import Any, Optional, cast
 
 import pandas as pd
 
@@ -340,7 +340,7 @@ class ISTATSchemaManager:
 
         logger.info(f"Analytics tables/views created in schema: {analytics_schema}")
 
-    def insert_dataset_metadata(self, metadata: Dict) -> None:
+    def insert_dataset_metadata(self, metadata: dict) -> None:
         """Insert or update dataset metadata.
 
         Args:
@@ -500,7 +500,7 @@ class ISTATSchemaManager:
             logger.error(f"Bulk insert failed for dataset {dataset_id}: {e}")
             raise
 
-    def get_table_stats(self) -> List[Dict[str, Any]]:
+    def get_table_stats(self) -> list[dict[str, Any]]:
         """Get statistics for all ISTAT tables.
 
         Returns:
@@ -539,7 +539,7 @@ class ISTATSchemaManager:
             result = self.manager.execute_query(stats_query)
             records = result.to_dict("records")
             # Cast to proper type for MyPy compliance
-            return cast(List[Dict[str, Any]], records)
+            return cast(list[dict[str, Any]], records)
         except Exception as e:
             logger.error(f"Failed to get table statistics: {e}")
             return []

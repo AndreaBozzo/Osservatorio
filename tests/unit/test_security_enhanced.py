@@ -1,4 +1,5 @@
 """Tests for the enhanced security manager."""
+
 import time
 
 import pytest
@@ -54,7 +55,7 @@ class TestSecurityManager:
         identifier = "test_user"
 
         # Should allow requests within limit
-        for i in range(10):
+        for _i in range(10):
             assert (
                 self.security_manager.rate_limit(identifier, max_requests=10, window=60)
                 is True
@@ -71,7 +72,7 @@ class TestSecurityManager:
         identifier = "test_user"
 
         # Fill up the rate limit
-        for i in range(5):
+        for _i in range(5):
             self.security_manager.rate_limit(identifier, max_requests=5, window=1)
 
         # Should be denied
@@ -203,7 +204,7 @@ class TestSecurityDecorators:
             return "success"
 
         # Should succeed within limit
-        for i in range(3):
+        for _i in range(3):
             assert test_function() == "success"
 
         # Should fail on 4th call
@@ -262,7 +263,7 @@ class TestSecurityIntegration:
 
         for user in users:
             # Each user should be allowed their own rate limit
-            for i in range(5):
+            for _i in range(5):
                 assert (
                     security_manager.rate_limit(user, max_requests=5, window=60) is True
                 )

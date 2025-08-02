@@ -8,8 +8,6 @@ This script demonstrates how to use the DuckDB Query Builder for ISTAT analytics
 - Error handling best practices
 """
 
-
-
 from src.database.duckdb import (
     DuckDBQueryBuilder,
     FilterOperator,
@@ -130,11 +128,11 @@ def caching_examples():
         .build_sql()
     )
 
-    print(f"Query built with 30-minute cache TTL")
+    print("Query built with 30-minute cache TTL")
 
     # Example of cache statistics
     stats = cache.get_stats()
-    print(f"\nCache Statistics:")
+    print("\nCache Statistics:")
     print(f"  Hit rate: {stats['hit_rate_percent']:.1f}%")
     print(f"  Cache size: {stats['cache_size']}/{stats['max_size']}")
     print(f"  Total hits: {stats['hits']}")

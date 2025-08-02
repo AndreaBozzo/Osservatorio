@@ -57,7 +57,7 @@ def generate_test_files():
     """Genera file di test per CI/CD"""
     try:
         # Setup percorsi sicuri
-        validator = create_secure_validator(Path(__file__).parent.parent)
+        create_secure_validator(Path(__file__).parent.parent)
 
         # Directory di output
         output_dir = Path("data/processed/powerbi")
@@ -82,7 +82,7 @@ def generate_test_files():
                 "parquet": "parquet",
             }
 
-            for format_name, extension in formats.items():
+            for _format_name, extension in formats.items():
                 filename = f"{category}_test_{timestamp}.{extension}"
                 filepath = output_dir / filename
 

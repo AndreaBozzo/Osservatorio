@@ -17,14 +17,13 @@ Architecture Integration:
 
 import json
 from datetime import datetime
-from typing import Any, Dict, List, Optional
-
-from ...utils.config import Config
-
+from typing import Any, Optional
 
 from src.api.powerbi_api import PowerBIAPIClient
 from src.database.sqlite.repository import UnifiedDataRepository
 from src.utils.logger import get_logger
+
+from ...utils.config import Config
 
 logger = get_logger(__name__)
 
@@ -36,8 +35,8 @@ class DatasetLineage:
         self,
         dataset_id: str,
         source_system: str = "ISTAT",
-        transformations: List[Dict[str, Any]] = None,
-        dependencies: List[str] = None,
+        transformations: list[dict[str, Any]] = None,
+        dependencies: list[str] = None,
     ):
         self.dataset_id = dataset_id
         self.source_system = source_system
@@ -46,7 +45,7 @@ class DatasetLineage:
         self.created_at = datetime.now()
 
     def add_transformation(
-        self, step: str, description: str, metadata: Dict[str, Any] = None
+        self, step: str, description: str, metadata: dict[str, Any] = None
     ):
         """Add transformation step to lineage."""
         transformation = {
@@ -57,7 +56,7 @@ class DatasetLineage:
         }
         self.transformations.append(transformation)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Export lineage to dictionary."""
         return {
             "dataset_id": self.dataset_id,
@@ -90,16 +89,16 @@ class UsageMetrics:
         elif access_type == "refresh":
             self.refreshes += 1
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Export metrics to dictionary."""
         return {
             "dataset_id": self.dataset_id,
             "views": self.views,
             "refreshes": self.refreshes,
             "unique_users": len(self.unique_users),
-            "last_accessed": self.last_accessed.isoformat()
-            if self.last_accessed
-            else None,
+            "last_accessed": (
+                self.last_accessed.isoformat() if self.last_accessed else None
+            ),
             "reports_count": len(self.reports_using),
             "dashboards_count": len(self.dashboards_using),
         }
@@ -111,7 +110,7 @@ class QualityScoreSync:
     def __init__(self, repository: UnifiedDataRepository):
         self.repository = repository
 
-    def get_quality_scores(self, dataset_id: str) -> Dict[str, float]:
+    def get_quality_scores(self, dataset_id: str) -> dict[str, float]:
         """Get quality scores for dataset from SQLite."""
         try:
             # Query quality scores from analytics database
@@ -157,7 +156,7 @@ class QualityScoreSync:
             logger.error(f"Failed to get quality scores for {dataset_id}: {e}")
             return {"overall_quality": 0.0, "error": str(e)}
 
-    def create_quality_measure(self, dataset_id: str) -> Dict[str, str]:
+    def create_quality_measure(self, dataset_id: str) -> dict[str, str]:
         """Create DAX measures for quality scores."""
         return {
             "Quality Score": f"0.85 // fact_{dataset_id.lower()} placeholder",
@@ -213,8 +212,8 @@ class MetadataBridge:
     def create_dataset_lineage(
         self,
         dataset_id: str,
-        source_datasets: List[str] = None,
-        transformation_steps: List[Dict[str, Any]] = None,
+        source_datasets: list[str] = None,
+        transformation_steps: list[dict[str, Any]] = None,
     ) -> DatasetLineage:
         """Create lineage tracking for dataset.
 
@@ -317,7 +316,7 @@ class MetadataBridge:
 
     def propagate_quality_scores(
         self, dataset_id: str, powerbi_dataset_id: str = None
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Propagate quality scores to PowerBI dataset.
 
         Args:
@@ -367,7 +366,7 @@ class MetadataBridge:
             logger.error(f"Failed to propagate quality scores for {dataset_id}: {e}")
             return {"error": str(e), "dataset_id": dataset_id}
 
-    def get_governance_report(self, dataset_id: str = None) -> Dict[str, Any]:
+    def get_governance_report(self, dataset_id: str = None) -> dict[str, Any]:
         """Generate data governance report.
 
         Args:
@@ -418,15 +417,17 @@ class MetadataBridge:
                     dataset_governance = {
                         "dataset_id": ds_id,
                         "name": metadata.get("name", ds_id) if metadata else ds_id,
-                        "category": metadata.get("category", "unknown")
-                        if metadata
-                        else "unknown",
+                        "category": (
+                            metadata.get("category", "unknown")
+                            if metadata
+                            else "unknown"
+                        ),
                         "has_lineage": lineage is not None,
                         "has_usage_data": usage is not None,
                         "quality_score": quality.get("overall_quality", 0.0),
-                        "last_updated": metadata.get("last_updated")
-                        if metadata
-                        else None,
+                        "last_updated": (
+                            metadata.get("last_updated") if metadata else None
+                        ),
                         "powerbi_integrated": self._check_powerbi_integration(ds_id),
                     }
 
@@ -491,8 +492,8 @@ class MetadataBridge:
     def _store_quality_metadata(
         self,
         dataset_id: str,
-        quality_scores: Dict[str, Any],
-        quality_measures: Dict[str, str],
+        quality_scores: dict[str, Any],
+        quality_measures: dict[str, str],
     ) -> None:
         """Store quality metadata in SQLite."""
         try:
@@ -562,7 +563,7 @@ class MetadataBridge:
 
     def _get_reports_using_dataset(
         self, powerbi_dataset_id: str
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Get reports using the dataset from PowerBI Service."""
         # This would integrate with PowerBI REST API
         # For now, return empty list
@@ -570,15 +571,15 @@ class MetadataBridge:
 
     def _get_dashboards_using_dataset(
         self, powerbi_dataset_id: str
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Get dashboards using the dataset from PowerBI Service."""
         # This would integrate with PowerBI REST API
         # For now, return empty list
         return []
 
     def _push_quality_measures(
-        self, powerbi_dataset_id: str, quality_measures: Dict[str, str]
-    ) -> Dict[str, Any]:
+        self, powerbi_dataset_id: str, quality_measures: dict[str, str]
+    ) -> dict[str, Any]:
         """Push quality measures to PowerBI dataset."""
         try:
             if not self.powerbi_client:

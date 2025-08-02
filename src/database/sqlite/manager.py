@@ -21,7 +21,7 @@ import threading
 from contextlib import contextmanager
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 from src.utils.logger import get_logger
 from src.utils.security_enhanced import SecurityManager
@@ -154,7 +154,7 @@ class SQLiteMetadataManager:
         description: str = None,
         istat_agency: str = None,
         priority: int = 5,
-        metadata: Dict[str, Any] = None,
+        metadata: dict[str, Any] = None,
     ) -> bool:
         """Register a new ISTAT dataset in the metadata registry.
 
@@ -208,7 +208,7 @@ class SQLiteMetadataManager:
             logger.error(f"Failed to register dataset {dataset_id}: {e}")
             return False
 
-    def get_dataset(self, dataset_id: str) -> Optional[Dict[str, Any]]:
+    def get_dataset(self, dataset_id: str) -> Optional[dict[str, Any]]:
         """Get dataset information by ID.
 
         Args:
@@ -237,7 +237,7 @@ class SQLiteMetadataManager:
 
     def list_datasets(
         self, category: str = None, active_only: bool = True
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """List datasets with optional filtering.
 
         Args:
@@ -418,7 +418,7 @@ class SQLiteMetadataManager:
             logger.error(f"Failed to get user preference {user_id}.{key}: {e}")
             return default
 
-    def get_user_preferences(self, user_id: str) -> Dict[str, Any]:
+    def get_user_preferences(self, user_id: str) -> dict[str, Any]:
         """Get all preferences for a user.
 
         Args:
@@ -668,7 +668,7 @@ class SQLiteMetadataManager:
         action: str,
         resource_type: str,
         resource_id: str = None,
-        details: Dict[str, Any] = None,
+        details: dict[str, Any] = None,
         ip_address: str = None,
         user_agent: str = None,
         success: bool = True,
@@ -734,7 +734,7 @@ class SQLiteMetadataManager:
         action: str,
         resource_type: str,
         resource_id: str = None,
-        details: Dict[str, Any] = None,
+        details: dict[str, Any] = None,
         **kwargs,
     ) -> bool:
         """Public audit logging method.
@@ -762,7 +762,7 @@ class SQLiteMetadataManager:
         start_date: datetime = None,
         end_date: datetime = None,
         limit: int = 100,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Get audit logs with filtering.
 
         Args:
@@ -826,7 +826,7 @@ class SQLiteMetadataManager:
 
     def get_categorization_rules(
         self, category: str = None, active_only: bool = True
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Get categorization rules for dataflow analysis.
 
         Args:
@@ -878,7 +878,7 @@ class SQLiteMetadataManager:
         self,
         rule_id: str,
         category: str,
-        keywords: List[str],
+        keywords: list[str],
         priority: int = 5,
         description: str = None,
     ) -> bool:
@@ -944,7 +944,7 @@ class SQLiteMetadataManager:
     def update_categorization_rule(
         self,
         rule_id: str,
-        keywords: List[str] = None,
+        keywords: list[str] = None,
         priority: int = None,
         is_active: bool = None,
         description: str = None,
@@ -1057,7 +1057,7 @@ class SQLiteMetadataManager:
 
     # Utility Methods
 
-    def get_database_stats(self) -> Dict[str, Any]:
+    def get_database_stats(self) -> dict[str, Any]:
         """Get database statistics.
 
         Returns:

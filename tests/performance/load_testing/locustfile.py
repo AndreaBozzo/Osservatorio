@@ -11,6 +11,7 @@ Test scenarios:
 - OData endpoints for PowerBI
 - Concurrent user simulation (1-1000 users)
 """
+
 import json
 import random
 
@@ -210,7 +211,7 @@ class PowerBIUser(HttpUser):
     @task(6)
     def test_odata_batch_query(self):
         """Test OData batch query for PowerBI."""
-        dataset_id = random.choice(SAMPLE_DATASETS)
+        random.choice(SAMPLE_DATASETS)
 
         # Simulate PowerBI batch queries
         queries = [
@@ -221,7 +222,7 @@ class PowerBIUser(HttpUser):
 
         for i, query_params in enumerate(queries):
             with self.client.get(
-                f"/odata/Datasets",
+                "/odata/Datasets",
                 params=query_params,
                 headers=self.headers,
                 catch_response=True,

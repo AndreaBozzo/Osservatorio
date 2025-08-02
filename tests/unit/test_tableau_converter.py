@@ -1,6 +1,7 @@
 """
 Unit tests for Tableau converter functionality.
 """
+
 from pathlib import Path
 from unittest.mock import Mock, mock_open, patch
 
@@ -130,7 +131,7 @@ class TestIstatXMLtoTableauConverter:
                 with patch("pandas.DataFrame.to_csv") as mock_csv:
                     with patch("pandas.DataFrame.to_json") as mock_json:
                         with patch("pandas.ExcelWriter") as mock_excel:
-                            with patch("pandas.DataFrame.to_excel") as mock_to_excel:
+                            with patch("pandas.DataFrame.to_excel"):
                                 # Mock the context manager for ExcelWriter
                                 mock_excel.return_value.__enter__ = Mock(
                                     return_value=mock_excel.return_value
@@ -311,13 +312,6 @@ class TestIstatXMLtoTableauConverter:
     def test_generate_quick_start_guide_creates_file(self):
         """Test Quick Start guide generation."""
         converter = IstatXMLtoTableauConverter()
-
-        summary = {
-            "dataset_id": "TEST_123",
-            "name": "Test Dataset",
-            "category": "test",
-            "files_created": ["test.csv", "test.xlsx", "test.json"],
-        }
 
         with patch.object(converter.path_validator, "validate_path", return_value=True):
             with patch.object(

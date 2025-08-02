@@ -8,6 +8,7 @@ This module provides comprehensive database performance testing for:
 - Memory usage during database operations
 - Concurrent database access testing
 """
+
 import json
 import statistics
 import time
@@ -15,7 +16,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Optional
 
 import duckdb
 import psutil
@@ -68,7 +69,7 @@ class DatabaseBenchmark:
         """Initialize database benchmark tool."""
         self.sqlite_path = sqlite_path or "data/databases/osservatorio_metadata.db"
         self.duckdb_path = duckdb_path or "data/databases/osservatorio.duckdb"
-        self.results: List[DatabaseBenchmarkResult] = []
+        self.results: list[DatabaseBenchmarkResult] = []
 
         # Initialize connections
         self.sqlite_engine = self._create_sqlite_engine()
@@ -95,7 +96,7 @@ class DatabaseBenchmark:
             return None
 
     def benchmark_sqlite_query(
-        self, query: str, query_type: str = "select", params: Optional[Dict] = None
+        self, query: str, query_type: str = "select", params: Optional[dict] = None
     ) -> DatabaseBenchmarkResult:
         """Benchmark single SQLite query."""
         process = psutil.Process()
@@ -142,7 +143,7 @@ class DatabaseBenchmark:
         return result
 
     def benchmark_duckdb_query(
-        self, query: str, query_type: str = "select", params: Optional[Dict] = None
+        self, query: str, query_type: str = "select", params: Optional[dict] = None
     ) -> DatabaseBenchmarkResult:
         """Benchmark single DuckDB query."""
         if not self.duckdb_manager:
@@ -195,7 +196,7 @@ class DatabaseBenchmark:
         return result
 
     def _benchmark_duckdb_direct(
-        self, query: str, query_type: str = "select", params: Optional[Dict] = None
+        self, query: str, query_type: str = "select", params: Optional[dict] = None
     ) -> DatabaseBenchmarkResult:
         """Benchmark DuckDB query with direct connection."""
         process = psutil.Process()
@@ -243,7 +244,7 @@ class DatabaseBenchmark:
         self.results.append(result)
         return result
 
-    def benchmark_common_queries(self) -> List[DatabaseBenchmarkResult]:
+    def benchmark_common_queries(self) -> list[DatabaseBenchmarkResult]:
         """Benchmark common database queries."""
         common_queries = [
             {
@@ -305,14 +306,14 @@ class DatabaseBenchmark:
 
     def concurrent_database_test(
         self,
-        queries: List[Dict[str, str]],
+        queries: list[dict[str, str]],
         concurrent_connections: int = 10,
         database_type: str = "sqlite",
-    ) -> List[DatabaseBenchmarkResult]:
+    ) -> list[DatabaseBenchmarkResult]:
         """Test concurrent database access."""
         results = []
 
-        def execute_query(query_config: Dict[str, str]) -> DatabaseBenchmarkResult:
+        def execute_query(query_config: dict[str, str]) -> DatabaseBenchmarkResult:
             query = query_config["query"]
             query_type = query_config.get("type", "select")
 
@@ -354,7 +355,7 @@ class DatabaseBenchmark:
         database_type: str = "sqlite",
         duration_seconds: int = 60,
         queries_per_second: int = 10,
-    ) -> List[DatabaseBenchmarkResult]:
+    ) -> list[DatabaseBenchmarkResult]:
         """Stress test database with sustained load."""
         results = []
         start_time = time.time()
@@ -479,14 +480,14 @@ class DatabaseBenchmark:
             error_rate=error_rate,
         )
 
-    def generate_report(self, output_path: Optional[Path] = None) -> Dict:
+    def generate_report(self, output_path: Optional[Path] = None) -> dict:
         """Generate comprehensive database performance report."""
         if not self.results:
             raise ValueError("No benchmark results available")
 
         # Analyze by database type
-        database_types = list(set(r.database_type for r in self.results))
-        query_types = list(set(r.query_type for r in self.results))
+        database_types = list({r.database_type for r in self.results})
+        query_types = list({r.query_type for r in self.results})
 
         report = {
             "timestamp": datetime.now().isoformat(),
@@ -524,7 +525,7 @@ class DatabaseBenchmark:
 
         return report
 
-    def _generate_db_insights(self) -> List[str]:
+    def _generate_db_insights(self) -> list[str]:
         """Generate database performance insights."""
         insights = []
 

@@ -10,7 +10,6 @@ Standardizes import patterns across the codebase according to PEP 8:
 Each group separated by blank lines and sorted alphabetically.
 """
 from pathlib import Path
-from typing import List, Tuple
 
 from utils import ScriptContext, print_error, print_info, print_step, print_success
 
@@ -122,7 +121,7 @@ class ImportStandardizer:
 
     def parse_imports(
         self, content: str
-    ) -> Tuple[List[str], List[str], List[str], str]:
+    ) -> tuple[list[str], list[str], list[str], str]:
         """Parse imports from file content."""
         lines = content.split("\n")
 
@@ -207,7 +206,7 @@ class ImportStandardizer:
         )
 
     def _classify_and_add_import(
-        self, import_line: str, standard: List, third_party: List, local: List
+        self, import_line: str, standard: list, third_party: list, local: list
     ):
         """Classify and add import to appropriate list."""
         import_line = import_line.strip()
@@ -234,7 +233,7 @@ class ImportStandardizer:
             local.append(import_line)
 
     def format_imports(
-        self, standard: List[str], third_party: List[str], local: List[str]
+        self, standard: list[str], third_party: list[str], local: list[str]
     ) -> str:
         """Format imports according to PEP 8."""
         result = []
@@ -260,7 +259,7 @@ class ImportStandardizer:
     def standardize_file(self, file_path: Path) -> bool:
         """Standardize imports in a single file."""
         try:
-            with open(file_path, "r", encoding="utf-8") as f:
+            with open(file_path, encoding="utf-8") as f:
                 content = f.read()
 
             standard, third_party, local, rest = self.parse_imports(content)
@@ -361,7 +360,7 @@ def main():
                     print_info(f"Standardized: {py_file}")
 
         print_success(
-            f"Import standardization completed",
+            "Import standardization completed",
             f"Modified {modified_files} out of {total_files} files",
         )
 

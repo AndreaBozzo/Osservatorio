@@ -12,7 +12,7 @@ import time
 from contextlib import contextmanager
 from pathlib import Path
 from threading import Lock
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Optional, Union
 
 import duckdb
 import pandas as pd
@@ -37,7 +37,7 @@ class DuckDBManager:
     - Security validation
     """
 
-    def __init__(self, config: Optional[Union[Dict[str, Any], str]] = None):
+    def __init__(self, config: Optional[Union[dict[str, Any], str]] = None):
         """Initialize DuckDB manager.
 
         Args:
@@ -138,7 +138,7 @@ class DuckDBManager:
             raise
 
     def execute_query(
-        self, query: str, parameters: Optional[Dict[str, Any]] = None
+        self, query: str, parameters: Optional[dict[str, Any]] = None
     ) -> pd.DataFrame:
         """Execute SQL query and return results as DataFrame.
 
@@ -183,7 +183,7 @@ class DuckDBManager:
     def execute_statement(
         self,
         statement: str,
-        parameters: Optional[Union[Dict[str, Any], List[Any]]] = None,
+        parameters: Optional[Union[dict[str, Any], list[Any]]] = None,
     ) -> None:
         """Execute SQL statement without returning results.
 
@@ -354,7 +354,7 @@ class DuckDBManager:
             print(f"Error getting table info: {e}")
             raise
 
-    def get_performance_stats(self) -> Dict[str, Any]:
+    def get_performance_stats(self) -> dict[str, Any]:
         """Get database performance statistics.
 
         Returns:

@@ -262,7 +262,7 @@ def main():
         )
 
     # Riepilogo
-    print(f"\n✅ Organizzazione completata:")
+    print("\n✅ Organizzazione completata:")
     print(f"  File spostati: {total_results['moved']}")
     print(f"  Directory rimosse: {total_results['removed']}")
     print(f"  Errori: {total_results['errors']}")

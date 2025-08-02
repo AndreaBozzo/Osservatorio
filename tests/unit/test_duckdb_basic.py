@@ -3,6 +3,7 @@
 Tests core DuckDB functionality without the complex manager wrapper.
 Focuses on ensuring DuckDB works correctly for ISTAT data processing.
 """
+
 import os
 import tempfile
 
@@ -281,7 +282,6 @@ class TestDuckDBBasic:
         # Each category appears in each year, but not all combinations exist
         # We have 1000 records with 10 categories and 5 years
         # So each category-year combination has 20 records (1000/50)
-        expected_combinations = 10 * 5  # 10 categories * 5 years = 50
         # But our data generation creates only one record per category per year cycle
         # So we should have 10 combinations (one per category)
         assert len(result) == 10  # 10 categories

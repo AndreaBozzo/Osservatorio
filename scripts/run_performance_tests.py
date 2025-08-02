@@ -162,7 +162,7 @@ Examples:
     try:
         # Initialize performance test suite
         if not args.quiet:
-            print(f"Initializing performance test suite...")
+            print("Initializing performance test suite...")
             print(f"Base URL: {args.base_url}")
             print(f"Output directory: {args.output_dir}")
 
@@ -344,7 +344,7 @@ def analyze_ci_results(
             for issue in issues:
                 print(f"  - {issue}")
         else:
-            print(f"\n✅ All CI/CD checks passed")
+            print("\n✅ All CI/CD checks passed")
 
     # Return appropriate exit code
     if len(issues) > 0:
@@ -366,7 +366,7 @@ def print_results_summary(results: dict, duration: float):
     # Overall insights
     insights = results.get("overall_insights", [])
     if insights:
-        print(f"\nKey Insights:")
+        print("\nKey Insights:")
         for insight in insights[:5]:
             print(f"  • {insight}")
 
@@ -386,7 +386,7 @@ def print_results_summary(results: dict, duration: float):
     # Actionable Recommendations
     recommendations = results.get("actionable_recommendations", [])
     if recommendations:
-        print(f"\nTop Recommendations:")
+        print("\nTop Recommendations:")
         for rec in recommendations[:5]:
             print(f"  • {rec}")
 

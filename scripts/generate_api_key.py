@@ -18,7 +18,7 @@ Usage:
 import argparse
 import sys
 from datetime import datetime, timedelta
-from typing import List, Optional
+from typing import Optional
 
 from src.auth.jwt_manager import JWTManager
 from src.auth.models import APIKey
@@ -52,7 +52,7 @@ class APIKeyManager:
             sys.exit(1)
 
     def create_api_key(
-        self, name: str, scopes: List[str], expires_days: Optional[int] = None
+        self, name: str, scopes: list[str], expires_days: Optional[int] = None
     ) -> APIKey:
         """Create new API key
 
@@ -77,7 +77,7 @@ class APIKeyManager:
             # Generate API key
             api_key = self.auth_manager.generate_api_key(name, scopes, expires_days)
 
-            print(f"✅ API Key created successfully!")
+            print("✅ API Key created successfully!")
             print(f"📝 Name: {api_key.name}")
             print(f"🔑 API Key: {api_key.key}")
             print(f"🏷️  Scopes: {', '.join(api_key.scopes)}")
@@ -228,7 +228,7 @@ class APIKeyManager:
             if active_keys:
                 total_usage = sum(k.usage_count for k in active_keys)
                 avg_usage = total_usage / len(active_keys)
-                print(f"📈 Usage Statistics:")
+                print("📈 Usage Statistics:")
                 print(f"  Total Requests: {total_usage:,}")
                 print(f"  Average per Key: {avg_usage:.1f}")
 

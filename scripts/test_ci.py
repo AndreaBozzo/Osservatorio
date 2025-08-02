@@ -7,7 +7,7 @@ import argparse
 import subprocess
 import sys
 from pathlib import Path
-from typing import Optional, Tuple
+from typing import Optional
 
 
 class CITestRunner:
@@ -30,7 +30,7 @@ class CITestRunner:
 
     def run_command(
         self, cmd: str, timeout: Optional[int] = None
-    ) -> Tuple[bool, str, str]:
+    ) -> tuple[bool, str, str]:
         """Esegue un comando con timeout"""
         if timeout is None:
             timeout = self.timeout
@@ -112,7 +112,7 @@ class CITestRunner:
                 print(f"  • {test}")
             return False
         else:
-            print(f"\n✅ Tutti i test essenziali passati!")
+            print("\n✅ Tutti i test essenziali passati!")
             return True
 
     def run_minimal_tests(self) -> bool:

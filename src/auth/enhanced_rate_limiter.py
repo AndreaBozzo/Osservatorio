@@ -16,7 +16,7 @@ import time
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 from src.database.sqlite.manager import SQLiteMetadataManager
 from src.utils.logger import get_logger
@@ -51,7 +51,7 @@ class SuspiciousActivity:
     identifier_type: str
     threat_level: ThreatLevel
     activity_type: str
-    details: Dict[str, Any]
+    details: dict[str, Any]
     timestamp: datetime
     block_until: Optional[datetime] = None
 
@@ -229,7 +229,7 @@ class EnhancedRateLimiter:
         ip_address: Optional[str] = None,
         endpoint: str = "default",
         user_agent: Optional[str] = None,
-        request_data: Optional[Dict] = None,
+        request_data: Optional[dict] = None,
     ) -> RateLimitResult:
         """Enhanced rate limit check with security analysis
 
@@ -445,7 +445,7 @@ class EnhancedRateLimiter:
         ip_address: Optional[str],
         endpoint: str,
         user_agent: Optional[str],
-        request_data: Optional[Dict],
+        request_data: Optional[dict],
     ) -> float:
         """Analyze request for suspicious activity patterns
 
@@ -806,7 +806,7 @@ class EnhancedRateLimiter:
         except Exception as e:
             logger.error(f"Failed to log enhanced violation: {e}")
 
-    def get_security_metrics(self) -> Dict[str, Any]:
+    def get_security_metrics(self) -> dict[str, Any]:
         """Get comprehensive security metrics"""
         try:
             metrics = {}
@@ -858,7 +858,7 @@ class EnhancedRateLimiter:
             logger.error(f"Failed to get security metrics: {e}")
             return {}
 
-    def cleanup_old_data(self, days: int = 30) -> Dict[str, int]:
+    def cleanup_old_data(self, days: int = 30) -> dict[str, int]:
         """Clean up old rate limiting and security data
 
         Args:

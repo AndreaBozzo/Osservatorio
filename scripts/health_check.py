@@ -12,7 +12,6 @@ from pathlib import Path
 import requests
 
 
-
 def print_header():
     """Print the health check header"""
     print("🏥 Osservatorio Health Check")
@@ -58,7 +57,7 @@ def check_fastapi_server():
     try:
         response = requests.get("http://localhost:8000/health", timeout=5)
         return response.status_code == 200
-    except:
+    except Exception:
         return False
 
 

@@ -3,7 +3,6 @@ Factory pattern for creating ISTAT converters.
 Provides a centralized way to instantiate converters for different targets.
 """
 
-from typing import Dict, Type
 
 from src.utils.logger import get_logger
 
@@ -15,10 +14,10 @@ logger = get_logger(__name__)
 class ConverterFactory:
     """Factory for creating ISTAT data converters."""
 
-    _converters: Dict[str, Type[BaseIstatConverter]] = {}
+    _converters: dict[str, type[BaseIstatConverter]] = {}
 
     @classmethod
-    def register_converter(cls, target: str, converter_class: Type[BaseIstatConverter]):
+    def register_converter(cls, target: str, converter_class: type[BaseIstatConverter]):
         """Register a converter class for a specific target."""
         cls._converters[target.lower()] = converter_class
         logger.info(f"Registered converter for target: {target}")

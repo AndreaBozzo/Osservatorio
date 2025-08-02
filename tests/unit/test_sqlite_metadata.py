@@ -4,6 +4,7 @@ Unit tests for SQLite metadata layer.
 Tests the SQLite metadata manager, schema creation, and CRUD operations
 for the hybrid SQLite + DuckDB architecture.
 """
+
 import tempfile
 import threading
 from datetime import datetime, timedelta
@@ -45,7 +46,7 @@ class TestMetadataSchema:
 
     def test_schema_default_config(self, temp_db_path):
         """Test that default configuration is inserted."""
-        schema = create_metadata_schema(temp_db_path)
+        create_metadata_schema(temp_db_path)
 
         # Test that we can get a default config value
         import sqlite3

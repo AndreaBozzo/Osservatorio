@@ -8,6 +8,7 @@ Tests all components with proper mocking and real validation:
 - Security monitoring dashboard
 - Configuration management
 """
+
 from contextlib import contextmanager
 from unittest.mock import MagicMock, Mock, patch
 

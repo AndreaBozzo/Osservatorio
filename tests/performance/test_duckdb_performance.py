@@ -3,9 +3,9 @@
 This module provides detailed performance benchmarks specifically for DuckDB
 operations in the ISTAT data processing pipeline.
 """
+
 import gc
 import time
-from typing import Dict, Tuple
 
 import pandas as pd
 import psutil
@@ -27,7 +27,7 @@ class DuckDBPerformanceProfiler:
         self.baseline_memory = None
         self.start_time = None
 
-    def start_profiling(self) -> Dict[str, float]:
+    def start_profiling(self) -> dict[str, float]:
         """Start performance profiling session."""
         gc.collect()  # Clean garbage before measurement
         self.baseline_memory = self.process.memory_info().rss / 1024 / 1024  # MB
@@ -38,7 +38,7 @@ class DuckDBPerformanceProfiler:
             "start_time": self.start_time,
         }
 
-    def end_profiling(self) -> Dict[str, float]:
+    def end_profiling(self) -> dict[str, float]:
         """End profiling and return metrics."""
         end_time = time.perf_counter()
         current_memory = self.process.memory_info().rss / 1024 / 1024  # MB
@@ -209,7 +209,7 @@ class TestDuckDBPerformance:
 
             # Second run (cache hit)
             self.profiler.start_profiling()
-            result2 = query_func()
+            query_func()
             metrics_hit = self.profiler.end_profiling()
 
             query_results[query_name] = {
@@ -268,7 +268,7 @@ class TestDuckDBPerformance:
         obs_df = pd.DataFrame(observations)
         adapter.insert_observations(obs_df)
 
-        def execute_query(thread_id: int) -> Tuple[int, float, int]:
+        def execute_query(thread_id: int) -> tuple[int, float, int]:
             """Execute query in separate thread."""
             start_time = time.perf_counter()
 
@@ -606,7 +606,7 @@ class TestDuckDBPerformance:
                     adapter.insert_metadata(
                         dataset_id, f"Memory Test {dataset_id}", "performance", 5
                     )
-                except:
+                except Exception:
                     # Metadata might already exist from previous iterations
                     pass
 
@@ -616,9 +616,7 @@ class TestDuckDBPerformance:
             post_insert_memory = get_memory_usage()
 
             # Measure memory after query
-            result = self.manager.execute_query(
-                "SELECT COUNT(*) FROM istat.istat_observations"
-            )
+            self.manager.execute_query("SELECT COUNT(*) FROM istat.istat_observations")
             post_query_memory = get_memory_usage()
 
             memory_patterns[size] = {
@@ -656,7 +654,7 @@ class TestDuckDBPerformance:
         adapter.close()
 
 
-def generate_performance_report(test_results: Dict) -> str:
+def generate_performance_report(test_results: dict) -> str:
     """Generate comprehensive performance report."""
     report = [
         "# DuckDB Performance Test Report",

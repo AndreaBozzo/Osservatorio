@@ -21,7 +21,7 @@ Features:
 import threading
 from contextlib import contextmanager
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Optional
 
 from src.database.duckdb import DuckDBManager
 from src.utils.logger import get_logger
@@ -68,7 +68,7 @@ class UnifiedDataRepository:
         description: str = None,
         istat_agency: str = None,
         priority: int = 5,
-        metadata: Dict[str, Any] = None,
+        metadata: dict[str, Any] = None,
     ) -> bool:
         """Register a dataset in both metadata registry and analytics engine.
 
@@ -128,7 +128,7 @@ class UnifiedDataRepository:
             logger.error(f"Failed to register dataset {dataset_id} completely: {e}")
             return False
 
-    def get_dataset_complete(self, dataset_id: str) -> Optional[Dict[str, Any]]:
+    def get_dataset_complete(self, dataset_id: str) -> Optional[dict[str, Any]]:
         """Get complete dataset information from both databases.
 
         Args:
@@ -161,7 +161,7 @@ class UnifiedDataRepository:
             logger.error(f"Failed to get complete dataset info for {dataset_id}: {e}")
             return None
 
-    def _get_dataset_analytics_stats(self, dataset_id: str) -> Dict[str, Any]:
+    def _get_dataset_analytics_stats(self, dataset_id: str) -> dict[str, Any]:
         """Get analytics statistics for a dataset from DuckDB.
 
         Args:
@@ -208,7 +208,7 @@ class UnifiedDataRepository:
 
     def list_datasets_complete(
         self, category: str = None, with_analytics: bool = None
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """List datasets with complete information from both databases.
 
         Args:
@@ -328,10 +328,10 @@ class UnifiedDataRepository:
     def execute_analytics_query(
         self,
         query: str,
-        params: List[Any] = None,
+        params: list[Any] = None,
         user_id: str = None,
         cache_minutes: int = 10,
-    ) -> List[Tuple]:
+    ) -> list[tuple]:
         """Execute analytics query with audit logging.
 
         Args:
@@ -399,7 +399,7 @@ class UnifiedDataRepository:
         measure_code: str = None,
         start_year: int = None,
         end_year: int = None,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Get time series data for a dataset with metadata integration.
 
         Args:
@@ -496,7 +496,7 @@ class UnifiedDataRepository:
 
     def get_categorization_rules(
         self, category: str = None, active_only: bool = True
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Get categorization rules for dataflow analysis.
 
         Args:
@@ -516,7 +516,7 @@ class UnifiedDataRepository:
         self,
         rule_id: str,
         category: str,
-        keywords: List[str],
+        keywords: list[str],
         priority: int = 5,
         description: str = None,
     ) -> bool:
@@ -543,7 +543,7 @@ class UnifiedDataRepository:
     def update_categorization_rule(
         self,
         rule_id: str,
-        keywords: List[str] = None,
+        keywords: list[str] = None,
         priority: int = None,
         is_active: bool = None,
         description: str = None,
@@ -585,7 +585,7 @@ class UnifiedDataRepository:
 
     # System Operations
 
-    def get_system_status(self) -> Dict[str, Any]:
+    def get_system_status(self) -> dict[str, Any]:
         """Get complete system status from both databases.
 
         Returns:
@@ -679,7 +679,7 @@ class UnifiedDataRepository:
 
     # Convenience Methods (Aliases for backward compatibility)
 
-    def list_datasets(self, category: str = None) -> List[Dict[str, Any]]:
+    def list_datasets(self, category: str = None) -> list[dict[str, Any]]:
         """List datasets (alias for list_datasets_complete for backward compatibility).
 
         Args:

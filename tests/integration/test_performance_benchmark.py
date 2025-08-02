@@ -4,6 +4,7 @@ Performance benchmark integration tests.
 Tests that integrate the benchmark script into the test suite
 and validate performance regression detection.
 """
+
 import subprocess
 import sys
 from pathlib import Path
@@ -73,7 +74,7 @@ class TestPerformanceBenchmark:
         start_time = time.time()
         try:
             # This will likely use cache fallback
-            dataflows = client.fetch_dataflows(limit=1)
+            client.fetch_dataflows(limit=1)
         except Exception:
             # Expected if no network - cache fallback should still work
             pass
@@ -92,7 +93,7 @@ class TestPerformanceBenchmark:
 
         # Measure multiple status calls to test circuit breaker overhead
         times = []
-        for i in range(5):
+        for _i in range(5):
             start_time = time.time()
             client.get_status()
             times.append(time.time() - start_time)
@@ -133,7 +134,7 @@ class TestPerformanceBenchmark:
             total_processed = len(result.successful) + len(result.failed)
             assert total_processed == len(test_dataset_ids)
 
-        except Exception as e:
+        except Exception:
             # If network issues, at least test should complete quickly
             batch_time = time.time() - start_time
             assert batch_time < 5.0, f"Batch error handling too slow: {batch_time:.2f}s"
@@ -204,7 +205,7 @@ class TestPerformanceRegression:
 
         from src.api.production_istat_client import ProductionIstatClient
 
-        client = ProductionIstatClient()
+        ProductionIstatClient()
 
         # Define performance baselines (in seconds)
         baselines = {

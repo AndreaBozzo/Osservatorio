@@ -1,6 +1,7 @@
 """
 Configurazione centralizzata del progetto.
 """
+
 import os
 from pathlib import Path
 

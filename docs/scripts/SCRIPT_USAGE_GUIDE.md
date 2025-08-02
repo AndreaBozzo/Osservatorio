@@ -167,11 +167,11 @@ If you see import warnings, they're likely from the fallback compatibility layer
    ```python
    \"\"\"
    Script Description
-   
+
    Usage:
        # Issue #84: Use proper package imports
        python -m scripts.new_script_name
-       
+
        # Legacy support (run from project root):
        python scripts/new_script_name.py
    \"\"\"
@@ -187,7 +187,7 @@ Test both execution methods:
 # Test module execution
 python -m scripts.your_script
 
-# Test legacy execution  
+# Test legacy execution
 python scripts/your_script.py
 ```
 

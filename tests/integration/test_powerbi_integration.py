@@ -9,6 +9,7 @@ Tests the complete PowerBI integration pipeline including:
 - Quality score integration
 - Metadata bridge functionality
 """
+
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -60,7 +61,7 @@ class TestPowerBIIntegration:
         # Use provided sample data or fixture data
         if sample_data:
             # Insert data (would use actual DuckDB insert in real implementation)
-            df = pd.DataFrame(sample_data)
+            pd.DataFrame(sample_data)
             # This is a simplified version - real implementation would use DuckDB manager
 
     def test_star_schema_generation(self, sample_powerbi_test_data):
@@ -154,7 +155,7 @@ class TestPowerBIIntegration:
         assert isinstance(policy, RefreshPolicy)
         assert policy.dataset_id == self.test_dataset_id
         assert policy.incremental_window_days == 15
-        assert policy.enabled == True
+        assert policy.enabled
 
         # Test policy retrieval
         retrieved_policy = self.incremental_manager.get_refresh_policy(
@@ -192,7 +193,8 @@ class TestPowerBIIntegration:
 
         # Execute refresh
         result = self.incremental_manager.execute_incremental_refresh(
-            self.test_dataset_id, force=True  # Force refresh for testing
+            self.test_dataset_id,
+            force=True,  # Force refresh for testing
         )
 
         # Verify refresh result
@@ -425,8 +427,8 @@ class TestPowerBIIntegration:
 
         # Verify end-to-end integration
         dataset_gov = governance["datasets"][0]
-        assert dataset_gov["has_lineage"] == True
-        assert dataset_gov["powerbi_integrated"] == True
+        assert dataset_gov["has_lineage"]
+        assert dataset_gov["powerbi_integrated"]
         assert dataset_gov["quality_score"] > 0
 
     def test_error_handling(self):
@@ -478,7 +480,7 @@ class TestPowerBIIntegration:
         try:
             if hasattr(self, "repository"):
                 del self.repository
-        except:
+        except Exception:
             pass
 
 

@@ -2,6 +2,7 @@
 Integration tests for API connectivity and data fetching.
 Issue #84: Migrated from IstatAPITester to ProductionIstatClient
 """
+
 import time
 import xml.etree.ElementTree as ET
 from unittest.mock import Mock, patch
@@ -53,7 +54,7 @@ class TestAPIIntegration:
         self, mock_requests_session, sample_dataflow_xml
     ):
         """Test dataflow discovery integration."""
-        client = ProductionIstatClient()
+        ProductionIstatClient()
 
         # Mock dataflow response
         mock_requests_session.get.return_value.status_code = 200
@@ -92,21 +93,13 @@ class TestAPIIntegration:
     )
     def test_dataset_testing_integration(self, mock_requests_session, sample_xml_data):
         """Test dataset testing integration."""
-        client = ProductionIstatClient()
+        ProductionIstatClient()
 
         # Mock data response
         mock_requests_session.get.return_value.status_code = 200
         mock_requests_session.get.return_value.content = sample_xml_data.encode("utf-8")
 
         # Test priority datasets
-        priority_datasets = [
-            {
-                "id": "101_12",
-                "name": "Popolazione residente",
-                "category": "popolazione",
-                "relevance_score": 10,
-            }
-        ]
 
         with patch("time.sleep"):  # Skip rate limiting in tests
             # Use modern service for dataset testing
@@ -157,11 +150,11 @@ class TestAPIIntegration:
             try:
                 client.fetch_dataset("INVALID_DATASET_ID")
                 result = {"success": True, "status_code": 200}
-            except Exception as e:
+            except Exception:
                 result = {"success": False, "status_code": status_code}
                 success_tests += 1
 
-            assert result["success"] == False
+            assert not result["success"]
             assert result["status_code"] == status_code
 
         # All error scenarios should have failed
@@ -188,7 +181,7 @@ class TestAPIIntegration:
         except Exception as e:
             result = {"success": False, "error": str(e)}
 
-        assert result["success"] == False
+        assert not result["success"]
         assert "error" in result
         assert (
             "timeout" in result["error"].lower() or "failed" in result["error"].lower()
@@ -215,7 +208,7 @@ class TestAPIIntegration:
             for i in range(3)
         ]
 
-        start_time = time.time()
+        time.time()
 
         with patch("time.sleep") as mock_sleep:
             # Assign mocked session to client
@@ -223,9 +216,9 @@ class TestAPIIntegration:
 
             # Simulate multiple requests with rate limiting
             result = 0
-            for dataset in priority_datasets:
+            for _dataset in priority_datasets:
                 try:
-                    status = client.get_status()
+                    client.get_status()
                     result += 1
                     # Simulate rate limiting sleep
                     mock_sleep()
@@ -235,7 +228,7 @@ class TestAPIIntegration:
             # Should call sleep for rate limiting
             assert mock_sleep.call_count >= 2  # At least 2 sleeps for 3 requests
 
-        end_time = time.time()
+        time.time()
 
         # Should have tested all datasets - result is an int
         assert isinstance(result, int)
@@ -318,7 +311,7 @@ class TestAPIIntegration:
     ):
         """Test comprehensive integration workflow."""
         client = ProductionIstatClient()
-        analyzer = get_dataflow_analysis_service()
+        get_dataflow_analysis_service()
 
         # Step 1: Test connectivity
         mock_requests_session.get.return_value.status_code = 200
@@ -485,12 +478,6 @@ class TestAPIIntegration:
             )
             mock_requests_session.get.return_value.text = response_content
 
-            endpoint = {
-                "name": "test_endpoint",
-                "url": "http://test.com/data",
-                "description": "Test endpoint",
-            }
-
             # Test endpoint by trying to fetch status
             try:
                 status_result = client.get_status()
@@ -499,7 +486,7 @@ class TestAPIIntegration:
                 result = {"success": False, "status_code": 500, "error": str(e)}
 
             # Basic success should be True if no exception
-            assert result["success"] == True
+            assert result["success"]
             assert result["status_code"] == 200
 
             # Additional validation could be added here
@@ -507,9 +494,8 @@ class TestAPIIntegration:
             if should_be_valid:
                 try:
                     ET.fromstring(response_content)
-                    xml_valid = True
                 except ET.ParseError:
-                    xml_valid = False
+                    pass
 
                 # This is just demonstrating how we might validate XML
                 # The actual implementation might handle this differently

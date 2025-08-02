@@ -16,8 +16,7 @@ import uuid
 from contextvars import ContextVar
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, Optional
-
+from typing import Any, Optional
 
 # Context variables for request tracing
 correlation_id_context: ContextVar[str] = ContextVar("correlation_id", default="")
@@ -64,8 +63,8 @@ class StructuredLogRecord:
         correlation_id: Optional[str] = None,
         session_id: Optional[str] = None,
         duration_ms: Optional[float] = None,
-        metadata: Optional[Dict[str, Any]] = None,
-        error_details: Optional[Dict[str, Any]] = None,
+        metadata: Optional[dict[str, Any]] = None,
+        error_details: Optional[dict[str, Any]] = None,
     ):
         self.timestamp = datetime.utcnow()
         self.level = level
@@ -80,7 +79,7 @@ class StructuredLogRecord:
         self.metadata = metadata or {}
         self.error_details = error_details
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary"""
         record = {
             "timestamp": self.timestamp.isoformat() + "Z",

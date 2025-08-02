@@ -4,6 +4,7 @@ Integration tests for DataflowAnalysisService.
 Tests the service with real dependencies and end-to-end workflows
 to ensure proper integration with the rest of the system.
 """
+
 import asyncio
 import tempfile
 from pathlib import Path
@@ -18,9 +19,7 @@ from src.services.models import (
     DataflowCategory,
     DataflowTest,
 )
-from src.services.service_factory import (
-    create_dataflow_analysis_service,
-)
+from src.services.service_factory import create_dataflow_analysis_service
 
 
 class TestDataflowServiceIntegration:
@@ -175,7 +174,7 @@ class TestDataflowServiceIntegration:
 
         # Build a lookup dict for easier testing
         all_dataflows = {}
-        for category, dfs in result.categorized_dataflows.items():
+        for _category, dfs in result.categorized_dataflows.items():
             for df in dfs:
                 all_dataflows[df.id] = df
 

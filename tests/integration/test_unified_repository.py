@@ -4,6 +4,7 @@ Integration tests for the Unified Data Repository.
 Tests the facade pattern implementation that combines SQLite metadata
 and DuckDB analytics operations in the hybrid architecture.
 """
+
 import tempfile
 import threading
 from datetime import datetime

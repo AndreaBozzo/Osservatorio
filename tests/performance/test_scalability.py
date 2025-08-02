@@ -1,6 +1,7 @@
 """
 Performance and scalability tests for the ISTAT data processing system.
 """
+
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
@@ -111,7 +112,7 @@ class TestScalabilityPerformance:
 
     def test_memory_usage_scaling(self, temp_dir):
         """Test memory usage with increasing data sizes."""
-        analyzer = get_dataflow_analysis_service()
+        get_dataflow_analysis_service()
 
         # Test with different data sizes
         data_sizes = [100, 500, 1000, 2000]
@@ -126,7 +127,7 @@ class TestScalabilityPerformance:
             memory_before = process.memory_info().rss / 1024 / 1024  # MB
 
             # Process data
-            categorized_data = self._simulate_data_processing(test_data)
+            self._simulate_data_processing(test_data)
 
             # Measure memory after processing
             memory_after = process.memory_info().rss / 1024 / 1024  # MB
@@ -247,7 +248,7 @@ class TestScalabilityPerformance:
 
     def test_categorization_performance(self):
         """Test categorization performance with many datasets."""
-        analyzer = get_dataflow_analysis_service()
+        get_dataflow_analysis_service()
 
         # Generate many datasets
         num_datasets = 5000
@@ -290,7 +291,7 @@ class TestScalabilityPerformance:
 
     def test_batch_processing_performance(self, temp_dir):
         """Test batch processing performance."""
-        analyzer = get_dataflow_analysis_service()
+        get_dataflow_analysis_service()
 
         # Generate batch of datasets
         batch_size = 100
@@ -495,7 +496,7 @@ class TestScalabilityPerformance:
                     f'            <structure:Dataflow id="test_{i}" version="1.0" agencyID="IT1">',
                     f'                <common:Name xml:lang="it">Test {category} {i}</common:Name>',
                     f'                <common:Description xml:lang="it">Test dataset {i} for {category}</common:Description>',
-                    f"            </structure:Dataflow>",
+                    "            </structure:Dataflow>",
                 ]
             )
 
@@ -524,7 +525,7 @@ class TestScalabilityPerformance:
         """Simulate data processing operations."""
         # Simulate categorization
         categories = {}
-        for index, row in data.iterrows():
+        for _index, row in data.iterrows():
             category = row.get("categoria", "default")
             if category not in categories:
                 categories[category] = []

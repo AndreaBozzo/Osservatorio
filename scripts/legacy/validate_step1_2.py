@@ -1,6 +1,7 @@
 """
 Validazione Step 1.2: Verifica setup PowerBI completo
 """
+
 import json
 import os
 import sys

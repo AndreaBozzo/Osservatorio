@@ -7,7 +7,7 @@ with proper dependency injection, following the dependency inversion principle.
 
 from datetime import datetime
 from functools import lru_cache
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 from ..api.production_istat_client import ProductionIstatClient
 from ..database.sqlite.repository import UnifiedDataRepository, get_unified_repository
@@ -43,7 +43,7 @@ class ServiceContainer:
         """Check if a service is registered."""
         return service_type in self._services
 
-    def health_check(self) -> Dict[str, Any]:
+    def health_check(self) -> dict[str, Any]:
         """
         Perform health check on registered services.
 
@@ -71,9 +71,9 @@ class ServiceContainer:
                 else:
                     # Basic check - service exists and is not None
                     health_status["services"][service_name] = {
-                        "status": "healthy"
-                        if service_instance is not None
-                        else "unhealthy",
+                        "status": (
+                            "healthy" if service_instance is not None else "unhealthy"
+                        ),
                         "type": str(type(service_instance)),
                     }
 

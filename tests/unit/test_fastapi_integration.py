@@ -500,7 +500,6 @@ class TestFastAPIIntegration:
 
         # Check for rate limiting headers (may not be present in test environment)
         # This is more of a smoke test
-        headers = response.headers
         # Headers might be added by middleware
 
     def test_response_time_headers(self, client, auth_headers, test_db_setup):
@@ -578,9 +577,9 @@ class TestFastAPIIntegration:
         import time
 
         # Test dataset list performance (<100ms target)
-        start_time = time.time()
+        time.time()
         response = client.get("/datasets", headers=auth_headers)
-        end_time = time.time()
+        time.time()
 
         assert response.status_code == 200
 
@@ -593,9 +592,9 @@ class TestFastAPIIntegration:
             ), f"Dataset list took {process_time_ms}ms (target: <100ms)"
 
         # Test dataset detail performance (<200ms target)
-        start_time = time.time()
+        time.time()
         response = client.get("/datasets/TEST_DATASET_1", headers=auth_headers)
-        end_time = time.time()
+        time.time()
 
         assert response.status_code == 200
 

@@ -1,6 +1,7 @@
 """
 Unit tests for PowerBI API client.
 """
+
 from datetime import datetime, timedelta
 from unittest.mock import Mock, patch
 
@@ -77,7 +78,7 @@ class TestPowerBIAPIClient:
         client = PowerBIAPIClient()
         result = client.authenticate()
 
-        assert result == True
+        assert result
         assert client.access_token == "test_access_token"
         assert client.token_expires_at > datetime.now()
         assert "Bearer test_access_token" in client.session.headers["Authorization"]
@@ -111,7 +112,7 @@ class TestPowerBIAPIClient:
         client = PowerBIAPIClient()
         result = client.authenticate()
 
-        assert result == False
+        assert not result
         assert client.access_token is None
 
     @patch("src.api.powerbi_api.Config")
@@ -148,7 +149,7 @@ class TestPowerBIAPIClient:
 
         result = client._ensure_authenticated()
 
-        assert result == True
+        assert result
         assert client.access_token == "new_access_token"
 
     @patch("src.api.powerbi_api.Config")
@@ -272,7 +273,7 @@ class TestPowerBIAPIClient:
                 "test_dataset_id", "TestTable", test_data, "test_workspace_id"
             )
 
-            assert result == True
+            assert result
 
             mock_post.assert_called_once_with(
                 "https://api.powerbi.com/v1.0/myorg/groups/test_workspace_id/datasets/test_dataset_id/tables/TestTable/rows",
@@ -295,7 +296,7 @@ class TestPowerBIAPIClient:
 
             result = client.refresh_dataset("test_dataset_id", "test_workspace_id")
 
-            assert result == True
+            assert result
 
             mock_post.assert_called_once_with(
                 "https://api.powerbi.com/v1.0/myorg/groups/test_workspace_id/datasets/test_dataset_id/refreshes"
@@ -318,10 +319,10 @@ class TestPowerBIAPIClient:
                 with patch.object(client, "get_datasets", return_value=[{"id": "ds1"}]):
                     result = client.test_connection()
 
-                    assert result["authentication"] == True
-                    assert result["workspaces_accessible"] == True
+                    assert result["authentication"]
+                    assert result["workspaces_accessible"]
                     assert result["workspace_count"] == 2
-                    assert result["datasets_accessible"] == True
+                    assert result["datasets_accessible"]
                     assert result["dataset_count"] == 1
                     assert len(result["errors"]) == 0
 

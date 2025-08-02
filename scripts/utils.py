@@ -13,7 +13,7 @@ import json
 import logging
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 try:
     from src.utils.config import Config
@@ -88,7 +88,7 @@ def setup_script_logging(
     return logging.getLogger(script_name)
 
 
-def get_script_config() -> Dict[str, Any]:
+def get_script_config() -> dict[str, Any]:
     """Get centralized configuration for scripts."""
     if Config:
         return {
@@ -132,17 +132,17 @@ def format_size(bytes_size: int) -> str:
     return f"{bytes_size:.1f}TB"
 
 
-def safe_json_load(file_path: Path) -> Optional[Dict]:
+def safe_json_load(file_path: Path) -> Optional[dict]:
     """Safely load JSON file with error handling."""
     try:
-        with open(file_path, "r", encoding="utf-8") as f:
+        with open(file_path, encoding="utf-8") as f:
             return json.load(f)
     except (FileNotFoundError, json.JSONDecodeError) as e:
         print_error(f"Failed to load JSON file: {file_path}", str(e))
         return None
 
 
-def safe_json_save(data: Dict, file_path: Path) -> bool:
+def safe_json_save(data: dict, file_path: Path) -> bool:
     """Safely save data to JSON file with error handling."""
     try:
         file_path.parent.mkdir(parents=True, exist_ok=True)

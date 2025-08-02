@@ -4,9 +4,10 @@ Domain models for dataflow analysis service.
 This module contains Pydantic models that represent the domain objects
 used in dataflow analysis operations.
 """
+
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
@@ -156,7 +157,7 @@ class CategoryResult(BaseModel):
 
     category: DataflowCategory = Field(..., description="Assigned category")
     relevance_score: int = Field(..., description="Score for this category")
-    matched_keywords: List[str] = Field(
+    matched_keywords: list[str] = Field(
         default_factory=list, description="Keywords that matched"
     )
     confidence: float = Field(0.0, description="Confidence in categorization (0-1)")
@@ -179,7 +180,7 @@ class CategoryResult(BaseModel):
 class AnalysisFilters(BaseModel):
     """Filters for dataflow analysis operations."""
 
-    categories: Optional[List[DataflowCategory]] = Field(
+    categories: Optional[list[DataflowCategory]] = Field(
         None, description="Filter by categories"
     )
     min_relevance_score: int = Field(0, description="Minimum relevance score")
@@ -200,17 +201,17 @@ class AnalysisResult(BaseModel):
     """Complete analysis result with categorized dataflows."""
 
     total_analyzed: int = Field(..., description="Total dataflows analyzed")
-    categorized_dataflows: Dict[DataflowCategory, List[IstatDataflow]] = Field(
+    categorized_dataflows: dict[DataflowCategory, list[IstatDataflow]] = Field(
         default_factory=dict, description="Dataflows grouped by category"
     )
-    test_results: List[DataflowTestResult] = Field(
+    test_results: list[DataflowTestResult] = Field(
         default_factory=list, description="Test results for analyzed dataflows"
     )
     tableau_ready_count: int = Field(0, description="Number of Tableau-ready dataflows")
     analysis_timestamp: datetime = Field(
         default_factory=datetime.now, description="When analysis was performed"
     )
-    performance_metrics: Dict[str, Any] = Field(
+    performance_metrics: dict[str, Any] = Field(
         default_factory=dict, description="Performance metrics from analysis"
     )
 
@@ -224,12 +225,12 @@ class AnalysisResult(BaseModel):
 
     def get_top_by_category(
         self, category: DataflowCategory, limit: int = 5
-    ) -> List[IstatDataflow]:
+    ) -> list[IstatDataflow]:
         """Get top dataflows for a specific category."""
         dataflows = self.categorized_dataflows.get(category, [])
         return sorted(dataflows, key=lambda x: x.relevance_score, reverse=True)[:limit]
 
-    def get_summary_stats(self) -> Dict[str, int]:
+    def get_summary_stats(self) -> dict[str, int]:
         """Get summary statistics for the analysis."""
         stats = {"total_dataflows": self.total_analyzed}
 
@@ -244,7 +245,7 @@ class AnalysisResult(BaseModel):
 class BulkAnalysisRequest(BaseModel):
     """Request model for bulk dataflow analysis."""
 
-    dataflow_ids: List[str] = Field(..., description="List of dataflow IDs to analyze")
+    dataflow_ids: list[str] = Field(..., description="List of dataflow IDs to analyze")
     include_tests: bool = Field(True, description="Whether to run data access tests")
     save_samples: bool = Field(False, description="Whether to save sample data files")
     max_concurrent: int = Field(5, description="Maximum concurrent requests")
@@ -261,7 +262,7 @@ class CategorizationRule(BaseModel):
 
     id: Optional[str] = Field(None, description="Rule ID")
     category: DataflowCategory = Field(..., description="Target category")
-    keywords: List[str] = Field(..., description="Keywords to match")
+    keywords: list[str] = Field(..., description="Keywords to match")
     priority: int = Field(..., description="Category priority weight")
     is_active: bool = Field(True, description="Whether rule is active")
     created_at: Optional[datetime] = Field(None, description="Rule creation time")

@@ -6,7 +6,7 @@ import json
 import os
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 import msal
 import requests
@@ -125,7 +125,7 @@ class PowerBIAPIClient:
         return True
 
     @rate_limit(max_requests=100, window=3600)  # 100 requests per hour
-    def get_workspaces(self) -> List[Dict[str, Any]]:
+    def get_workspaces(self) -> list[dict[str, Any]]:
         """Recupera lista dei workspace disponibili."""
         if not self._ensure_authenticated():
             return []
@@ -155,7 +155,7 @@ class PowerBIAPIClient:
             return []
 
     @rate_limit(max_requests=100, window=3600)  # 100 requests per hour
-    def get_datasets(self, workspace_id: Optional[str] = None) -> List[Dict[str, Any]]:
+    def get_datasets(self, workspace_id: Optional[str] = None) -> list[dict[str, Any]]:
         """Recupera lista dei dataset nel workspace."""
         if not self._ensure_authenticated():
             return []
@@ -187,7 +187,7 @@ class PowerBIAPIClient:
             logger.error(f"Errore recupero dataset: {e}")
             return []
 
-    def get_reports(self, workspace_id: Optional[str] = None) -> List[Dict[str, Any]]:
+    def get_reports(self, workspace_id: Optional[str] = None) -> list[dict[str, Any]]:
         """Recupera lista dei report nel workspace."""
         if not self._ensure_authenticated():
             return []
@@ -214,8 +214,8 @@ class PowerBIAPIClient:
             return []
 
     def create_dataset(
-        self, dataset_definition: Dict, workspace_id: Optional[str] = None
-    ) -> Optional[Dict[str, Any]]:
+        self, dataset_definition: dict, workspace_id: Optional[str] = None
+    ) -> Optional[dict[str, Any]]:
         """Crea un nuovo dataset in PowerBI."""
         if not self._ensure_authenticated():
             return None
@@ -246,7 +246,7 @@ class PowerBIAPIClient:
         self,
         dataset_id: str,
         table_name: str,
-        data: List[Dict[str, Any]],
+        data: list[dict[str, Any]],
         workspace_id: Optional[str] = None,
     ) -> bool:
         """Invia dati a un dataset esistente."""
@@ -304,7 +304,7 @@ class PowerBIAPIClient:
 
     def get_dataset_refresh_history(
         self, dataset_id: str, workspace_id: Optional[str] = None
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Recupera cronologia refresh di un dataset."""
         if not self._ensure_authenticated():
             return []
@@ -332,7 +332,7 @@ class PowerBIAPIClient:
 
     def upload_pbix_file(
         self, file_path: str, dataset_name: str, workspace_id: Optional[str] = None
-    ) -> Optional[Dict[str, Any]]:
+    ) -> Optional[dict[str, Any]]:
         """Carica un file PBIX nel workspace."""
         if not self._ensure_authenticated():
             return None
@@ -374,7 +374,7 @@ class PowerBIAPIClient:
             logger.error(f"Errore upload PBIX: {e}")
             return None
 
-    def test_connection(self) -> Dict[str, Any]:
+    def test_connection(self) -> dict[str, Any]:
         """Testa la connessione a PowerBI e ritorna informazioni diagnostiche."""
         logger.info("Test connessione PowerBI...")
 
@@ -460,7 +460,7 @@ def main():
     print(f"Numero dataset: {test_result['dataset_count']}")
 
     if test_result["errors"]:
-        print(f"\n❌ ERRORI:")
+        print("\n❌ ERRORI:")
         for error in test_result["errors"]:
             print(f"  • {error}")
 

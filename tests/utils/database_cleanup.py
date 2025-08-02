@@ -4,12 +4,13 @@ Database cleanup utilities for tests.
 Provides robust file cleanup for SQLite and DuckDB files on Windows,
 handling common permission errors and file locking issues.
 """
+
 import gc
 import logging
 import sqlite3
 import time
 from pathlib import Path
-from typing import List, Optional
+from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -144,7 +145,7 @@ class DatabaseCleaner:
 
     @staticmethod
     def cleanup_database_files(
-        sqlite_paths: List[str] = None, duckdb_paths: List[str] = None
+        sqlite_paths: list[str] = None, duckdb_paths: list[str] = None
     ) -> dict:
         """
         Cleanup multiple database files.

@@ -8,7 +8,7 @@ This module implements partitioning strategies to optimize query performance:
 """
 
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 import pandas as pd
 
@@ -23,7 +23,7 @@ logger = get_logger(__name__)
 class PartitionStrategy:
     """Base class for partitioning strategies."""
 
-    def __init__(self, name: str, columns: List[str]):
+    def __init__(self, name: str, columns: list[str]):
         """Initialize partition strategy.
 
         Args:
@@ -33,7 +33,7 @@ class PartitionStrategy:
         self.name = name
         self.columns = columns
 
-    def get_partition_key(self, row: Dict[str, Any]) -> str:
+    def get_partition_key(self, row: dict[str, Any]) -> str:
         """Generate partition key for a data row.
 
         Args:
@@ -59,7 +59,7 @@ class YearPartitionStrategy(PartitionStrategy):
     def __init__(self):
         super().__init__("year_partition", ["year"])
 
-    def get_partition_key(self, row: Dict[str, Any]) -> str:
+    def get_partition_key(self, row: dict[str, Any]) -> str:
         """Generate year-based partition key."""
         year = row.get("year", datetime.now().year)
         return f"year_{year}"
@@ -84,7 +84,7 @@ class TerritoryPartitionStrategy(PartitionStrategy):
     def __init__(self):
         super().__init__("territory_partition", ["territory_code"])
 
-    def get_partition_key(self, row: Dict[str, Any]) -> str:
+    def get_partition_key(self, row: dict[str, Any]) -> str:
         """Generate territory-based partition key."""
         territory = row.get("territory_code", "UNKNOWN")
         # Group territories to avoid too many small partitions
@@ -107,7 +107,7 @@ class HybridPartitionStrategy(PartitionStrategy):
     def __init__(self):
         super().__init__("hybrid_partition", ["year", "territory_code"])
 
-    def get_partition_key(self, row: Dict[str, Any]) -> str:
+    def get_partition_key(self, row: dict[str, Any]) -> str:
         """Generate hybrid partition key."""
         year = row.get("year", datetime.now().year)
         territory = row.get("territory_code", "UNKNOWN")
@@ -336,7 +336,7 @@ class PartitionManager:
 
         logger.info(f"Created {len(partition_keys)} partition views")
 
-    def _get_existing_partition_keys(self) -> List[str]:
+    def _get_existing_partition_keys(self) -> list[str]:
         """Get list of existing partition keys."""
         schema = self.schema_config["main_schema"]
 
@@ -380,7 +380,7 @@ class PartitionManager:
 
     def partition_data(
         self, df: pd.DataFrame, dataset_id: str, strategy_name: Optional[str] = None
-    ) -> Dict[str, pd.DataFrame]:
+    ) -> dict[str, pd.DataFrame]:
         """Partition DataFrame data according to strategy.
 
         Args:
@@ -395,7 +395,7 @@ class PartitionManager:
         if not strategy:
             raise ValueError(f"Unknown partitioning strategy: {strategy_name}")
 
-        partitions: Dict[str, List[Dict[str, Any]]] = {}
+        partitions: dict[str, list[dict[str, Any]]] = {}
 
         for _, row in df.iterrows():
             row_dict = row.to_dict()
@@ -420,7 +420,7 @@ class PartitionManager:
         return partition_dfs
 
     def insert_partitioned_data(
-        self, partitioned_data: Dict[str, pd.DataFrame]
+        self, partitioned_data: dict[str, pd.DataFrame]
     ) -> None:
         """Insert partitioned data into appropriate tables.
 
@@ -433,7 +433,7 @@ class PartitionManager:
 
         total_inserted = 0
 
-        with self.manager.transaction() as conn:
+        with self.manager.transaction():
             for partition_key, df in partitioned_data.items():
                 try:
                     # Separate datasets and observations data
@@ -507,7 +507,7 @@ class PartitionManager:
             except Exception as e:
                 logger.warning(f"Failed to optimize partition table {table}: {e}")
 
-    def _get_partition_statistics(self, table: str) -> Dict[str, Any]:
+    def _get_partition_statistics(self, table: str) -> dict[str, Any]:
         """Get statistics for partitioned table.
 
         Args:

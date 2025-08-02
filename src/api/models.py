@@ -4,9 +4,10 @@ Pydantic models for Osservatorio ISTAT FastAPI REST API
 Defines request/response models for all API endpoints with validation,
 documentation, and OpenAPI schema generation.
 """
+
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, validator
 
@@ -72,8 +73,8 @@ class DatasetMetadata(BaseModel):
     territory_level: Optional[str] = Field(
         None, description="Territory aggregation level"
     )
-    measures: Optional[List[str]] = Field(None, description="Available measures")
-    time_coverage: Optional[Dict[str, int]] = Field(
+    measures: Optional[list[str]] = Field(None, description="Available measures")
+    time_coverage: Optional[dict[str, int]] = Field(
         None, description="Time coverage (min/max years)"
     )
     last_updated: Optional[datetime] = Field(None, description="Last update timestamp")
@@ -110,7 +111,7 @@ class Dataset(DatasetBase):
 class DatasetListResponse(APIResponse):
     """Dataset list response"""
 
-    datasets: List[Dataset] = Field(..., description="List of datasets")
+    datasets: list[Dataset] = Field(..., description="List of datasets")
     total_count: int = Field(..., description="Total number of datasets")
     page: int = Field(1, description="Current page number")
     page_size: int = Field(50, description="Number of items per page")
@@ -121,7 +122,7 @@ class DatasetDetailResponse(APIResponse):
     """Dataset detail response"""
 
     dataset: Dataset = Field(..., description="Dataset details")
-    data: Optional[List[Dict[str, Any]]] = Field(
+    data: Optional[list[dict[str, Any]]] = Field(
         None, description="Dataset observations (if requested)"
     )
 
@@ -144,8 +145,8 @@ class TimeSeriesResponse(APIResponse):
     """Time series response"""
 
     dataset_id: str = Field(..., description="Dataset identifier")
-    data: List[TimeSeriesPoint] = Field(..., description="Time series data points")
-    filters_applied: Dict[str, Any] = Field(
+    data: list[TimeSeriesPoint] = Field(..., description="Time series data points")
+    filters_applied: dict[str, Any] = Field(
         ..., description="Filters applied to the data"
     )
     total_points: int = Field(..., description="Total number of data points")
@@ -156,7 +157,7 @@ class APIKeyBase(BaseModel):
     """Base API key model"""
 
     name: str = Field(..., description="API key name")
-    scopes: List[APIScope] = Field([APIScope.READ], description="API key scopes")
+    scopes: list[APIScope] = Field([APIScope.READ], description="API key scopes")
     rate_limit: int = Field(100, ge=1, le=10000, description="Rate limit per hour")
     expires_at: Optional[datetime] = Field(None, description="Expiration timestamp")
 
@@ -189,7 +190,7 @@ class APIKeyResponse(APIResponse):
 class APIKeyListResponse(APIResponse):
     """API key list response"""
 
-    api_keys: List[APIKeyInfo] = Field(..., description="List of API keys")
+    api_keys: list[APIKeyInfo] = Field(..., description="List of API keys")
     total_count: int = Field(..., description="Total number of API keys")
 
 
@@ -212,9 +213,9 @@ class UsageStatsPoint(BaseModel):
 class UsageAnalyticsResponse(APIResponse):
     """Usage analytics response"""
 
-    stats: List[UsageStatsPoint] = Field(..., description="Usage statistics")
-    summary: Dict[str, Any] = Field(..., description="Summary statistics")
-    time_range: Dict[str, str] = Field(..., description="Time range of the data")
+    stats: list[UsageStatsPoint] = Field(..., description="Usage statistics")
+    summary: dict[str, Any] = Field(..., description="Summary statistics")
+    time_range: dict[str, str] = Field(..., description="Time range of the data")
 
 
 # OData Models
@@ -230,7 +231,7 @@ class ODataMetadata(BaseModel):
     """OData service metadata"""
 
     odata_version: str = Field("4.0", description="OData version")
-    entity_sets: List[ODataEntitySet] = Field(..., description="Available entity sets")
+    entity_sets: list[ODataEntitySet] = Field(..., description="Available entity sets")
 
 
 class ODataResponse(BaseModel):
@@ -240,7 +241,7 @@ class ODataResponse(BaseModel):
     odata_count: Optional[int] = Field(
         None, alias="@odata.count", description="Total count (if requested)"
     )
-    value: List[Dict[str, Any]] = Field(..., description="Query results")
+    value: list[dict[str, Any]] = Field(..., description="Query results")
 
 
 # Query Parameters Models
@@ -310,7 +311,7 @@ class HealthCheckResponse(BaseModel):
     timestamp: datetime = Field(
         default_factory=datetime.now, description="Check timestamp"
     )
-    components: Dict[str, Dict[str, Any]] = Field(
+    components: dict[str, dict[str, Any]] = Field(
         ..., description="Component health status"
     )
 
@@ -323,7 +324,7 @@ class DataflowAnalysisRequest(BaseModel):
 
     xml_content: Optional[str] = Field(None, description="XML content to analyze")
     xml_file_path: Optional[str] = Field(None, description="Path to XML file")
-    categories: Optional[List[DataflowCategory]] = Field(
+    categories: Optional[list[DataflowCategory]] = Field(
         None, description="Filter by categories"
     )
     min_relevance_score: int = Field(0, description="Minimum relevance score")
@@ -390,17 +391,17 @@ class DataflowAnalysisResponse(APIResponse):
     """Response model for dataflow analysis"""
 
     total_analyzed: int = Field(..., description="Total dataflows analyzed")
-    categorized_dataflows: Dict[str, List[DataflowInfo]] = Field(
+    categorized_dataflows: dict[str, list[DataflowInfo]] = Field(
         default_factory=dict, description="Dataflows grouped by category"
     )
-    test_results: List[TableauReadyDataflow] = Field(
+    test_results: list[TableauReadyDataflow] = Field(
         default_factory=list, description="Test results for analyzed dataflows"
     )
     tableau_ready_count: int = Field(0, description="Number of Tableau-ready dataflows")
     analysis_timestamp: datetime = Field(
         default_factory=datetime.now, description="When analysis was performed"
     )
-    performance_metrics: Dict[str, Any] = Field(
+    performance_metrics: dict[str, Any] = Field(
         default_factory=dict, description="Performance metrics from analysis"
     )
 
@@ -411,7 +412,7 @@ class CategorizationRuleCreate(BaseModel):
 
     rule_id: str = Field(..., description="Unique rule identifier", min_length=1)
     category: DataflowCategory = Field(..., description="Target category")
-    keywords: List[str] = Field(
+    keywords: list[str] = Field(
         ..., description="List of keywords for matching", min_items=1
     )
     priority: int = Field(5, description="Rule priority (higher = more important)")
@@ -426,7 +427,7 @@ class CategorizationRuleCreate(BaseModel):
 class CategorizationRuleUpdate(BaseModel):
     """Request model for updating categorization rules"""
 
-    keywords: Optional[List[str]] = Field(None, description="Updated keywords list")
+    keywords: Optional[list[str]] = Field(None, description="Updated keywords list")
     priority: Optional[int] = Field(None, description="Updated priority")
     is_active: Optional[bool] = Field(None, description="Whether rule is active")
     description: Optional[str] = Field(None, description="Updated description")
@@ -444,7 +445,7 @@ class CategorizationRuleResponse(BaseModel):
     id: Optional[int] = Field(None, description="Database ID")
     rule_id: str = Field(..., description="Rule identifier")
     category: DataflowCategory = Field(..., description="Target category")
-    keywords: List[str] = Field(..., description="Keywords for matching")
+    keywords: list[str] = Field(..., description="Keywords for matching")
     priority: int = Field(..., description="Rule priority")
     is_active: bool = Field(True, description="Whether rule is active")
     description: Optional[str] = Field(None, description="Rule description")
@@ -455,7 +456,7 @@ class CategorizationRuleResponse(BaseModel):
 class CategorizationRulesListResponse(APIResponse):
     """Response model for categorization rules list"""
 
-    rules: List[CategorizationRuleResponse] = Field(
+    rules: list[CategorizationRuleResponse] = Field(
         ..., description="List of categorization rules"
     )
     total_count: int = Field(..., description="Total number of rules")
@@ -466,7 +467,7 @@ class CategorizationRulesListResponse(APIResponse):
 class BulkAnalysisRequest(BaseModel):
     """Request model for bulk dataflow analysis"""
 
-    dataflow_ids: List[str] = Field(
+    dataflow_ids: list[str] = Field(
         ..., description="List of dataflow IDs to analyze", min_items=1
     )
     include_tests: bool = Field(True, description="Whether to run data access tests")
@@ -490,7 +491,7 @@ class BulkAnalysisResponse(APIResponse):
     requested_count: int = Field(..., description="Number of dataflows requested")
     successful_count: int = Field(..., description="Number of successful analyses")
     failed_count: int = Field(..., description="Number of failed analyses")
-    results: List[TableauReadyDataflow] = Field(..., description="Analysis results")
-    errors: List[str] = Field(
+    results: list[TableauReadyDataflow] = Field(..., description="Analysis results")
+    errors: list[str] = Field(
         default_factory=list, description="Error messages for failed analyses"
     )

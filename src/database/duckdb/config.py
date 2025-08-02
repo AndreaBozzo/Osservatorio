@@ -3,9 +3,10 @@
 This module provides configuration settings and utilities for DuckDB,
 which is used for high-performance analytics on ISTAT statistical data.
 """
+
 import os
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 BASE_DIR = Path(__file__).parent.parent.parent.parent
 DATA_DIR = BASE_DIR / "data"
@@ -95,7 +96,7 @@ SECURITY_CONFIG = {
 }
 
 
-def get_duckdb_config() -> Dict[str, Any]:
+def get_duckdb_config() -> dict[str, Any]:
     """Get complete DuckDB configuration dictionary.
 
     Returns:
@@ -124,7 +125,7 @@ def get_connection_string() -> str:
     return str(db_path)
 
 
-def get_schema_config() -> Dict[str, Any]:
+def get_schema_config() -> dict[str, Any]:
     """Get schema configuration for ISTAT data structures.
 
     Returns:
@@ -133,7 +134,7 @@ def get_schema_config() -> Dict[str, Any]:
     return SCHEMA_CONFIG
 
 
-def get_table_config(table_name: str) -> Optional[Dict[str, Any]]:
+def get_table_config(table_name: str) -> Optional[dict[str, Any]]:
     """Get configuration for specific table.
 
     Args:
@@ -145,7 +146,7 @@ def get_table_config(table_name: str) -> Optional[Dict[str, Any]]:
     tables = SCHEMA_CONFIG.get("tables", {})
     if not isinstance(tables, dict):
         return None
-    for table_key, table_config in tables.items():
+    for _table_key, table_config in tables.items():
         if not isinstance(table_config, dict):
             continue
         if table_config.get("name") == table_name:

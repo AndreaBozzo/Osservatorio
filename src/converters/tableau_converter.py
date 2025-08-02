@@ -8,7 +8,6 @@ import os
 import re
 from datetime import datetime
 from pathlib import Path
-from typing import Dict
 
 import pandas as pd
 
@@ -138,7 +137,7 @@ class IstatXMLtoTableauConverter(BaseIstatConverter):
         xml_file = self._find_xml_file(dataflow_id)
 
         if not xml_file:
-            print(f"   ⚠️  File XML non trovato, creazione dati di esempio...")
+            print("   ⚠️  File XML non trovato, creazione dati di esempio...")
             # Crea dati di esempio per dimostrare funzionamento
             df_clean = self._create_sample_data(dataflow_id, name, category)
         else:
@@ -147,7 +146,7 @@ class IstatXMLtoTableauConverter(BaseIstatConverter):
                 observations = self._parse_sdmx_xml(xml_file)
 
                 if not observations:
-                    print(f"   ⚠️  Nessuna osservazione trovata nel file XML")
+                    print("   ⚠️  Nessuna osservazione trovata nel file XML")
                     df_clean = self._create_sample_data(dataflow_id, name, category)
                 else:
                     # Converti in DataFrame
@@ -158,7 +157,7 @@ class IstatXMLtoTableauConverter(BaseIstatConverter):
 
             except Exception as e:
                 print(f"   ❌ Errore parsing XML: {e}")
-                print(f"   📝 Creazione dati di esempio...")
+                print("   📝 Creazione dati di esempio...")
                 df_clean = self._create_sample_data(dataflow_id, name, category)
 
         # Salva in formati multipli
@@ -502,13 +501,13 @@ class IstatXMLtoTableauConverter(BaseIstatConverter):
         print(f"📁 Directory output: {output_dir}")
 
         if successful:
-            print(f"\n📁 FILE GENERATI:")
+            print("\n📁 FILE GENERATI:")
             print(f"  • CSV: {summary['files_generated']['csv_files']} file")
             print(f"  • Excel: {summary['files_generated']['excel_files']} file")
             print(f"  • JSON: {summary['files_generated']['json_files']} file")
 
         if failed:
-            print(f"\n❌ DATASET FALLITI:")
+            print("\n❌ DATASET FALLITI:")
             for fail in failed:
                 print(
                     f"  • {fail['dataflow_id']}: {fail.get('error', 'Unknown error')}"
@@ -831,11 +830,11 @@ Buona analisi! 📊
             return {"success": False, "error": str(e)}
 
     # Implementation of abstract methods from BaseIstatConverter
-    def _format_output(self, df: pd.DataFrame, dataset_info: Dict) -> Dict:
+    def _format_output(self, df: pd.DataFrame, dataset_info: dict) -> dict:
         """Format DataFrame for Tableau output."""
         return self._generate_tableau_formats(df, dataset_info)
 
-    def _generate_metadata(self, dataset_info: Dict) -> Dict:
+    def _generate_metadata(self, dataset_info: dict) -> dict:
         """Generate Tableau-specific metadata."""
         return {
             "target_platform": "tableau",
@@ -846,7 +845,7 @@ Buona analisi! 📊
 
     def convert_xml_to_target(
         self, xml_input: str, dataset_id: str, dataset_name: str
-    ) -> Dict:
+    ) -> dict:
         """Main conversion method that implements the abstract interface."""
         return self.convert_xml_to_tableau(xml_input, dataset_id, dataset_name)
 

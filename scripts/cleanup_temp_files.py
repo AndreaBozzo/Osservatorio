@@ -65,7 +65,7 @@ def main():
         else:
             print("🧽 Cleanup completo file temporanei...")
             results = temp_manager.cleanup_all()
-            print(f"✅ Cleanup completato:")
+            print("✅ Cleanup completato:")
             print(f"  File eliminati: {results['files_removed']}")
             print(f"  Directory eliminate: {results['dirs_removed']}")
             print(f"  Errori: {results['errors']}")

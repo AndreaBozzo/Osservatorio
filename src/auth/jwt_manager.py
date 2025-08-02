@@ -8,10 +8,11 @@ Provides secure JWT token generation and validation:
 - Token blacklisting for secure logout
 - Scope-based claims validation
 """
+
 import hashlib
 import secrets
 from datetime import datetime, timedelta
-from typing import Dict, Optional
+from typing import Optional
 
 try:
     import jwt
@@ -217,7 +218,7 @@ class JWTManager:
             raise
 
     def create_access_token(
-        self, api_key: APIKey, custom_claims: Optional[Dict] = None
+        self, api_key: APIKey, custom_claims: Optional[dict] = None
     ) -> AuthToken:
         """Create JWT access token for API key
 

@@ -4,6 +4,7 @@ Unit tests for DataflowAnalysisService.
 Tests the modern dataflow analysis service with proper mocking
 of dependencies and comprehensive coverage of all functionality.
 """
+
 from datetime import datetime
 from unittest.mock import MagicMock, Mock, patch
 
@@ -350,7 +351,8 @@ class TestDataflowAnalysisService:
     ):
         """Test analysis with relevance score filtering."""
         filters = AnalysisFilters(
-            min_relevance_score=15, include_tests=False  # High threshold
+            min_relevance_score=15,
+            include_tests=False,  # High threshold
         )
 
         result = await service.analyze_dataflows_from_xml(sample_xml_content, filters)
@@ -437,7 +439,6 @@ class TestDataflowAnalysisService:
         """
         )
 
-        namespaces = {"com": "http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common"}
         result = service._extract_dataflow_info(xml_elem, {})
 
         assert result is not None

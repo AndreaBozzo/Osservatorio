@@ -10,14 +10,14 @@ import time
 import traceback
 from contextlib import contextmanager
 from datetime import datetime
-from typing import Any, Dict
-
-# Issue #84 - Day 3: Removed sys.path manipulation
-# Dashboard now uses proper package imports only
+from typing import Any
 
 import pandas as pd
 import plotly.express as px
 import streamlit as st
+
+# Issue #84 - Day 3: Removed sys.path manipulation
+# Dashboard now uses proper package imports only
 
 
 # Issue #84 - Day 1: Structured Error Handling and Logging
@@ -71,7 +71,7 @@ class DashboardErrorHandler:
 
             raise  # Re-raise for proper exception handling
 
-    def log_user_action(self, action: str, details: Dict[str, Any] = None):
+    def log_user_action(self, action: str, details: dict[str, Any] = None):
         """Log user actions for analytics and debugging"""
         self.logger.info(
             f"Dashboard: User action - {action}",
@@ -172,14 +172,14 @@ class DashboardDependencies:
             try:
                 self._client.close()
                 self._logger.info("Dashboard: Client closed")
-            except:
+            except Exception:
                 pass
 
         if self._repository:
             try:
                 self._repository.close()
                 self._logger.info("Dashboard: Repository closed")
-            except:
+            except Exception:
                 pass
 
         self._initialized = False
@@ -761,7 +761,7 @@ def calculate_metrics(df):
 def render_header():
     """Render dell'header principale - Desktop optimized"""
     st.markdown(
-        f"""
+        """
     <div class="main-header">
         <h1>🇮🇹 Osservatorio Dati ISTAT</h1>
         <h3>La piattaforma open-source per l'analisi dei dati statistici italiani</h3>
@@ -964,15 +964,15 @@ def create_time_series_chart(df, category, info):
     fig_line.update_layout(
         plot_bgcolor="rgba(0,0,0,0)",
         paper_bgcolor="rgba(0,0,0,0)",
-        font=dict(size=14, family="Inter"),
-        title_font=dict(size=18, family="Inter"),
-        xaxis=dict(title=dict(text="Anno", font=dict(size=14))),
-        yaxis=dict(title=dict(text="Valore", font=dict(size=14))),
+        font={"size": 14, "family": "Inter"},
+        title_font={"size": 18, "family": "Inter"},
+        xaxis={"title": {"text": "Anno", "font": {"size": 14}}},
+        yaxis={"title": {"text": "Valore", "font": {"size": 14}}},
         hovermode="x unified",
-        margin=dict(l=20, r=20, t=60, b=20),
+        margin={"l": 20, "r": 20, "t": 60, "b": 20},
     )
     fig_line.update_traces(
-        line=dict(width=3), marker=dict(size=8, line=dict(width=2, color="white"))
+        line={"width": 3}, marker={"size": 8, "line": {"width": 2, "color": "white"}}
     )
     return fig_line
 
@@ -991,11 +991,11 @@ def create_bar_chart(df, category, info):
     fig_bar.update_layout(
         plot_bgcolor="rgba(0,0,0,0)",
         paper_bgcolor="rgba(0,0,0,0)",
-        font=dict(size=14, family="Inter"),
-        title_font=dict(size=18, family="Inter"),
-        xaxis=dict(title=dict(text="Anno", font=dict(size=14))),
-        yaxis=dict(title=dict(text="Valore", font=dict(size=14))),
-        margin=dict(l=20, r=20, t=60, b=20),
+        font={"size": 14, "family": "Inter"},
+        title_font={"size": 18, "family": "Inter"},
+        xaxis={"title": {"text": "Anno", "font": {"size": 14}}},
+        yaxis={"title": {"text": "Valore", "font": {"size": 14}}},
+        margin={"l": 20, "r": 20, "t": 60, "b": 20},
         showlegend=False,
     )
     fig_bar.update_traces(marker_line_color="rgba(0,0,0,0.1)", marker_line_width=1)
@@ -1015,13 +1015,13 @@ def create_area_chart(df, category, info):
     fig_area.update_layout(
         plot_bgcolor="rgba(0,0,0,0)",
         paper_bgcolor="rgba(0,0,0,0)",
-        font=dict(size=14, family="Inter"),
-        title_font=dict(size=18, family="Inter"),
-        xaxis=dict(title=dict(text="Anno", font=dict(size=14))),
-        yaxis=dict(title=dict(text="Valore", font=dict(size=14))),
-        margin=dict(l=20, r=20, t=60, b=20),
+        font={"size": 14, "family": "Inter"},
+        title_font={"size": 18, "family": "Inter"},
+        xaxis={"title": {"text": "Anno", "font": {"size": 14}}},
+        yaxis={"title": {"text": "Valore", "font": {"size": 14}}},
+        margin={"l": 20, "r": 20, "t": 60, "b": 20},
     )
-    fig_area.update_traces(fill="tonexty", line=dict(width=2))
+    fig_area.update_traces(fill="tonexty", line={"width": 2})
     return fig_area
 
 
@@ -1185,7 +1185,7 @@ def get_memory_usage():
     try:
         process = psutil.Process(os.getpid())
         return process.memory_info().rss / 1024 / 1024  # MB
-    except:
+    except Exception:
         return 0
 
 
@@ -1203,9 +1203,11 @@ def main():
             "dashboard_access",
             {
                 "timestamp": datetime.now().isoformat(),
-                "user_ip": st.context.session_id
-                if hasattr(st.context, "session_id")
-                else "unknown",
+                "user_ip": (
+                    st.context.session_id
+                    if hasattr(st.context, "session_id")
+                    else "unknown"
+                ),
             },
         )
 

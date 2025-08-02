@@ -2,6 +2,7 @@
 Test cases for BaseIstatConverter
 Tests the abstract base class functionality shared by PowerBI and Tableau converters.
 """
+
 import unittest
 from unittest.mock import Mock, patch
 

@@ -11,10 +11,11 @@ Tables:
 - audit_log: System audit trail and logging
 - system_config: Application configuration and settings
 """
+
 import json
 import sqlite3
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 from src.utils.logger import get_logger
 from src.utils.security_enhanced import SecurityManager
@@ -469,7 +470,7 @@ class MetadataSchema:
             logger.error(f"Schema verification failed: {e}")
             return False
 
-    def get_table_info(self, table_name: str) -> List[Dict[str, Any]]:
+    def get_table_info(self, table_name: str) -> list[dict[str, Any]]:
         """Get information about a specific table.
 
         Args:

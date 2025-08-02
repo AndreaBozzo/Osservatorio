@@ -1,6 +1,7 @@
 """
 Unit tests for PowerBI converter functionality.
 """
+
 import xml.etree.ElementTree as ET
 from unittest.mock import mock_open, patch
 

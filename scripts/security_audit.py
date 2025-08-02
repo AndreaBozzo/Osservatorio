@@ -14,12 +14,15 @@ import json
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Dict
 
-project_root = Path(__file__).parent.parent
-sys.path.insert(0, str(project_root))
-
-from src.utils.structured_logger import get_structured_logger
+# Issue #84: Use proper package imports without sys.path manipulation
+try:
+    from src.utils.structured_logger import get_structured_logger
+except ImportError:
+    # Fallback for development environment
+    project_root = Path(__file__).parent.parent
+    sys.path.insert(0, str(project_root))
+    from src.utils.structured_logger import get_structured_logger
 
 
 class SecurityAuditReport:
@@ -32,7 +35,7 @@ class SecurityAuditReport:
         self.failed_checks = []
 
     def add_finding(
-        self, severity: str, category: str, description: str, details: Dict = None
+        self, severity: str, category: str, description: str, details: dict = None
     ):
         """Add security finding"""
         finding = {
@@ -83,7 +86,9 @@ class SecurityAuditReport:
 
             if "SecurityHeadersMiddleware" in content:
                 self.add_finding(
-                    "INFO", "authentication", "✅ Security headers middleware integrated"
+                    "INFO",
+                    "authentication",
+                    "✅ Security headers middleware integrated",
                 )
             else:
                 self.add_finding(
@@ -307,7 +312,7 @@ class SecurityAuditReport:
 
         return True
 
-    def generate_report(self) -> Dict:
+    def generate_report(self) -> dict:
         """Generate comprehensive security audit report"""
         total_checks = len(self.findings)
         critical_issues = len([f for f in self.findings if f["severity"] == "CRITICAL"])
@@ -325,9 +330,9 @@ class SecurityAuditReport:
                 "medium_issues": medium_issues,
                 "low_issues": low_issues,
                 "info_items": info_items,
-                "overall_status": "PASS"
-                if critical_issues == 0 and high_issues == 0
-                else "FAIL",
+                "overall_status": (
+                    "PASS" if critical_issues == 0 and high_issues == 0 else "FAIL"
+                ),
             },
             "findings": self.findings,
         }

@@ -2,6 +2,7 @@
 Script di setup per configurazione Azure AD e PowerBI.
 Guida l'utente attraverso la configurazione completa.
 """
+
 import json
 import os
 import sys
@@ -240,7 +241,7 @@ class PowerBISetupWizard:
         # Leggi .env esistente se presente
         env_content = []
         if self.env_file.exists():
-            with open(self.env_file, "r", encoding="utf-8") as f:
+            with open(self.env_file, encoding="utf-8") as f:
                 env_content = f.readlines()
 
         # Rimuovi configurazioni PowerBI esistenti

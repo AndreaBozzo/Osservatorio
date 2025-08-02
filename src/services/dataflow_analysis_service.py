@@ -9,7 +9,7 @@ import asyncio
 import xml.etree.ElementTree as ET
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Optional
 
 from ..api.production_istat_client import ProductionIstatClient
 from ..database.sqlite.repository import UnifiedDataRepository
@@ -61,7 +61,7 @@ class DataflowAnalysisService:
         self.logger = get_logger(__name__)
 
         # Cache for categorization rules to avoid repeated database queries
-        self._categorization_rules: Optional[List[CategorizationRule]] = None
+        self._categorization_rules: Optional[list[CategorizationRule]] = None
         self._rules_cache_time: Optional[datetime] = None
         self._cache_ttl_minutes = 30
 
@@ -273,7 +273,7 @@ class DataflowAnalysisService:
 
     async def bulk_analyze(
         self, request: BulkAnalysisRequest
-    ) -> List[DataflowTestResult]:
+    ) -> list[DataflowTestResult]:
         """
         Perform bulk analysis of multiple dataflows.
 
@@ -333,7 +333,7 @@ class DataflowAnalysisService:
 
     async def get_analysis_history(
         self, limit: int = 100, category: Optional[DataflowCategory] = None
-    ) -> List[Dict]:
+    ) -> list[dict]:
         """
         Get historical analysis results from database.
 
@@ -355,7 +355,7 @@ class DataflowAnalysisService:
 
     # Private methods
 
-    async def _parse_dataflow_xml(self, xml_content: str) -> List[IstatDataflow]:
+    async def _parse_dataflow_xml(self, xml_content: str) -> list[IstatDataflow]:
         """Parse ISTAT dataflow XML and extract dataflow information."""
         try:
             root = ET.fromstring(xml_content)
@@ -390,7 +390,7 @@ class DataflowAnalysisService:
             raise
 
     def _extract_dataflow_info(
-        self, dataflow_elem, namespaces: Dict[str, str]
+        self, dataflow_elem, namespaces: dict[str, str]
     ) -> Optional[IstatDataflow]:
         """Extract dataflow information from XML element."""
         try:
@@ -450,8 +450,8 @@ class DataflowAnalysisService:
             return None
 
     async def _categorize_dataflows(
-        self, dataflows: List[IstatDataflow]
-    ) -> Dict[DataflowCategory, List[IstatDataflow]]:
+        self, dataflows: list[IstatDataflow]
+    ) -> dict[DataflowCategory, list[IstatDataflow]]:
         """Categorize list of dataflows using database rules."""
         categorized = {category: [] for category in DataflowCategory}
 
@@ -468,8 +468,8 @@ class DataflowAnalysisService:
         return categorized
 
     async def _test_dataflows(
-        self, dataflows: List[IstatDataflow]
-    ) -> List[DataflowTestResult]:
+        self, dataflows: list[IstatDataflow]
+    ) -> list[DataflowTestResult]:
         """Test data access for list of dataflows."""
         results = []
 
@@ -483,7 +483,7 @@ class DataflowAnalysisService:
 
         return results
 
-    async def _get_categorization_rules(self) -> List[CategorizationRule]:
+    async def _get_categorization_rules(self) -> list[CategorizationRule]:
         """Get categorization rules from database with caching."""
         now = datetime.now()
 
@@ -543,7 +543,7 @@ class DataflowAnalysisService:
             self._rules_cache_time = now
             return rules
 
-    def _get_fallback_rules(self) -> List[CategorizationRule]:
+    def _get_fallback_rules(self) -> list[CategorizationRule]:
         """Get fallback categorization rules when database is unavailable."""
         return [
             CategorizationRule(
@@ -677,8 +677,8 @@ class DataflowAnalysisService:
             # Don't raise - this is not critical for the analysis operation
 
     def test_priority_dataflows(
-        self, dataflows: List, max_tests: int = 10
-    ) -> List[Dict]:
+        self, dataflows: list, max_tests: int = 10
+    ) -> list[dict]:
         """Test priority dataflows for data access and quality."""
         if not dataflows:
             return []
@@ -744,8 +744,8 @@ class DataflowAnalysisService:
         return tested_dataflows
 
     def create_tableau_ready_dataset_list(
-        self, tested_dataflows: List[Dict]
-    ) -> List[Dict]:
+        self, tested_dataflows: list[dict]
+    ) -> list[dict]:
         """Create Tableau-ready dataset list from tested dataflows."""
         tableau_ready = []
 
@@ -773,8 +773,8 @@ class DataflowAnalysisService:
         return tableau_ready
 
     def generate_tableau_implementation_guide(
-        self, tableau_datasets: List[Dict]
-    ) -> Dict[str, str]:
+        self, tableau_datasets: list[dict]
+    ) -> dict[str, str]:
         """Generate Tableau implementation guide files."""
         files = {
             "config_file": "tableau_config.json",
@@ -838,12 +838,12 @@ class DataflowAnalysisService:
 
         return score
 
-    def generate_summary_report(self, categorized_data: Dict) -> str:
+    def generate_summary_report(self, categorized_data: dict) -> str:
         """Generate summary report from categorized data."""
         total_dataflows = sum(len(datasets) for datasets in categorized_data.values())
 
         report_lines = [
-            f"=== ISTAT Dataflow Analysis Summary ===",
+            "=== ISTAT Dataflow Analysis Summary ===",
             f"Total dataflows analyzed: {total_dataflows}",
             f"Categories found: {len(categorized_data)}",
             "",
@@ -863,7 +863,7 @@ class DataflowAnalysisService:
 
         return "\n".join(report_lines)
 
-    def _categorize_dataflows_sync(self, dataflows: List) -> Dict[str, List]:
+    def _categorize_dataflows_sync(self, dataflows: list) -> dict[str, list]:
         """Synchronous version of dataflow categorization for backward compatibility."""
         categories = {}
 

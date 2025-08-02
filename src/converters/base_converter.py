@@ -2,10 +2,11 @@
 Base converter class for ISTAT SDMX data processing.
 Eliminates code duplication between PowerBI and Tableau converters.
 """
+
 import os
 import xml.etree.ElementTree as ET
 from abc import ABC, abstractmethod
-from typing import Dict, List, Optional
+from typing import Optional
 
 import pandas as pd
 
@@ -35,7 +36,7 @@ class BaseIstatConverter(ABC):
         self.datasets_config = self._load_datasets_config()
         self.conversion_results = []
 
-    def _load_datasets_config(self) -> Dict:
+    def _load_datasets_config(self) -> dict:
         """Load dataset configuration from SQLite metadata database."""
         try:
             logger.info(
@@ -64,7 +65,7 @@ class BaseIstatConverter(ABC):
                 "source": "sqlite_error",
             }
 
-    def _parse_sdmx_xml(self, xml_file: str) -> List[Dict]:
+    def _parse_sdmx_xml(self, xml_file: str) -> list[dict]:
         """Parse SDMX XML file and extract observations."""
         try:
             tree = ET.parse(xml_file)
@@ -105,7 +106,7 @@ class BaseIstatConverter(ABC):
             logger.error(f"Error parsing SDMX XML: {e}")
             return []
 
-    def _extract_observation_from_element(self, elem) -> Optional[Dict]:
+    def _extract_observation_from_element(self, elem) -> Optional[dict]:
         """Extract observation data from XML element."""
         try:
             obs_data = {}
@@ -311,7 +312,7 @@ class BaseIstatConverter(ABC):
 
         return "altro", category_priorities["altro"]
 
-    def _validate_data_quality(self, df: pd.DataFrame) -> Dict:
+    def _validate_data_quality(self, df: pd.DataFrame) -> dict:
         """Validate data quality and return quality metrics."""
         if df.empty:
             return {
@@ -356,18 +357,18 @@ class BaseIstatConverter(ABC):
 
     # Abstract methods that subclasses must implement
     @abstractmethod
-    def _format_output(self, df: pd.DataFrame, dataset_info: Dict) -> Dict:
+    def _format_output(self, df: pd.DataFrame, dataset_info: dict) -> dict:
         """Format output data for specific target (PowerBI, Tableau, etc.)."""
         pass
 
     @abstractmethod
-    def _generate_metadata(self, dataset_info: Dict) -> Dict:
+    def _generate_metadata(self, dataset_info: dict) -> dict:
         """Generate metadata for specific target."""
         pass
 
     @abstractmethod
     def convert_xml_to_target(
         self, xml_input: str, dataset_id: str, dataset_name: str
-    ) -> Dict:
+    ) -> dict:
         """Main conversion method - must be implemented by subclasses."""
         pass

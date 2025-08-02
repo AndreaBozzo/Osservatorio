@@ -10,9 +10,10 @@ This module provides a unified interface for:
 - Filtering and querying datasets
 - Managing dataset metadata
 """
+
 import json
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 from src.database.sqlite.schema import MetadataSchema
 from src.utils.logger import get_logger
@@ -60,7 +61,7 @@ class DatasetConfigManager:
         cache_age = (datetime.now() - self._cache_timestamp).total_seconds()
         return cache_age < self._cache_ttl
 
-    def _load_datasets_from_sqlite(self) -> List[Dict[str, Any]]:
+    def _load_datasets_from_sqlite(self) -> list[dict[str, Any]]:
         """Load all active datasets from SQLite database.
 
         Returns:
@@ -110,7 +111,7 @@ class DatasetConfigManager:
             logger.error(f"Failed to load datasets from SQLite: {e}")
             return []
 
-    def get_datasets_config(self, force_refresh: bool = False) -> Dict[str, Any]:
+    def get_datasets_config(self, force_refresh: bool = False) -> dict[str, Any]:
         """Get complete datasets configuration in the expected format.
 
         Args:
@@ -153,7 +154,7 @@ class DatasetConfigManager:
         )
         return config
 
-    def get_datasets_by_category(self, category: str) -> List[Dict[str, Any]]:
+    def get_datasets_by_category(self, category: str) -> list[dict[str, Any]]:
         """Get all datasets for a specific category.
 
         Args:
@@ -165,7 +166,7 @@ class DatasetConfigManager:
         config = self.get_datasets_config()
         return [ds for ds in config["datasets"] if ds["category"] == category]
 
-    def get_dataset_by_id(self, dataset_id: str) -> Optional[Dict[str, Any]]:
+    def get_dataset_by_id(self, dataset_id: str) -> Optional[dict[str, Any]]:
         """Get a specific dataset by its ID.
 
         Args:
@@ -182,7 +183,7 @@ class DatasetConfigManager:
 
     def get_high_priority_datasets(
         self, limit: Optional[int] = None
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Get high priority datasets (priority >= 7).
 
         Args:
@@ -213,7 +214,7 @@ class DatasetConfigManager:
             logger.error(f"Failed to refresh configuration cache: {e}")
             return False
 
-    def get_categories_summary(self) -> Dict[str, int]:
+    def get_categories_summary(self) -> dict[str, int]:
         """Get summary of datasets by category.
 
         Returns:
@@ -222,7 +223,7 @@ class DatasetConfigManager:
         config = self.get_datasets_config()
         return {cat: len(ds_list) for cat, ds_list in config["categories"].items()}
 
-    def add_dataset(self, dataset_config: Dict[str, Any]) -> bool:
+    def add_dataset(self, dataset_config: dict[str, Any]) -> bool:
         """Add a new dataset configuration to SQLite.
 
         Args:
@@ -257,7 +258,7 @@ class DatasetConfigManager:
             logger.error(f"Failed to add dataset: {e}")
             return False
 
-    def update_dataset(self, dataset_id: str, updates: Dict[str, Any]) -> bool:
+    def update_dataset(self, dataset_id: str, updates: dict[str, Any]) -> bool:
         """Update an existing dataset configuration.
 
         Args:

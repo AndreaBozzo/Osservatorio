@@ -4,6 +4,7 @@ Unit tests for categorization rules database operations.
 Tests the database layer for categorization rules including CRUD operations,
 data validation, and integration with the SQLite metadata manager.
 """
+
 import sqlite3
 from unittest.mock import MagicMock, patch
 
@@ -173,7 +174,10 @@ class TestCategorizationRulesDatabase:
     def test_empty_keywords_validation(self, manager):
         """Test that rules with empty keywords are rejected."""
         success = manager.create_categorization_rule(
-            "empty_rule", "popolazione", [], priority=5  # Empty keywords
+            "empty_rule",
+            "popolazione",
+            [],
+            priority=5,  # Empty keywords
         )
         assert success is False
 

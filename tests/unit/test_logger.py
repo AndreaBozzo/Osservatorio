@@ -2,7 +2,6 @@
 Unit tests for logger module.
 """
 
-
 from src.utils.logger import get_logger
 
 
@@ -120,7 +119,7 @@ class TestLogger:
 
         # Create multiple threads
         threads = []
-        for i in range(5):
+        for _i in range(5):
             thread = threading.Thread(target=log_messages)
             threads.append(thread)
             thread.start()

@@ -17,7 +17,7 @@ import argparse
 import json
 import xml.etree.ElementTree as ET
 from datetime import datetime
-from typing import Any, Dict, List
+from typing import Any
 
 try:
     from osservatorio_istat.api.production_istat_client import ProductionIstatClient
@@ -51,7 +51,7 @@ class DataFormatAnalyzer:
         self.analyzer = get_dataflow_analysis_service()
         self.temp_manager = TempFileManager()
 
-    def analyze_istat_datasets(self, sample_size: int = 10) -> Dict[str, Any]:
+    def analyze_istat_datasets(self, sample_size: int = 10) -> dict[str, Any]:
         """
         Analizza tutti i dataset ISTAT disponibili
 
@@ -143,8 +143,8 @@ class DataFormatAnalyzer:
         return analysis_results
 
     def estimate_storage_requirements(
-        self, analysis_results: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, analysis_results: dict[str, Any]
+    ) -> dict[str, Any]:
         """
         Stima requisiti di storage
 
@@ -158,7 +158,7 @@ class DataFormatAnalyzer:
 
         volume_dist = analysis_results.get("volume_distribution", {})
         total_datasets = analysis_results.get("total_datasets", 509)
-        analyzed_datasets = analysis_results.get("analyzed_datasets", 1)
+        analysis_results.get("analyzed_datasets", 1)
 
         # Calculate average volume per dataset
         avg_volume_mb = volume_dist.get("average_mb", 30)
@@ -171,7 +171,6 @@ class DataFormatAnalyzer:
 
         # Annual growth estimates
         annual_new_datasets = 50  # Estimated new datasets per year
-        annual_updates = 12  # Average updates per dataset per year
 
         annual_raw_growth_gb = (
             annual_new_datasets * avg_volume_mb + total_datasets * avg_volume_mb * 0.1
@@ -212,8 +211,8 @@ class DataFormatAnalyzer:
         return storage_requirements
 
     def generate_database_recommendations(
-        self, analysis_results: Dict[str, Any], storage_requirements: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, analysis_results: dict[str, Any], storage_requirements: dict[str, Any]
+    ) -> dict[str, Any]:
         """
         Genera raccomandazioni per scelta database
 
@@ -296,14 +295,12 @@ class DataFormatAnalyzer:
         logger.info("Database recommendations generated")
         return recommendations
 
-    def _analyze_xml_structure(self, xml_data: str) -> Dict[str, Any]:
+    def _analyze_xml_structure(self, xml_data: str) -> dict[str, Any]:
         """Analizza la struttura di un dataset XML SDMX"""
         try:
             root = ET.fromstring(xml_data)
 
             # Count dimensions and measures
-            dimensions = []
-            measures = []
 
             # SDMX namespace handling
             namespaces = {
@@ -355,15 +352,15 @@ class DataFormatAnalyzer:
             logger.warning(f"Error analyzing XML structure: {e}")
             return {"error": str(e), "complexity": "unknown"}
 
-    def _is_time_series(self, structure: Dict[str, Any]) -> bool:
+    def _is_time_series(self, structure: dict[str, Any]) -> bool:
         """Determina se un dataset è una serie temporale"""
         return structure.get("has_time_dimension", False)
 
-    def _is_structured(self, structure: Dict[str, Any]) -> bool:
+    def _is_structured(self, structure: dict[str, Any]) -> bool:
         """Determina se un dataset è strutturato"""
         return structure.get("dimensions_count", 0) > 0
 
-    def _analyze_volume_distribution(self, volume_data: List[Dict]) -> Dict[str, Any]:
+    def _analyze_volume_distribution(self, volume_data: list[dict]) -> dict[str, Any]:
         """Analizza la distribuzione dei volumi"""
         if not volume_data:
             return {"error": "No volume data available"}
@@ -378,7 +375,7 @@ class DataFormatAnalyzer:
             "total_mb": round(sum(volumes), 2),
         }
 
-    def _summarize_structure_patterns(self, structure_patterns: Dict) -> Dict[str, Any]:
+    def _summarize_structure_patterns(self, structure_patterns: dict) -> dict[str, Any]:
         """Riassume i pattern strutturali"""
         if not structure_patterns:
             return {"error": "No structure patterns available"}
@@ -410,7 +407,7 @@ class DataFormatAnalyzer:
             ),
         }
 
-    def _analyze_access_patterns(self, datasets: List[Dict]) -> Dict[str, Any]:
+    def _analyze_access_patterns(self, datasets: list[dict]) -> dict[str, Any]:
         """Analizza i pattern di accesso"""
         # Simulate access patterns based on dataset categories
         categories = {}
@@ -493,7 +490,7 @@ def main():
         sys.exit(1)
 
 
-def _format_text_output(results: Dict[str, Any]) -> str:
+def _format_text_output(results: dict[str, Any]) -> str:
     """Format results as readable text"""
     output = []
     output.append("# ISTAT Data Format Analysis Report")

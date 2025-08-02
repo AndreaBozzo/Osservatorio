@@ -6,6 +6,7 @@ This module provides centralized security features including:
 - Input sanitization
 - Security headers management
 """
+
 import base64
 import hashlib
 import logging
@@ -14,7 +15,7 @@ import secrets
 import time
 from functools import wraps
 from pathlib import Path
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Optional
 
 from cryptography.fernet import Fernet
 
@@ -26,9 +27,9 @@ class SecurityManager:
 
     def __init__(self):
         """Initialize the security manager."""
-        self.rate_limiter: Dict[str, List[float]] = {}
-        self.blocked_ips: Set[str] = set()
-        self.blocked_patterns: Set[str] = {
+        self.rate_limiter: dict[str, list[float]] = {}
+        self.blocked_ips: set[str] = set()
+        self.blocked_patterns: set[str] = {
             "..",  # Directory traversal
             "~",  # Home directory
             "/etc/",
@@ -40,7 +41,7 @@ class SecurityManager:
         self._encryption_key = Fernet.generate_key()
         self._fernet = Fernet(self._encryption_key)
         # Windows reserved names - match exact filenames only
-        self.reserved_names: Set[str] = {
+        self.reserved_names: set[str] = {
             "CON",
             "PRN",
             "AUX",
@@ -64,7 +65,7 @@ class SecurityManager:
             "LPT8",
             "LPT9",
         }
-        self.allowed_extensions: Set[str] = {
+        self.allowed_extensions: set[str] = {
             ".json",
             ".csv",
             ".xlsx",
@@ -209,7 +210,7 @@ class SecurityManager:
 
     def hash_password(
         self, password: str, salt: Optional[str] = None
-    ) -> Tuple[str, str]:
+    ) -> tuple[str, str]:
         """Hash a password with salt.
 
         Args:
@@ -264,7 +265,7 @@ class SecurityManager:
         self.blocked_ips.discard(ip)
         logger.info(f"IP {ip} has been unblocked")
 
-    def get_security_headers(self) -> Dict[str, str]:
+    def get_security_headers(self) -> dict[str, str]:
         """Get security headers for HTTP responses.
 
         Returns:

@@ -105,7 +105,7 @@ class QualityDemonstration:
         try:
             # Test SQLite metadata
             metadata_start = time.time()
-            dataset_info = repository.get_dataset_complete("DCIS_POPRES1")
+            repository.get_dataset_complete("DCIS_POPRES1")
             metadata_time = time.time() - metadata_start
 
             self.print_success(f"SQLite metadata query: {metadata_time:.3f}s")
@@ -118,7 +118,7 @@ class QualityDemonstration:
             # Test DuckDB analytics
             analytics_start = time.time()
             with repository.duckdb_manager.get_connection() as conn:
-                result = conn.execute("SELECT 1 as test_query").fetchone()
+                conn.execute("SELECT 1 as test_query").fetchone()
             analytics_time = time.time() - analytics_start
 
             self.print_success(f"DuckDB analytics query: {analytics_time:.3f}s")
@@ -278,7 +278,7 @@ class QualityDemonstration:
             f"Esecuzione {operations_count} operazioni per generare metriche..."
         )
 
-        for i in range(operations_count):
+        for _i in range(operations_count):
             client.get_status()
             time.sleep(0.1)  # Piccola pausa tra le operazioni
 
@@ -462,7 +462,7 @@ async def main():
     demo = QualityDemonstration()
     score = await demo.run_complete_demonstration()
 
-    print(f"\n🎉 Quality Demonstration Completed!")
+    print("\n🎉 Quality Demonstration Completed!")
     print(f"Final Score: {score:.1f}%")
 
     if score >= 80:

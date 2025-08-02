@@ -13,11 +13,16 @@ from contextlib import contextmanager
 from datetime import datetime
 from pathlib import Path
 
-project_root = Path(__file__).parent.parent
-sys.path.insert(0, str(project_root))
-
-from src.api.production_istat_client import ProductionIstatClient
-from src.database.sqlite.repository import get_unified_repository
+# Issue #84: Use proper package imports without sys.path manipulation
+try:
+    from src.api.production_istat_client import ProductionIstatClient
+    from src.database.sqlite.repository import get_unified_repository
+except ImportError:
+    # Fallback for development environment
+    project_root = Path(__file__).parent.parent
+    sys.path.insert(0, str(project_root))
+    from src.api.production_istat_client import ProductionIstatClient
+    from src.database.sqlite.repository import get_unified_repository
 
 
 class PerformanceBenchmark:
@@ -59,24 +64,22 @@ class PerformanceBenchmark:
         print(f"🔍 Benchmarking connectivity check ({iterations} iterations)...")
 
         # Legacy client
-        legacy_times = []
-        for i in range(iterations):
+        for _i in range(iterations):
             with self.timer("legacy_connectivity"):
                 try:
                     results = self.legacy_tester.test_api_connectivity()
-                    success = any(r.get("success", False) for r in results)
+                    any(r.get("success", False) for r in results)
                 except Exception:
-                    success = False
+                    pass
 
         # Production client
-        production_times = []
-        for i in range(iterations):
+        for _i in range(iterations):
             with self.timer("production_connectivity"):
                 try:
                     health = self.production_client.health_check()
-                    success = health.get("status") == "healthy"
+                    health.get("status") == "healthy"
                 except Exception:
-                    success = False
+                    pass
 
         legacy_avg = statistics.mean(self.results["legacy_connectivity"])
         production_avg = statistics.mean(self.results["production_connectivity"])
@@ -91,22 +94,22 @@ class PerformanceBenchmark:
         print(f"📋 Benchmarking dataset discovery ({iterations} iterations)...")
 
         # Legacy client
-        for i in range(iterations):
+        for _i in range(iterations):
             with self.timer("legacy_discovery"):
                 try:
                     datasets = self.legacy_tester.discover_available_datasets(limit=20)
-                    count = len(datasets)
+                    len(datasets)
                 except Exception:
-                    count = 0
+                    pass
 
         # Production client
-        for i in range(iterations):
+        for _i in range(iterations):
             with self.timer("production_discovery"):
                 try:
                     dataflows = self.production_client.fetch_dataflows(limit=20)
-                    count = len(dataflows.get("dataflows", []))
+                    len(dataflows.get("dataflows", []))
                 except Exception:
-                    count = 0
+                    pass
 
         legacy_avg = statistics.mean(self.results["legacy_discovery"])
         production_avg = statistics.mean(self.results["production_discovery"])
@@ -123,25 +126,25 @@ class PerformanceBenchmark:
         dataset_id = self.test_datasets[0]
 
         # Legacy client
-        for i in range(iterations):
+        for _i in range(iterations):
             with self.timer("legacy_single_fetch"):
                 try:
                     result = self.legacy_tester.test_specific_dataset(dataset_id)
-                    success = result.get("data_test", {}).get("success", False)
+                    result.get("data_test", {}).get("success", False)
                 except Exception:
-                    success = False
+                    pass
                 time.sleep(1)  # Legacy rate limiting
 
         # Production client
-        for i in range(iterations):
+        for _i in range(iterations):
             with self.timer("production_single_fetch"):
                 try:
                     result = self.production_client.fetch_dataset(
                         dataset_id, include_data=True
                     )
-                    success = result.get("data", {}).get("status") == "success"
+                    result.get("data", {}).get("status") == "success"
                 except Exception:
-                    success = False
+                    pass
 
         legacy_avg = statistics.mean(self.results["legacy_single_fetch"])
         production_avg = statistics.mean(self.results["production_single_fetch"])
@@ -202,26 +205,22 @@ class PerformanceBenchmark:
         dataset_id = self.test_datasets[0]
 
         # Legacy client
-        for i in range(iterations):
+        for _i in range(iterations):
             with self.timer("legacy_quality"):
                 try:
-                    quality = self.legacy_tester.validate_data_quality(
+                    self.legacy_tester.validate_data_quality(
                         dataset_id, sample_size=500
                     )
-                    success = quality is not None
                 except Exception:
-                    success = False
+                    pass
 
         # Production client
-        for i in range(iterations):
+        for _i in range(iterations):
             with self.timer("production_quality"):
                 try:
-                    quality = self.production_client.fetch_with_quality_validation(
-                        dataset_id
-                    )
-                    success = quality.quality_score > 0
+                    self.production_client.fetch_with_quality_validation(dataset_id)
                 except Exception:
-                    success = False
+                    pass
 
         if "legacy_quality" in self.results and "production_quality" in self.results:
             legacy_avg = statistics.mean(self.results["legacy_quality"])
@@ -241,28 +240,24 @@ class PerformanceBenchmark:
         dataset_id = self.test_datasets[0]
 
         # Legacy: No repository integration (file operations)
-        for i in range(iterations):
+        for _i in range(iterations):
             with self.timer("legacy_storage"):
                 try:
                     # Simulate legacy file operations
-                    result = self.legacy_tester.test_specific_dataset(dataset_id)
+                    self.legacy_tester.test_specific_dataset(dataset_id)
                     # Legacy would save files here
                     time.sleep(0.1)  # Simulate file I/O
-                    success = True
                 except Exception:
-                    success = False
+                    pass
 
         # Production: Direct repository integration
-        for i in range(iterations):
+        for _i in range(iterations):
             with self.timer("production_storage"):
                 try:
                     dataset_result = self.production_client.fetch_dataset(dataset_id)
-                    sync_result = self.production_client.sync_to_repository(
-                        dataset_result
-                    )
-                    success = sync_result.metadata_updated
+                    self.production_client.sync_to_repository(dataset_result)
                 except Exception:
-                    success = False
+                    pass
 
         legacy_avg = statistics.mean(self.results["legacy_storage"])
         production_avg = statistics.mean(self.results["production_storage"])
@@ -282,7 +277,7 @@ class PerformanceBenchmark:
         # Production client circuit breaker test
         start_time = time.time()
         failures = 0
-        for i in range(7):  # Exceed circuit breaker threshold
+        for _i in range(7):  # Exceed circuit breaker threshold
             try:
                 self.production_client.fetch_dataset(error_dataset)
             except Exception as e:
@@ -296,7 +291,7 @@ class PerformanceBenchmark:
         print(
             f"  Production client: Circuit breaker activated in {circuit_breaker_time:.3f}s"
         )
-        print(f"  🛡️  Fault tolerance: Active (prevents cascade failures)")
+        print("  🛡️  Fault tolerance: Active (prevents cascade failures)")
         print()
 
     def generate_performance_report(self):

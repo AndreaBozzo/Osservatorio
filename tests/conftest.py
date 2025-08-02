@@ -1,6 +1,7 @@
 """
 Test configuration and fixtures for osservatorio scuola tests.
 """
+
 import os
 import shutil
 import sys

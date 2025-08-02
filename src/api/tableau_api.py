@@ -1,6 +1,5 @@
 import json
 
-
 from ..utils.secure_path import SecurePathValidator
 
 
@@ -137,7 +136,7 @@ class TableauServerAnalyzer:
                 strategy["direct_api"].append(f"Usa {conn['name']} per dati Google")
             elif "bigquery" in conn["name"].lower():
                 strategy["direct_api"].append(
-                    f"Connessione diretta a BigQuery per grandi dataset"
+                    "Connessione diretta a BigQuery per grandi dataset"
                 )
 
         # Raccomandazioni generali

@@ -9,6 +9,7 @@ This module provides automated performance regression detection with:
 - Performance trend analysis
 - CI/CD integration capabilities
 """
+
 import json
 import sqlite3
 import statistics
@@ -16,7 +17,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 import numpy as np
 from scipy import stats
@@ -61,8 +62,8 @@ class RegressionAlert:
     degradation_percent: float
     detection_date: datetime
     description: str
-    recommendations: List[str] = field(default_factory=list)
-    affected_endpoints: List[str] = field(default_factory=list)
+    recommendations: list[str] = field(default_factory=list)
+    affected_endpoints: list[str] = field(default_factory=list)
     is_resolved: bool = False
     resolution_date: Optional[datetime] = None
 
@@ -87,9 +88,9 @@ class PerformanceRegressionDetector:
     def __init__(self, db_path: Optional[str] = None):
         """Initialize regression detector."""
         self.db_path = db_path or "data/performance_results/performance_history.db"
-        self.baselines: Dict[str, PerformanceBaseline] = {}
-        self.alerts: List[RegressionAlert] = []
-        self.trends: Dict[str, PerformanceTrend] = {}
+        self.baselines: dict[str, PerformanceBaseline] = {}
+        self.alerts: list[RegressionAlert] = []
+        self.trends: dict[str, PerformanceTrend] = {}
 
         # Initialize database
         self._init_database()
@@ -185,7 +186,7 @@ class PerformanceRegressionDetector:
         test_type: str = "automated",
         git_commit: Optional[str] = None,
         environment: str = "test",
-        metadata: Optional[Dict] = None,
+        metadata: Optional[dict] = None,
     ):
         """Record a performance metric measurement."""
         with sqlite3.connect(self.db_path) as conn:
@@ -390,7 +391,7 @@ class PerformanceRegressionDetector:
 
     def _generate_recommendations(
         self, metric_name: str, severity: RegressionSeverity, degradation_percent: float
-    ) -> List[str]:
+    ) -> list[str]:
         """Generate recommendations based on regression."""
         recommendations = []
 
@@ -455,9 +456,11 @@ class PerformanceRegressionDetector:
                     json.dumps(alert.recommendations),
                     json.dumps(alert.affected_endpoints),
                     alert.is_resolved,
-                    alert.resolution_date.isoformat()
-                    if alert.resolution_date
-                    else None,
+                    (
+                        alert.resolution_date.isoformat()
+                        if alert.resolution_date
+                        else None
+                    ),
                 ),
             )
 
@@ -521,7 +524,7 @@ class PerformanceRegressionDetector:
         self.trends[metric_name] = trend
         return trend
 
-    def get_performance_summary(self, days_back: int = 7) -> Dict[str, Any]:
+    def get_performance_summary(self, days_back: int = 7) -> dict[str, Any]:
         """Get performance summary for recent period."""
         cutoff_date = datetime.now() - timedelta(days=days_back)
 
@@ -574,7 +577,7 @@ class PerformanceRegressionDetector:
 
     def generate_regression_report(
         self, output_path: Optional[Path] = None, include_trends: bool = True
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Generate comprehensive regression analysis report."""
 
         # Get recent performance summary
@@ -652,7 +655,7 @@ class PerformanceRegressionDetector:
         return report
 
     def _calculate_health_status(
-        self, summary: Dict[str, Any], unresolved_alerts: List[Dict]
+        self, summary: dict[str, Any], unresolved_alerts: list[dict]
     ) -> str:
         """Calculate overall performance health status."""
 
@@ -674,8 +677,8 @@ class PerformanceRegressionDetector:
             return "healthy"
 
     def _generate_regression_insights(
-        self, summary: Dict[str, Any], unresolved_alerts: List[Dict]
-    ) -> List[str]:
+        self, summary: dict[str, Any], unresolved_alerts: list[dict]
+    ) -> list[str]:
         """Generate regression analysis insights."""
         insights = []
 

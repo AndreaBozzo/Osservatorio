@@ -225,6 +225,8 @@ ignore_missing_imports = true
 [tool.ruff]
 target-version = "py39"
 line-length = 88
+
+[tool.ruff.lint]
 select = [
     "E",  # pycodestyle errors
     "W",  # pycodestyle warnings
@@ -238,11 +240,18 @@ ignore = [
     "E501",  # line too long, handled by black
     "B008",  # do not perform function calls in argument defaults
     "C901",  # too complex
+    "B904",  # raise-without-from-inside-except (many legacy patterns)
+    "B017",  # pytest.raises(Exception) (acceptable in tests)
+    "B007",  # unused-loop-control-variable (often intentional)
+    "B015",  # useless-comparison (legacy benchmark code)
 ]
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]
 "tests/**/*" = ["B011"]
+"scripts/legacy/**" = ["F401", "E402"]  # legacy scripts can have import issues
+"scripts/benchmark_*" = ["B015"]  # benchmark scripts may have unused comparisons
+"src/api/fastapi_app.py" = ["E402"]  # router imports after app definition
 
 [tool.coverage.run]
 source = ["src"]

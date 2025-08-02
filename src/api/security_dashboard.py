@@ -8,10 +8,11 @@ Real-time security monitoring and alerting system:
 - Performance monitoring
 - Security alert system
 """
+
 from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Any, Dict, List
+from typing import Any
 
 from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import HTMLResponse
@@ -42,17 +43,17 @@ class SecurityAlert:
     description: str
     timestamp: datetime
     source: str
-    details: Dict[str, Any]
+    details: dict[str, Any]
 
 
 class SecurityMetrics(BaseModel):
     """Security metrics response model"""
 
     timestamp: datetime
-    rate_limit_violations: Dict[str, int]
+    rate_limit_violations: dict[str, int]
     blocked_ips: int
-    suspicious_activities: Dict[str, int]
-    response_times: Dict[str, float]
+    suspicious_activities: dict[str, int]
+    response_times: dict[str, float]
     requests_per_hour: int
     active_api_keys: int
     threat_score: float
@@ -88,7 +89,7 @@ class SecurityDashboard:
         }
 
         # Recent alerts cache
-        self.recent_alerts: List[SecurityAlert] = []
+        self.recent_alerts: list[SecurityAlert] = []
 
         logger.info("Security Dashboard initialized")
 
@@ -139,7 +140,7 @@ class SecurityDashboard:
             logger.error(f"Failed to get real-time metrics: {e}")
             raise HTTPException(status_code=500, detail="Failed to retrieve metrics")
 
-    def get_security_alerts(self, hours: int = 24) -> List[SecurityAlert]:
+    def get_security_alerts(self, hours: int = 24) -> list[SecurityAlert]:
         """Get recent security alerts
 
         Args:
@@ -211,7 +212,7 @@ class SecurityDashboard:
                     alerts.append(
                         SecurityAlert(
                             level=level,
-                            title=f"IP Addresses Blocked",
+                            title="IP Addresses Blocked",
                             description=f"{count} IPs blocked for: {reason}",
                             timestamp=datetime.fromisoformat(blocked_at),
                             source="ip_blocker",
@@ -255,7 +256,7 @@ class SecurityDashboard:
             logger.error(f"Failed to get security alerts: {e}")
             return []
 
-    def get_blocked_ips(self) -> List[Dict[str, Any]]:
+    def get_blocked_ips(self) -> list[dict[str, Any]]:
         """Get currently blocked IP addresses"""
         try:
             blocked_ips = []
@@ -323,7 +324,7 @@ class SecurityDashboard:
             logger.error(f"Failed to unblock IP: {e}")
             return False
 
-    def get_rate_limit_stats(self, hours: int = 24) -> Dict[str, Any]:
+    def get_rate_limit_stats(self, hours: int = 24) -> dict[str, Any]:
         """Get rate limiting statistics
 
         Args:
@@ -397,7 +398,7 @@ class SecurityDashboard:
             logger.error(f"Failed to get rate limit stats: {e}")
             return {}
 
-    def _calculate_threat_score(self, metrics: Dict[str, Any]) -> float:
+    def _calculate_threat_score(self, metrics: dict[str, Any]) -> float:
         """Calculate overall threat score based on metrics
 
         Args:
@@ -437,7 +438,7 @@ class SecurityDashboard:
             logger.error(f"Failed to calculate threat score: {e}")
             return 0.0
 
-    def _get_suspicious_activity_stats(self) -> Dict[str, int]:
+    def _get_suspicious_activity_stats(self) -> dict[str, int]:
         """Get suspicious activity statistics"""
         try:
             stats = {}
@@ -592,7 +593,7 @@ def create_security_router(
         return dashboard.get_blocked_ips()
 
     @router.post("/unblock-ip")
-    async def unblock_ip(request: Dict[str, str]):
+    async def unblock_ip(request: dict[str, str]):
         """Unblock an IP address"""
         ip_hash = request.get("ip_hash")
         reason = request.get("reason", "Manual unblock")

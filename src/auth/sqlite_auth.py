@@ -13,7 +13,7 @@ import json
 import secrets
 import sqlite3
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional
+from typing import Optional
 
 import bcrypt
 
@@ -120,7 +120,7 @@ class SQLiteAuthManager:
             raise
 
     def generate_api_key(
-        self, name: str, scopes: List[str], expires_days: Optional[int] = None
+        self, name: str, scopes: list[str], expires_days: Optional[int] = None
     ) -> APIKey:
         """Generate a new secure API key with specified scopes
 
@@ -273,7 +273,7 @@ class SQLiteAuthManager:
                         try:
                             scopes_str = security.decrypt_data(scopes_json)
                             scopes = json.loads(scopes_str)
-                        except:
+                        except Exception:
                             scopes = ["read"]  # Fallback
 
                         # Update usage tracking
@@ -340,7 +340,7 @@ class SQLiteAuthManager:
             logger.error(f"Failed to revoke API key {api_key_id}: {e}")
             return False
 
-    def list_api_keys(self, include_revoked: bool = False) -> List[APIKey]:
+    def list_api_keys(self, include_revoked: bool = False) -> list[APIKey]:
         """List all API keys
 
         Args:
@@ -397,7 +397,7 @@ class SQLiteAuthManager:
                     try:
                         scopes_str = security.decrypt_data(scopes_json)
                         scopes = json.loads(scopes_str)
-                    except:
+                    except Exception:
                         scopes = ["read"]
 
                     keys.append(
@@ -463,7 +463,7 @@ class SQLiteAuthManager:
         except Exception as e:
             logger.debug(f"Failed to update key usage: {e}")
 
-    def _log_auth_event(self, action: str, resource_id: str, details: Dict):
+    def _log_auth_event(self, action: str, resource_id: str, details: dict):
         """Log authentication event to audit log"""
         try:
             audit_data = {

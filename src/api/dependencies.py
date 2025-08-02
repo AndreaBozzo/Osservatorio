@@ -123,8 +123,8 @@ async def get_current_user(
         # In a more secure implementation, we might still verify the key exists
 
         # Add request context to token claims
-        setattr(token_claims, "client_ip", request.client.host)
-        setattr(token_claims, "user_agent", request.headers.get("user-agent"))
+        token_claims.client_ip = request.client.host
+        token_claims.user_agent = request.headers.get("user-agent")
 
         logger.debug(f"Authenticated user: {token_claims.api_key_name}")
         return token_claims
@@ -224,7 +224,7 @@ async def check_rate_limit(
 
         # Add rate limit headers to response (will be handled by middleware)
         rate_headers = result.to_headers()
-        setattr(request.state, "rate_limit_headers", rate_headers)
+        request.state.rate_limit_headers = rate_headers
         logger.info(f"Set rate limit headers: {rate_headers}")
 
     except HTTPException:
@@ -239,7 +239,7 @@ async def check_rate_limit(
                 int((datetime.now() + timedelta(hours=1)).timestamp())
             ),
         }
-        setattr(request.state, "rate_limit_headers", default_headers)
+        request.state.rate_limit_headers = default_headers
         logger.info(f"Set default rate limit headers: {default_headers}")
 
 
@@ -319,7 +319,7 @@ async def log_api_request(
     try:
         # Extract request details
         method = request.method
-        url = str(request.url)
+        str(request.url)
         endpoint = request.url.path
         query_params = dict(request.query_params)
 

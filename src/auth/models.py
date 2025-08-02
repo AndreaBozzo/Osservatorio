@@ -3,9 +3,10 @@ Authentication models for Osservatorio ISTAT Data Platform
 
 Data models for API keys, JWT tokens, and authentication claims.
 """
+
 from dataclasses import dataclass
 from datetime import datetime
-from typing import List, Optional
+from typing import Optional
 
 
 @dataclass
@@ -16,7 +17,7 @@ class APIKey:
     name: str = ""
     key: str = ""
     key_hash: str = ""
-    scopes: List[str] = None
+    scopes: list[str] = None
     is_active: bool = True
     expires_at: Optional[datetime] = None
     last_used: Optional[datetime] = None

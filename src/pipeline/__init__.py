@@ -6,13 +6,13 @@ ISTAT API → SDMX Parsing → Data Transformation → Quality Assessment → St
 
 Key Components:
 - PipelineController: Main orchestrator for end-to-end processing
-- EnhancedSDMXParser: Complete ISTAT SDMX XML structure parsing  
+- EnhancedSDMXParser: Complete ISTAT SDMX XML structure parsing
 - DataQualityValidator: Comprehensive data quality assessment
 - PipelineConfig: Configurable processing parameters and quality thresholds
 
 Usage:
     from src.pipeline import UnifiedPipelineController, PipelineConfig
-    
+
     config = PipelineConfig()
     controller = UnifiedPipelineController(config)
     result = await controller.process_dataset("DCIS_POPRES1")
@@ -22,7 +22,7 @@ from .models import PipelineConfig, PipelineResult, PipelineStatus, QualityScore
 
 __all__ = [
     "PipelineConfig",
-    "PipelineResult", 
+    "PipelineResult",
     "PipelineStatus",
     "QualityScore",
 ]

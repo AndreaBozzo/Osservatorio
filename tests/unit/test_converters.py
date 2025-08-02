@@ -1,6 +1,7 @@
 """
 Unit tests for data conversion functionality.
 """
+
 import json
 import os
 import tempfile
@@ -151,7 +152,7 @@ class TestDataConversion:
             assert os.path.exists(temp_file)
 
             # Read back and verify
-            with open(temp_file, "r", encoding="utf-8") as f:
+            with open(temp_file, encoding="utf-8") as f:
                 data = json.load(f)
 
             assert len(data) == 2

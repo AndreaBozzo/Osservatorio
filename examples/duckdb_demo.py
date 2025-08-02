@@ -115,7 +115,7 @@ def demo_data_insertion_and_queries():
         # Demo time series query
         print("\n📊 Time Series Analysis:")
         ts_data = adapter.get_time_series("DEMO_POP", "IT")
-        print(f"Italy population trend:")
+        print("Italy population trend:")
         for _, row in ts_data.iterrows():
             print(f"  {row['year']}: {row['obs_value']:,} inhabitants")
 
@@ -294,7 +294,7 @@ def demo_file_persistence():
             if db_path.exists():
                 db_path.unlink()
                 print("🧹 Cleaned up demo database file")
-        except:
+        except Exception:
             pass
 
 

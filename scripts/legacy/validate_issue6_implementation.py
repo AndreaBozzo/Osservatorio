@@ -146,7 +146,7 @@ def validate_enhanced_features():
             min_adjustment_ratio=0.2,
             max_adjustment_ratio=1.5,
         )
-        assert adaptive_config.enable_adaptive == True
+        assert adaptive_config.enable_adaptive
         print("✅ Adaptive configuration OK")
 
         # Test threat levels

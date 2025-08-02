@@ -8,10 +8,11 @@ Provides consistent error handling patterns across all scripts and modules:
 - Performance monitoring
 - Security audit trail
 """
+
 import traceback
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 from fastapi import HTTPException
 from pydantic import BaseModel
@@ -53,7 +54,7 @@ class StandardError(BaseModel):
     category: ErrorCategory
     severity: ErrorSeverity
     message: str
-    details: Optional[Dict[str, Any]] = None
+    details: Optional[dict[str, Any]] = None
     timestamp: datetime
     trace_id: Optional[str] = None
     user_id: Optional[str] = None
@@ -74,8 +75,8 @@ class ErrorHandler:
         error: Exception,
         category: ErrorCategory,
         severity: ErrorSeverity = ErrorSeverity.MEDIUM,
-        user_context: Optional[Dict[str, Any]] = None,
-        additional_details: Optional[Dict[str, Any]] = None,
+        user_context: Optional[dict[str, Any]] = None,
+        additional_details: Optional[dict[str, Any]] = None,
     ) -> StandardError:
         """
         Handle an error with standardized processing
@@ -129,7 +130,7 @@ class ErrorHandler:
         return structured_error
 
     def handle_http_error(
-        self, error: HTTPException, user_context: Optional[Dict[str, Any]] = None
+        self, error: HTTPException, user_context: Optional[dict[str, Any]] = None
     ) -> StandardError:
         """Handle HTTP errors specifically"""
         category = self._categorize_http_error(error.status_code)
@@ -151,7 +152,7 @@ class ErrorHandler:
         status_code: int,
         message: str,
         category: ErrorCategory,
-        details: Optional[Dict[str, Any]] = None,
+        details: Optional[dict[str, Any]] = None,
     ) -> HTTPException:
         """Create a standardized HTTP exception"""
         error_id = self._generate_error_id()
@@ -248,8 +249,8 @@ def handle_error(
     error: Exception,
     category: ErrorCategory,
     severity: ErrorSeverity = ErrorSeverity.MEDIUM,
-    user_context: Optional[Dict[str, Any]] = None,
-    additional_details: Optional[Dict[str, Any]] = None,
+    user_context: Optional[dict[str, Any]] = None,
+    additional_details: Optional[dict[str, Any]] = None,
 ) -> StandardError:
     """Convenience function for error handling"""
     return error_handler.handle_error(
@@ -261,7 +262,7 @@ def create_http_exception(
     status_code: int,
     message: str,
     category: ErrorCategory,
-    details: Optional[Dict[str, Any]] = None,
+    details: Optional[dict[str, Any]] = None,
 ) -> HTTPException:
     """Convenience function for creating HTTP exceptions"""
     return error_handler.create_http_exception(status_code, message, category, details)

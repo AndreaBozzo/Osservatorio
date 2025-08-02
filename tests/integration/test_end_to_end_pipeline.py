@@ -1,6 +1,7 @@
 """
 Integration tests for end-to-end data pipeline.
 """
+
 from pathlib import Path
 from unittest.mock import Mock, mock_open, patch
 
@@ -171,22 +172,17 @@ class TestEndToEndPipeline:
             mock_instance.get.return_value = mock_response
 
             # Test single endpoint
-            endpoint = {
-                "name": "test_endpoint",
-                "url": "http://test.com/data",
-                "description": "Test endpoint",
-            }
 
             # Test endpoint using modern client methods
             tester.session = mock_instance
             try:
-                status = tester.get_status()
+                tester.get_status()
                 result = {"success": True, "status_code": 200, "data_length": 100}
-            except Exception as e:
+            except Exception:
                 result = {"success": False, "status_code": 500, "data_length": 0}
 
             # With successful mock, we expect success
-            assert result["success"] == True
+            assert result["success"]
             assert result["status_code"] == 200
             assert result["data_length"] >= 0
 
@@ -258,7 +254,7 @@ class TestEndToEndPipeline:
                 assert (
                     result.total_analyzed == 0 or len(result.categorized_dataflows) == 0
                 )
-            except Exception as e:
+            except Exception:
                 # Exception is expected for invalid XML - this is OK
                 assert True  # Test passes if exception is raised
 
@@ -279,12 +275,6 @@ class TestEndToEndPipeline:
             mock_response.elapsed.total_seconds.return_value = 2.0
             mock_instance.get.return_value = mock_response
 
-            endpoint = {
-                "name": "failing_endpoint",
-                "url": "http://test.com/failing",
-                "description": "Failing endpoint",
-            }
-
             # Test failing endpoint using modern client
             tester.session = mock_instance
 
@@ -296,10 +286,10 @@ class TestEndToEndPipeline:
                         "success": True,
                         "status_code": status.get("status_code", 200),
                     }
-                except Exception as e:
+                except Exception:
                     result = {"success": False, "status_code": 500}
 
-                assert result["success"] == False
+                assert not result["success"]
                 assert result["status_code"] == 500  # Based on actual mock response
 
     def test_data_quality_pipeline(self, temp_dir, sample_converted_data):

@@ -12,7 +12,7 @@ import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Optional
 
 import requests
 from requests.adapters import HTTPAdapter
@@ -39,8 +39,8 @@ class ClientStatus(Enum):
 class BatchResult:
     """Result of batch dataset processing."""
 
-    successful: List[str]
-    failed: List[Tuple[str, str]]  # (dataset_id, error_message)
+    successful: list[str]
+    failed: list[tuple[str, str]]  # (dataset_id, error_message)
     total_time: float
     timestamp: datetime
 
@@ -53,7 +53,7 @@ class QualityResult:
     quality_score: float
     completeness: float
     consistency: float
-    validation_errors: List[str]
+    validation_errors: list[str]
     timestamp: datetime
 
 
@@ -220,7 +220,7 @@ class ProductionIstatClient:
 
         return session
 
-    def get_status(self) -> Dict[str, Any]:
+    def get_status(self) -> dict[str, Any]:
         """Get current client status and metrics."""
         return {
             "status": self.status.value,
@@ -232,7 +232,7 @@ class ProductionIstatClient:
 
     @rate_limit(max_requests=100, window=3600)
     def _make_request(
-        self, endpoint: str, params: Optional[Dict] = None, timeout: int = 30
+        self, endpoint: str, params: Optional[dict] = None, timeout: int = 30
     ) -> requests.Response:
         """Make API request with fault tolerance."""
         if not self.circuit_breaker.can_proceed():
@@ -296,7 +296,7 @@ class ProductionIstatClient:
                 current_avg * (total_requests - 1) + response_time
             ) / total_requests
 
-    def fetch_dataflows(self, limit: Optional[int] = None) -> Dict[str, Any]:
+    def fetch_dataflows(self, limit: Optional[int] = None) -> dict[str, Any]:
         """Fetch available dataflows from ISTAT API with cache fallback."""
         try:
             response = self._make_request("dataflow/IT1")
@@ -348,7 +348,7 @@ class ProductionIstatClient:
 
     def fetch_dataset(
         self, dataset_id: str, include_data: bool = True
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Fetch single dataset with optional data."""
         try:
             result = {
@@ -455,7 +455,7 @@ class ProductionIstatClient:
             # If no fallback or fallback failed, re-raise original error
             raise e
 
-    async def fetch_dataset_batch(self, dataset_ids: List[str]) -> BatchResult:
+    async def fetch_dataset_batch(self, dataset_ids: list[str]) -> BatchResult:
         """Fetch multiple datasets asynchronously."""
         start_time = time.time()
         successful = []
@@ -542,7 +542,7 @@ class ProductionIstatClient:
                 timestamp=datetime.now(),
             )
 
-    def sync_to_repository(self, dataset_data: Dict) -> SyncResult:
+    def sync_to_repository(self, dataset_data: dict) -> SyncResult:
         """Synchronize dataset to repository."""
         dataset_id = dataset_data.get("dataset_id")
         start_time = time.time()
@@ -634,7 +634,7 @@ class ProductionIstatClient:
             logger.error(f"Repository sync failed for {dataset_id}: {str(e)}")
             raise
 
-    def health_check(self) -> Dict[str, Any]:
+    def health_check(self) -> dict[str, Any]:
         """Perform health check on ISTAT API."""
         try:
             # Test basic connectivity
@@ -658,7 +658,7 @@ class ProductionIstatClient:
                 "timestamp": datetime.now().isoformat(),
             }
 
-    def test_api_connectivity(self) -> List[Dict[str, Any]]:
+    def test_api_connectivity(self) -> list[dict[str, Any]]:
         """Test API connectivity to multiple endpoints."""
         test_endpoints = [
             ("dataflow/IT1", "Dataflow endpoint"),

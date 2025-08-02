@@ -1,6 +1,7 @@
 """
 System integration tests for the complete ISTAT data processing pipeline.
 """
+
 import json
 import tempfile
 from pathlib import Path
@@ -24,9 +25,9 @@ class TestSystemIntegration:
         """Test complete data pipeline from analysis to PowerBI."""
         # Setup components
         analyzer = get_dataflow_analysis_service()
-        api_tester = ProductionIstatClient()
-        config = Config()
-        logger = get_logger("test")
+        ProductionIstatClient()
+        Config()
+        get_logger("test")
 
         # Mock XML response
         mock_xml = """<?xml version="1.0"?>
@@ -287,7 +288,7 @@ class TestSystemIntegration:
         def process_dataset(dataset_id):
             try:
                 # Simulate data processing
-                analyzer = get_dataflow_analysis_service()
+                get_dataflow_analysis_service()
 
                 # Create test data
                 test_data = pd.DataFrame(
@@ -339,13 +340,13 @@ class TestSystemIntegration:
         analyzer = get_dataflow_analysis_service()
 
         # Generate large dataset
-        large_data = pd.DataFrame(
+        pd.DataFrame(
             {"id": range(10000), "value": range(10000), "category": ["test"] * 10000}
         )
 
         # Process multiple times
-        for i in range(10):
-            processed = analyzer._categorize_dataflows_sync(
+        for _i in range(10):
+            analyzer._categorize_dataflows_sync(
                 [
                     {
                         "id": f"dataset_{j}",
@@ -406,7 +407,7 @@ class TestSystemIntegration:
         assert len(categorized) > 0
 
         # 5. Generate priority scores
-        for category, datasets in categorized.items():
+        for _category, datasets in categorized.items():
             for dataset in datasets:
                 priority = analyzer._calculate_priority(dataset)
                 assert priority >= 0
@@ -429,7 +430,7 @@ class TestSystemIntegration:
         # 8. Verify final output
         assert report_file.exists()
 
-        with open(report_file, "r", encoding="utf-8") as f:
+        with open(report_file, encoding="utf-8") as f:
             saved_data = json.load(f)
 
         assert "categorized_data" in saved_data

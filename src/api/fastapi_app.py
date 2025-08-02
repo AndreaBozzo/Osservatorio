@@ -15,19 +15,12 @@ Performance targets:
 - OData Query: <500ms for 10k records
 - Authentication: <50ms per request
 """
+
 import time
 from datetime import datetime
 from typing import Optional
 
-from fastapi import (
-    Depends,
-    FastAPI,
-    HTTPException,
-    Path,
-    Query,
-    Request,
-    status,
-)
+from fastapi import Depends, FastAPI, HTTPException, Path, Query, Request, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
@@ -475,7 +468,7 @@ async def create_auth_token(
             )
 
         # Create JWT token
-        auth_token = jwt_manager.create_access_token(api_key_data)
+        jwt_manager.create_access_token(api_key_data)
 
         return APIKeyResponse(
             api_key=api_key_data.key,

@@ -9,6 +9,7 @@ OWASP-compliant security headers middleware:
 - Permissions-Policy and Feature-Policy
 - CORS configuration for cross-origin requests
 """
+
 import secrets
 from typing import Optional, Union
 
@@ -393,9 +394,11 @@ class AuthenticationMiddleware:
 
             # Check rate limiting
             rate_limit_result = self.rate_limiter.check_rate_limit(
-                api_key=authenticated_user.get("api_key_obj")
-                if authenticated_user
-                else None,
+                api_key=(
+                    authenticated_user.get("api_key_obj")
+                    if authenticated_user
+                    else None
+                ),
                 ip_address=ip_address,
                 endpoint=endpoint,
                 user_agent=headers.get("User-Agent"),

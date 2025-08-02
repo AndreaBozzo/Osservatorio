@@ -115,7 +115,7 @@ def demo_dataset_registry():
                 print(f"  ❌ Failed to register {dataset['dataset_id']}")
 
         # List all datasets
-        print(f"\n📊 Registered datasets:")
+        print("\n📊 Registered datasets:")
         all_datasets = manager.list_datasets()
         for dataset in all_datasets:
             print(
@@ -123,14 +123,14 @@ def demo_dataset_registry():
             )
 
         # List by category
-        print(f"\n🏷️ Population datasets:")
+        print("\n🏷️ Population datasets:")
         pop_datasets = manager.list_datasets(category="popolazione")
         for dataset in pop_datasets:
             print(f"  • {dataset['name']}: {dataset['description']}")
             print(f"    Metadata: {json.dumps(dataset['metadata'], indent=6)}")
 
         # Update dataset statistics
-        print(f"\n📈 Updating dataset statistics...")
+        print("\n📈 Updating dataset statistics...")
         manager.update_dataset_stats(
             "DCIS_POPRES1", quality_score=0.95, record_count=8000
         )
@@ -202,7 +202,7 @@ def demo_user_preferences():
                     print(f"    {key}: {value} ({type(value).__name__})")
 
         # Test individual preference retrieval
-        print(f"\n🔍 Individual preference tests:")
+        print("\n🔍 Individual preference tests:")
         theme = manager.get_user_preference("analyst1", "theme")
         print(f"  analyst1 theme: {theme}")
 
@@ -271,7 +271,7 @@ def demo_api_credentials():
                 print(f"  ❌ Failed to store {cred['service_name']}")
 
         # Verify credentials
-        print(f"\n🔍 Verifying API credentials...")
+        print("\n🔍 Verifying API credentials...")
 
         verification_tests = [
             ("istat_api", "istat_api_key_12345", True),
@@ -363,7 +363,7 @@ def demo_audit_logging():
                 print(f"  ✅ {user_id}: {action} on {resource_type}")
 
         # Query audit logs with various filters
-        print(f"\n🔍 Audit log queries:")
+        print("\n🔍 Audit log queries:")
 
         # All logs for analyst1
         analyst1_logs = manager.get_audit_logs(user_id="analyst1")
@@ -379,7 +379,7 @@ def demo_audit_logging():
 
         # Recent activities (last 5)
         recent_logs = manager.get_audit_logs(limit=5)
-        print(f"\n📅 Recent activities:")
+        print("\n📅 Recent activities:")
         for log in recent_logs:
             timestamp = log["timestamp"]
             user = log["user_id"]
@@ -394,7 +394,7 @@ def demo_audit_logging():
         # Show detailed log entry
         if recent_logs:
             detailed_log = recent_logs[0]
-            print(f"\n🔍 Detailed log entry:")
+            print("\n🔍 Detailed log entry:")
             for key, value in detailed_log.items():
                 if key == "details_json":
                     continue  # Skip raw JSON
@@ -448,7 +448,7 @@ def demo_system_configuration():
                 print(f"  ✅ {key}: {value}")
 
         # Retrieve configurations
-        print(f"\n📖 Configuration values:")
+        print("\n📖 Configuration values:")
 
         # Individual configurations
         rate_limit = manager.get_config("api.istat.rate_limit")
@@ -530,7 +530,7 @@ def demo_unified_repository():
                 )
 
         # User preferences with caching
-        print(f"\n👤 User preferences with caching...")
+        print("\n👤 User preferences with caching...")
         repo.set_user_preference(
             "demo_user", "demo_setting", "demo_value", cache_minutes=5
         )
@@ -544,7 +544,7 @@ def demo_unified_repository():
         print(f"  💾 Cached access: {value2}")
 
         # Analytics query with audit
-        print(f"\n📊 Analytics query with audit logging...")
+        print("\n📊 Analytics query with audit logging...")
         try:
             results = repo.execute_analytics_query(
                 "SELECT 'Unified Repository Demo' as message, 42 as answer",
@@ -556,7 +556,7 @@ def demo_unified_repository():
             print(f"  ℹ️ Analytics query info: {e} (expected in demo environment)")
 
         # System status
-        print(f"\n🔧 System status:")
+        print("\n🔧 System status:")
         status = repo.get_system_status()
         print(f"  SQLite metadata: {status['metadata_database']['status']}")
         print(f"  DuckDB analytics: {status['analytics_database']['status']}")
@@ -564,7 +564,7 @@ def demo_unified_repository():
 
         # Show database statistics
         metadata_stats = status["metadata_database"]["stats"]
-        print(f"\n📈 Database statistics:")
+        print("\n📈 Database statistics:")
         print(f"  Datasets: {metadata_stats.get('dataset_registry_count', 0)}")
         print(f"  User preferences: {metadata_stats.get('user_preferences_count', 0)}")
         print(f"  Audit logs: {metadata_stats.get('audit_log_count', 0)}")

@@ -7,6 +7,7 @@ This module tests the performance characteristics of the query builder:
 - Concurrent query handling
 - Large dataset performance
 """
+
 import gc
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -70,7 +71,7 @@ class TestQueryBuilderPerformance:
         uncached_times = []
         for _ in range(5):
             start_time = time.time()
-            result = builder.select("*").from_table("test").execute(use_cache=False)
+            builder.select("*").from_table("test").execute(use_cache=False)
             uncached_times.append(time.time() - start_time)
             builder._reset_query_state()
 
@@ -80,7 +81,7 @@ class TestQueryBuilderPerformance:
         cached_times = []
         for _ in range(5):
             start_time = time.time()
-            result = builder.select("*").from_table("test").execute(use_cache=True)
+            builder.select("*").from_table("test").execute(use_cache=True)
             cached_times.append(time.time() - start_time)
             builder._reset_query_state()
 
@@ -158,15 +159,15 @@ class TestQueryBuilderPerformance:
                 # Mix of cached and uncached queries
                 if i % 3 == 0:
                     # Repeating query (should hit cache after first execution)
-                    result = (
+                    (
                         builder.select("*")
-                        .from_table(f"table_common")
+                        .from_table("table_common")
                         .where("id", FilterOperator.GT, 100)
                         .execute()
                     )
                 else:
                     # Unique query per thread
-                    result = (
+                    (
                         builder.select("*")
                         .from_table(f"table_{thread_id}")
                         .where("value", FilterOperator.EQ, i)
@@ -190,7 +191,7 @@ class TestQueryBuilderPerformance:
 
         # Analyze results
         all_times = []
-        for thread_id, times in results:
+        for _thread_id, times in results:
             all_times.extend(times)
 
         avg_query_time = sum(all_times) / len(all_times)
@@ -228,26 +229,26 @@ class TestQueryBuilderPerformance:
         for i in range(200):
             # Mix of different query patterns
             if i % 4 == 0:
-                result = (
+                (
                     builder.select("*")
                     .from_table("large_table")
                     .where("year", FilterOperator.EQ, 2020 + (i % 4))
                     .execute()
                 )
             elif i % 4 == 1:
-                result = (
+                (
                     builder.select_time_series(f"dataset_{i % 10}")
                     .year_range(2020, 2023)
                     .execute()
                 )
             elif i % 4 == 2:
-                result = (
+                (
                     builder.select_territory_comparison("measure_1", 2023)
                     .territories([f"T{j:03d}" for j in range(10)])
                     .execute()
                 )
             else:
-                result = builder.select_category_trends("category_A").execute()
+                builder.select_category_trends("category_A").execute()
 
             builder._reset_query_state()
 
@@ -332,7 +333,7 @@ class TestQueryBuilderPerformance:
         start_time = time.time()
 
         for i in range(20):  # More than max_size
-            result = builder.select("*").from_table(f"table_{i}").execute()
+            builder.select("*").from_table(f"table_{i}").execute()
             builder._reset_query_state()
 
         eviction_time = time.time() - start_time
@@ -408,7 +409,7 @@ class TestQueryBuilderPerformance:
                 start_time = time.time()
 
                 try:
-                    result = pattern().execute()
+                    pattern().execute()
                     execution_time = time.time() - start_time
                     times.append(execution_time)
                 except Exception as e:
@@ -448,7 +449,7 @@ class TestQueryBuilderPerformance:
 
         # Check overall cache performance
         cache_stats = cache.get_stats()
-        print(f"\nCache Performance:")
+        print("\nCache Performance:")
         print(f"  Hit rate: {cache_stats['hit_rate_percent']:.1f}%")
         print(f"  Cache size: {cache_stats['cache_size']}")
 
@@ -505,14 +506,14 @@ class TestQueryBuilderPerformance:
         uncached_time = []
         for _ in range(3):
             start_time = time.time()
-            result = builder.select("*").from_table("test").execute(use_cache=False)
+            builder.select("*").from_table("test").execute(use_cache=False)
             uncached_time.append(time.time() - start_time)
             builder._reset_query_state()
 
         cached_times = []
         for _ in range(3):
             start_time = time.time()
-            result = builder.select("*").from_table("test").execute(use_cache=True)
+            builder.select("*").from_table("test").execute(use_cache=True)
             cached_times.append(time.time() - start_time)
             builder._reset_query_state()
 

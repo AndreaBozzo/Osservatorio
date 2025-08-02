@@ -9,6 +9,7 @@ This module provides comprehensive system resource monitoring during load testin
 - Database connection monitoring
 - Resource bottleneck detection
 """
+
 import json
 import statistics
 import threading
@@ -16,7 +17,7 @@ import time
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 import psutil
 
@@ -94,7 +95,7 @@ class ResourceAnalysis:
     # CPU analysis
     avg_cpu_percent: float
     max_cpu_percent: float
-    cpu_utilization_distribution: Dict[
+    cpu_utilization_distribution: dict[
         str, float
     ]  # e.g., {"0-25%": 0.3, "25-50%": 0.4, ...}
 
@@ -118,9 +119,9 @@ class ResourceAnalysis:
     max_process_memory_mb: float
 
     # Alerts and issues
-    alerts: List[ResourceAlert] = field(default_factory=list)
-    bottlenecks_detected: List[str] = field(default_factory=list)
-    recommendations: List[str] = field(default_factory=list)
+    alerts: list[ResourceAlert] = field(default_factory=list)
+    bottlenecks_detected: list[str] = field(default_factory=list)
+    recommendations: list[str] = field(default_factory=list)
 
 
 class ResourceMonitor:
@@ -131,8 +132,8 @@ class ResourceMonitor:
         self.process_name = process_name
         self.monitoring_active = False
         self.monitor_thread: Optional[threading.Thread] = None
-        self.snapshots: List[ResourceSnapshot] = []
-        self.alerts: List[ResourceAlert] = []
+        self.snapshots: list[ResourceSnapshot] = []
+        self.alerts: list[ResourceAlert] = []
 
         # Get process to monitor
         if process_name:
@@ -343,7 +344,7 @@ class ResourceMonitor:
 
         return snapshot
 
-    def _check_alerts(self, snapshot: ResourceSnapshot) -> List[ResourceAlert]:
+    def _check_alerts(self, snapshot: ResourceSnapshot) -> list[ResourceAlert]:
         """Check for resource usage alerts."""
         alerts = []
         current_time = snapshot.timestamp
@@ -648,7 +649,7 @@ class ResourceMonitor:
 
     def generate_resource_report(
         self, output_path: Optional[Path] = None
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Generate comprehensive resource utilization report."""
         analysis = self.analyze_resource_usage()
 

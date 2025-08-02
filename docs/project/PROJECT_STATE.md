@@ -9,7 +9,7 @@
 
 ## 🚀 Executive Summary
 
-**Osservatorio** è una piattaforma per il processing di dati statistici ISTAT con FastAPI backend e infrastruttura moderna. **Status attuale**: Infrastruttura completata (Day 1-8), pipeline dati in sviluppo. 
+**Osservatorio** è una piattaforma per il processing di dati statistici ISTAT con FastAPI backend e infrastruttura moderna. **Status attuale**: Infrastruttura completata (Day 1-8), pipeline dati in sviluppo.
 
 ### 🎯 **Stato Attuale (1 Agosto 2025) - Day 8 Complete**
 - **✅ Infrastructure Ready**: FastAPI, Docker, CI, Security, Testing framework

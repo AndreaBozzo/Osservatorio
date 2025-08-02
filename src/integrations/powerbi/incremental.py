@@ -11,9 +11,10 @@ Features:
 - Automated refresh scheduling
 - Conflict resolution for concurrent updates
 """
+
 import json
 from datetime import datetime, timedelta
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 import pandas as pd
 
@@ -42,7 +43,7 @@ class RefreshPolicy:
         self.enabled = enabled
         self.created_at = datetime.now()
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Export policy to dictionary."""
         return {
             "dataset_id": self.dataset_id,
@@ -54,7 +55,7 @@ class RefreshPolicy:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "RefreshPolicy":
+    def from_dict(cls, data: dict[str, Any]) -> "RefreshPolicy":
         """Create policy from dictionary."""
         policy = cls(
             dataset_id=data["dataset_id"],
@@ -74,7 +75,7 @@ class ChangeTracker:
     def __init__(self, repository: UnifiedDataRepository):
         self.repository = repository
 
-    def detect_changes(self, dataset_id: str, since: datetime) -> Dict[str, Any]:
+    def detect_changes(self, dataset_id: str, since: datetime) -> dict[str, Any]:
         """Detect changes in dataset since specified timestamp.
 
         Args:
@@ -176,7 +177,7 @@ class ChangeTracker:
             logger.error(f"Failed to get incremental data for {dataset_id}: {e}")
             return pd.DataFrame()
 
-    def _generate_change_summary(self, changes: Dict[str, Any]) -> str:
+    def _generate_change_summary(self, changes: dict[str, Any]) -> str:
         """Generate human-readable change summary."""
         total = changes.get("total_changes", 0)
         new = changes.get("new_records", 0)
@@ -185,7 +186,7 @@ class ChangeTracker:
 
         return f"{total} total changes ({new} new, {updated} updated) across {territories} territories"
 
-    def _get_detailed_changes(self, dataset_id: str, since: datetime) -> Dict[str, Any]:
+    def _get_detailed_changes(self, dataset_id: str, since: datetime) -> dict[str, Any]:
         """Get detailed breakdown of changes."""
         try:
             # Get changes by territory
@@ -223,12 +224,14 @@ class ChangeTracker:
             )
 
             return {
-                "top_territories": territory_changes.to_dict("records")
-                if not territory_changes.empty
-                else [],
-                "years_affected": time_changes.to_dict("records")
-                if not time_changes.empty
-                else [],
+                "top_territories": (
+                    territory_changes.to_dict("records")
+                    if not territory_changes.empty
+                    else []
+                ),
+                "years_affected": (
+                    time_changes.to_dict("records") if not time_changes.empty else []
+                ),
             }
 
         except Exception as e:
@@ -328,7 +331,7 @@ class IncrementalRefreshManager:
         dataset_id: str,
         powerbi_dataset_id: Optional[str] = None,
         force: bool = False,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Execute incremental refresh for PowerBI dataset.
 
         Args:
@@ -401,7 +404,7 @@ class IncrementalRefreshManager:
             logger.error(f"Failed to execute incremental refresh for {dataset_id}: {e}")
             return {"error": str(e), "dataset_id": dataset_id}
 
-    def get_refresh_status(self, dataset_id: str) -> Dict[str, Any]:
+    def get_refresh_status(self, dataset_id: str) -> dict[str, Any]:
         """Get refresh status and metrics for dataset.
 
         Args:
@@ -426,9 +429,9 @@ class IncrementalRefreshManager:
                 "dataset_id": dataset_id,
                 "policy_enabled": policy.enabled if policy else False,
                 "last_refresh": last_refresh.isoformat(),
-                "next_scheduled_refresh": next_refresh.isoformat()
-                if next_refresh
-                else None,
+                "next_scheduled_refresh": (
+                    next_refresh.isoformat() if next_refresh else None
+                ),
                 "recent_changes": recent_changes,
                 "refresh_frequency": policy.refresh_frequency if policy else "unknown",
                 "status": "active" if policy and policy.enabled else "inactive",
@@ -481,7 +484,7 @@ class IncrementalRefreshManager:
         dataset_id: str,
         data: pd.DataFrame,
         powerbi_dataset_id: Optional[str] = None,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Push incremental data to PowerBI dataset."""
         try:
             if not self.powerbi_client:
@@ -507,7 +510,7 @@ class IncrementalRefreshManager:
             logger.error(f"Failed to push data to PowerBI: {e}")
             return {"powerbi_push": "failed", "error": str(e)}
 
-    def _log_refresh_activity(self, dataset_id: str, result: Dict[str, Any]) -> None:
+    def _log_refresh_activity(self, dataset_id: str, result: dict[str, Any]) -> None:
         """Log refresh activity for audit purposes."""
         try:
             activity_log = {

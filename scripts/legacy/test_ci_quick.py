@@ -60,7 +60,7 @@ def main():
             print(f"  • {test}")
         sys.exit(1)
     else:
-        print(f"\n✅ Tutti i test essenziali passati!")
+        print("\n✅ Tutti i test essenziali passati!")
         print("Build ready for deployment")
 
 

@@ -2,8 +2,8 @@
 Final coverage push to reach 60% target.
 Simple working tests for missing coverage.
 """
-from unittest.mock import Mock, patch
 
+from unittest.mock import Mock, patch
 
 from src.utils.circuit_breaker import CircuitState
 

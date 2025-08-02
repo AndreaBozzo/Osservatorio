@@ -40,6 +40,7 @@ Architecture Notes:
     - Proper Python packaging standards compliance
     - Easier testing and distribution
 """
+
 import sys
 from pathlib import Path
 
