@@ -435,9 +435,7 @@ class TestUnifiedDataRepository:
             pref_type = (
                 "boolean"
                 if isinstance(value, bool)
-                else "integer"
-                if isinstance(value, int)
-                else "string"
+                else "integer" if isinstance(value, int) else "string"
             )
             success = repository.set_user_preference(
                 user_id, key, value, preference_type=pref_type

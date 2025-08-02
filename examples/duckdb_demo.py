@@ -277,7 +277,9 @@ def demo_file_persistence():
         file_adapter2 = create_file_adapter("demo_persistence.duckdb")
         summary = file_adapter2.get_dataset_summary()
 
-        print(f"✅ Data persisted: {summary.iloc[0]['total_observations']} observations")
+        print(
+            f"✅ Data persisted: {summary.iloc[0]['total_observations']} observations"
+        )
         print(f"   Dataset: {summary.iloc[0]['dataset_name']}")
 
         file_adapter2.close()

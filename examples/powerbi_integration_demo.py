@@ -449,7 +449,9 @@ def demo_end_to_end_integration(
         if "error" not in governance and governance["datasets"]:
             dataset_gov = governance["datasets"][0]
             print("   ✅ Governance validated:")
-            print(f"      - Lineage: {'✅' if dataset_gov.get('has_lineage') else '❌'}")
+            print(
+                f"      - Lineage: {'✅' if dataset_gov.get('has_lineage') else '❌'}"
+            )
             print(
                 f"      - Usage Data: {'✅' if dataset_gov.get('has_usage_data') else '❌'}"
             )
