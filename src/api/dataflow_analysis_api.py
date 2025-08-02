@@ -106,13 +106,13 @@ async def analyze_dataflow(
             )
 
         try:
-            with open(file_path, "r", encoding="utf-8") as f:
+            with open(file_path, encoding="utf-8") as f:
                 xml_content = f.read()
         except Exception as e:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Failed to read XML file: {str(e)}",
-            )
+            ) from e
 
     # Create analysis filters
     filters = AnalysisFilters(
@@ -194,7 +194,7 @@ async def analyze_dataflow(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Analysis failed: {str(e)}",
-        )
+        ) from e
 
 
 @router.post(
@@ -255,7 +255,7 @@ async def upload_and_analyze_xml(
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail=f"Invalid category: {str(e)}",
-                )
+                ) from e
 
         # Create request object
         request = DataflowAnalysisRequest(
@@ -344,16 +344,18 @@ async def upload_and_analyze_xml(
             performance_metrics=result.performance_metrics,
         )
 
-    except UnicodeDecodeError:
+    except HTTPException:
+        raise
+    except UnicodeDecodeError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="File must be UTF-8 encoded"
-        )
+        ) from e
     except Exception as e:
         logger.error(f"Error processing uploaded file: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to process uploaded file: {str(e)}",
-        )
+        ) from e
 
 
 @router.post(
@@ -445,7 +447,7 @@ async def bulk_analyze_dataflows(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Bulk analysis failed: {str(e)}",
-        )
+        ) from e
 
 
 # Categorization Rules Management Endpoints
@@ -502,7 +504,7 @@ async def get_categorization_rules(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to retrieve rules: {str(e)}",
-        )
+        ) from e
 
 
 @router.post(
@@ -549,7 +551,7 @@ async def create_categorization_rule(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to create rule: {str(e)}",
-        )
+        ) from e
 
 
 @router.put(
@@ -596,7 +598,7 @@ async def update_categorization_rule(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to update rule: {str(e)}",
-        )
+        ) from e
 
 
 @router.delete(
@@ -636,7 +638,7 @@ async def delete_categorization_rule(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to delete rule: {str(e)}",
-        )
+        ) from e
 
 
 @router.get(
@@ -682,4 +684,4 @@ async def download_sample_file(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to download sample: {str(e)}",
-        )
+        ) from e

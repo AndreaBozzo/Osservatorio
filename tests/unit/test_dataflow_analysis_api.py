@@ -333,20 +333,24 @@ class TestDataflowAnalysisAPI:
         from src.api.dependencies import (
             check_rate_limit,
             get_current_user,
+            get_dataflow_service,
             log_api_request,
         )
+
+        # Mock the service to prevent actual analysis
+        mock_service = MagicMock()
 
         app.dependency_overrides[get_current_user] = lambda: mock_user
         app.dependency_overrides[check_rate_limit] = lambda: None
         app.dependency_overrides[log_api_request] = lambda: None
+        app.dependency_overrides[get_dataflow_service] = lambda: mock_service
 
         try:
             xml_bytes = sample_xml_content.encode("utf-8")
 
             response = client.post(
-                "/api/analysis/dataflow/upload",
+                "/api/analysis/dataflow/upload?categories=invalid_category,another_invalid",
                 files={"file": ("test.xml", xml_bytes, "application/xml")},
-                data={"categories": "invalid_category,another_invalid"},
                 headers={"Authorization": "Bearer test_token"},
             )
 
@@ -1169,13 +1173,6 @@ class TestAPIAuthentication:
         from fastapi import HTTPException, status
 
         from src.api.dependencies import require_write
-
-        mock_user = {
-            "sub": "read_only_user",
-            "api_key_id": 1,
-            "scopes": ["read"],  # No write permission
-            "exp": datetime.now().timestamp() + 3600,
-        }
 
         def mock_require_write_func():
             raise HTTPException(
