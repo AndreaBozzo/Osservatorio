@@ -5,7 +5,7 @@ Unit tests for configuration module.
 import os
 import tempfile
 from pathlib import Path
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 import pytest
 
@@ -19,7 +19,7 @@ class TestConfig:
         """Test default configuration values."""
         assert Config.ISTAT_API_BASE_URL == "https://esploradati.istat.it/SDMXWS/rest"
         assert Config.ISTAT_API_TIMEOUT == 30
-        assert Config.ENABLE_CACHE == True
+        assert Config.ENABLE_CACHE
         assert Config.CACHE_EXPIRY_HOURS == 24
         assert Config.LOG_LEVEL == "INFO"
 
@@ -44,7 +44,7 @@ class TestConfig:
         assert src.utils.config.Config.ISTAT_API_BASE_URL == "https://test.api.url/"
         assert src.utils.config.Config.ISTAT_API_TIMEOUT == 60
         assert src.utils.config.Config.LOG_LEVEL == "DEBUG"
-        assert src.utils.config.Config.ENABLE_CACHE == False
+        assert not src.utils.config.Config.ENABLE_CACHE
 
     def test_directory_structure(self):
         """Test that directory structure is properly defined."""

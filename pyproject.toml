@@ -5,16 +5,20 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "osservatorio-istat"
 version = "1.0.0"
-description = "Italian data processing system for ISTAT data with Tableau/PowerBI integration"
+description = "Modern Italian Statistical Data Platform with Advanced Analytics, FastAPI REST API, and Business Intelligence Integration"
 readme = "README.md"
 license = {text = "MIT"}
 authors = [
     {name = "Andrea Bozzo", email = "andrea.bozzo@osservatorio-istat.it"}
 ]
+maintainers = [
+    {name = "Andrea Bozzo", email = "andrea.bozzo@osservatorio-istat.it"}
+]
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
+    "Intended Audience :: Financial and Insurance Industry",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
@@ -22,11 +26,18 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Scientific/Engineering :: Information Analysis",
     "Topic :: Database",
     "Topic :: Internet :: WWW/HTTP :: HTTP Servers",
+    "Topic :: Office/Business :: Financial :: Investment",
+    "Framework :: FastAPI",
+    "Environment :: Web Environment",
 ]
-keywords = ["istat", "data-processing", "powerbi", "tableau", "fastapi", "analytics"]
+keywords = [
+    "istat", "data-processing", "powerbi", "tableau", "fastapi", "analytics",
+    "business-intelligence", "statistical-data", "rest-api", "duckdb", "sqlite"
+]
 requires-python = ">=3.9"
 dependencies = [
     # Core data processing
@@ -78,13 +89,46 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
+    # Testing
     "pytest>=7.4.0",
     "pytest-cov>=4.1.0",
     "pytest-mock>=3.11.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-xdist>=3.3.0",
+    "pytest-env>=1.1.0",
+    "hypothesis>=6.82.0",
+
+    # Code quality
     "black>=23.7.0",
     "flake8>=6.1.0",
     "isort>=5.12.0",
     "pre-commit>=3.3.0",
+    "mypy>=1.5.0",
+    "ruff>=0.0.290",
+    "bandit>=1.7.5",
+
+    # Documentation
+    "mkdocs>=1.5.0",
+    "mkdocs-material>=9.2.0",
+    "mkdocstrings[python]>=0.22.0",
+
+    # Development tools
+    "ipython>=8.14.0",
+    "jupyter>=1.0.0",
+    "notebook>=7.0.0",
+]
+
+performance = [
+    "locust>=2.16.0",
+    "memory-profiler>=0.61.0",
+    "py-spy>=0.3.14",
+    "line-profiler>=4.1.0",
+]
+
+security = [
+    "bandit>=1.7.5",
+    "safety>=2.3.0",
+    "semgrep>=1.38.0",
 ]
 
 [tool.pytest.ini_options]
@@ -92,11 +136,28 @@ testpaths = ["tests"]
 python_files = ["test_*.py", "*_test.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
-addopts = "-v --tb=short"
+addopts = [
+    "-v",
+    "--tb=short",
+    "--cov=src",
+    "--cov-report=html",
+    "--cov-report=term-missing",
+    "--cov-fail-under=80",
+    "--strict-markers",
+    "--disable-warnings",
+]
 markers = [
-    "integration: marks tests as integration tests",
-    "performance: marks tests as performance tests",
-    "slow: marks tests as slow running",
+    "unit: Unit tests for individual components",
+    "integration: Integration tests for component interaction",
+    "performance: Performance and scalability tests",
+    "slow: Slow running tests",
+    "api: Tests requiring API access",
+    "security: Security-related tests",
+]
+filterwarnings = [
+    "ignore::UserWarning",
+    "ignore::DeprecationWarning",
+    "ignore::ResourceWarning",
 ]
 
 [tool.black]
@@ -129,3 +190,105 @@ src_paths = ["src", "tests"]
 
 [tool.pylance]
 typeCheckingMode = "basic"
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+show_error_codes = true
+
+[[tool.mypy.overrides]]
+module = [
+    "pandas.*",
+    "numpy.*",
+    "duckdb.*",
+    "streamlit.*",
+    "plotly.*",
+    "matplotlib.*",
+    "seaborn.*",
+    "tableauserverclient.*",
+    "msal.*",
+    "lxml.*",
+    "beautifulsoup4.*",
+]
+ignore_missing_imports = true
+
+[tool.ruff]
+target-version = "py39"
+line-length = 88
+
+[tool.ruff.lint]
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "B",  # flake8-bugbear
+    "C4", # flake8-comprehensions
+    "UP", # pyupgrade
+]
+ignore = [
+    "E501",  # line too long, handled by black
+    "B008",  # do not perform function calls in argument defaults
+    "C901",  # too complex
+    "B904",  # raise-without-from-inside-except (many legacy patterns)
+    "B017",  # pytest.raises(Exception) (acceptable in tests)
+    "B007",  # unused-loop-control-variable (often intentional)
+    "B015",  # useless-comparison (legacy benchmark code)
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+"tests/**/*" = ["B011"]
+"scripts/legacy/**" = ["F401", "E402"]  # legacy scripts can have import issues
+"scripts/benchmark_*" = ["B015"]  # benchmark scripts may have unused comparisons
+"src/api/fastapi_app.py" = ["E402"]  # router imports after app definition
+
+[tool.coverage.run]
+source = ["src"]
+omit = [
+    "*/tests/*",
+    "*/venv/*",
+    "*/.venv/*",
+    "*/site-packages/*",
+    "*/dist-packages/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
+
+[tool.bandit]
+exclude_dirs = ["tests", "docs"]
+skips = ["B101", "B601"]
+
+[project.urls]
+Homepage = "https://github.com/AndreaBozzo/Osservatorio"
+Repository = "https://github.com/AndreaBozzo/Osservatorio.git"
+Documentation = "https://github.com/AndreaBozzo/Osservatorio/blob/main/README.md"
+"Bug Tracker" = "https://github.com/AndreaBozzo/Osservatorio/issues"
+Changelog = "https://github.com/AndreaBozzo/Osservatorio/blob/main/CHANGELOG.md"
+
+[project.scripts]
+osservatorio = "src.api.fastapi_app:main"
+osservatorio-health = "scripts.health_check:main"

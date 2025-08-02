@@ -151,7 +151,11 @@ osservatorio_temp/
 # pytest
 .pytest_cache/
 .coverage
+.coverage.*
 htmlcov/
+htmlcov_*/
+*.coverage
+performance_results.json
 
 # Performance testing
 data/performance_baselines.json
@@ -167,6 +171,8 @@ dmypy.json
 
 # Security and monitoring
 security-report.json
+bandit-report.json
+bandit-report-*.json
 *.har
 
 # Authentication and credentials (test files)

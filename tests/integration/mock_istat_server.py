@@ -6,12 +6,9 @@ for integration testing in CI/CD environments where external API access
 may be limited or unreliable.
 """
 
-import json
 import threading
 import time
-import xml.etree.ElementTree as ET
 from datetime import datetime
-from typing import Any, Dict
 
 from flask import Flask, Response, jsonify, request
 
@@ -35,7 +32,7 @@ class MockIstatServer:
 
     def _create_mock_dataflows(self) -> str:
         """Create mock dataflows XML response."""
-        return """<?xml version="1.0" encoding="UTF-8"?>
+        return f"""<?xml version="1.0" encoding="UTF-8"?>
 <message:StructureSpecificData
     xmlns:message="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message"
     xmlns:str="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/structure"
@@ -43,7 +40,7 @@ class MockIstatServer:
     <message:Header>
         <message:ID>MOCK_DATAFLOWS</message:ID>
         <message:Test>true</message:Test>
-        <message:Prepared>{timestamp}</message:Prepared>
+        <message:Prepared>{datetime.now().isoformat()}</message:Prepared>
         <message:Sender id="IT1"/>
     </message:Header>
     <message:Structures>
@@ -62,14 +59,12 @@ class MockIstatServer:
             </str:Dataflow>
         </str:Dataflows>
     </message:Structures>
-</message:StructureSpecificData>""".format(
-            timestamp=datetime.now().isoformat()
-        )
+</message:StructureSpecificData>"""
 
-    def _create_mock_datasets(self) -> Dict[str, str]:
+    def _create_mock_datasets(self) -> dict[str, str]:
         """Create mock dataset responses."""
         return {
-            "DCIS_POPRES1": """<?xml version="1.0" encoding="UTF-8"?>
+            "DCIS_POPRES1": f"""<?xml version="1.0" encoding="UTF-8"?>
 <message:GenericData
     xmlns:message="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message"
     xmlns:generic="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/data/generic"
@@ -77,7 +72,7 @@ class MockIstatServer:
     <message:Header>
         <message:ID>DCIS_POPRES1_DATA</message:ID>
         <message:Test>true</message:Test>
-        <message:Prepared>{timestamp}</message:Prepared>
+        <message:Prepared>{datetime.now().isoformat()}</message:Prepared>
     </message:Header>
     <message:DataSet>
         <generic:Series>
@@ -109,9 +104,7 @@ class MockIstatServer:
             </generic:Obs>
         </generic:Series>
     </message:DataSet>
-</message:GenericData>""".format(
-                timestamp=datetime.now().isoformat()
-            ),
+</message:GenericData>""",
             "TEST_DATASET": """<?xml version="1.0" encoding="UTF-8"?>
 <GenericData>
     <DataSet>

@@ -15,14 +15,11 @@ Architecture Integration:
 - Integrates with existing PowerBI API client
 """
 
-import base64
 import json
 import zipfile
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
-
-import pandas as pd
+from typing import Any, Optional, Union
 
 from src.database.sqlite.repository import UnifiedDataRepository
 from src.utils.logger import get_logger
@@ -42,8 +39,8 @@ class PowerBITemplate:
         category: str,
         description: str,
         star_schema: StarSchemaDefinition,
-        dax_measures: Dict[str, str],
-        visualizations: List[Dict[str, Any]],
+        dax_measures: dict[str, str],
+        visualizations: list[dict[str, Any]],
     ):
         self.template_id = template_id
         self.name = name
@@ -54,7 +51,7 @@ class PowerBITemplate:
         self.visualizations = visualizations
         self.created_at = datetime.now()
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Export template to dictionary."""
         return {
             "template_id": self.template_id,
@@ -72,7 +69,7 @@ class VisualizationLibrary:
     """Library of pre-configured visualizations for ISTAT data."""
 
     @staticmethod
-    def get_population_visualizations() -> List[Dict[str, Any]]:
+    def get_population_visualizations() -> list[dict[str, Any]]:
         """Get visualizations for population data."""
         return [
             {
@@ -115,7 +112,7 @@ class VisualizationLibrary:
         ]
 
     @staticmethod
-    def get_economic_visualizations() -> List[Dict[str, Any]]:
+    def get_economic_visualizations() -> list[dict[str, Any]]:
         """Get visualizations for economic data."""
         return [
             {
@@ -151,7 +148,7 @@ class VisualizationLibrary:
         ]
 
     @staticmethod
-    def get_employment_visualizations() -> List[Dict[str, Any]]:
+    def get_employment_visualizations() -> list[dict[str, Any]]:
         """Get visualizations for employment data."""
         return [
             {
@@ -180,7 +177,7 @@ class VisualizationLibrary:
         ]
 
     @classmethod
-    def get_visualizations_for_category(cls, category: str) -> List[Dict[str, Any]]:
+    def get_visualizations_for_category(cls, category: str) -> list[dict[str, Any]]:
         """Get visualizations for specific data category."""
         if category == "popolazione":
             return cls.get_population_visualizations()
@@ -192,7 +189,7 @@ class VisualizationLibrary:
             return cls.get_generic_visualizations()
 
     @staticmethod
-    def get_generic_visualizations() -> List[Dict[str, Any]]:
+    def get_generic_visualizations() -> list[dict[str, Any]]:
         """Get generic visualizations for any data type."""
         return [
             {
@@ -223,11 +220,11 @@ class VisualizationLibrary:
 class PowerBIReport:
     """Represents a PowerBI report structure."""
 
-    def __init__(self, name: str, pages: List[Dict[str, Any]]):
+    def __init__(self, name: str, pages: list[dict[str, Any]]):
         self.name = name
         self.pages = pages
 
-    def to_pbix_json(self) -> Dict[str, Any]:
+    def to_pbix_json(self) -> dict[str, Any]:
         """Convert report to PowerBI JSON format."""
         return {
             "version": "4.0",
@@ -279,7 +276,7 @@ class TemplateGenerator:
         self,
         dataset_id: str,
         template_name: Optional[str] = None,
-        custom_visualizations: Optional[List[Dict[str, Any]]] = None,
+        custom_visualizations: Optional[list[dict[str, Any]]] = None,
     ) -> PowerBITemplate:
         """Generate PowerBI template for ISTAT dataset.
 
@@ -408,7 +405,7 @@ class TemplateGenerator:
             logger.error(f"Failed to create PBIT file: {e}")
             raise
 
-    def get_available_templates(self) -> List[Dict[str, Any]]:
+    def get_available_templates(self) -> list[dict[str, Any]]:
         """Get list of available templates.
 
         Returns:
@@ -497,8 +494,8 @@ class TemplateGenerator:
         return PowerBIReport(template.name, pages)
 
     def _create_visual_definition(
-        self, viz: Dict[str, Any], template: PowerBITemplate
-    ) -> Dict[str, Any]:
+        self, viz: dict[str, Any], template: PowerBITemplate
+    ) -> dict[str, Any]:
         """Create PowerBI visual definition from visualization spec."""
         return {
             "visualType": viz["type"],
@@ -507,9 +504,9 @@ class TemplateGenerator:
             "projections": {
                 "Category": [{"queryRef": viz.get("x_axis", "")}],
                 "Values": [{"queryRef": viz.get("y_axis", "")}],
-                "Legend": [{"queryRef": viz.get("legend", "")}]
-                if viz.get("legend")
-                else [],
+                "Legend": (
+                    [{"queryRef": viz.get("legend", "")}] if viz.get("legend") else []
+                ),
             },
             "formatting": {
                 "general": {"locale": "it-IT"},
@@ -523,8 +520,8 @@ class TemplateGenerator:
         }
 
     def _create_data_model(
-        self, star_schema: StarSchemaDefinition, dax_measures: Dict[str, str]
-    ) -> Dict[str, Any]:
+        self, star_schema: StarSchemaDefinition, dax_measures: dict[str, str]
+    ) -> dict[str, Any]:
         """Create PowerBI data model definition."""
         return {
             "name": "ISTATDataModel",
@@ -544,7 +541,7 @@ class TemplateGenerator:
 
     def _create_table_definitions(
         self, star_schema: StarSchemaDefinition
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Create table definitions for star schema."""
         tables = []
 
@@ -552,9 +549,7 @@ class TemplateGenerator:
         tables.append(
             {
                 "name": star_schema.fact_table,
-                "source": "SELECT * FROM {}".format(
-                    star_schema.fact_table
-                ),  # nosec B608
+                "source": f"SELECT * FROM {star_schema.fact_table}",  # nosec B608
                 "columns": self._get_standard_fact_columns(),
             }
         )
@@ -564,14 +559,14 @@ class TemplateGenerator:
             tables.append(
                 {
                     "name": dim_table,
-                    "source": "SELECT * FROM {}".format(dim_table),  # nosec B608
+                    "source": f"SELECT * FROM {dim_table}",  # nosec B608
                     "columns": self._get_dimension_columns(dim_table),
                 }
             )
 
         return tables
 
-    def _get_standard_fact_columns(self) -> List[Dict[str, Any]]:
+    def _get_standard_fact_columns(self) -> list[dict[str, Any]]:
         """Get standard fact table columns."""
         return [
             {"name": "id", "dataType": "int64", "isKey": True},
@@ -583,7 +578,7 @@ class TemplateGenerator:
             {"name": "last_updated", "dataType": "dateTime"},
         ]
 
-    def _get_dimension_columns(self, table_name: str) -> List[Dict[str, Any]]:
+    def _get_dimension_columns(self, table_name: str) -> list[dict[str, Any]]:
         """Get columns for dimension table."""
         base_columns = [
             {"name": f"{table_name}_key", "dataType": "int64", "isKey": True}
@@ -617,7 +612,7 @@ class TemplateGenerator:
 
         return base_columns
 
-    def _create_template_metadata(self, template: PowerBITemplate) -> Dict[str, Any]:
+    def _create_template_metadata(self, template: PowerBITemplate) -> dict[str, Any]:
         """Create template metadata."""
         return {
             "version": "1.0",
@@ -634,7 +629,7 @@ class TemplateGenerator:
             },
         }
 
-    def _create_connection_info(self, template: PowerBITemplate) -> Dict[str, Any]:
+    def _create_connection_info(self, template: PowerBITemplate) -> dict[str, Any]:
         """Create connection information."""
         return {
             "connections": [
@@ -656,7 +651,7 @@ class TemplateGenerator:
             },
         }
 
-    def _get_sample_data(self, template: PowerBITemplate) -> Dict[str, Any]:
+    def _get_sample_data(self, template: PowerBITemplate) -> dict[str, Any]:
         """Get sample data for template."""
         try:
             # This would retrieve actual sample data from the database

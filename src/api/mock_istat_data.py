@@ -8,12 +8,10 @@ operational during API outages or connectivity issues.
 This is NOT mock data - it's real ISTAT data stored locally as fallback.
 """
 
-import json
 import random
-import xml.etree.ElementTree as ET
 from dataclasses import dataclass
-from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional
+from datetime import datetime
+from typing import Any, Optional
 
 
 @dataclass
@@ -61,7 +59,7 @@ class IstatCacheFallback:
             "ITG2",  # Isole
         ]
 
-    def _create_cached_datasets(self) -> Dict[str, CachedDatasetInfo]:
+    def _create_cached_datasets(self) -> dict[str, CachedDatasetInfo]:
         """Create cached dataset registry."""
         datasets = {}
 
@@ -123,7 +121,7 @@ class IstatCacheFallback:
 
         return datasets
 
-    def get_cached_dataflows(self, limit: Optional[int] = None) -> Dict[str, Any]:
+    def get_cached_dataflows(self, limit: Optional[int] = None) -> dict[str, Any]:
         """Generate cached dataflows response."""
         dataflows = []
 
@@ -153,7 +151,7 @@ class IstatCacheFallback:
 
     def get_cached_dataset(
         self, dataset_id: str, include_data: bool = True
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Generate cached dataset response."""
         if dataset_id not in self.cached_datasets:
             # Return error for unknown datasets
@@ -230,7 +228,7 @@ class IstatCacheFallback:
             100, dataset_info.observations_count
         )  # Limit for performance
 
-        for i in range(sample_count):
+        for _i in range(sample_count):
             territory = random.choice(self.territories)
             year = random.choice([2021, 2022, 2023])
 
@@ -267,7 +265,7 @@ class IstatCacheFallback:
 
         return "".join(observations)
 
-    def get_available_datasets(self) -> List[str]:
+    def get_available_datasets(self) -> list[str]:
         """Get list of available cached dataset IDs."""
         return list(self.cached_datasets.keys())
 
@@ -293,12 +291,12 @@ def get_cache_generator() -> IstatCacheFallback:
 
 
 # Utility functions for easy access
-def get_cached_dataflows(limit: Optional[int] = None) -> Dict[str, Any]:
+def get_cached_dataflows(limit: Optional[int] = None) -> dict[str, Any]:
     """Get cached dataflows."""
     return get_cache_generator().get_cached_dataflows(limit)
 
 
-def get_cached_dataset(dataset_id: str, include_data: bool = True) -> Dict[str, Any]:
+def get_cached_dataset(dataset_id: str, include_data: bool = True) -> dict[str, Any]:
     """Get cached dataset."""
     return get_cache_generator().get_cached_dataset(dataset_id, include_data)
 

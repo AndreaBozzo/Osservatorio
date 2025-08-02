@@ -6,23 +6,22 @@ degradations in system performance.
 """
 
 import json
-import os
 import statistics
 import subprocess
-
-# Add src to path
-import sys
 import time
 from dataclasses import asdict, dataclass
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Optional
 
-import pandas as pd
+try:
+    from osservatorio_istat.utils.logger import get_logger
+except ImportError:
+    # Development mode fallback
+    import sys
 
-sys.path.append(str(Path(__file__).parent.parent / "src"))
-
-from utils.logger import get_logger
+    # Issue #84: Removed unsafe sys.path manipulation
+    from utils.logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -77,14 +76,14 @@ class PerformanceRegressionDetector:
             "severe": 50.0,  # 50% degradation
         }
 
-        self.baseline_data: List[PerformanceMetric] = []
+        self.baseline_data: list[PerformanceMetric] = []
         self.load_baseline_data()
 
     def load_baseline_data(self) -> None:
         """Load baseline performance data."""
         if self.baseline_file.exists():
             try:
-                with open(self.baseline_file, "r") as f:
+                with open(self.baseline_file) as f:
                     data = json.load(f)
                     self.baseline_data = [
                         PerformanceMetric(**item) for item in data.get("baselines", [])
@@ -110,7 +109,7 @@ class PerformanceRegressionDetector:
         except Exception as e:
             logger.error(f"Failed to save baseline data: {e}")
 
-    def run_performance_tests(self) -> List[PerformanceMetric]:
+    def run_performance_tests(self) -> list[PerformanceMetric]:
         """Run performance tests and collect metrics."""
         logger.info("Running DuckDB performance tests...")
 
@@ -154,7 +153,7 @@ class PerformanceRegressionDetector:
 
     def _parse_test_output(
         self, test_output: str, total_time: float
-    ) -> List[PerformanceMetric]:
+    ) -> list[PerformanceMetric]:
         """Parse pytest output to extract performance metrics."""
         metrics = []
         current_commit = self._get_current_git_commit()
@@ -223,8 +222,8 @@ class PerformanceRegressionDetector:
         return None
 
     def detect_regressions(
-        self, current_metrics: List[PerformanceMetric]
-    ) -> List[RegressionAlert]:
+        self, current_metrics: list[PerformanceMetric]
+    ) -> list[RegressionAlert]:
         """Detect performance regressions by comparing with baseline."""
         regressions = []
 
@@ -300,7 +299,7 @@ class PerformanceRegressionDetector:
             return "minor"
         return None  # No significant regression
 
-    def update_baseline(self, new_metrics: List[PerformanceMetric]) -> None:
+    def update_baseline(self, new_metrics: list[PerformanceMetric]) -> None:
         """Update baseline with new performance metrics."""
         # Add new metrics to baseline data
         self.baseline_data.extend(new_metrics)
@@ -325,7 +324,7 @@ class PerformanceRegressionDetector:
         self.save_baseline_data()
 
     def generate_performance_report(
-        self, metrics: List[PerformanceMetric], regressions: List[RegressionAlert]
+        self, metrics: list[PerformanceMetric], regressions: list[RegressionAlert]
     ) -> str:
         """Generate comprehensive performance report."""
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -412,8 +411,8 @@ class PerformanceRegressionDetector:
 
     def save_results(
         self,
-        metrics: List[PerformanceMetric],
-        regressions: List[RegressionAlert],
+        metrics: list[PerformanceMetric],
+        regressions: list[RegressionAlert],
         report: str,
     ) -> None:
         """Save performance results to files."""
@@ -441,7 +440,7 @@ class PerformanceRegressionDetector:
 
     def run_full_analysis(
         self,
-    ) -> Tuple[List[PerformanceMetric], List[RegressionAlert], str]:
+    ) -> tuple[list[PerformanceMetric], list[RegressionAlert], str]:
         """Run complete performance regression analysis."""
         logger.info("Starting performance regression analysis...")
 

@@ -3,8 +3,7 @@ Unit tests for tableau_api module.
 Testing TableauServerAnalyzer class with comprehensive coverage.
 """
 
-import json
-from unittest.mock import MagicMock, mock_open, patch
+from unittest.mock import patch
 
 import pytest
 

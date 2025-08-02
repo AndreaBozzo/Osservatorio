@@ -11,18 +11,17 @@ This module provides comprehensive memory profiling for:
 
 import gc
 import json
-import logging
 import threading
 import time
 import tracemalloc
+from collections.abc import Generator
 from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, Generator, List, Optional
+from typing import Any, Optional
 
 import psutil
-from memory_profiler import memory_usage, profile
 
 
 @dataclass
@@ -49,10 +48,10 @@ class MemoryProfileResult:
     end_memory_mb: float
     memory_delta_mb: float
     duration_seconds: float
-    snapshots: List[MemorySnapshot]
-    top_allocations: List[Dict[str, Any]]
-    potential_leaks: List[Dict[str, Any]]
-    recommendations: List[str]
+    snapshots: list[MemorySnapshot]
+    top_allocations: list[dict[str, Any]]
+    potential_leaks: list[dict[str, Any]]
+    recommendations: list[str]
 
 
 class MemoryProfiler:
@@ -62,7 +61,7 @@ class MemoryProfiler:
         """Initialize memory profiler."""
         self.enable_tracemalloc = enable_tracemalloc
         self.process = psutil.Process()
-        self.snapshots: List[MemorySnapshot] = []
+        self.snapshots: list[MemorySnapshot] = []
         self.baseline_memory: Optional[float] = None
         self.monitoring_active = False
         self.monitor_thread: Optional[threading.Thread] = None
@@ -201,7 +200,7 @@ class MemoryProfiler:
             self.monitor_thread.join(timeout=1.0)
             self.monitor_thread = None
 
-    def _get_top_allocations(self, limit: int = 10) -> List[Dict[str, Any]]:
+    def _get_top_allocations(self, limit: int = 10) -> list[dict[str, Any]]:
         """Get top memory allocations using tracemalloc."""
         if not tracemalloc.is_tracing():
             return []
@@ -213,22 +212,22 @@ class MemoryProfiler:
         for stat in top_stats[:limit]:
             allocations.append(
                 {
-                    "filename": stat.traceback.format()[0]
-                    if stat.traceback
-                    else "unknown",
+                    "filename": (
+                        stat.traceback.format()[0] if stat.traceback else "unknown"
+                    ),
                     "size_mb": stat.size / 1024 / 1024,
                     "count": stat.count,
-                    "average_size_kb": stat.size / stat.count / 1024
-                    if stat.count > 0
-                    else 0,
+                    "average_size_kb": (
+                        stat.size / stat.count / 1024 if stat.count > 0 else 0
+                    ),
                 }
             )
 
         return allocations
 
     def _detect_memory_leaks(
-        self, snapshots: List[MemorySnapshot]
-    ) -> List[Dict[str, Any]]:
+        self, snapshots: list[MemorySnapshot]
+    ) -> list[dict[str, Any]]:
         """Detect potential memory leaks from snapshots."""
         if len(snapshots) < 10:  # Need enough data points
             return []
@@ -279,8 +278,8 @@ class MemoryProfiler:
         start_memory: float,
         peak_memory: float,
         end_memory: float,
-        snapshots: List[MemorySnapshot],
-    ) -> List[str]:
+        snapshots: list[MemorySnapshot],
+    ) -> list[str]:
         """Generate memory optimization recommendations."""
         recommendations = []
 
@@ -343,7 +342,7 @@ class MemoryProfiler:
 
         return result, profile_result
 
-    def benchmark_memory_operations(self) -> Dict[str, MemoryProfileResult]:
+    def benchmark_memory_operations(self) -> dict[str, MemoryProfileResult]:
         """Benchmark common memory-intensive operations."""
         results = {}
 
@@ -375,12 +374,12 @@ class MemoryProfiler:
             # Create objects with circular references
             objects = []
             for i in range(10_000):
-                obj = {"id": i, "data": [j for j in range(100)]}
+                obj = {"id": i, "data": list(range(100))}
                 obj["self"] = obj  # Circular reference
                 objects.append(obj)
 
             # Force garbage collection
-            collected = gc.collect()
+            gc.collect()
             del objects
         results["garbage_collection"] = result
 
@@ -388,9 +387,9 @@ class MemoryProfiler:
 
     def generate_memory_report(
         self,
-        results: Optional[Dict[str, MemoryProfileResult]] = None,
+        results: Optional[dict[str, MemoryProfileResult]] = None,
         output_path: Optional[Path] = None,
-    ) -> Dict:
+    ) -> dict:
         """Generate comprehensive memory analysis report."""
         if results is None:
             results = self.benchmark_memory_operations()
@@ -424,9 +423,9 @@ class MemoryProfiler:
                 "memory_delta_mb": result.memory_delta_mb,
                 "duration_seconds": result.duration_seconds,
                 "peak_delta_mb": result.peak_memory_mb - result.start_memory_mb,
-                "memory_efficiency": "good"
-                if result.memory_delta_mb < 10
-                else "needs_attention",
+                "memory_efficiency": (
+                    "good" if result.memory_delta_mb < 10 else "needs_attention"
+                ),
                 "leak_detected": len(result.potential_leaks) > 0,
                 "recommendations": result.recommendations,
                 "top_allocations": result.top_allocations[:5],  # Top 5 only

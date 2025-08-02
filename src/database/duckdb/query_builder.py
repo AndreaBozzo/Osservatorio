@@ -13,7 +13,7 @@ import threading
 import time
 from dataclasses import dataclass, field
 from enum import Enum, auto
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Optional, Union
 
 import pandas as pd
 
@@ -76,7 +76,7 @@ class FilterCondition:
     value: Any
     logical_operator: str = "AND"  # AND, OR
 
-    def to_sql(self) -> Tuple[str, List[Any]]:
+    def to_sql(self) -> tuple[str, list[Any]]:
         """Convert condition to SQL with parameters.
 
         Returns:
@@ -132,7 +132,7 @@ class CacheEntry:
     created_at: float
     ttl_seconds: int
     query_hash: str
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def is_expired(self) -> bool:
         """Check if cache entry has expired."""
@@ -151,8 +151,8 @@ class QueryCache:
         """
         self.default_ttl = default_ttl
         self.max_size = max_size
-        self._cache: Dict[str, CacheEntry] = {}
-        self._access_times: Dict[str, float] = {}
+        self._cache: dict[str, CacheEntry] = {}
+        self._access_times: dict[str, float] = {}
         self._lock = threading.RLock()
         self._stats = {"hits": 0, "misses": 0, "evictions": 0, "expired": 0}
 
@@ -181,7 +181,7 @@ class QueryCache:
         query_hash: str,
         result: pd.DataFrame,
         ttl: Optional[int] = None,
-        metadata: Optional[Dict[str, Any]] = None,
+        metadata: Optional[dict[str, Any]] = None,
     ) -> None:
         """Store result in cache."""
         with self._lock:
@@ -218,7 +218,7 @@ class QueryCache:
             self._cache.clear()
             self._access_times.clear()
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get cache statistics."""
         with self._lock:
             total_requests = self._stats["hits"] + self._stats["misses"]
@@ -259,13 +259,13 @@ class DuckDBQueryBuilder:
 
     def _reset_query_state(self) -> None:
         """Reset internal query building state."""
-        self._select_columns: List[str] = []
+        self._select_columns: list[str] = []
         self._from_table: Optional[str] = None
-        self._joins: List[JoinCondition] = []
-        self._where_conditions: List[FilterCondition] = []
-        self._group_by_columns: List[str] = []
-        self._having_conditions: List[FilterCondition] = []
-        self._order_by_clauses: List[OrderByClause] = []
+        self._joins: list[JoinCondition] = []
+        self._where_conditions: list[FilterCondition] = []
+        self._group_by_columns: list[str] = []
+        self._having_conditions: list[FilterCondition] = []
+        self._order_by_clauses: list[OrderByClause] = []
         self._limit_count: Optional[int] = None
         self._offset_count: Optional[int] = None
 
@@ -395,7 +395,7 @@ class DuckDBQueryBuilder:
         self._where_conditions.append(condition)
         return self
 
-    def where_in(self, column: str, values: List[Any]) -> "DuckDBQueryBuilder":
+    def where_in(self, column: str, values: list[Any]) -> "DuckDBQueryBuilder":
         """Add WHERE IN condition.
 
         Args:
@@ -648,7 +648,7 @@ class DuckDBQueryBuilder:
         """
         return self.where_between("d.year", start_year, end_year)
 
-    def territories(self, territory_codes: List[str]) -> "DuckDBQueryBuilder":
+    def territories(self, territory_codes: list[str]) -> "DuckDBQueryBuilder":
         """Filter by territory codes.
 
         Args:
@@ -659,7 +659,7 @@ class DuckDBQueryBuilder:
         """
         return self.where_in("d.territory_code", territory_codes)
 
-    def build_sql(self) -> Tuple[str, List[Any]]:
+    def build_sql(self) -> tuple[str, list[Any]]:
         """Build SQL query with parameters.
 
         Returns:
@@ -735,7 +735,7 @@ class DuckDBQueryBuilder:
         sql_query = "\n".join(parts)
         return sql_query, parameters
 
-    def _generate_cache_key(self, sql: str, params: List[Any]) -> str:
+    def _generate_cache_key(self, sql: str, params: list[Any]) -> str:
         """Generate cache key for query.
 
         Args:

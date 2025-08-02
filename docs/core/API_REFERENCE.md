@@ -191,16 +191,18 @@ python scripts/generate_api_key.py cleanup
 
 ## 🇮🇹 ISTAT API Client
 
-### 📝 Class: `IstatAPITester`
+### 📝 Class: `ProductionIstatClient` (Recommended)
+
+> **⚠️ NOTE**: `IstatAPITester` has been REMOVED (Issue #84). Use `ProductionIstatClient` for all implementations.
 
 Main client for interacting with the ISTAT SDMX API.
 
 #### 🔧 Initialization
 ```python
-from src.api.istat_api import IstatAPITester
+from src.api.production_istat_client import ProductionIstatClient
 
-# Initialize client
-client = IstatAPITester()
+# Initialize production client (Issue #84: Replaced IstatAPITester)
+client = ProductionIstatClient(enable_cache_fallback=True)
 ```
 
 #### 🔍 Methods
@@ -1168,9 +1170,9 @@ Analyzes and categorizes ISTAT dataflows.
 
 #### 🔧 Initialization
 ```python
-from src.analyzers.dataflow_analyzer import DataflowAnalyzer
+from src.services.dataflow_analysis_service import DataflowAnalysisService
 
-analyzer = DataflowAnalyzer()
+service = DataflowAnalysisService()
 ```
 
 #### 🔍 Methods
@@ -1312,12 +1314,12 @@ except ValidationError as e:
 ### 🎯 Complete Data Processing Pipeline
 
 ```python
-from src.api.istat_api import IstatAPITester
+from src.api.production_istat_client import ProductionIstatClient
 from src.converters.powerbi_converter import IstatXMLToPowerBIConverter
 from src.utils.security_enhanced import SecurityManager
 
 # Initialize components
-api_client = IstatAPITester()
+api_client = ProductionIstatClient()
 converter = IstatXMLToPowerBIConverter()
 security = SecurityManager()
 
@@ -1384,7 +1386,7 @@ except Exception as e:
 
 ```python
 import streamlit as st
-from src.api.istat_api import IstatAPITester
+from src.api.production_istat_client import ProductionIstatClient
 from src.converters.powerbi_converter import IstatXMLToPowerBIConverter
 
 @st.cache_data(ttl=3600)
@@ -1392,7 +1394,7 @@ def load_dashboard_data(category: str):
     \"\"\"Load and cache dashboard data for a specific category.\"\"\"
 
     # Initialize components
-    api_client = IstatAPITester()
+    api_client = ProductionIstatClient()
     converter = IstatXMLToPowerBIConverter()
 
     # Get datasets for category
@@ -1551,11 +1553,11 @@ def process_dataset(dataset_id):
 ```python
 import pytest
 from unittest.mock import Mock, patch
-from src.api.istat_api import IstatAPITester
+from src.api.production_istat_client import ProductionIstatClient
 
 class TestIstatAPI:
     def setup_method(self):
-        self.client = IstatAPITester()
+        self.client = ProductionIstatClient()
 
     @patch('requests.Session.get')
     def test_fetch_dataset_data(self, mock_get):

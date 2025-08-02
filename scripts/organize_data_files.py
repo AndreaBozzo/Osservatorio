@@ -3,16 +3,9 @@
 Script per organizzare i file di dati secondo le best practices.
 Sposta i file temporanei nella directory appropriata e mantiene la struttura pulita.
 """
-
 import argparse
-import glob
 import shutil
-import sys
-from datetime import datetime
 from pathlib import Path
-
-# Aggiungi src al path
-sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from utils.logger import get_logger
 from utils.temp_file_manager import get_temp_manager
@@ -269,7 +262,7 @@ def main():
         )
 
     # Riepilogo
-    print(f"\n✅ Organizzazione completata:")
+    print("\n✅ Organizzazione completata:")
     print(f"  File spostati: {total_results['moved']}")
     print(f"  Directory rimosse: {total_results['removed']}")
     print(f"  Errori: {total_results['errors']}")

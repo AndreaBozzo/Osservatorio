@@ -10,10 +10,9 @@ Provides secure JWT token generation and validation:
 """
 
 import hashlib
-import json
 import secrets
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Union
+from typing import Optional
 
 try:
     import jwt
@@ -219,7 +218,7 @@ class JWTManager:
             raise
 
     def create_access_token(
-        self, api_key: APIKey, custom_claims: Optional[Dict] = None
+        self, api_key: APIKey, custom_claims: Optional[dict] = None
     ) -> AuthToken:
         """Create JWT access token for API key
 

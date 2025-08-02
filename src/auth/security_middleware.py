@@ -10,10 +10,11 @@ OWASP-compliant security headers middleware:
 - CORS configuration for cross-origin requests
 """
 
-import hashlib
 import secrets
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Set, Union
+from typing import Optional, Union
+
+from fastapi import Request
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from src.utils.logger import get_logger
 
@@ -69,9 +70,11 @@ class SecurityHeadersConfig:
             "gyroscope": [],
         }
 
-        # CORS settings
+        # CORS settings - Issue #84: Use centralized configuration
+        from ..utils.config import Config
+
         self.cors_enabled = True
-        self.cors_allow_origins = ["https://localhost:3000"]  # Adjust for frontend
+        self.cors_allow_origins = Config.CORS_ALLOW_ORIGINS
         self.cors_allow_methods = ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
         self.cors_allow_headers = ["Content-Type", "Authorization", "X-API-Key"]
         self.cors_max_age = 86400  # 24 hours
@@ -81,15 +84,17 @@ class SecurityHeadersConfig:
         self.x_powered_by = None  # Remove X-Powered-By
 
 
-class SecurityHeadersMiddleware:
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     """OWASP-compliant security headers middleware"""
 
-    def __init__(self, config: Optional[SecurityHeadersConfig] = None):
+    def __init__(self, app, config: Optional[SecurityHeadersConfig] = None):
         """Initialize security middleware
 
         Args:
+            app: FastAPI application instance
             config: Security configuration (uses default if None)
         """
+        super().__init__(app)
         self.config = config or SecurityHeadersConfig()
         self.logger = logger
 
@@ -98,12 +103,28 @@ class SecurityHeadersMiddleware:
 
         logger.info("Security Headers Middleware initialized")
 
+    async def dispatch(self, request: Request, call_next):
+        """Process request and add security headers to response"""
+        # Process the request
+        response = await call_next(request)
+
+        # Apply security headers
+        headers_to_add = self.apply_security_headers(
+            {}, request_path=str(request.url.path), request_method=request.method
+        )
+
+        # Add headers to response
+        for header_name, header_value in headers_to_add.items():
+            response.headers[header_name] = header_value
+
+        return response
+
     def apply_security_headers(
         self,
-        response_headers: Dict[str, str],
+        response_headers: dict[str, str],
         request_path: str = "/",
         request_method: str = "GET",
-    ) -> Dict[str, str]:
+    ) -> dict[str, str]:
         """Apply security headers to response
 
         Args:
@@ -170,10 +191,10 @@ class SecurityHeadersMiddleware:
 
     def apply_cors_headers(
         self,
-        response_headers: Dict[str, str],
+        response_headers: dict[str, str],
         request_origin: Optional[str] = None,
         request_method: str = "GET",
-    ) -> Dict[str, str]:
+    ) -> dict[str, str]:
         """Apply CORS headers to response
 
         Args:
@@ -214,9 +235,9 @@ class SecurityHeadersMiddleware:
                 headers["Access-Control-Allow-Credentials"] = "true"
 
             # Expose headers that client can access
-            headers[
-                "Access-Control-Expose-Headers"
-            ] = "X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset"
+            headers["Access-Control-Expose-Headers"] = (
+                "X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset"
+            )
 
             return headers
 
@@ -290,7 +311,7 @@ class SecurityHeadersMiddleware:
 
         return self.nonce_cache.get(request_path)
 
-    def get_security_report(self) -> Dict[str, Union[str, bool, int]]:
+    def get_security_report(self) -> dict[str, Union[str, bool, int]]:
         """Generate security configuration report
 
         Returns:
@@ -329,8 +350,8 @@ class AuthenticationMiddleware:
         logger.info("Authentication Middleware initialized")
 
     def authenticate_request(
-        self, headers: Dict[str, str], ip_address: str, endpoint: str
-    ) -> Dict[str, Union[bool, dict, str]]:
+        self, headers: dict[str, str], ip_address: str, endpoint: str
+    ) -> dict[str, Union[bool, dict, str]]:
         """Authenticate incoming request
 
         Args:
@@ -373,9 +394,11 @@ class AuthenticationMiddleware:
 
             # Check rate limiting
             rate_limit_result = self.rate_limiter.check_rate_limit(
-                api_key=authenticated_user.get("api_key_obj")
-                if authenticated_user
-                else None,
+                api_key=(
+                    authenticated_user.get("api_key_obj")
+                    if authenticated_user
+                    else None
+                ),
                 ip_address=ip_address,
                 endpoint=endpoint,
                 user_agent=headers.get("User-Agent"),
@@ -392,7 +415,7 @@ class AuthenticationMiddleware:
             logger.error(f"Authentication failed: {e}")
             return {"authenticated": False, "user": None, "error": str(e)}
 
-    def check_scope_permission(self, user: Dict, required_scope: str) -> bool:
+    def check_scope_permission(self, user: dict, required_scope: str) -> bool:
         """Check if authenticated user has required scope
 
         Args:
@@ -414,7 +437,7 @@ class AuthenticationMiddleware:
         # Check specific scope
         return required_scope in user_scopes
 
-    def _extract_api_key(self, headers: Dict[str, str]) -> Optional[str]:
+    def _extract_api_key(self, headers: dict[str, str]) -> Optional[str]:
         """Extract API key from headers"""
         # Try X-API-Key header first
         api_key = headers.get("X-API-Key") or headers.get("x-api-key")
@@ -427,7 +450,7 @@ class AuthenticationMiddleware:
 
         return api_key
 
-    def _extract_jwt_token(self, headers: Dict[str, str]) -> Optional[str]:
+    def _extract_jwt_token(self, headers: dict[str, str]) -> Optional[str]:
         """Extract JWT token from headers"""
         auth_header = headers.get("Authorization") or headers.get("authorization")
 

@@ -1,110 +1,135 @@
 # 🇮🇹 Osservatorio - Italian Statistical Data Platform
 
-> **Production-ready platform for accessing and processing ISTAT (Italian National Statistics) data with enterprise-grade reliability and performance.**
+> **Modern enterprise platform for Italian statistical data processing with production-grade FastAPI backend, comprehensive security, and Docker deployment.**
 
-[![Live Dashboard](https://img.shields.io/badge/Dashboard-Live%20✅-green.svg)](https://osservatorio-dashboard.streamlit.app/)
-[![Quality](https://img.shields.io/badge/Quality-83.3%25%20EXCELLENT-green.svg)](quality_assessment_report.json)
-[![Python](https://img.shields.io/badge/Python-3.13.3-blue.svg)](https://www.python.org/downloads/)
-[![Tests](https://img.shields.io/badge/Tests-540%2B%20passing-green.svg)](tests/)
+[![CI](https://img.shields.io/badge/CI-Basic%20Tests-blue.svg)](.github/workflows/ci.yml)
+[![Docker](https://img.shields.io/badge/Docker-Multi--stage-blue.svg)](Dockerfile)
+[![Python](https://img.shields.io/badge/Python-3.9%20|%203.10%20|%203.11%20|%203.12-blue.svg)](pyproject.toml)
+[![FastAPI](https://img.shields.io/badge/FastAPI-Latest-green.svg)](src/api/fastapi_app.py)
+[![Security](https://img.shields.io/badge/Security-Bandit%20|%20OWASP-green.svg)](.pre-commit-config.yaml)
 [![Status](https://img.shields.io/badge/Status-Production%20Ready-brightgreen.svg)](docs/project/PROJECT_STATE.md)
 
 ## 🎯 What is Osservatorio?
 
-**Osservatorio** makes Italian statistical data accessible to everyone. Whether you're a researcher, analyst, or decision-maker, our platform provides reliable access to ISTAT's 509+ datasets with enterprise-grade processing and visualization capabilities.
+**Osservatorio** makes Italian statistical data accessible to everyone. Whether you're a researcher, analyst, or decision-maker, our platform provides reliable access to ISTAT's 509+ datasets with in-development enterprise-grade processing and visualization capabilities.
 
 ### ✨ Key Benefits
-- **🚀 Production-Ready**: 83.3% EXCELLENT quality rating with comprehensive testing
-- **⚡ High Performance**: <100ms cache response, 55x faster batch processing
-- **🛡️ Enterprise Security**: Circuit breaker, rate limiting, comprehensive monitoring
-- **🔄 Fault Tolerant**: Automatic fallback systems ensure continuous availability
-- **📊 BI Integration**: Ready-to-use PowerBI templates and data processing
+- **🚀 Production Ready**: FastAPI backend with comprehensive testing and basic CI
+- **⚡ High Performance**: DuckDB analytics engine with optimized query processing
+- **🛡️ Enterprise Security**: JWT authentication, OWASP compliance, security middleware
+- **🐳 Container Ready**: Multi-stage Docker builds with development environments
+- **🔄 Modern Architecture**: Async processing, circuit breakers, rate limiting
+- **📊 API-First**: RESTful endpoints with comprehensive data analysis capabilities
 
-## 🚀 Quick Start (5 minutes)
+## 🚀 Quick Start
 
-### Try the Live Dashboard
-**👉 [Visit our live dashboard](https://osservatorio-dashboard.streamlit.app/)** - No installation required!
+### Option 1: Docker (Recommended)
+```bash
+# Clone and run with Docker Compose
+git clone https://github.com/AndreaBozzo/Osservatorio.git
+cd Osservatorio
+docker-compose up -d
 
-### Run Locally
+# Access services:
+# - FastAPI: http://localhost:8000
+# - Dashboard: http://localhost:8501
+# - API Docs: http://localhost:8000/docs
+```
+
+### Option 2: Local Development
 ```bash
 # 1. Clone and setup
 git clone https://github.com/AndreaBozzo/Osservatorio.git
 cd Osservatorio
 python -m venv venv && source venv/bin/activate  # or venv\Scripts\activate on Windows
 
-# 2. Install and run
-pip install -r requirements.txt
-python quality_demo.py                          # See quality demonstration
-streamlit run dashboard/app.py                  # Start dashboard at localhost:8501
+# 2. Install with modern dependency management
+pip install -e .[dev]                           # Development dependencies
+# or pip install -e .[dev,performance,security] # All optional dependencies
+
+# 3. Run services
+make test-fast                                   # Quick test suite
+python -m uvicorn src.api.fastapi_app:app --reload  # FastAPI server
+streamlit run dashboard/app.py                  # Dashboard
 ```
 
 ### Quick Health Check
 ```bash
+# Test FastAPI endpoint
+curl http://localhost:8000/health
+
+# Or use Python client
 python -c "from src.api.production_istat_client import ProductionIstatClient; client=ProductionIstatClient(); print('✅ System ready:', client.get_status()['status'])"
 ```
 
-## 🏗️ Architecture Overview
+## 🏗️ Modern Architecture
 
-Osservatorio uses a **hybrid architecture** optimized for both reliability and performance:
+Osservatorio uses a **microservices-ready architecture** with production patterns:
 
 ```
-🚀 ProductionIstatClient (Enterprise Patterns)
-    ↓
-🔄 Unified Repository (Smart Data Routing)
-    ↓
-📊 DuckDB Analytics + 🗃️ SQLite Metadata + 💾 Cache Fallback
-    ↓
+🌐 FastAPI REST API (OpenAPI/Swagger docs)
+    ↓ (Security Middleware + JWT Auth)
+🔄 Business Logic Layer (Circuit Breakers + Rate Limiting)
+    ↓ (Async Processing)
+📊 Data Layer: DuckDB Analytics + SQLite Metadata + Redis Cache
+    ↓ (Smart Routing + Fallback)
 🇮🇹 ISTAT SDMX API (509+ datasets)
 ```
 
 ### Core Components
-- **ProductionIstatClient**: Enterprise-ready API client with circuit breaker and rate limiting
-- **Hybrid Storage**: SQLite for metadata, DuckDB for analytics, cache for offline capability
-- **Quality Assurance**: Comprehensive testing with 83.3% EXCELLENT quality rating
-- **Monitoring**: Real-time performance metrics and health checking
+- **FastAPI Backend**: Modern async web framework with automatic OpenAPI documentation
+- **Security Layer**: JWT authentication, OWASP-compliant middleware, rate limiting
+- **Data Processing**: DuckDB for analytics, SQLite for metadata, Redis for caching
+- **DevOps Ready**: Docker containers, GitHub Actions CI/CD, comprehensive testing
+- **Monitoring**: Health checks, performance metrics, security scanning
 
 ## 📊 What You Can Do
 
 ### For Data Analysts
 ```python
-from src.api.production_istat_client import ProductionIstatClient
+# REST API access
+import requests
+response = requests.get("http://localhost:8000/api/v1/dataflows?limit=10")
+dataflows = response.json()
 
-# Access Italian statistical data reliably
+# Or use Python client
+from src.api.production_istat_client import ProductionIstatClient
 client = ProductionIstatClient(enable_cache_fallback=True)
-dataflows = client.fetch_dataflows(limit=10)
 dataset = client.fetch_dataset("DCIS_POPRES1")  # Population data
 ```
 
-### For Researchers
-- **509+ ISTAT Datasets**: Population, economy, employment, education, health data
-- **Multi-format Export**: CSV, Excel, JSON, Parquet - ready for any analysis tool
-- **Quality Validation**: Built-in data quality scoring and validation
-- **Historical Data**: Access to time series and territorial comparisons
+### For API Integration
+- **OpenAPI/Swagger**: Interactive API docs at `/docs` endpoint
+- **RESTful Design**: Standard HTTP methods with JSON responses
+- **Authentication**: JWT token-based security with API key support
+- **Rate Limiting**: Fair usage policies with intelligent throttling
 
-### For Business Intelligence
-- **PowerBI Ready**: Automatic star schema optimization and template generation
-- **Real-time Integration**: OData endpoints for live dashboard connectivity
-- **Enterprise Security**: JWT authentication, rate limiting, audit logging
-- **Scalable Processing**: Concurrent batch operations with intelligent caching
+### For DevOps Teams
+- **Container Ready**: Multi-stage Docker builds for development and production
+- **Basic CI**: GitHub Actions with unit testing and code quality checks
+- **Security First**: Bandit security scanning, pre-commit hooks
+- **Monitoring**: Health checks, performance metrics, structured logging
 
 ## 🛡️ Production Features
 
-### Reliability (Demonstrated)
-- **Circuit Breaker**: Automatic fault detection and recovery
-- **Cache Fallback**: <100ms response when API unavailable
-- **Rate Limiting**: 100 requests/hour with intelligent coordination
-- **Health Monitoring**: Real-time system status and metrics
+### Modern Development
+- **Python 3.9-3.12**: Multi-version compatibility with matrix testing
+- **FastAPI Framework**: High-performance async web framework
+- **Docker Deployment**: Multi-stage builds with development and production targets
+- **Basic CI**: Automated unit testing and code quality checks
 
-### Performance (Benchmarked)
-- **Client Initialization**: 0.005s (1000x under threshold)
-- **Repository Setup**: 0.124s (8x under threshold)
-- **Batch Processing**: 55.2x improvement over sequential processing
-- **Memory Usage**: Linear scaling with optimized resource management
+### Security & Compliance
+- **JWT Authentication**: Secure token-based authentication
+- **OWASP Middleware**: Security headers and best practices
+- **Bandit Scanning**: Automated security vulnerability detection
+- **Dependency Monitoring**: Automated vulnerability checking with Safety
 
-### Security (Audited)
-- **SQL Injection Protection**: All queries parameterized
-- **Path Validation**: Directory traversal prevention
-- **Error Handling**: Secure error messages without information disclosure
-- **Audit Trail**: Comprehensive logging and monitoring
+### Performance & Reliability
+- **Async Processing**: Non-blocking operations for better throughput
+- **Circuit Breakers**: Automatic fault detection and recovery
+- **Rate Limiting**: Configurable request throttling
+- **Health Monitoring**: Comprehensive system status and metrics
+- **Redis Caching**: High-performance distributed caching
 
 ## 📚 Documentation
 
@@ -123,10 +148,10 @@ We welcome contributions! Here's how to get started:
 4. **Test First**: Run `pytest tests/ -v` to ensure everything works
 
 ### Development Standards
-- **Quality First**: 83.3% EXCELLENT quality maintained
-- **Test Coverage**: 540+ tests, 100% passing rate
-- **Security Focused**: 0 high-severity issues (Bandit verified)
-- **Performance Tested**: All benchmarks must exceed thresholds
+- **Modern Tooling**: ruff, black, mypy, and pre-commit hooks
+- **Comprehensive Testing**: Unit, integration, and performance tests
+- **Security First**: Bandit scanning, dependency checking, OWASP compliance
+- **Basic CI Integration**: GitHub Actions with unit testing and code quality
 
 ## 🎯 Use Cases
 
@@ -136,17 +161,18 @@ We welcome contributions! Here's how to get started:
 - **📊 Analysts**: BI dashboards and reporting with PowerBI integration
 - **🔍 Journalists**: Data journalism with verified official sources
 
-## 🏆 Quality Metrics
+## 🏆 Development Metrics
 
-**Overall Quality Score: 83.3% EXCELLENT**
+**Modern Development Standards Achieved:**
 
-- ✅ **Fast Initialization**: 0.005s (1000x under threshold)
-- ✅ **Repository Performance**: 0.124s hybrid setup
-- ✅ **Cache Performance**: <0.001s response time
-- ✅ **Monitoring Active**: Real-time metrics collection
-- ✅ **Async Processing**: 55.2x sequential improvement
+- ✅ **Basic CI Pipeline**: GitHub Actions with unit testing and code quality
+- ✅ **Container Ready**: Multi-stage Docker builds with development environment
+- ✅ **Security Scanning**: Bandit, Safety, and OWASP compliance
+- ✅ **Code Quality**: ruff, black, mypy, and pre-commit hooks
+- ✅ **FastAPI Backend**: Modern async web framework with OpenAPI docs
+- ✅ **Production Ready**: JWT auth, rate limiting, monitoring, and health checks
 
-*Full quality report available in [quality_assessment_report.json](quality_assessment_report.json)*
+*All tests passing with comprehensive coverage across unit, integration, and performance testing.*
 
 ## 📞 Support
 
@@ -162,6 +188,6 @@ MIT License - see [LICENSE](LICENSE) file for details.
 ---
 
 **🎯 Ready to explore Italian statistical data?**
-**👉 [Try our live dashboard](https://osservatorio-dashboard.streamlit.app/) or run `python quality_demo.py` locally**
+**👉 Run `docker-compose up -d` or `make install && make test-fast` to get started**
 
-*Made with ❤️ for the Italian data community*
+*Built with modern Python, FastAPI, and Docker for the Italian data community*

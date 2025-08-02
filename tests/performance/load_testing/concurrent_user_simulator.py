@@ -9,7 +9,6 @@ This module provides comprehensive concurrent user simulation for:
 - Resource utilization monitoring during load
 """
 
-import asyncio
 import json
 import random
 import statistics
@@ -17,12 +16,10 @@ import threading
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
-from queue import Empty, Queue
-from typing import Any, Callable, Dict, List, Optional
+from typing import Optional
 
-import aiohttp
 import psutil
 import requests
 from requests.adapters import HTTPAdapter
@@ -63,16 +60,16 @@ class ConcurrentTestResult:
     errors_per_second: float
     peak_memory_mb: float
     avg_cpu_percent: float
-    resource_snapshots: List[Dict] = field(default_factory=list)
-    user_sessions: List[UserSession] = field(default_factory=list)
-    error_details: List[Dict] = field(default_factory=list)
+    resource_snapshots: list[dict] = field(default_factory=list)
+    user_sessions: list[UserSession] = field(default_factory=list)
+    error_details: list[dict] = field(default_factory=list)
 
 
 class UserBehaviorPattern:
     """Defines user behavior patterns."""
 
     @staticmethod
-    def basic_api_user() -> List[Dict]:
+    def basic_api_user() -> list[dict]:
         """Basic API user pattern."""
         return [
             {"endpoint": "/health", "weight": 1, "method": "GET"},
@@ -81,7 +78,7 @@ class UserBehaviorPattern:
         ]
 
     @staticmethod
-    def powerbi_user() -> List[Dict]:
+    def powerbi_user() -> list[dict]:
         """PowerBI user pattern."""
         return [
             {
@@ -98,7 +95,7 @@ class UserBehaviorPattern:
         ]
 
     @staticmethod
-    def heavy_user() -> List[Dict]:
+    def heavy_user() -> list[dict]:
         """Heavy usage user pattern."""
         return [
             {"endpoint": "/api/v1/datasets", "weight": 2, "method": "GET"},
@@ -121,7 +118,7 @@ class UserBehaviorPattern:
         ]
 
     @staticmethod
-    def admin_user() -> List[Dict]:
+    def admin_user() -> list[dict]:
         """Admin user pattern."""
         return [
             {"endpoint": "/api/v1/admin/stats", "weight": 3, "method": "GET"},
@@ -138,11 +135,11 @@ class ConcurrentUserSimulator:
         """Initialize concurrent user simulator."""
         self.base_url = base_url.rstrip("/")
         self.timeout = timeout
-        self.sessions: Dict[str, UserSession] = {}
-        self.results: List[ConcurrentTestResult] = []
+        self.sessions: dict[str, UserSession] = {}
+        self.results: list[ConcurrentTestResult] = []
         self.memory_profiler = MemoryProfiler()
         self.resource_monitor_active = False
-        self.resource_snapshots: List[Dict] = []
+        self.resource_snapshots: list[dict] = []
 
         # Sample data for realistic requests
         self.sample_datasets = [
@@ -220,8 +217,8 @@ class ConcurrentUserSimulator:
         self,
         session: requests.Session,
         user_session: UserSession,
-        endpoint_config: Dict,
-    ) -> Dict:
+        endpoint_config: dict,
+    ) -> dict:
         """Make a single HTTP request."""
         endpoint = endpoint_config["endpoint"]
         method = endpoint_config.get("method", "GET")
@@ -309,7 +306,7 @@ class ConcurrentUserSimulator:
     def simulate_user(
         self,
         user_id: str,
-        behavior_pattern: List[Dict],
+        behavior_pattern: list[dict],
         duration_seconds: int,
         requests_per_minute: int = 60,
         user_type: str = "basic",
@@ -367,7 +364,7 @@ class ConcurrentUserSimulator:
         concurrent_users: int,
         duration_seconds: int = 300,  # 5 minutes
         ramp_up_seconds: int = 60,  # 1 minute ramp-up
-        user_distribution: Optional[Dict[str, float]] = None,
+        user_distribution: Optional[dict[str, float]] = None,
     ) -> ConcurrentTestResult:
         """Run a concurrent user test."""
 
@@ -381,14 +378,13 @@ class ConcurrentUserSimulator:
             }
 
         # Start resource monitoring
-        monitor_thread = self._start_resource_monitoring()
+        self._start_resource_monitoring()
 
         # Start memory profiling
         with self.memory_profiler.profile_operation(
             f"concurrent_test_{test_name}"
         ) as memory_result:
             start_time = time.time()
-            all_results = []
             user_sessions = []
 
             # Calculate user distribution
@@ -543,9 +539,9 @@ class ConcurrentUserSimulator:
     def run_scaling_test(
         self,
         test_name: str,
-        user_counts: List[int],
+        user_counts: list[int],
         duration_per_test: int = 180,  # 3 minutes per test
-    ) -> List[ConcurrentTestResult]:
+    ) -> list[ConcurrentTestResult]:
         """Run scaling tests with different user counts."""
         scaling_results = []
 
@@ -570,9 +566,9 @@ class ConcurrentUserSimulator:
 
     def generate_load_test_report(
         self,
-        results: Optional[List[ConcurrentTestResult]] = None,
+        results: Optional[list[ConcurrentTestResult]] = None,
         output_path: Optional[Path] = None,
-    ) -> Dict:
+    ) -> dict:
         """Generate comprehensive load testing report."""
         if results is None:
             results = self.results
@@ -595,9 +591,11 @@ class ConcurrentUserSimulator:
                 "duration_seconds": result.duration_seconds,
                 "total_requests": result.total_requests,
                 "successful_requests": result.successful_requests,
-                "success_rate": result.successful_requests / result.total_requests
-                if result.total_requests > 0
-                else 0,
+                "success_rate": (
+                    result.successful_requests / result.total_requests
+                    if result.total_requests > 0
+                    else 0
+                ),
                 "avg_response_time_ms": result.avg_response_time_ms,
                 "p95_response_time_ms": result.p95_response_time_ms,
                 "p99_response_time_ms": result.p99_response_time_ms,
@@ -626,7 +624,7 @@ class ConcurrentUserSimulator:
 
         return report
 
-    def _analyze_user_distribution(self, user_sessions: List[UserSession]) -> Dict:
+    def _analyze_user_distribution(self, user_sessions: list[UserSession]) -> dict:
         """Analyze user type distribution and performance."""
         distribution = {}
 
@@ -653,7 +651,7 @@ class ConcurrentUserSimulator:
 
         return distribution
 
-    def _analyze_scaling_performance(self, results: List[ConcurrentTestResult]) -> Dict:
+    def _analyze_scaling_performance(self, results: list[ConcurrentTestResult]) -> dict:
         """Analyze performance scaling characteristics."""
         sorted_results = sorted(results, key=lambda r: r.concurrent_users)
 
@@ -722,8 +720,8 @@ class ConcurrentUserSimulator:
         return scaling_metrics
 
     def _generate_load_test_insights(
-        self, results: List[ConcurrentTestResult]
-    ) -> List[str]:
+        self, results: list[ConcurrentTestResult]
+    ) -> list[str]:
         """Generate load testing insights."""
         insights = []
 

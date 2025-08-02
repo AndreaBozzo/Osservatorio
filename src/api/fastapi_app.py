@@ -18,25 +18,16 @@ Performance targets:
 
 import time
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Optional
 
-from fastapi import (
-    Depends,
-    FastAPI,
-    HTTPException,
-    Path,
-    Query,
-    Request,
-    Response,
-    status,
-)
+from fastapi import Depends, FastAPI, HTTPException, Path, Query, Request, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
-from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.openapi.utils import get_openapi
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import JSONResponse
 
+from src.auth.security_middleware import SecurityHeadersMiddleware
 from src.database.sqlite.repository import get_unified_repository
 from src.utils.config import get_config
 from src.utils.logger import get_logger
@@ -53,14 +44,11 @@ from .dependencies import (
     require_admin,
     require_write,
     validate_dataset_id,
-    validate_pagination,
 )
-from .models import (
+from .models import (  # Dataflow Analysis Models
     APIKeyCreate,
     APIKeyListResponse,
     APIKeyResponse,
-    APIResponse,
-    APIScope,
     Dataset,
     DatasetDetailResponse,
     DatasetListResponse,
@@ -70,7 +58,6 @@ from .models import (
     UsageAnalyticsResponse,
 )
 from .odata import create_odata_router
-from .production_istat_client import ProductionIstatClient
 
 logger = get_logger(__name__)
 config = get_config()
@@ -118,7 +105,9 @@ app = FastAPI(
     openapi_url="/openapi.json",
 )
 
-# Middleware
+# Middleware - Order matters: security headers first, then CORS, then compression
+app.add_middleware(SecurityHeadersMiddleware)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=config.get("cors_origins", ["*"]),
@@ -479,7 +468,7 @@ async def create_auth_token(
             )
 
         # Create JWT token
-        auth_token = jwt_manager.create_access_token(api_key_data)
+        jwt_manager.create_access_token(api_key_data)
 
         return APIKeyResponse(
             api_key=api_key_data.key,
@@ -620,6 +609,11 @@ async def get_usage_analytics(
 # Include OData router for PowerBI integration
 odata_router = create_odata_router()
 app.include_router(odata_router, prefix="/odata", tags=["OData"])
+
+# Include Dataflow Analysis router
+from .dataflow_analysis_api import router as dataflow_router
+
+app.include_router(dataflow_router, prefix="/api", tags=["Dataflow Analysis"])
 
 
 # OpenAPI customization

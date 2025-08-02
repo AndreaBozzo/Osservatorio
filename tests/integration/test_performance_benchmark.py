@@ -11,9 +11,7 @@ from pathlib import Path
 
 import pytest
 
-# Add project root to path
 project_root = Path(__file__).parent.parent.parent
-sys.path.append(str(project_root))
 
 
 class TestPerformanceBenchmark:
@@ -76,7 +74,7 @@ class TestPerformanceBenchmark:
         start_time = time.time()
         try:
             # This will likely use cache fallback
-            dataflows = client.fetch_dataflows(limit=1)
+            client.fetch_dataflows(limit=1)
         except Exception:
             # Expected if no network - cache fallback should still work
             pass
@@ -95,7 +93,7 @@ class TestPerformanceBenchmark:
 
         # Measure multiple status calls to test circuit breaker overhead
         times = []
-        for i in range(5):
+        for _i in range(5):
             start_time = time.time()
             client.get_status()
             times.append(time.time() - start_time)
@@ -136,7 +134,7 @@ class TestPerformanceBenchmark:
             total_processed = len(result.successful) + len(result.failed)
             assert total_processed == len(test_dataset_ids)
 
-        except Exception as e:
+        except Exception:
             # If network issues, at least test should complete quickly
             batch_time = time.time() - start_time
             assert batch_time < 5.0, f"Batch error handling too slow: {batch_time:.2f}s"
@@ -204,11 +202,10 @@ class TestPerformanceRegression:
         """Test that performance hasn't regressed significantly."""
         import json
         import time
-        from pathlib import Path
 
         from src.api.production_istat_client import ProductionIstatClient
 
-        client = ProductionIstatClient()
+        ProductionIstatClient()
 
         # Define performance baselines (in seconds)
         baselines = {

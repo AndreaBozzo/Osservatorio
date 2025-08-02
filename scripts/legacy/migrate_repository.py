@@ -4,11 +4,9 @@ Script per migrare i file nella nuova struttura.
 """
 import shutil
 from pathlib import Path
-from typing import Dict, List
 
 import click
 
-# Mappatura vecchio → nuovo path
 FILE_MAPPING = {
     "Tableau_Scraping_Strategy_for_ISTAT_Data.py": "src/scrapers/tableau_scraper.py",
     "Tableau_Server_API_Analysis_Script.py": "src/api/tableau_api.py",

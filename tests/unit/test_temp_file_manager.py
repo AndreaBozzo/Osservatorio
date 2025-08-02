@@ -3,12 +3,9 @@ Unit tests for temp_file_manager module.
 Testing TempFileManager class with comprehensive coverage.
 """
 
-import os
-import tempfile
 import threading
 import time
-from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 
@@ -201,7 +198,7 @@ class TestTempFileManager:
     def test_cleanup_old_files(self, mock_logger, manager):
         """Test cleanup of old files."""
         # Create an old file by mocking its modification time
-        old_file = manager.create_temp_file(suffix=".old")
+        manager.create_temp_file(suffix=".old")
 
         # Mock old modification time (2 days ago)
         old_time = time.time() - (2 * 24 * 60 * 60)
@@ -215,8 +212,8 @@ class TestTempFileManager:
     def test_cleanup_all(self, mock_logger, manager):
         """Test cleanup of all managed files."""
         # Create some files and directories
-        temp_file = manager.create_temp_file(suffix=".cleanup")
-        temp_dir = manager.create_temp_dir(prefix="cleanup_")
+        manager.create_temp_file(suffix=".cleanup")
+        manager.create_temp_dir(prefix="cleanup_")
 
         # Cleanup
         result = manager.cleanup_all()
@@ -252,7 +249,7 @@ class TestTempFileManager:
     @patch("src.utils.temp_file_manager.logger")
     def test_cleanup_error_handling(self, mock_logger, mock_rmtree, manager):
         """Test error handling during cleanup."""
-        temp_dir = manager.create_temp_dir(prefix="error_test_")
+        manager.create_temp_dir(prefix="error_test_")
 
         result = manager.cleanup_all()
 

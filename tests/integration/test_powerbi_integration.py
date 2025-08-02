@@ -10,7 +10,6 @@ Tests the complete PowerBI integration pipeline including:
 - Metadata bridge functionality
 """
 
-import json
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -42,7 +41,7 @@ class TestPowerBIIntegration:
         self.test_dataset_id = "TEST_POWERBI_DATASET"
         self._create_test_dataset()
 
-    def _create_test_dataset(self):
+    def _create_test_dataset(self, sample_data=None):
         """Create test dataset with sample data."""
         # Register dataset in metadata
         success = self.repository.register_dataset_complete(
@@ -59,38 +58,17 @@ class TestPowerBIIntegration:
         )
         assert success, "Failed to register test dataset"
 
-        # Insert sample data into DuckDB
-        sample_data = [
-            {
-                "dataset_id": self.test_dataset_id,
-                "year": 2023,
-                "territory_code": "01",
-                "territory_name": "Piemonte",
-                "obs_value": 4356406,
-                "quality_score": 0.9,
-                "measure_name": "Popolazione residente",
-                "time_period": "2023-01-01",
-                "last_updated": datetime.now().isoformat(),
-            },
-            {
-                "dataset_id": self.test_dataset_id,
-                "year": 2023,
-                "territory_code": "02",
-                "territory_name": "Valle d'Aosta",
-                "obs_value": 125501,
-                "quality_score": 0.8,
-                "measure_name": "Popolazione residente",
-                "time_period": "2023-01-01",
-                "last_updated": datetime.now().isoformat(),
-            },
-        ]
+        # Use provided sample data or fixture data
+        if sample_data:
+            # Insert data (would use actual DuckDB insert in real implementation)
+            pd.DataFrame(sample_data)
+            # This is a simplified version - real implementation would use DuckDB manager
 
-        # Insert data (would use actual DuckDB insert in real implementation)
-        df = pd.DataFrame(sample_data)
-        # This is a simplified version - real implementation would use DuckDB manager
-
-    def test_star_schema_generation(self):
+    def test_star_schema_generation(self, sample_powerbi_test_data):
         """Test star schema generation for PowerBI optimization."""
+        # Day 6: Use centralized fixture data
+        self._create_test_dataset(sample_powerbi_test_data)
+
         # Generate star schema
         star_schema = self.optimizer.generate_star_schema(self.test_dataset_id)
 
@@ -177,7 +155,7 @@ class TestPowerBIIntegration:
         assert isinstance(policy, RefreshPolicy)
         assert policy.dataset_id == self.test_dataset_id
         assert policy.incremental_window_days == 15
-        assert policy.enabled == True
+        assert policy.enabled
 
         # Test policy retrieval
         retrieved_policy = self.incremental_manager.get_refresh_policy(
@@ -215,7 +193,8 @@ class TestPowerBIIntegration:
 
         # Execute refresh
         result = self.incremental_manager.execute_incremental_refresh(
-            self.test_dataset_id, force=True  # Force refresh for testing
+            self.test_dataset_id,
+            force=True,  # Force refresh for testing
         )
 
         # Verify refresh result
@@ -448,8 +427,8 @@ class TestPowerBIIntegration:
 
         # Verify end-to-end integration
         dataset_gov = governance["datasets"][0]
-        assert dataset_gov["has_lineage"] == True
-        assert dataset_gov["powerbi_integrated"] == True
+        assert dataset_gov["has_lineage"]
+        assert dataset_gov["powerbi_integrated"]
         assert dataset_gov["quality_score"] > 0
 
     def test_error_handling(self):
@@ -501,7 +480,7 @@ class TestPowerBIIntegration:
         try:
             if hasattr(self, "repository"):
                 del self.repository
-        except:
+        except Exception:
             pass
 
 

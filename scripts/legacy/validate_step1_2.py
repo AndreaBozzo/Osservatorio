@@ -8,9 +8,6 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
-# Aggiungi il path del progetto
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
 from src.utils.config import Config
 
 

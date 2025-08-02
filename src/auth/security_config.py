@@ -11,7 +11,7 @@ for setting up the enhanced security features including:
 
 import os
 from dataclasses import dataclass
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 from src.database.sqlite.manager import SQLiteMetadataManager
 from src.utils.config import get_config
@@ -70,7 +70,7 @@ class SecurityConfig:
             cleanup_data_retention_days=config.get("cleanup_data_retention_days", 30),
         )
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for logging/debugging"""
         return {
             "enhanced_rate_limiting_enabled": self.enhanced_rate_limiting_enabled,
@@ -188,7 +188,7 @@ class SecurityManager:
         except Exception as e:
             logger.error(f"Security maintenance failed: {e}")
 
-    def get_security_status(self) -> Dict[str, Any]:
+    def get_security_status(self) -> dict[str, Any]:
         """Get current security system status"""
         try:
             status = {
@@ -241,7 +241,7 @@ class SecurityManager:
             reason=reason,
             threat_level=ThreatLevel.HIGH,
             duration_hours=duration,
-            notes=f"Manual block via SecurityManager",
+            notes="Manual block via SecurityManager",
         )
 
         logger.info(f"IP blocked via SecurityManager: {ip_address[:8]}*** for {reason}")
@@ -289,7 +289,7 @@ def create_security_manager(
     return SecurityManager(db_manager=db_manager, config=config)
 
 
-def validate_security_environment() -> Dict[str, Any]:
+def validate_security_environment() -> dict[str, Any]:
     """Validate security environment configuration
 
     Returns:

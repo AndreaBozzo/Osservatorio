@@ -6,12 +6,12 @@ import json
 import os
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 import msal
-import pandas as pd
 import requests
 
+from ..utils.circuit_breaker import CircuitBreaker
 from ..utils.config import Config
 from ..utils.logger import get_logger
 from ..utils.secure_path import SecurePathValidator, create_secure_validator
@@ -25,7 +25,8 @@ class PowerBIAPIClient:
 
     def __init__(self):
         """Inizializza il client PowerBI."""
-        self.base_url = "https://api.powerbi.com/v1.0/myorg"
+        # Issue #84: Use centralized configuration
+        self.base_url = Config.POWERBI_API_BASE_URL
         self.client_id = Config.POWERBI_CLIENT_ID
         self.client_secret = Config.POWERBI_CLIENT_SECRET
         self.tenant_id = Config.POWERBI_TENANT_ID
@@ -41,9 +42,9 @@ class PowerBIAPIClient:
             self.app = None
             return
 
-        # Configurazione MSAL
-        self.authority = f"https://login.microsoftonline.com/{self.tenant_id}"
-        self.scope = ["https://analysis.windows.net/powerbi/api/.default"]
+        # Configurazione MSAL - Issue #84: Use centralized configuration
+        self.authority = f"{Config.MICROSOFT_LOGIN_BASE_URL}/{self.tenant_id}"
+        self.scope = [Config.POWERBI_SCOPE_URL]
 
         # Inizializza app MSAL
         self.app = msal.ConfidentialClientApplication(
@@ -58,6 +59,14 @@ class PowerBIAPIClient:
                 "Content-Type": "application/json",
                 "User-Agent": "Osservatorio-PowerBI-Client/1.0",
             }
+        )
+
+        # Initialize circuit breaker for PowerBI API
+        self.circuit_breaker = CircuitBreaker(
+            failure_threshold=3,
+            recovery_timeout=60,
+            expected_exception=(requests.RequestException, msal.exceptions.MsalError),
+            name="PowerBI_API",
         )
 
         # Initialize secure path validator
@@ -116,7 +125,7 @@ class PowerBIAPIClient:
         return True
 
     @rate_limit(max_requests=100, window=3600)  # 100 requests per hour
-    def get_workspaces(self) -> List[Dict[str, Any]]:
+    def get_workspaces(self) -> list[dict[str, Any]]:
         """Recupera lista dei workspace disponibili."""
         if not self._ensure_authenticated():
             return []
@@ -128,8 +137,14 @@ class PowerBIAPIClient:
             ):
                 raise Exception("Rate limit exceeded for PowerBI API workspaces")
 
-            response = self.session.get(f"{self.base_url}/groups")
-            response.raise_for_status()
+            # Use circuit breaker for external API call
+            @self.circuit_breaker
+            def make_request():
+                response = self.session.get(f"{self.base_url}/groups")
+                response.raise_for_status()
+                return response
+
+            response = make_request()
 
             workspaces = response.json().get("value", [])
             logger.info(f"Recuperati {len(workspaces)} workspace")
@@ -140,7 +155,7 @@ class PowerBIAPIClient:
             return []
 
     @rate_limit(max_requests=100, window=3600)  # 100 requests per hour
-    def get_datasets(self, workspace_id: Optional[str] = None) -> List[Dict[str, Any]]:
+    def get_datasets(self, workspace_id: Optional[str] = None) -> list[dict[str, Any]]:
         """Recupera lista dei dataset nel workspace."""
         if not self._ensure_authenticated():
             return []
@@ -172,7 +187,7 @@ class PowerBIAPIClient:
             logger.error(f"Errore recupero dataset: {e}")
             return []
 
-    def get_reports(self, workspace_id: Optional[str] = None) -> List[Dict[str, Any]]:
+    def get_reports(self, workspace_id: Optional[str] = None) -> list[dict[str, Any]]:
         """Recupera lista dei report nel workspace."""
         if not self._ensure_authenticated():
             return []
@@ -199,8 +214,8 @@ class PowerBIAPIClient:
             return []
 
     def create_dataset(
-        self, dataset_definition: Dict, workspace_id: Optional[str] = None
-    ) -> Optional[Dict[str, Any]]:
+        self, dataset_definition: dict, workspace_id: Optional[str] = None
+    ) -> Optional[dict[str, Any]]:
         """Crea un nuovo dataset in PowerBI."""
         if not self._ensure_authenticated():
             return None
@@ -231,7 +246,7 @@ class PowerBIAPIClient:
         self,
         dataset_id: str,
         table_name: str,
-        data: List[Dict[str, Any]],
+        data: list[dict[str, Any]],
         workspace_id: Optional[str] = None,
     ) -> bool:
         """Invia dati a un dataset esistente."""
@@ -289,7 +304,7 @@ class PowerBIAPIClient:
 
     def get_dataset_refresh_history(
         self, dataset_id: str, workspace_id: Optional[str] = None
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Recupera cronologia refresh di un dataset."""
         if not self._ensure_authenticated():
             return []
@@ -317,7 +332,7 @@ class PowerBIAPIClient:
 
     def upload_pbix_file(
         self, file_path: str, dataset_name: str, workspace_id: Optional[str] = None
-    ) -> Optional[Dict[str, Any]]:
+    ) -> Optional[dict[str, Any]]:
         """Carica un file PBIX nel workspace."""
         if not self._ensure_authenticated():
             return None
@@ -359,7 +374,7 @@ class PowerBIAPIClient:
             logger.error(f"Errore upload PBIX: {e}")
             return None
 
-    def test_connection(self) -> Dict[str, Any]:
+    def test_connection(self) -> dict[str, Any]:
         """Testa la connessione a PowerBI e ritorna informazioni diagnostiche."""
         logger.info("Test connessione PowerBI...")
 
@@ -441,11 +456,13 @@ def main():
         f"Workspace accessibili: {'✅' if test_result['workspaces_accessible'] else '❌'}"
     )
     print(f"Numero workspace: {test_result['workspace_count']}")
-    print(f"Dataset accessibili: {'✅' if test_result['datasets_accessible'] else '❌'}")
+    print(
+        f"Dataset accessibili: {'✅' if test_result['datasets_accessible'] else '❌'}"
+    )
     print(f"Numero dataset: {test_result['dataset_count']}")
 
     if test_result["errors"]:
-        print(f"\n❌ ERRORI:")
+        print("\n❌ ERRORI:")
         for error in test_result["errors"]:
             print(f"  • {error}")
 

@@ -3,16 +3,10 @@ Script per testare l'upload dei dataset ISTAT in PowerBI.
 """
 
 import json
-import os
-import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional
 
 import pandas as pd
-
-# Aggiungi il path del progetto
-sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.api.powerbi_api import PowerBIAPIClient
 from src.utils.config import Config
@@ -30,7 +24,7 @@ class PowerBIUploadTester:
         self.powerbi_dir = Config.PROCESSED_DATA_DIR / "powerbi"
         self.test_results = []
 
-    def find_converted_datasets(self) -> List[Dict]:
+    def find_converted_datasets(self) -> list[dict]:
         """Trova i dataset convertiti disponibili."""
         logger.info("Ricerca dataset convertiti...")
 
@@ -45,12 +39,12 @@ class PowerBIUploadTester:
         latest_summary = max(summary_files, key=lambda f: f.stat().st_mtime)
         logger.info(f"Caricamento summary: {latest_summary}")
 
-        with open(latest_summary, "r", encoding="utf-8") as f:
+        with open(latest_summary, encoding="utf-8") as f:
             summary_data = json.load(f)
 
         return summary_data.get("successful_datasets", [])
 
-    def create_dataset_definition(self, dataset_info: Dict) -> Dict:
+    def create_dataset_definition(self, dataset_info: dict) -> dict:
         """Crea definizione dataset per PowerBI."""
         dataset_name = f"ISTAT_{dataset_info['category']}_{dataset_info['dataflow_id']}"
 
@@ -81,7 +75,7 @@ class PowerBIUploadTester:
 
         return dataset_definition
 
-    def upload_dataset(self, dataset_info: Dict) -> Dict:
+    def upload_dataset(self, dataset_info: dict) -> dict:
         """Carica un dataset in PowerBI."""
         logger.info(f"Upload dataset: {dataset_info['name']}")
 
@@ -146,7 +140,7 @@ class PowerBIUploadTester:
 
         return result
 
-    def test_dataset_upload(self, limit: int = 3) -> List[Dict]:
+    def test_dataset_upload(self, limit: int = 3) -> list[dict]:
         """Testa l'upload di alcuni dataset."""
         logger.info(f"Test upload dataset (limite: {limit})")
 
@@ -181,7 +175,7 @@ class PowerBIUploadTester:
 
         return results
 
-    def generate_test_report(self, results: List[Dict]) -> str:
+    def generate_test_report(self, results: list[dict]) -> str:
         """Genera report dei test."""
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 

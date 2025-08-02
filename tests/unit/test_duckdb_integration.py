@@ -10,11 +10,10 @@ This module tests all aspects of the DuckDB implementation:
 
 import os
 import tempfile
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import patch
 
-import duckdb
 import pandas as pd
 import pytest
 
@@ -33,11 +32,7 @@ from src.database.duckdb.partitioning import (
     YearPartitionStrategy,
     create_partition_manager,
 )
-from src.database.duckdb.query_optimizer import (
-    QueryOptimizer,
-    QueryType,
-    create_optimizer,
-)
+from src.database.duckdb.query_optimizer import QueryOptimizer, create_optimizer
 from src.database.duckdb.schema import ISTATSchemaManager, initialize_schema
 
 
@@ -108,7 +103,7 @@ class TestDuckDBConfig:
                 "database": "test.db",
                 "temp_directory": "temp",
             },
-        ) as mock_config:
+        ):
             with pytest.raises(ValueError, match="Invalid memory limit format"):
                 validate_config()
 
@@ -122,7 +117,7 @@ class TestDuckDBConfig:
                 "database": "test.db",
                 "temp_directory": "temp",
             },
-        ) as mock_config:
+        ):
             with pytest.raises(ValueError, match="Thread count must be positive"):
                 validate_config()
 
@@ -268,8 +263,8 @@ class TestDuckDBManager:
         """Test table existence checking."""
         temp_db_manager.execute_statement("CREATE TABLE exists_test (id INTEGER);")
 
-        assert temp_db_manager.table_exists("exists_test") == True
-        assert temp_db_manager.table_exists("nonexistent_table") == False
+        assert temp_db_manager.table_exists("exists_test")
+        assert not temp_db_manager.table_exists("nonexistent_table")
 
     def test_get_performance_stats(self, temp_db_manager):
         """Test performance statistics retrieval."""
@@ -376,7 +371,7 @@ class TestISTATSchemaManager:
         schema_manager.create_all_tables()
 
         # Verify tables were created by checking their existence
-        assert schema_manager.manager.table_exists("dataset_metadata", "istat") == True
+        assert schema_manager.manager.table_exists("dataset_metadata", "istat")
 
     def test_insert_dataset_metadata(self, schema_manager):
         """Test dataset metadata insertion."""
@@ -452,7 +447,7 @@ class TestISTATSchemaManager:
         schema_manager.drop_all_tables()
 
         # Verify tables are dropped
-        assert schema_manager.manager.table_exists("dataset_metadata", "istat") == False
+        assert not schema_manager.manager.table_exists("dataset_metadata", "istat")
 
     def test_initialize_schema_function(self):
         """Test schema initialization function."""
@@ -466,7 +461,7 @@ class TestISTATSchemaManager:
         try:
             schema_mgr = initialize_schema(manager)
             assert isinstance(schema_mgr, ISTATSchemaManager)
-            assert schema_mgr.manager.table_exists("dataset_metadata", "istat") == True
+            assert schema_mgr.manager.table_exists("dataset_metadata", "istat")
         finally:
             manager.close()
             if os.path.exists(temp_db_path):
@@ -689,7 +684,7 @@ class TestPartitioning:
         assert len(partitioned_data) > 0
 
         # Each partition should be a DataFrame
-        for partition_key, df in partitioned_data.items():
+        for _partition_key, df in partitioned_data.items():
             assert isinstance(df, pd.DataFrame)
             assert "partition_key" in df.columns
             assert "dataset_id" in df.columns

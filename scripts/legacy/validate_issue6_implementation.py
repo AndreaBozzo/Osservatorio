@@ -4,17 +4,28 @@ Validation Script for Issue #6: Enhanced Rate Limiting and API Protection
 
 This script validates that all components of the enhanced rate limiting system
 are working correctly and integrated properly with the existing codebase.
-"""
 
+Usage:
+    # Issue #84: Use proper package imports
+    python -m scripts.validate_issue6_implementation
+
+    # Legacy support (run from project root):
+    python scripts/validate_issue6_implementation.py
+"""
 import json
-import os
 import sys
 from datetime import datetime
 from pathlib import Path
 
-# Add project root to path
-project_root = Path(__file__).parent.parent
-sys.path.insert(0, str(project_root))
+try:
+    from . import setup_project_path
+
+    setup_project_path()
+except ImportError:
+    # Fallback for legacy usage
+    project_root = Path(__file__).parent.parent
+    if str(project_root) not in sys.path:
+        sys.path.insert(0, str(project_root))
 
 
 def validate_file_structure():
@@ -48,42 +59,18 @@ def validate_imports():
 
     try:
         # Core enhanced rate limiting
-        from src.auth.enhanced_rate_limiter import (
-            AdaptiveConfig,
-            EnhancedRateLimiter,
-            SuspiciousActivity,
-            ThreatLevel,
-        )
 
         print("✅ Enhanced rate limiter imports OK")
 
         # Security configuration
-        from src.auth.security_config import (
-            SecurityConfig,
-            SecurityManager,
-            create_security_manager,
-            generate_env_template,
-            validate_security_environment,
-        )
 
         print("✅ Security configuration imports OK")
 
         # Security dashboard
-        from src.api.security_dashboard import (
-            SecurityDashboard,
-            SecurityMetrics,
-            create_security_router,
-        )
 
         print("✅ Security dashboard imports OK")
 
         # Verify compatibility with existing auth
-        from src.auth.rate_limiter import (
-            RateLimitConfig,
-            RateLimitResult,
-            SQLiteRateLimiter,
-        )
-        from src.auth.security_middleware import AuthenticationMiddleware
 
         print("✅ Existing auth system compatibility OK")
 
@@ -159,7 +146,7 @@ def validate_enhanced_features():
             min_adjustment_ratio=0.2,
             max_adjustment_ratio=1.5,
         )
-        assert adaptive_config.enable_adaptive == True
+        assert adaptive_config.enable_adaptive
         print("✅ Adaptive configuration OK")
 
         # Test threat levels
@@ -246,7 +233,7 @@ def validate_backward_compatibility():
         # Test that existing rate limiter still works
         from unittest.mock import Mock, patch
 
-        from src.auth.rate_limiter import RateLimitConfig, SQLiteRateLimiter
+        from src.auth.rate_limiter import SQLiteRateLimiter
         from src.database.sqlite.manager import SQLiteMetadataManager
 
         mock_db = Mock(spec=SQLiteMetadataManager)
@@ -294,13 +281,11 @@ def validate_security_enhancements():
 
     try:
         # Check distributed rate limiting support
-        from src.auth.enhanced_rate_limiter import EnhancedRateLimiter
 
         # Redis support is optional, so we just check the code exists
         features_implemented.append("✅ Distributed rate limiting (Redis support)")
 
         # Check adaptive rate limiting
-        from src.auth.enhanced_rate_limiter import AdaptiveConfig
 
         features_implemented.append("✅ Adaptive rate limiting")
 

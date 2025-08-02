@@ -8,24 +8,32 @@ This script provides command-line interface for running performance tests:
 - CI/CD integration
 - Regression detection
 - Report generation
-"""
 
+Usage:
+    # Issue #84: Use proper package imports
+    python -m scripts.run_performance_tests
+
+    # Legacy support (run from project root):
+    python scripts/run_performance_tests.py
+"""
 import argparse
 import json
 import sys
 import time
-from datetime import datetime
 from pathlib import Path
 
-# Add project root to path
-project_root = Path(__file__).parent.parent
-sys.path.insert(0, str(project_root))
+try:
+    from . import setup_project_path
+
+    setup_project_path()
+except ImportError:
+    # Fallback for legacy usage
+    project_root = Path(__file__).parent.parent
+    if str(project_root) not in sys.path:
+        sys.path.insert(0, str(project_root))
 
 from tests.performance.load_testing.comprehensive_performance_suite import (
     PerformanceTestSuite,
-)
-from tests.performance.load_testing.performance_regression_detector import (
-    PerformanceRegressionDetector,
 )
 
 
@@ -154,7 +162,7 @@ Examples:
     try:
         # Initialize performance test suite
         if not args.quiet:
-            print(f"Initializing performance test suite...")
+            print("Initializing performance test suite...")
             print(f"Base URL: {args.base_url}")
             print(f"Output directory: {args.output_dir}")
 
@@ -336,7 +344,7 @@ def analyze_ci_results(
             for issue in issues:
                 print(f"  - {issue}")
         else:
-            print(f"\n✅ All CI/CD checks passed")
+            print("\n✅ All CI/CD checks passed")
 
     # Return appropriate exit code
     if len(issues) > 0:
@@ -358,7 +366,7 @@ def print_results_summary(results: dict, duration: float):
     # Overall insights
     insights = results.get("overall_insights", [])
     if insights:
-        print(f"\nKey Insights:")
+        print("\nKey Insights:")
         for insight in insights[:5]:
             print(f"  • {insight}")
 
@@ -378,7 +386,7 @@ def print_results_summary(results: dict, duration: float):
     # Actionable Recommendations
     recommendations = results.get("actionable_recommendations", [])
     if recommendations:
-        print(f"\nTop Recommendations:")
+        print("\nTop Recommendations:")
         for rec in recommendations[:5]:
             print(f"  • {rec}")
 

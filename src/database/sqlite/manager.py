@@ -19,9 +19,9 @@ import json
 import sqlite3
 import threading
 from contextlib import contextmanager
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Optional
 
 from src.utils.logger import get_logger
 from src.utils.security_enhanced import SecurityManager
@@ -154,7 +154,7 @@ class SQLiteMetadataManager:
         description: str = None,
         istat_agency: str = None,
         priority: int = 5,
-        metadata: Dict[str, Any] = None,
+        metadata: dict[str, Any] = None,
     ) -> bool:
         """Register a new ISTAT dataset in the metadata registry.
 
@@ -208,7 +208,7 @@ class SQLiteMetadataManager:
             logger.error(f"Failed to register dataset {dataset_id}: {e}")
             return False
 
-    def get_dataset(self, dataset_id: str) -> Optional[Dict[str, Any]]:
+    def get_dataset(self, dataset_id: str) -> Optional[dict[str, Any]]:
         """Get dataset information by ID.
 
         Args:
@@ -237,7 +237,7 @@ class SQLiteMetadataManager:
 
     def list_datasets(
         self, category: str = None, active_only: bool = True
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """List datasets with optional filtering.
 
         Args:
@@ -418,7 +418,7 @@ class SQLiteMetadataManager:
             logger.error(f"Failed to get user preference {user_id}.{key}: {e}")
             return default
 
-    def get_user_preferences(self, user_id: str) -> Dict[str, Any]:
+    def get_user_preferences(self, user_id: str) -> dict[str, Any]:
         """Get all preferences for a user.
 
         Args:
@@ -668,7 +668,7 @@ class SQLiteMetadataManager:
         action: str,
         resource_type: str,
         resource_id: str = None,
-        details: Dict[str, Any] = None,
+        details: dict[str, Any] = None,
         ip_address: str = None,
         user_agent: str = None,
         success: bool = True,
@@ -734,7 +734,7 @@ class SQLiteMetadataManager:
         action: str,
         resource_type: str,
         resource_id: str = None,
-        details: Dict[str, Any] = None,
+        details: dict[str, Any] = None,
         **kwargs,
     ) -> bool:
         """Public audit logging method.
@@ -762,7 +762,7 @@ class SQLiteMetadataManager:
         start_date: datetime = None,
         end_date: datetime = None,
         limit: int = 100,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Get audit logs with filtering.
 
         Args:
@@ -822,9 +822,242 @@ class SQLiteMetadataManager:
             logger.error(f"Failed to get audit logs: {e}")
             return []
 
+    # Categorization Rules Operations
+
+    def get_categorization_rules(
+        self, category: str = None, active_only: bool = True
+    ) -> list[dict[str, Any]]:
+        """Get categorization rules for dataflow analysis.
+
+        Args:
+            category: Optional category filter
+            active_only: Whether to return only active rules
+
+        Returns:
+            List of categorization rules with parsed keywords
+        """
+        try:
+            conn = self._get_connection()
+
+            # Build query
+            query = "SELECT * FROM categorization_rules WHERE 1=1"
+            params = []
+
+            if category:
+                query += " AND category = ?"
+                params.append(category)
+
+            if active_only:
+                query += " AND is_active = 1"
+
+            query += " ORDER BY priority DESC, created_at ASC"
+
+            cursor = conn.execute(query, params)
+            rules = []
+
+            for row in cursor.fetchall():
+                rule = dict(row)
+                # Parse keywords JSON
+                if rule["keywords_json"]:
+                    rule["keywords"] = json.loads(rule["keywords_json"])
+                else:
+                    rule["keywords"] = []
+                # Remove the JSON field from output
+                del rule["keywords_json"]
+                # Convert SQLite integer to boolean
+                rule["is_active"] = bool(rule["is_active"])
+                rules.append(rule)
+
+            return rules
+
+        except Exception as e:
+            logger.error(f"Failed to get categorization rules: {e}")
+            return []
+
+    def create_categorization_rule(
+        self,
+        rule_id: str,
+        category: str,
+        keywords: list[str],
+        priority: int = 5,
+        description: str = None,
+    ) -> bool:
+        """Create a new categorization rule.
+
+        Args:
+            rule_id: Unique rule identifier
+            category: Target category
+            keywords: List of keywords for matching
+            priority: Rule priority (higher = more important)
+            description: Optional description
+
+        Returns:
+            bool: True if rule created successfully
+        """
+        try:
+            conn = self._get_connection()
+
+            # Validate inputs
+            if not rule_id or not category or not keywords:
+                logger.error("rule_id, category, and keywords are required")
+                return False
+
+            # Normalize keywords (lowercase, strip whitespace)
+            normalized_keywords = [kw.lower().strip() for kw in keywords if kw.strip()]
+            if not normalized_keywords:
+                logger.error("At least one valid keyword is required")
+                return False
+
+            conn.execute(
+                """INSERT INTO categorization_rules
+                   (rule_id, category, keywords_json, priority, description)
+                   VALUES (?, ?, ?, ?, ?)""",
+                (
+                    rule_id,
+                    category,
+                    json.dumps(normalized_keywords),
+                    priority,
+                    description,
+                ),
+            )
+            conn.commit()
+
+            # Log the creation
+            self.log_audit(
+                "system",
+                "CREATE",
+                "categorization_rule",
+                rule_id,
+                {"category": category, "keywords_count": len(normalized_keywords)},
+            )
+
+            logger.info(f"Created categorization rule: {rule_id}")
+            return True
+
+        except sqlite3.IntegrityError as e:
+            logger.error(f"Rule {rule_id} already exists: {e}")
+            return False
+        except Exception as e:
+            logger.error(f"Failed to create categorization rule: {e}")
+            return False
+
+    def update_categorization_rule(
+        self,
+        rule_id: str,
+        keywords: list[str] = None,
+        priority: int = None,
+        is_active: bool = None,
+        description: str = None,
+    ) -> bool:
+        """Update an existing categorization rule.
+
+        Args:
+            rule_id: Rule identifier to update
+            keywords: Optional new keywords list
+            priority: Optional new priority
+            is_active: Optional active status
+            description: Optional new description
+
+        Returns:
+            bool: True if rule updated successfully
+        """
+        try:
+            conn = self._get_connection()
+
+            # Build update query dynamically
+            updates = []
+            params = []
+
+            if keywords is not None:
+                normalized_keywords = [
+                    kw.lower().strip() for kw in keywords if kw.strip()
+                ]
+                updates.append("keywords_json = ?")
+                params.append(json.dumps(normalized_keywords))
+
+            if priority is not None:
+                updates.append("priority = ?")
+                params.append(priority)
+
+            if is_active is not None:
+                updates.append("is_active = ?")
+                params.append(1 if is_active else 0)
+
+            if description is not None:
+                updates.append("description = ?")
+                params.append(description)
+
+            if not updates:
+                logger.warning("No updates provided for rule update")
+                return False
+
+            # Add updated_at timestamp
+            updates.append("updated_at = CURRENT_TIMESTAMP")
+
+            # Add rule_id to params for WHERE clause
+            params.append(rule_id)
+
+            query = f"UPDATE categorization_rules SET {', '.join(updates)} WHERE rule_id = ?"
+
+            cursor = conn.execute(query, params)
+
+            if cursor.rowcount == 0:
+                logger.error(f"Categorization rule not found: {rule_id}")
+                return False
+
+            conn.commit()
+
+            # Log the update
+            self.log_audit(
+                "system",
+                "UPDATE",
+                "categorization_rule",
+                rule_id,
+                {"updated_fields": len(updates) - 1},  # -1 for updated_at
+            )
+
+            logger.info(f"Updated categorization rule: {rule_id}")
+            return True
+
+        except Exception as e:
+            logger.error(f"Failed to update categorization rule: {e}")
+            return False
+
+    def delete_categorization_rule(self, rule_id: str) -> bool:
+        """Delete a categorization rule.
+
+        Args:
+            rule_id: Rule identifier to delete
+
+        Returns:
+            bool: True if rule deleted successfully
+        """
+        try:
+            conn = self._get_connection()
+
+            cursor = conn.execute(
+                "DELETE FROM categorization_rules WHERE rule_id = ?", (rule_id,)
+            )
+
+            if cursor.rowcount == 0:
+                logger.error(f"Categorization rule not found: {rule_id}")
+                return False
+
+            conn.commit()
+
+            # Log the deletion
+            self.log_audit("system", "DELETE", "categorization_rule", rule_id, {})
+
+            logger.info(f"Deleted categorization rule: {rule_id}")
+            return True
+
+        except Exception as e:
+            logger.error(f"Failed to delete categorization rule: {e}")
+            return False
+
     # Utility Methods
 
-    def get_database_stats(self) -> Dict[str, Any]:
+    def get_database_stats(self) -> dict[str, Any]:
         """Get database statistics.
 
         Returns:
@@ -841,6 +1074,7 @@ class SQLiteMetadataManager:
                 "api_credentials": "SELECT COUNT(*) FROM api_credentials",
                 "audit_log": "SELECT COUNT(*) FROM audit_log",
                 "system_config": "SELECT COUNT(*) FROM system_config",
+                "categorization_rules": "SELECT COUNT(*) FROM categorization_rules",
             }
             for table_name, query in table_queries.items():
                 cursor = conn.execute(query)

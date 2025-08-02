@@ -8,7 +8,7 @@ data processing while the full manager implementation is being stabilized.
 import os
 import tempfile
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Optional
 
 import duckdb
 import pandas as pd

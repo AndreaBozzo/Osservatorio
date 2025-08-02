@@ -3,13 +3,8 @@
 Script per pulizia dei file temporanei del sistema ISTAT.
 Può essere eseguito manualmente o schedulato via cron/task scheduler.
 """
-
 import argparse
-import sys
 from pathlib import Path
-
-# Aggiungi src al path
-sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from utils.logger import get_logger
 from utils.temp_file_manager import get_temp_manager
@@ -70,7 +65,7 @@ def main():
         else:
             print("🧽 Cleanup completo file temporanei...")
             results = temp_manager.cleanup_all()
-            print(f"✅ Cleanup completato:")
+            print("✅ Cleanup completato:")
             print(f"  File eliminati: {results['files_removed']}")
             print(f"  Directory eliminate: {results['dirs_removed']}")
             print(f"  Errori: {results['errors']}")
@@ -82,7 +77,6 @@ def main():
 
         # Simula cosa verrebbe eliminato
         import time
-        from pathlib import Path
 
         temp_dir = Path(temp_manager.base_temp_dir)
         if temp_dir.exists():

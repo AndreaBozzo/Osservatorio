@@ -17,7 +17,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Optional
 
 import httpx
 import psutil
@@ -25,15 +25,17 @@ import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
-# Import JWT token generator
 try:
     from .jwt_token_generator import PerformanceJWTGenerator
 except ImportError:
-    # Fallback for direct execution
-    import sys
+    # Fallback for direct execution - use relative import
+    try:
+        from jwt_token_generator import PerformanceJWTGenerator
+    except ImportError:
+        # Final fallback for development
 
-    sys.path.append(str(Path(__file__).parent))
-    from jwt_token_generator import PerformanceJWTGenerator
+        # Issue #84: Removed unsafe sys.path manipulation
+        from jwt_token_generator import PerformanceJWTGenerator
 
 
 @dataclass
@@ -77,7 +79,7 @@ class APIBenchmark:
         self.base_url = base_url.rstrip("/")
         self.timeout = timeout
         self.session = self._create_session()
-        self.results: List[BenchmarkResult] = []
+        self.results: list[BenchmarkResult] = []
 
         # Initialize JWT token generator for authentication
         try:
@@ -109,7 +111,7 @@ class APIBenchmark:
 
         return session
 
-    def _get_auth_headers(self) -> Dict[str, str]:
+    def _get_auth_headers(self) -> dict[str, str]:
         """Get authentication headers with JWT token."""
         try:
             if self.jwt_generator:
@@ -127,9 +129,9 @@ class APIBenchmark:
         self,
         endpoint: str,
         method: str = "GET",
-        headers: Optional[Dict] = None,
-        params: Optional[Dict] = None,
-        json_data: Optional[Dict] = None,
+        headers: Optional[dict] = None,
+        params: Optional[dict] = None,
+        json_data: Optional[dict] = None,
         sla_target_ms: float = 100.0,
     ) -> BenchmarkResult:
         """Benchmark single endpoint request."""
@@ -202,10 +204,10 @@ class APIBenchmark:
         concurrent_users: int = 10,
         requests_per_user: int = 10,
         method: str = "GET",
-        headers: Optional[Dict] = None,
-        params: Optional[Dict] = None,
+        headers: Optional[dict] = None,
+        params: Optional[dict] = None,
         sla_target_ms: float = 100.0,
-    ) -> List[BenchmarkResult]:
+    ) -> list[BenchmarkResult]:
         """Run concurrent benchmark test."""
         results = []
 
@@ -247,10 +249,10 @@ class APIBenchmark:
 
     async def async_benchmark(
         self,
-        endpoints: List[Dict],
+        endpoints: list[dict],
         concurrent_requests: int = 50,
         sla_target_ms: float = 100.0,
-    ) -> List[BenchmarkResult]:
+    ) -> list[BenchmarkResult]:
         """Run asynchronous benchmark test."""
         results = []
 
@@ -393,13 +395,13 @@ class APIBenchmark:
             sla_target_ms=sla_target_ms,
         )
 
-    def generate_report(self, output_path: Optional[Path] = None) -> Dict:
+    def generate_report(self, output_path: Optional[Path] = None) -> dict:
         """Generate comprehensive performance report."""
         if not self.results:
             raise ValueError("No benchmark results available")
 
         # Group results by endpoint
-        endpoints = list(set(r.endpoint for r in self.results))
+        endpoints = list({r.endpoint for r in self.results})
         endpoint_summaries = {}
 
         for endpoint in endpoints:
@@ -452,7 +454,7 @@ class APIBenchmark:
 
         return report
 
-    def _generate_insights(self, summaries: Dict[str, BenchmarkSummary]) -> List[str]:
+    def _generate_insights(self, summaries: dict[str, BenchmarkSummary]) -> list[str]:
         """Generate actionable performance insights."""
         insights = []
 
