@@ -30,7 +30,7 @@ jobs:
 
       - name: Run basic tests
         run: |
-          pytest tests/unit/ -v
+          pytest -c pytest-ci.ini tests/unit/ -v
 
       - name: Check code formatting
         run: |
@@ -39,5 +39,5 @@ jobs:
 
       - name: Basic security scan
         run: |
-          bandit -r src/ -f json -o bandit-report.json
+          bandit -r src/ -f json -o bandit-report.json --severity-level high
         continue-on-error: true

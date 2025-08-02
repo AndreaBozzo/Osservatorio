@@ -172,6 +172,7 @@ dmypy.json
 # Security and monitoring
 security-report.json
 bandit-report.json
+bandit-report-*.json
 *.har
 
 # Authentication and credentials (test files)
