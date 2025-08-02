@@ -5,12 +5,10 @@ Provides a lightweight mock server that simulates ISTAT API responses
 for integration testing in CI/CD environments where external API access
 may be limited or unreliable.
 """
-import json
 import threading
 import time
-import xml.etree.ElementTree as ET
 from datetime import datetime
-from typing import Any, Dict
+from typing import Dict
 
 from flask import Flask, Response, jsonify, request
 

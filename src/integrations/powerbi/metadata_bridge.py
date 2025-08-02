@@ -16,12 +16,11 @@ Architecture Integration:
 """
 
 import json
-from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Tuple
+from datetime import datetime
+from typing import Any, Dict, List, Optional
 
 from ...utils.config import Config
 
-import pandas as pd
 
 from src.api.powerbi_api import PowerBIAPIClient
 from src.database.sqlite.repository import UnifiedDataRepository

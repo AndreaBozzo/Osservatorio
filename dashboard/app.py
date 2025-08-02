@@ -6,20 +6,17 @@ Direct entry point for Streamlit Cloud without subdirectory complications
 
 import gc
 import os
-import sys
 import time
 import traceback
 from contextlib import contextmanager
 from datetime import datetime
-from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 # Issue #84 - Day 3: Removed sys.path manipulation
 # Dashboard now uses proper package imports only
 
 import pandas as pd
 import plotly.express as px
-import plotly.graph_objects as go
 import streamlit as st
 
 

@@ -8,13 +8,12 @@ Provides consistent error handling patterns across all scripts and modules:
 - Performance monitoring
 - Security audit trail
 """
-import json
 import traceback
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, Optional
 
-from fastapi import HTTPException, status
+from fastapi import HTTPException
 from pydantic import BaseModel
 
 from src.utils.logger import get_logger

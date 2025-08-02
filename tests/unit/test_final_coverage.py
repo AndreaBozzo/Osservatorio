@@ -4,7 +4,6 @@ Simple working tests for missing coverage.
 """
 from unittest.mock import Mock, patch
 
-import pytest
 
 from src.utils.circuit_breaker import CircuitState
 

@@ -4,18 +4,15 @@ This module provides detailed performance benchmarks specifically for DuckDB
 operations in the ISTAT data processing pipeline.
 """
 import gc
-import os
-import sys
 import time
-from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, Tuple
 
 import pandas as pd
 import psutil
 import pytest
 
 from src.database.duckdb.manager import DuckDBManager
-from src.database.duckdb.query_optimizer import QueryOptimizer, create_optimizer
+from src.database.duckdb.query_optimizer import create_optimizer
 from src.database.duckdb.simple_adapter import SimpleDuckDBAdapter
 from src.utils.logger import get_logger
 
@@ -241,7 +238,6 @@ class TestDuckDBPerformance:
     def test_concurrent_query_performance(self):
         """Test concurrent query execution performance."""
         import concurrent.futures
-        import threading
 
         # Setup shared data
         adapter = SimpleDuckDBAdapter()

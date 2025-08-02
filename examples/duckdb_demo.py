@@ -16,7 +16,6 @@ try:
     )
 except ImportError:
     # Development mode fallback
-    import sys
 
     # Issue #84: Removed unsafe sys.path manipulation
     from database.duckdb.simple_adapter import create_adapter, create_file_adapter

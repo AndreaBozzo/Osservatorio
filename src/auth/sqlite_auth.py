@@ -9,12 +9,11 @@ Provides secure API key management with SQLite backend:
 - Audit logging for security events
 """
 
-import hashlib
 import json
 import secrets
 import sqlite3
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 
 import bcrypt
 
@@ -22,7 +21,7 @@ from src.database.sqlite.manager import SQLiteMetadataManager
 from src.utils.logger import get_logger
 from src.utils.security_enhanced import SecurityManager
 
-from .models import APIKey, TokenClaims
+from .models import APIKey
 
 logger = get_logger(__name__)
 security = SecurityManager()

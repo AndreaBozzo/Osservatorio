@@ -9,11 +9,10 @@ This module tests all aspects of the DuckDB implementation:
 """
 import os
 import tempfile
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import patch
 
-import duckdb
 import pandas as pd
 import pytest
 
@@ -34,7 +33,6 @@ from src.database.duckdb.partitioning import (
 )
 from src.database.duckdb.query_optimizer import (
     QueryOptimizer,
-    QueryType,
     create_optimizer,
 )
 from src.database.duckdb.schema import ISTATSchemaManager, initialize_schema

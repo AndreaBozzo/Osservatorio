@@ -11,9 +11,8 @@ SQLite-backed rate limiting with sliding window algorithm:
 """
 
 import hashlib
-import sqlite3
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, Optional
 
 from src.database.sqlite.manager import SQLiteMetadataManager
 from src.utils.logger import get_logger

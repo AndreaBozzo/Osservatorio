@@ -14,9 +14,8 @@ Architecture Integration:
 """
 import json
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional
 
-import pandas as pd
 
 from src.database.sqlite.repository import UnifiedDataRepository
 from src.utils.logger import get_logger

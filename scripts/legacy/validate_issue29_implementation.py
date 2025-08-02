@@ -9,10 +9,8 @@ from Issue #29 including performance targets, authentication, and OData complian
 Usage:
     python scripts/validate_issue29_implementation.py
 """
-import json
 import os
 import time
-from datetime import datetime, timedelta
 
 os.environ["JWT_SECRET_KEY"] = "test-secret-key-for-final-validation-12345"
 

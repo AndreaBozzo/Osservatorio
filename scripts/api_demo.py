@@ -5,9 +5,7 @@
 A human-friendly script to demonstrate and test the FastAPI endpoints.
 Perfect for showcasing the API capabilities to stakeholders.
 """
-import json
 import time
-from datetime import datetime
 from typing import Any, Dict
 
 import requests

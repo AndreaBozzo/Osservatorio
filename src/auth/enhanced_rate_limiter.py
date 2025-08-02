@@ -9,16 +9,14 @@ Advanced rate limiting features:
 - DoS protection and credential stuffing prevention
 """
 
-import asyncio
 import hashlib
 import json
-import sqlite3
 import statistics
 import time
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, Optional
 
 from src.database.sqlite.manager import SQLiteMetadataManager
 from src.utils.logger import get_logger

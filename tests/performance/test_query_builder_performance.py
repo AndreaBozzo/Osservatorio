@@ -8,9 +8,6 @@ This module tests the performance characteristics of the query builder:
 - Large dataset performance
 """
 import gc
-import os
-import tempfile
-import threading
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from unittest.mock import Mock
@@ -24,7 +21,6 @@ from src.database.duckdb.query_builder import (
     DuckDBQueryBuilder,
     FilterOperator,
     QueryCache,
-    create_query_builder,
 )
 
 

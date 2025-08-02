@@ -5,23 +5,12 @@
 A human-friendly script to verify that all components are working correctly.
 Run this script to get a quick overview of system health.
 """
-import os
 import sys
-import time
 from datetime import datetime
 from pathlib import Path
 
 import requests
 
-from utils import (
-    ScriptContext,
-    get_script_config,
-    print_error,
-    print_step,
-    print_success,
-    print_warning,
-    setup_script_logging,
-)
 
 
 def print_header():

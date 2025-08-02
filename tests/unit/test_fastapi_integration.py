@@ -4,11 +4,7 @@ Integration tests for FastAPI REST API
 Tests all endpoints, authentication, rate limiting, and OData functionality
 to ensure production readiness and compliance with issue #29 requirements.
 """
-import json
-from datetime import datetime, timedelta
-from typing import Any, Dict
 
-import httpx
 import pytest
 from fastapi.testclient import TestClient
 
@@ -20,7 +16,6 @@ from src.api.dependencies import (
 )
 from src.api.fastapi_app import app
 from src.auth.jwt_manager import JWTManager
-from src.auth.models import APIKey
 from src.auth.rate_limiter import SQLiteRateLimiter
 from src.auth.sqlite_auth import SQLiteAuthManager
 from src.database.sqlite.manager import SQLiteMetadataManager

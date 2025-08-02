@@ -1,9 +1,6 @@
 """
 Integration tests for end-to-end data pipeline.
 """
-import json
-import shutil
-import tempfile
 from pathlib import Path
 from unittest.mock import Mock, mock_open, patch
 
@@ -12,7 +9,6 @@ import pytest
 
 from src.api.production_istat_client import ProductionIstatClient
 from src.services.service_factory import get_dataflow_analysis_service
-from src.utils.config import Config
 
 
 @pytest.mark.integration

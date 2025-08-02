@@ -10,7 +10,6 @@ Usage:
     # Issue #84: Run from project root
     python -m tests.performance.load_testing.jwt_token_generator
 """
-import logging
 import os
 import sys
 from datetime import datetime, timedelta

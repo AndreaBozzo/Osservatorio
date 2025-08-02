@@ -8,8 +8,7 @@ This module implements partitioning strategies to optimize query performance:
 """
 
 from datetime import datetime
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 import pandas as pd
 

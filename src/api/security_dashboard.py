@@ -8,17 +8,16 @@ Real-time security monitoring and alerting system:
 - Performance monitoring
 - Security alert system
 """
-import json
 from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
-from fastapi import APIRouter, Depends, HTTPException, Query
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi import APIRouter, HTTPException, Query
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
-from src.auth.enhanced_rate_limiter import EnhancedRateLimiter, ThreatLevel
+from src.auth.enhanced_rate_limiter import EnhancedRateLimiter
 from src.auth.security_middleware import AuthenticationMiddleware
 from src.database.sqlite.manager import SQLiteMetadataManager
 from src.utils.logger import get_logger

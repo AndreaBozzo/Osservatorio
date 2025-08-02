@@ -10,14 +10,13 @@ This module provides comprehensive system resource monitoring during load testin
 - Resource bottleneck detection
 """
 import json
-import sqlite3
 import statistics
 import threading
 import time
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 import psutil
 

@@ -9,14 +9,13 @@ This module provides comprehensive database performance testing for:
 - Concurrent database access testing
 """
 import json
-import sqlite3
 import statistics
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 
 import duckdb
 import psutil
@@ -24,7 +23,6 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.pool import QueuePool
 
 from src.database.duckdb.manager import DuckDBManager
-from src.database.sqlite.repository import get_unified_repository
 from src.utils.config import get_config
 
 

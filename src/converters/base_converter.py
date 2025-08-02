@@ -2,14 +2,10 @@
 Base converter class for ISTAT SDMX data processing.
 Eliminates code duplication between PowerBI and Tableau converters.
 """
-import json
 import os
-import re
 import xml.etree.ElementTree as ET
 from abc import ABC, abstractmethod
-from datetime import datetime
-from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 
 import pandas as pd
 

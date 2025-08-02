@@ -15,11 +15,9 @@ Usage:
 """
 import argparse
 import json
-import os
 import xml.etree.ElementTree as ET
 from datetime import datetime
-from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List
 
 try:
     from osservatorio_istat.api.production_istat_client import ProductionIstatClient

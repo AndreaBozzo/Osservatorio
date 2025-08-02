@@ -4,9 +4,7 @@ Unit tests for categorization rules database operations.
 Tests the database layer for categorization rules including CRUD operations,
 data validation, and integration with the SQLite metadata manager.
 """
-import json
 import sqlite3
-from datetime import datetime
 from unittest.mock import MagicMock, patch
 
 import pytest

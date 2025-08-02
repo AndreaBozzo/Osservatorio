@@ -16,9 +16,8 @@ import uuid
 from contextvars import ContextVar
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional
 
-from .config import get_config
 
 # Context variables for request tracing
 correlation_id_context: ContextVar[str] = ContextVar("correlation_id", default="")

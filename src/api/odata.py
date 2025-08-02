@@ -14,17 +14,13 @@ Features:
 Performance target: <500ms for 10k records
 """
 
-import json
-import urllib.parse
-from datetime import datetime
-from typing import Any, Dict, List, Optional, Union
+from typing import Dict, List, Optional
 from xml.etree.ElementTree import Element, SubElement, tostring
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse, PlainTextResponse
 
-from src.database.sqlite.repository import get_unified_repository
 from src.utils.logger import get_logger
 
 from .dependencies import (
@@ -33,7 +29,6 @@ from .dependencies import (
     get_repository,
     log_api_request,
 )
-from .models import ODataEntitySet, ODataMetadata, ODataResponse
 
 logger = get_logger(__name__)
 

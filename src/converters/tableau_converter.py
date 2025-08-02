@@ -12,7 +12,6 @@ from typing import Dict
 
 import pandas as pd
 
-from src.utils.config import Config
 from src.utils.logger import get_logger
 
 from .base_converter import BaseIstatConverter

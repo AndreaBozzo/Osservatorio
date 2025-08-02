@@ -8,15 +8,12 @@ This script demonstrates how to use the DuckDB Query Builder for ISTAT analytics
 - Error handling best practices
 """
 
-from datetime import datetime, timedelta
 
-import pandas as pd
 
 from src.database.duckdb import (
     DuckDBQueryBuilder,
     FilterOperator,
     QueryCache,
-    QueryType,
     create_query_builder,
 )
 

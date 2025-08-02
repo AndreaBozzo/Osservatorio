@@ -5,7 +5,6 @@ Focuses on ensuring DuckDB works correctly for ISTAT data processing.
 """
 import os
 import tempfile
-from pathlib import Path
 
 import duckdb
 import pandas as pd

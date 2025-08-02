@@ -16,10 +16,8 @@ Usage:
     python scripts/generate_api_key.py test --key osv_abc123...
 """
 import argparse
-import json
 import sys
 from datetime import datetime, timedelta
-from pathlib import Path
 from typing import List, Optional
 
 from src.auth.jwt_manager import JWTManager

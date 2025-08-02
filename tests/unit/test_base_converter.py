@@ -2,14 +2,10 @@
 Test cases for BaseIstatConverter
 Tests the abstract base class functionality shared by PowerBI and Tableau converters.
 """
-import json
-import os
-import tempfile
 import unittest
-from unittest.mock import Mock, mock_open, patch
+from unittest.mock import Mock, patch
 
 import pandas as pd
-import pytest
 
 from src.converters.base_converter import BaseIstatConverter
 from src.converters.factory import ConverterFactory

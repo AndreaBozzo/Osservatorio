@@ -21,13 +21,12 @@ Features:
 import threading
 from contextlib import contextmanager
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
 
 from src.database.duckdb import DuckDBManager
-from src.database.duckdb import get_manager as get_duckdb_manager
 from src.utils.logger import get_logger
 
-from .manager import SQLiteMetadataManager, get_metadata_manager
+from .manager import SQLiteMetadataManager
 
 logger = get_logger(__name__)
 
@@ -625,7 +624,7 @@ class UnifiedDataRepository:
                 },
                 "cache": {
                     "size": len(self._cache),
-                    "hit_rate": "not_implemented",  # TODO: Implement cache hit rate tracking
+                    "hit_rate": "pending_issue_63",  # Cache metrics to be implemented in Issue #63
                 },
                 "timestamp": datetime.now().isoformat(),
             }

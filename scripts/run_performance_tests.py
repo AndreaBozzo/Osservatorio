@@ -20,7 +20,6 @@ import argparse
 import json
 import sys
 import time
-from datetime import datetime
 from pathlib import Path
 
 try:
@@ -35,9 +34,6 @@ except ImportError:
 
 from tests.performance.load_testing.comprehensive_performance_suite import (
     PerformanceTestSuite,
-)
-from tests.performance.load_testing.performance_regression_detector import (
-    PerformanceRegressionDetector,
 )
 
 

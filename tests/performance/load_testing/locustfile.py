@@ -13,8 +13,6 @@ Test scenarios:
 """
 import json
 import random
-import time
-from typing import Dict, List
 
 from locust import HttpUser, between, task
 
@@ -26,8 +24,6 @@ except ImportError:
         from jwt_token_generator import PerformanceJWTGenerator
     except ImportError:
         # Final fallback for development
-        import sys
-        from pathlib import Path
 
         # Issue #84: Removed unsafe sys.path manipulation
         from jwt_token_generator import PerformanceJWTGenerator

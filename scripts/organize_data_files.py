@@ -4,10 +4,7 @@ Script per organizzare i file di dati secondo le best practices.
 Sposta i file temporanei nella directory appropriata e mantiene la struttura pulita.
 """
 import argparse
-import glob
 import shutil
-import sys
-from datetime import datetime
 from pathlib import Path
 
 from utils.logger import get_logger

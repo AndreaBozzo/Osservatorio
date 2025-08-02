@@ -8,10 +8,8 @@ import sys
 import webbrowser
 from datetime import datetime
 from pathlib import Path
-from urllib.parse import urlparse
 
 from src.api.powerbi_api import PowerBIAPIClient
-from src.utils.config import Config
 
 
 class PowerBISetupWizard:

@@ -13,7 +13,7 @@ import pandas as pd
 
 from src.utils.logger import get_logger
 
-from .config import SCHEMA_CONFIG, get_schema_config
+from .config import get_schema_config
 from .manager import DuckDBManager
 
 logger = get_logger(__name__)

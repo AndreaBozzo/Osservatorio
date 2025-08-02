@@ -4,7 +4,7 @@ System integration tests for the complete ISTAT data processing pipeline.
 import json
 import tempfile
 from pathlib import Path
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import Mock, patch
 
 import pandas as pd
 import pytest
@@ -280,7 +280,6 @@ class TestSystemIntegration:
     def test_concurrent_processing_integration(self, temp_dir):
         """Test concurrent processing across components."""
         import threading
-        import time
 
         results = []
         errors = []

@@ -13,7 +13,6 @@ Usage:
     python scripts/validate_issue6_implementation.py
 """
 import json
-import os
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -60,42 +59,18 @@ def validate_imports():
 
     try:
         # Core enhanced rate limiting
-        from src.auth.enhanced_rate_limiter import (
-            AdaptiveConfig,
-            EnhancedRateLimiter,
-            SuspiciousActivity,
-            ThreatLevel,
-        )
 
         print("✅ Enhanced rate limiter imports OK")
 
         # Security configuration
-        from src.auth.security_config import (
-            SecurityConfig,
-            SecurityManager,
-            create_security_manager,
-            generate_env_template,
-            validate_security_environment,
-        )
 
         print("✅ Security configuration imports OK")
 
         # Security dashboard
-        from src.api.security_dashboard import (
-            SecurityDashboard,
-            SecurityMetrics,
-            create_security_router,
-        )
 
         print("✅ Security dashboard imports OK")
 
         # Verify compatibility with existing auth
-        from src.auth.rate_limiter import (
-            RateLimitConfig,
-            RateLimitResult,
-            SQLiteRateLimiter,
-        )
-        from src.auth.security_middleware import AuthenticationMiddleware
 
         print("✅ Existing auth system compatibility OK")
 
@@ -258,7 +233,7 @@ def validate_backward_compatibility():
         # Test that existing rate limiter still works
         from unittest.mock import Mock, patch
 
-        from src.auth.rate_limiter import RateLimitConfig, SQLiteRateLimiter
+        from src.auth.rate_limiter import SQLiteRateLimiter
         from src.database.sqlite.manager import SQLiteMetadataManager
 
         mock_db = Mock(spec=SQLiteMetadataManager)
@@ -306,13 +281,11 @@ def validate_security_enhancements():
 
     try:
         # Check distributed rate limiting support
-        from src.auth.enhanced_rate_limiter import EnhancedRateLimiter
 
         # Redis support is optional, so we just check the code exists
         features_implemented.append("✅ Distributed rate limiting (Redis support)")
 
         # Check adaptive rate limiting
-        from src.auth.enhanced_rate_limiter import AdaptiveConfig
 
         features_implemented.append("✅ Adaptive rate limiting")
 

@@ -5,16 +5,14 @@ current performance metrics with historical baselines and detecting significant
 degradations in system performance.
 """
 import json
-import os
 import statistics
 import subprocess
 import time
 from dataclasses import asdict, dataclass
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import List, Optional, Tuple
 
-import pandas as pd
 
 try:
     from osservatorio_istat.utils.logger import get_logger

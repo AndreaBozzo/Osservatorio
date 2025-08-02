@@ -16,7 +16,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 
 import httpx
 import psutil
@@ -32,7 +32,6 @@ except ImportError:
         from jwt_token_generator import PerformanceJWTGenerator
     except ImportError:
         # Final fallback for development
-        import sys
 
         # Issue #84: Removed unsafe sys.path manipulation
         from jwt_token_generator import PerformanceJWTGenerator

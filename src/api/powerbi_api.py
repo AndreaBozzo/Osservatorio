@@ -9,12 +9,10 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import msal
-import pandas as pd
 import requests
 
 from ..utils.circuit_breaker import CircuitBreaker
 from ..utils.config import Config
-from ..utils.error_handler import ErrorCategory, handle_error
 from ..utils.logger import get_logger
 from ..utils.secure_path import SecurePathValidator, create_secure_validator
 from ..utils.security_enhanced import rate_limit, security_manager

@@ -5,19 +5,16 @@ Tests the FastAPI endpoints for dataflow analysis and categorization
 rules management, including request/response validation, authentication,
 and error handling.
 """
-import json
 from datetime import datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from fastapi.security import HTTPAuthorizationCredentials
 from fastapi.testclient import TestClient
 
 from src.api.fastapi_app import app
 from src.api.models import DataflowCategory
 from src.services.models import (
     AnalysisResult,
-    CategorizationRule,
     ConnectionType,
     DataflowTest,
     DataflowTestResult,

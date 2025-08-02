@@ -17,12 +17,10 @@ Usage:
     python examples/powerbi_integration_demo.py
 """
 
-import json
 import sys
 from datetime import datetime, timedelta
 from pathlib import Path
 
-import pandas as pd
 
 # Issue #84: Proper package imports without sys.path manipulation
 try:

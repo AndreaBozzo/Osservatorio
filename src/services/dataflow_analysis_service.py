@@ -9,7 +9,7 @@ import asyncio
 import xml.etree.ElementTree as ET
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 
 from ..api.production_istat_client import ProductionIstatClient
 from ..database.sqlite.repository import UnifiedDataRepository

@@ -6,17 +6,14 @@ This script performs comprehensive testing against the actual ISTAT API
 to validate production readiness and performance characteristics.
 """
 import asyncio
-import os
 import time
 from datetime import datetime
-from pathlib import Path
 
 try:
     from osservatorio_istat.api.production_istat_client import ProductionIstatClient
     from osservatorio_istat.database.sqlite.repository import get_unified_repository
 except ImportError:
     # Development mode fallback
-    import sys
 
     # Issue #84: Removed unsafe sys.path manipulation
     from src.api.production_istat_client import ProductionIstatClient

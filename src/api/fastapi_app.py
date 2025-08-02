@@ -17,7 +17,7 @@ Performance targets:
 """
 import time
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Optional
 
 from fastapi import (
     Depends,
@@ -26,15 +26,13 @@ from fastapi import (
     Path,
     Query,
     Request,
-    Response,
     status,
 )
 from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
-from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.openapi.utils import get_openapi
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import JSONResponse
 
 from src.auth.security_middleware import SecurityHeadersMiddleware
 from src.database.sqlite.repository import get_unified_repository
@@ -53,17 +51,11 @@ from .dependencies import (
     require_admin,
     require_write,
     validate_dataset_id,
-    validate_pagination,
 )
 from .models import (  # Dataflow Analysis Models
     APIKeyCreate,
     APIKeyListResponse,
     APIKeyResponse,
-    APIResponse,
-    APIScope,
-    BulkAnalysisResponse,
-    CategorizationRulesListResponse,
-    DataflowAnalysisResponse,
     Dataset,
     DatasetDetailResponse,
     DatasetListResponse,
@@ -73,7 +65,6 @@ from .models import (  # Dataflow Analysis Models
     UsageAnalyticsResponse,
 )
 from .odata import create_odata_router
-from .production_istat_client import ProductionIstatClient
 
 logger = get_logger(__name__)
 config = get_config()

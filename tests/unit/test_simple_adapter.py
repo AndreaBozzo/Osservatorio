@@ -2,14 +2,11 @@
 
 Tests the lightweight DuckDB adapter for immediate use.
 """
-import os
-import tempfile
 
 import pandas as pd
 import pytest
 
 from src.database.duckdb.simple_adapter import (
-    SimpleDuckDBAdapter,
     create_adapter,
     create_temp_adapter,
 )

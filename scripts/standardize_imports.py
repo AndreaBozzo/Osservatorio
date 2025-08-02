@@ -9,11 +9,8 @@ Standardizes import patterns across the codebase according to PEP 8:
 
 Each group separated by blank lines and sorted alphabetically.
 """
-import ast
-import os
-import re
 from pathlib import Path
-from typing import List, Set, Tuple
+from typing import List, Tuple
 
 from utils import ScriptContext, print_error, print_info, print_step, print_success
 

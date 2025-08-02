@@ -9,10 +9,9 @@ Provides secure JWT token generation and validation:
 - Scope-based claims validation
 """
 import hashlib
-import json
 import secrets
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Union
+from typing import Dict, Optional
 
 try:
     import jwt

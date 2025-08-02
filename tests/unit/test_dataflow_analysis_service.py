@@ -4,10 +4,8 @@ Unit tests for DataflowAnalysisService.
 Tests the modern dataflow analysis service with proper mocking
 of dependencies and comprehensive coverage of all functionality.
 """
-import asyncio
 from datetime import datetime
-from typing import Dict, List
-from unittest.mock import AsyncMock, MagicMock, Mock, patch
+from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
@@ -17,7 +15,6 @@ from src.services.models import (
     AnalysisResult,
     BulkAnalysisRequest,
     CategorizationRule,
-    CategoryResult,
     DataflowCategory,
     DataflowTest,
     DataflowTestResult,

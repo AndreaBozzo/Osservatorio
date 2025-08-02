@@ -15,14 +15,12 @@ Architecture Integration:
 - Integrates with existing PowerBI API client
 """
 
-import base64
 import json
 import zipfile
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
-import pandas as pd
 
 from src.database.sqlite.repository import UnifiedDataRepository
 from src.utils.logger import get_logger

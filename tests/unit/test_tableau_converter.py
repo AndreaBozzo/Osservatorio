@@ -1,14 +1,10 @@
 """
 Unit tests for Tableau converter functionality.
 """
-import json
-import tempfile
-import xml.etree.ElementTree as ET
 from pathlib import Path
 from unittest.mock import Mock, mock_open, patch
 
 import pandas as pd
-import pytest
 
 from src.converters.tableau_converter import IstatXMLtoTableauConverter
 

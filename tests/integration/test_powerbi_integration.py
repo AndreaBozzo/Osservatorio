@@ -9,7 +9,6 @@ Tests the complete PowerBI integration pipeline including:
 - Quality score integration
 - Metadata bridge functionality
 """
-import json
 from datetime import datetime, timedelta
 from pathlib import Path
 

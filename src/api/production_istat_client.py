@@ -10,7 +10,7 @@ import asyncio
 import time
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -18,7 +18,6 @@ import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
-from ..converters.base_converter import BaseIstatConverter
 from ..database.sqlite.dataset_config import get_dataset_config_manager
 from ..utils.logger import get_logger
 from ..utils.security_enhanced import rate_limit, security_manager
@@ -554,7 +553,6 @@ class ProductionIstatClient:
 
             if self.repository:
                 # Full repository integration with SQLite + DuckDB
-                from xml.etree.ElementTree import fromstring as parse_xml
 
                 # Extract dataset info for registration
                 dataset_name = dataset_data.get("dataset_name", dataset_id)
@@ -585,8 +583,7 @@ class ProductionIstatClient:
                             "observations_count", 0
                         )
 
-                        # For now, just track the sync without inserting actual data
-                        # TODO: Parse SDMX XML and insert structured data into DuckDB
+                        # Track sync completion - SDMX XML parsing to be implemented in Issue #63
                         records_synced = (
                             observations_count
                             if isinstance(observations_count, int)

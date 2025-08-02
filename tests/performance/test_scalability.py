@@ -1,13 +1,10 @@
 """
 Performance and scalability tests for the ISTAT data processing system.
 """
-import tempfile
-import threading
 import time
-import xml.etree.ElementTree as ET
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 
 import pandas as pd
 import psutil

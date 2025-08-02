@@ -10,7 +10,6 @@ This module provides comprehensive memory profiling for:
 """
 import gc
 import json
-import logging
 import threading
 import time
 import tracemalloc
@@ -21,7 +20,6 @@ from pathlib import Path
 from typing import Any, Dict, Generator, List, Optional
 
 import psutil
-from memory_profiler import memory_usage, profile
 
 
 @dataclass

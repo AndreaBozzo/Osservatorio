@@ -9,7 +9,6 @@ This module provides comprehensive concurrent user simulation for:
 - Resource utilization monitoring during load
 """
 
-import asyncio
 import json
 import random
 import statistics
@@ -17,12 +16,10 @@ import threading
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
-from queue import Empty, Queue
-from typing import Any, Callable, Dict, List, Optional
+from typing import Dict, List, Optional
 
-import aiohttp
 import psutil
 import requests
 from requests.adapters import HTTPAdapter

@@ -12,14 +12,14 @@ import time
 from contextlib import contextmanager
 from pathlib import Path
 from threading import Lock
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Union
 
 import duckdb
 import pandas as pd
 
 from src.utils.logger import get_logger
 
-from .config import PERFORMANCE_CONFIG, get_connection_string, get_duckdb_config
+from .config import get_connection_string, get_duckdb_config
 
 # from src.utils.security_enhanced import security_manager
 

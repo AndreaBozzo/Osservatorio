@@ -5,7 +5,6 @@ Tests the service with real dependencies and end-to-end workflows
 to ensure proper integration with the rest of the system.
 """
 import asyncio
-import json
 import tempfile
 from pathlib import Path
 from unittest.mock import Mock, patch
@@ -21,7 +20,6 @@ from src.services.models import (
 )
 from src.services.service_factory import (
     create_dataflow_analysis_service,
-    get_service_container,
 )
 
 

@@ -7,7 +7,7 @@ cross-cutting concerns as FastAPI dependencies.
 
 from datetime import datetime, timedelta
 from functools import wraps
-from typing import List, Optional
+from typing import Optional
 
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -20,7 +20,7 @@ from src.database.sqlite.repository import get_unified_repository
 from src.utils.config import get_config
 from src.utils.logger import get_logger
 
-from .models import APIScope, ErrorResponse
+from .models import APIScope
 from .production_istat_client import ProductionIstatClient
 
 logger = get_logger(__name__)

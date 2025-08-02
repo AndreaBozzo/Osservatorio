@@ -20,7 +20,6 @@ from pathlib import Path
 # Import SQLite components
 from src.database.sqlite import (
     SQLiteMetadataManager,
-    UnifiedDataRepository,
     create_metadata_schema,
     get_unified_repository,
 )
