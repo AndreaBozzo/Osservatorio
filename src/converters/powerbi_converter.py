@@ -1,5 +1,5 @@
-"""
-PowerBI Converter for ISTAT SDMX data.
+"""PowerBI Converter for ISTAT SDMX data.
+
 Refactored to inherit from BaseIstatConverter to eliminate code duplication.
 """
 
@@ -7,7 +7,7 @@ import json
 import re
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Optional
 
 import pandas as pd
 
@@ -27,27 +27,41 @@ class IstatXMLToPowerBIConverter(BaseIstatConverter):
         super().__init__()
 
         # PowerBI-specific output directory setup
-        self.powerbi_output_dir = Config.PROCESSED_DATA_DIR / "powerbi"
+        try:
+            # Ensure processed data directory exists
+            Config.ensure_directories()
 
-        # Validate and create output directory
-        safe_output_dir = self.path_validator.get_safe_path(
-            self.powerbi_output_dir, create_dirs=True
-        )
-        if safe_output_dir:
-            self.powerbi_output_dir = safe_output_dir
-        else:
-            logger.error(
-                f"Unable to create safe PowerBI directory: {self.powerbi_output_dir}"
-            )
-            # Fallback to a safe directory
-            self.powerbi_output_dir = self.path_validator.get_safe_path(
-                "powerbi_output", create_dirs=True
+            # Use relative path that will be resolved within the secure validator's base
+            powerbi_relative_path = "data/processed/powerbi"
+            safe_output_dir = self.path_validator.get_safe_path(
+                powerbi_relative_path, create_dirs=True
             )
 
-        logger.info("PowerBI converter initialized")
+            if safe_output_dir:
+                self.powerbi_output_dir = safe_output_dir
+            else:
+                # Fallback to a simple safe directory
+                fallback_path = self.path_validator.get_safe_path(
+                    "powerbi_output", create_dirs=True
+                )
+                if fallback_path:
+                    self.powerbi_output_dir = fallback_path
+                else:
+                    # Last resort: use the actual config path
+                    self.powerbi_output_dir = Config.PROCESSED_DATA_DIR / "powerbi"
+                    self.powerbi_output_dir.mkdir(parents=True, exist_ok=True)
+
+            logger.info(
+                f"PowerBI converter initialized with output dir: {self.powerbi_output_dir}"
+            )
+        except Exception as e:
+            logger.error(f"Error initializing PowerBI converter: {e}")
+            # Emergency fallback
+            self.powerbi_output_dir = Config.PROCESSED_DATA_DIR / "powerbi"
+            self.powerbi_output_dir.mkdir(parents=True, exist_ok=True)
 
     def convert_all_datasets(self) -> None:
-        """Converte tutti i dataset dalla configurazione."""
+        """Convert all datasets from configuration."""
         if not self.datasets_config:
             logger.error("Nessuna configurazione dataset disponibile")
             return
@@ -61,8 +75,8 @@ class IstatXMLToPowerBIConverter(BaseIstatConverter):
 
         self._generate_powerbi_summary()
 
-    def _convert_single_dataset(self, dataset: Dict) -> None:
-        """Converte un singolo dataset XML per PowerBI."""
+    def _convert_single_dataset(self, dataset: dict) -> None:
+        """Convert a single XML dataset for PowerBI."""
         dataflow_id = dataset["dataflow_id"]
         name = dataset["name"]
         category = dataset["category"]
@@ -296,7 +310,7 @@ class IstatXMLToPowerBIConverter(BaseIstatConverter):
 
     def _save_powerbi_formats(
         self, df: pd.DataFrame, dataflow_id: str, name: str, category: str
-    ) -> Dict[str, str]:
+    ) -> dict[str, str]:
         """Salva DataFrame in formati PowerBI."""
         timestamp = datetime.now().strftime("%Y%m%d")
         base_name = f"{category}_{dataflow_id}_{timestamp}"
@@ -433,7 +447,7 @@ class IstatXMLToPowerBIConverter(BaseIstatConverter):
         )
 
     def _generate_powerbi_guide(
-        self, successful_datasets: List[Dict], timestamp: str
+        self, successful_datasets: list[dict], timestamp: str
     ) -> None:
         """Genera guida specifica per PowerBI."""
         guide_filename = f"powerbi_integration_guide_{timestamp}.md"
@@ -721,11 +735,11 @@ File generato da IstatXMLToPowerBIConverter v1.0
             return {"success": False, "error": str(e)}
 
     # Implementation of abstract methods from BaseIstatConverter
-    def _format_output(self, df: pd.DataFrame, dataset_info: Dict) -> Dict:
+    def _format_output(self, df: pd.DataFrame, dataset_info: dict) -> dict:
         """Format DataFrame for PowerBI output."""
         return self._generate_powerbi_formats(df, dataset_info)
 
-    def _generate_metadata(self, dataset_info: Dict) -> Dict:
+    def _generate_metadata(self, dataset_info: dict) -> dict:
         """Generate PowerBI-specific metadata."""
         return {
             "target_platform": "powerbi",
@@ -736,8 +750,8 @@ File generato da IstatXMLToPowerBIConverter v1.0
 
     def convert_xml_to_target(
         self, xml_input: str, dataset_id: str, dataset_name: str
-    ) -> Dict:
-        """Main conversion method that implements the abstract interface."""
+    ) -> dict:
+        """Convert XML to target format implementing the abstract interface."""
         return self.convert_xml_to_powerbi(xml_input, dataset_id, dataset_name)
 
 
