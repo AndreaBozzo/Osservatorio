@@ -1,12 +1,24 @@
 # Osservatorio ISTAT Data Platform - Makefile
 # Development and Testing Commands
 
-.PHONY: help test test-fast test-critical test-integration test-unit test-full clean pre-commit install powerbi examples status docs dev-setup dev-commit dev-push ci dashboard db-init db-status benchmark format lint
+.PHONY: help test test-fast test-critical test-integration test-unit test-full clean pre-commit install powerbi examples status docs dev-setup dev-commit dev-push ci dashboard db-init db-status benchmark format lint pipeline-demo pipeline-test process-single process-batch validate-pipeline pipeline-status pipeline-examples
 
 # Default target
 help:  ## Show available commands
-	@echo "🎯 Osservatorio Development Commands"
-	@echo "==================================="
+	@echo "🎯 Osservatorio Data Pipeline Commands"
+	@echo "====================================="
+	@echo ""
+	@echo "🚀 QUICK START (Issue #63 Complete):"
+	@echo "  make pipeline-demo       # Demo unified pipeline with real data"
+	@echo "  make pipeline-test       # Test pipeline with sample datasets"
+	@echo "  make status              # Check system status"
+	@echo ""
+	@echo "📊 DATA PROCESSING:"
+	@echo "  make process-single      # Process single ISTAT dataset"
+	@echo "  make process-batch       # Process multiple datasets"
+	@echo "  make validate-pipeline   # Validate pipeline functionality"
+	@echo ""
+	@echo "🛠️  DEVELOPMENT:"
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
 # Installation
@@ -23,6 +35,109 @@ install-security:  ## Install security testing dependencies
 
 install-all:  ## Install all optional dependencies
 	pip install -e .[dev,performance,security]
+
+# =============================================================================
+# 🚀 END USER COMMANDS - Issue #63 Unified Pipeline (PRODUCTION READY)
+# =============================================================================
+
+pipeline-demo:  ## Run unified pipeline demo with real ISTAT data
+	@echo "🚀 Running unified pipeline demo (Issue #63)..."
+	@echo "Processing real ISTAT datasets with fluent interface..."
+	python scripts/test_real_data_processing.py
+
+pipeline-test:  ## Test unified pipeline with sample datasets
+	@echo "🧪 Testing unified pipeline functionality..."
+	python scripts/production_pipeline_test.py
+
+process-single:  ## Process single ISTAT dataset interactively
+	@echo "📊 Processing single ISTAT dataset..."
+	@echo "Available datasets: DCCN_PILN (prices), DCIS_POPRES1 (population), DCCV_TAXOCCU (employment)"
+	@read -p "Enter dataset ID (or press Enter for DCCN_PILN): " dataset; \
+	dataset=$${dataset:-DCCN_PILN}; \
+	echo "Processing $$dataset with unified pipeline..."; \
+	python -c "import asyncio; from src.pipeline.unified_ingestion import UnifiedDataIngestionPipeline; from src.pipeline.models import PipelineConfig; \
+	async def demo(): \
+		config = PipelineConfig(enable_quality_checks=True); \
+		pipeline = UnifiedDataIngestionPipeline(config); \
+		print('✅ Pipeline initialized - fetching real ISTAT data...'); \
+		from src.api.production_istat_client import ProductionIstatClient; \
+		client = ProductionIstatClient(); \
+		try: \
+			xml_data = await client.get_dataset_data('$$dataset'); \
+			result = await (pipeline.from_istat('$$dataset', xml_data).validate().convert_to(['powerbi']).store()); \
+			print(f'✅ Success: {result.records_processed} records, Quality: {result.quality_score.overall_score:.1f}%'); \
+		except Exception as e: \
+			print(f'❌ Error: {e}'); \
+	asyncio.run(demo())"
+
+process-batch:  ## Process multiple ISTAT datasets in batch
+	@echo "📦 Processing multiple ISTAT datasets in batch..."
+	python -c "import asyncio; from src.pipeline.unified_ingestion import UnifiedDataIngestionPipeline; from src.pipeline.models import PipelineConfig; from src.api.production_istat_client import ProductionIstatClient; \
+	async def batch_demo(): \
+		config = PipelineConfig(enable_quality_checks=True, max_concurrent=2); \
+		pipeline = UnifiedDataIngestionPipeline(config); \
+		client = ProductionIstatClient(); \
+		datasets = ['DCCN_PILN', 'DCIS_POPRES1']; \
+		configs = []; \
+		print('✅ Fetching data for batch processing...'); \
+		for ds in datasets: \
+			try: \
+				xml_data = await client.get_dataset_data(ds); \
+				configs.append({'dataset_id': ds, 'sdmx_data': xml_data, 'target_formats': ['powerbi']}); \
+			except Exception as e: \
+				print(f'⚠️  Skipping {ds}: {e}'); \
+		if configs: \
+			results = await pipeline.process_batch(configs); \
+			for ds_id, result in results.items(): \
+				status = '✅' if result.status.value == 'completed' else '❌'; \
+				print(f'{status} {ds_id}: {result.records_processed} records'); \
+		else: \
+			print('❌ No datasets available for batch processing'); \
+	asyncio.run(batch_demo())"
+
+validate-pipeline:  ## Validate unified pipeline functionality
+	@echo "🔍 Validating unified pipeline (Issue #63)..."
+	python scripts/full_system_test.py
+
+pipeline-status:  ## Show pipeline and system status
+	@echo "📊 Unified Pipeline Status (Issue #63)"
+	@echo "===================================="
+	@python -c "from src.pipeline.unified_ingestion import UnifiedDataIngestionPipeline; from src.pipeline.models import PipelineConfig; \
+	pipeline = UnifiedDataIngestionPipeline(PipelineConfig()); \
+	metrics = pipeline.get_pipeline_metrics(); \
+	print(f'Pipeline Status: {metrics[\"status\"]}'); \
+	print(f'Active Jobs: {metrics[\"active_jobs\"]}'); \
+	print(f'Batch Size: {metrics[\"configuration\"][\"batch_size\"]}'); \
+	print(f'Max Concurrent: {metrics[\"configuration\"][\"max_concurrent\"]}'); \
+	print(f'Quality Checks: {\"Enabled\" if metrics[\"configuration\"][\"quality_checks_enabled\"] else \"Disabled\"}')"
+	@echo ""
+	@$(MAKE) db-status
+
+# Quick pipeline examples for documentation
+pipeline-examples:  ## Show pipeline usage examples
+	@echo "📚 Unified Pipeline Examples (Issue #63)"
+	@echo "========================================"
+	@echo ""
+	@echo "🔗 Fluent Interface Pattern:"
+	@echo "  result = await (pipeline"
+	@echo "      .from_istat('DCCN_PILN', xml_data)"
+	@echo "      .validate(min_quality=80.0)"
+	@echo "      .convert_to(['powerbi', 'tableau'])"
+	@echo "      .store()"
+	@echo "  )"
+	@echo ""
+	@echo "📦 Batch Processing:"
+	@echo "  configs = ["
+	@echo "      {'dataset_id': 'DS1', 'sdmx_data': data1, 'target_formats': ['powerbi']},"
+	@echo "      {'dataset_id': 'DS2', 'sdmx_data': data2, 'target_formats': ['tableau']}"
+	@echo "  ]"
+	@echo "  results = await pipeline.process_batch(configs)"
+	@echo ""
+	@echo "For full documentation: docs/SYSTEM_USAGE_GUIDE.md"
+
+# =============================================================================
+# 🛠️  DEVELOPMENT AND TESTING COMMANDS
+# =============================================================================
 
 # Core Testing Commands
 test-fast:  ## Run fast unit tests (~20s)

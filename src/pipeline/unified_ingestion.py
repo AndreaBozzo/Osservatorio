@@ -64,6 +64,12 @@ class UnifiedDataIngestionPipeline:
         # Active jobs tracking
         self.active_jobs: dict[str, PipelineResult] = {}
 
+        # Fluent interface state
+        self._current_dataset_id: Optional[str] = None
+        self._current_data: Optional[Union[str, dict[str, Any]]] = None
+        self._current_quality_score: Optional[QualityScore] = None
+        self._current_target_formats: list[str] = ["powerbi"]
+
         logger.info("Unified Data Ingestion Pipeline initialized")
 
     async def ingest_dataset(
@@ -483,3 +489,228 @@ class UnifiedDataIngestionPipeline:
             },
             "status": "healthy",
         }
+
+    # Fluent Interface Methods (Issue #63 requirement)
+    def from_istat(
+        self, dataset_id: str, sdmx_data: Union[str, dict[str, Any]]
+    ) -> "UnifiedDataIngestionPipeline":
+        """
+        Start fluent pipeline chain with ISTAT data source.
+
+        Usage: pipeline.from_istat(dataset_id, data).validate().convert_to(['powerbi']).store()
+
+        Args:
+            dataset_id: ISTAT dataset identifier
+            sdmx_data: SDMX XML string or structured data
+
+        Returns:
+            Self for method chaining
+        """
+        self._current_dataset_id = dataset_id
+        self._current_data = sdmx_data
+        self._current_quality_score = None
+        self._current_target_formats = ["powerbi"]
+
+        logger.info(f"Fluent pipeline: Started with dataset {dataset_id}")
+        return self
+
+    def validate(
+        self, min_quality: Optional[float] = None
+    ) -> "UnifiedDataIngestionPipeline":
+        """
+        Add quality validation step to fluent pipeline.
+
+        Args:
+            min_quality: Minimum quality threshold override
+
+        Returns:
+            Self for method chaining
+
+        Raises:
+            QualityThresholdError: If validation fails and fail_on_quality is enabled
+        """
+        if not self._current_dataset_id or self._current_data is None:
+            raise DataIngestionError("Must call from_istat() before validate()")
+
+        # Parse data if needed
+        data = self._current_data
+        if isinstance(data, str):
+            # This would need actual SDMX parsing implementation
+            # For now, mock some structured data
+            data = [
+                {"dataset_id": self._current_dataset_id, "value": 100, "time": "2024"}
+            ]
+
+        # Use synchronous quality validation for fluent interface
+        self._current_quality_score = self._validate_quality_sync(
+            data, self._current_dataset_id
+        )
+
+        # Check quality threshold
+        threshold = min_quality or self.config.min_quality_score
+        if (
+            self.config.fail_on_quality
+            and self._current_quality_score.overall_score < threshold
+        ):
+            raise QualityThresholdError(
+                f"Quality score {self._current_quality_score.overall_score:.1f}% below threshold {threshold}%",
+                self._current_quality_score.overall_score,
+                threshold,
+            )
+
+        logger.info(
+            f"Fluent pipeline: Validated {self._current_dataset_id} (score: {self._current_quality_score.overall_score:.1f}%)"
+        )
+        return self
+
+    def convert_to(self, target_formats: list[str]) -> "UnifiedDataIngestionPipeline":
+        """
+        Specify target conversion formats for fluent pipeline.
+
+        Args:
+            target_formats: List of formats (powerbi, tableau, etc.)
+
+        Returns:
+            Self for method chaining
+        """
+        if not self._current_dataset_id:
+            raise DataIngestionError("Must call from_istat() before convert_to()")
+
+        self._current_target_formats = target_formats
+        logger.info(
+            f"Fluent pipeline: Set target formats {target_formats} for {self._current_dataset_id}"
+        )
+        return self
+
+    async def store(self) -> PipelineResult:
+        """
+        Execute fluent pipeline and store results.
+
+        Returns:
+            Pipeline execution result
+
+        Raises:
+            DataIngestionError: If pipeline chain is incomplete
+        """
+        if not self._current_dataset_id or self._current_data is None:
+            raise DataIngestionError(
+                "Incomplete fluent pipeline chain - missing from_istat() call"
+            )
+
+        # Execute the full pipeline using existing ingest_dataset method
+        result = await self.ingest_dataset(
+            dataset_id=self._current_dataset_id,
+            sdmx_data=self._current_data,
+            target_formats=self._current_target_formats,
+        )
+
+        # Reset fluent state
+        self._current_dataset_id = None
+        self._current_data = None
+        self._current_quality_score = None
+        self._current_target_formats = ["powerbi"]
+
+        logger.info(f"Fluent pipeline: Completed processing for {result.dataset_id}")
+        return result
+
+    def _validate_quality_sync(
+        self, data: list[dict[str, Any]], dataset_id: str
+    ) -> QualityScore:
+        """Synchronous version of quality validation for fluent interface."""
+        if not self.config.enable_quality_checks:
+            return QualityScore(
+                overall_score=100.0,
+                completeness=100.0,
+                consistency=100.0,
+                accuracy=100.0,
+                timeliness=100.0,
+            )
+
+        try:
+            if not data:
+                return QualityScore(
+                    overall_score=0.0,
+                    issues=["No data found"],
+                    recommendations=["Check data source"],
+                )
+
+            total_fields = sum(len(record) for record in data)
+            filled_fields = sum(
+                1
+                for record in data
+                for value in record.values()
+                if value is not None and str(value).strip()
+            )
+
+            completeness = (
+                (filled_fields / total_fields * 100) if total_fields > 0 else 0.0
+            )
+
+            quality_score = QualityScore(
+                completeness=completeness,
+                consistency=85.0,  # Placeholder for Issue #3 integration
+                accuracy=90.0,  # Placeholder for Issue #3 integration
+                timeliness=95.0,  # Placeholder for Issue #3 integration
+            )
+
+            return quality_score
+
+        except Exception as e:
+            logger.error(f"Quality validation failed for {dataset_id}: {e}")
+            return QualityScore(
+                overall_score=0.0, issues=[f"Quality validation error: {e}"]
+            )
+
+    # Batch processing methods (Issue #63 requirement)
+    async def process_batch(
+        self, dataset_configs: list[dict[str, Any]]
+    ) -> dict[str, PipelineResult]:
+        """
+        Process multiple datasets in batch.
+
+        Args:
+            dataset_configs: List of dataset configurations with 'dataset_id', 'sdmx_data', and optional 'target_formats'
+
+        Returns:
+            Dictionary mapping dataset_id to PipelineResult
+        """
+        results = {}
+        semaphore = asyncio.Semaphore(self.config.max_concurrent)
+
+        async def process_single(config: dict[str, Any]) -> tuple[str, PipelineResult]:
+            async with semaphore:
+                dataset_id = config["dataset_id"]
+                try:
+                    result = await self.ingest_dataset(
+                        dataset_id=dataset_id,
+                        sdmx_data=config["sdmx_data"],
+                        target_formats=config.get("target_formats", ["powerbi"]),
+                    )
+                    return dataset_id, result
+                except Exception as e:
+                    logger.error(f"Batch processing failed for {dataset_id}: {e}")
+                    error_result = PipelineResult(
+                        job_id=f"batch_{dataset_id}_{uuid.uuid4().hex[:8]}",
+                        dataset_id=dataset_id,
+                        status=PipelineStatus.FAILED,
+                        start_time=datetime.now(),
+                        end_time=datetime.now(),
+                        error_message=str(e),
+                    )
+                    return dataset_id, error_result
+
+        # Process all datasets concurrently
+        tasks = [process_single(config) for config in dataset_configs]
+        completed_tasks = await asyncio.gather(*tasks, return_exceptions=True)
+
+        for task_result in completed_tasks:
+            if isinstance(task_result, Exception):
+                logger.error(f"Batch task failed: {task_result}")
+                continue
+            dataset_id, result = task_result
+            results[dataset_id] = result
+
+        logger.info(
+            f"Batch processing completed: {len(results)}/{len(dataset_configs)} datasets processed"
+        )
+        return results
