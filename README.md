@@ -7,7 +7,8 @@
 [![Python](https://img.shields.io/badge/Python-3.9%20|%203.10%20|%203.11%20|%203.12-blue.svg)](pyproject.toml)
 [![FastAPI](https://img.shields.io/badge/FastAPI-Latest-green.svg)](src/api/fastapi_app.py)
 [![Security](https://img.shields.io/badge/Security-Bandit%20|%20OWASP-green.svg)](.pre-commit-config.yaml)
-[![Status](https://img.shields.io/badge/Status-Production%20Ready-brightgreen.svg)](docs/project/PROJECT_STATE.md)
+[![Status](https://img.shields.io/badge/Status-Issue%20%2363%20Complete-brightgreen.svg)](docs/project/PROJECT_STATE.md)
+[![Pipeline](https://img.shields.io/badge/Pipeline-Unified%20Ingestion-blue.svg)](docs/SYSTEM_USAGE_GUIDE.md)
 
 ## 🎯 What is Osservatorio?
 
