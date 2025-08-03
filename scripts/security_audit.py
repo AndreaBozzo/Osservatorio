@@ -199,7 +199,9 @@ class SecurityAuditReport:
                 else:
                     self.add_finding("LOW", "logging", f"ℹ️ {description} available")
         else:
-            self.add_finding("MEDIUM", "logging", "⚠️ Structured logging module missing")
+            self.add_finding(
+                "MEDIUM", "logging", "⚠️ Structured logging module missing"
+            )
 
         return True
 

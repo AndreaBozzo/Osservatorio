@@ -1263,9 +1263,7 @@ def main():
         st.markdown("Made with ❤️ in Italy | Powered by Streamlit & Issue #84")
 
         # Development debugging tools
-        if st.sidebar.checkbox(
-            "🔧 Debug Tools", help="Strumenti debug (solo sviluppo)"
-        ):
+        if st.sidebar.checkbox("🔧 Debug Tools", help="Strumenti debug (solo sviluppo)"):
             with st.sidebar.expander("📊 Cache Status"):
                 st.write("**Cache attive:**")
                 st.write("- load_data (TTL: 30min)")

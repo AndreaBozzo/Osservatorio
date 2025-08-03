@@ -521,9 +521,7 @@ def validate_metadata_bridge():
                 quality_result = mock_quality("TEST_DATASET")
                 if "error" not in quality_result:
                     results["quality_sync"] = True
-                    results["details"].append(
-                        "✅ Quality score synchronization working"
-                    )
+                    results["details"].append("✅ Quality score synchronization working")
 
             # Mock usage analytics
             with patch.object(bridge, "sync_usage_analytics") as mock_usage:

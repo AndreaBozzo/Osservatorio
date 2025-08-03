@@ -143,9 +143,9 @@ class RealAPITester:
                 return result_data
             else:
                 print(f"  ❌ Data error: {data_info.get('error', 'Unknown')}")
-                self.test_results["single_dataset_fetch"] = (
-                    f"FAIL: {data_info.get('error')}"
-                )
+                self.test_results[
+                    "single_dataset_fetch"
+                ] = f"FAIL: {data_info.get('error')}"
                 return None
 
         except Exception as e:
@@ -251,9 +251,9 @@ class RealAPITester:
             if sync_result.metadata_updated:
                 self.test_results["repository_integration"] = "PASS"
             else:
-                self.test_results["repository_integration"] = (
-                    "FAIL: Metadata not updated"
-                )
+                self.test_results[
+                    "repository_integration"
+                ] = "FAIL: Metadata not updated"
 
         except Exception as e:
             print(f"  ❌ Error: {e}")

@@ -572,7 +572,9 @@ class ResourceMonitor:
         avg_disk = statistics.mean(disk_values)
 
         disk_read_mbps = [s.disk_read_bytes_per_sec / 1024**2 for s in self.snapshots]
-        disk_write_mbps = [s.disk_write_bytes_per_sec / 1024**2 for s in self.snapshots]
+        disk_write_mbps = [
+            s.disk_write_bytes_per_sec / 1024**2 for s in self.snapshots
+        ]
         max_disk_read = max(disk_read_mbps) if disk_read_mbps else 0
         max_disk_write = max(disk_write_mbps) if disk_write_mbps else 0
 
