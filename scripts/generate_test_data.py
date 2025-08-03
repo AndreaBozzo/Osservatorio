@@ -3,16 +3,12 @@
 Script per generare dati di test per CI/CD
 Evita chiamate API ISTAT live durante i test automatici
 """
-
 import json
 import sys
 from datetime import datetime
 from pathlib import Path
 
 import pandas as pd
-
-# Aggiungi src al path
-sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from utils.logger import get_logger
 from utils.secure_path import create_secure_validator
@@ -61,7 +57,7 @@ def generate_test_files():
     """Genera file di test per CI/CD"""
     try:
         # Setup percorsi sicuri
-        validator = create_secure_validator(Path(__file__).parent.parent)
+        create_secure_validator(Path(__file__).parent.parent)
 
         # Directory di output
         output_dir = Path("data/processed/powerbi")
@@ -86,7 +82,7 @@ def generate_test_files():
                 "parquet": "parquet",
             }
 
-            for format_name, extension in formats.items():
+            for _format_name, extension in formats.items():
                 filename = f"{category}_test_{timestamp}.{extension}"
                 filepath = output_dir / filename
 

@@ -11,9 +11,8 @@ SQLite-backed rate limiting with sliding window algorithm:
 """
 
 import hashlib
-import sqlite3
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Optional
 
 from src.database.sqlite.manager import SQLiteMetadataManager
 from src.utils.logger import get_logger
@@ -56,7 +55,7 @@ class RateLimitResult:
         self.reset_time = reset_time
         self.retry_after = retry_after  # Seconds until reset
 
-    def to_headers(self) -> Dict[str, str]:
+    def to_headers(self) -> dict[str, str]:
         """Convert to HTTP headers"""
         headers = {
             "X-RateLimit-Limit": str(self.limit),
@@ -527,7 +526,7 @@ class SQLiteRateLimiter:
 
     def get_rate_limit_stats(
         self, identifier: str, identifier_type: str
-    ) -> Dict[str, Dict]:
+    ) -> dict[str, dict]:
         """Get rate limit statistics for identifier
 
         Args:

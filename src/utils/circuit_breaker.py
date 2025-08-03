@@ -5,13 +5,11 @@ and improve system resilience when dealing with external dependencies.
 """
 
 import logging
-import time
 from datetime import datetime, timedelta
 from enum import Enum
 from functools import wraps
-from typing import Any, Callable, Dict, Optional, Type, Union
+from typing import Any, Callable, Optional, Union
 
-# Setup logging
 logger = logging.getLogger(__name__)
 
 
@@ -42,7 +40,7 @@ class CircuitBreaker:
         self,
         failure_threshold: int = 5,
         recovery_timeout: int = 60,
-        expected_exception: Union[Type[Exception], tuple] = Exception,
+        expected_exception: Union[type[Exception], tuple] = Exception,
         name: Optional[str] = None,
     ):
         """Initialize circuit breaker.
@@ -70,6 +68,22 @@ class CircuitBreaker:
         self.total_successes = 0
 
         logger.info(f"Circuit breaker '{self.name}' initialized")
+
+    def __call__(self, func: Callable) -> Callable:
+        """Make circuit breaker usable as a decorator.
+
+        Args:
+            func: Function to wrap with circuit breaker
+
+        Returns:
+            Wrapped function
+        """
+
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            return self.call(func, *args, **kwargs)
+
+        return wrapper
 
     def call(self, func: Callable, *args, **kwargs) -> Any:
         """Execute a function call through the circuit breaker.
@@ -160,7 +174,7 @@ class CircuitBreaker:
         self.last_failure_time = None
         logger.info(f"Circuit breaker '{self.name}' manually reset")
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get circuit breaker statistics.
 
         Returns:
@@ -188,14 +202,14 @@ class CircuitBreaker:
 
 
 # Global circuit breaker registry
-_circuit_breakers: Dict[str, CircuitBreaker] = {}
+_circuit_breakers: dict[str, CircuitBreaker] = {}
 
 
 def get_circuit_breaker(
     name: str,
     failure_threshold: int = 5,
     recovery_timeout: int = 60,
-    expected_exception: Union[Type[Exception], tuple] = Exception,
+    expected_exception: Union[type[Exception], tuple] = Exception,
 ) -> CircuitBreaker:
     """Get or create a circuit breaker by name.
 
@@ -222,7 +236,7 @@ def get_circuit_breaker(
 def circuit_breaker(
     failure_threshold: int = 5,
     recovery_timeout: int = 60,
-    expected_exception: Union[Type[Exception], tuple] = Exception,
+    expected_exception: Union[type[Exception], tuple] = Exception,
     name: Optional[str] = None,
 ):
     """Decorator to wrap functions with circuit breaker.
@@ -252,7 +266,7 @@ def circuit_breaker(
     return decorator
 
 
-def get_all_circuit_breakers() -> Dict[str, CircuitBreaker]:
+def get_all_circuit_breakers() -> dict[str, CircuitBreaker]:
     """Get all registered circuit breakers.
 
     Returns:
@@ -268,7 +282,7 @@ def reset_all_circuit_breakers() -> None:
     logger.info("All circuit breakers reset")
 
 
-def get_circuit_breaker_stats() -> Dict[str, Dict[str, Any]]:
+def get_circuit_breaker_stats() -> dict[str, dict[str, Any]]:
     """Get statistics for all circuit breakers.
 
     Returns:

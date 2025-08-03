@@ -3,11 +3,9 @@
 Day 5 Testing Strategy - Quick Command
 Implements the optimized testing workflow for development.
 """
-
 import subprocess
 import sys
 import time
-from pathlib import Path
 
 
 def run_fast_tests():

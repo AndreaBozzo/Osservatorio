@@ -15,9 +15,7 @@ Architecture Integration:
 
 import json
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Tuple, Union
-
-import pandas as pd
+from typing import Any, Optional
 
 from src.database.sqlite.repository import UnifiedDataRepository
 from src.utils.logger import get_logger
@@ -29,7 +27,7 @@ class StarSchemaDefinition:
     """Definition of a star schema optimized for PowerBI consumption."""
 
     def __init__(
-        self, fact_table: str, dimension_tables: List[str], relationships: List[Dict]
+        self, fact_table: str, dimension_tables: list[str], relationships: list[dict]
     ):
         self.fact_table = fact_table
         self.dimension_tables = dimension_tables
@@ -37,7 +35,7 @@ class StarSchemaDefinition:
         self.created_at = datetime.now()
 
     @classmethod
-    def from_istat_metadata(cls, metadata: Dict[str, Any]) -> "StarSchemaDefinition":
+    def from_istat_metadata(cls, metadata: dict[str, Any]) -> "StarSchemaDefinition":
         """Generate star schema definition from ISTAT dataset metadata.
 
         Args:
@@ -95,7 +93,7 @@ class StarSchemaDefinition:
 
         return cls(fact_table, dimension_tables, relationships)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Export star schema definition to dictionary."""
         return {
             "fact_table": self.fact_table,
@@ -113,7 +111,7 @@ class DAXMeasuresEngine:
         self._measures_cache = {}
         self._cache_ttl = timedelta(hours=6)  # 6 hour cache TTL
 
-    def get_standard_measures(self, dataset_id: str) -> Dict[str, str]:
+    def get_standard_measures(self, dataset_id: str) -> dict[str, str]:
         """Get standard DAX measures for ISTAT dataset.
 
         Args:
@@ -154,12 +152,12 @@ class DAXMeasuresEngine:
 
         return measures
 
-    def _generate_base_measures(self, dataset_id: str) -> Dict[str, str]:
+    def _generate_base_measures(self, dataset_id: str) -> dict[str, str]:
         """Generate base DAX measures common to all datasets."""
         return {
             "Total Observations": f"COUNTA(fact_{dataset_id.lower()}[obs_value])",
             "Average Value": f"AVERAGE(fact_{dataset_id.lower()}[obs_value])",
-            "Latest Period": f"MAX(dim_time[time_period])",
+            "Latest Period": "MAX(dim_time[time_period])",
             "Quality Score": f"AVERAGE(fact_{dataset_id.lower()}[quality_score])",
             "YoY Growth": f"""
                 VAR CurrentYear = MAX(dim_time[year])
@@ -172,7 +170,7 @@ class DAXMeasuresEngine:
             """,
         }
 
-    def _generate_population_measures(self, dataset_id: str) -> Dict[str, str]:
+    def _generate_population_measures(self, dataset_id: str) -> dict[str, str]:
         """Generate population-specific DAX measures."""
         return {
             "Total Population": f"SUM(fact_{dataset_id.lower()}[obs_value])",
@@ -186,7 +184,7 @@ class DAXMeasuresEngine:
             """,
         }
 
-    def _generate_economic_measures(self, dataset_id: str) -> Dict[str, str]:
+    def _generate_economic_measures(self, dataset_id: str) -> dict[str, str]:
         """Generate economy-specific DAX measures."""
         return {
             "GDP Growth": f"""
@@ -199,7 +197,7 @@ class DAXMeasuresEngine:
             """,
         }
 
-    def _generate_employment_measures(self, dataset_id: str) -> Dict[str, str]:
+    def _generate_employment_measures(self, dataset_id: str) -> dict[str, str]:
         """Generate employment-specific DAX measures."""
         return {
             "Employment Rate": f"""
@@ -293,7 +291,7 @@ class PowerBIOptimizer:
             logger.error(f"Failed to generate star schema for {dataset_id}: {e}")
             raise
 
-    def get_performance_metrics(self, dataset_id: str) -> Dict[str, Any]:
+    def get_performance_metrics(self, dataset_id: str) -> dict[str, Any]:
         """Get PowerBI performance metrics for dataset.
 
         Args:
@@ -356,7 +354,7 @@ class PowerBIOptimizer:
             return {"error": str(e)}
 
     def _create_star_schema_tables(
-        self, schema: StarSchemaDefinition, dataset_id: str, metadata: Dict[str, Any]
+        self, schema: StarSchemaDefinition, dataset_id: str, metadata: dict[str, Any]
     ) -> None:
         """Create physical star schema tables in DuckDB."""
         try:
@@ -374,7 +372,7 @@ class PowerBIOptimizer:
             raise
 
     def _create_fact_table(
-        self, table_name: str, dataset_id: str, metadata: Dict[str, Any]
+        self, table_name: str, dataset_id: str, metadata: dict[str, Any]
     ) -> None:
         """Create optimized fact table for PowerBI."""
         # This would create a materialized view or table optimized for PowerBI
@@ -382,7 +380,7 @@ class PowerBIOptimizer:
         pass
 
     def _create_dimension_table(
-        self, table_name: str, dataset_id: str, metadata: Dict[str, Any]
+        self, table_name: str, dataset_id: str, metadata: dict[str, Any]
     ) -> None:
         """Create dimension table optimized for PowerBI."""
         # Implementation for creating dimension tables
@@ -405,7 +403,7 @@ class PowerBIOptimizer:
         except Exception as e:
             logger.error(f"Failed to store schema metadata: {e}")
 
-    def _is_schema_cache_valid(self, cached_entry: Dict) -> bool:
+    def _is_schema_cache_valid(self, cached_entry: dict) -> bool:
         """Check if cached schema is still valid."""
         cache_age = datetime.now() - cached_entry["created_at"]
         return cache_age < timedelta(hours=24)  # 24 hour cache TTL
@@ -417,7 +415,7 @@ class PowerBIOptimizer:
         per_record_time = 0.01  # 0.01ms per record
         return int(base_time + (record_count * per_record_time))
 
-    def _recommend_refresh_frequency(self, metadata: Dict[str, Any]) -> str:
+    def _recommend_refresh_frequency(self, metadata: dict[str, Any]) -> str:
         """Recommend refresh frequency based on data characteristics."""
         update_frequency = metadata.get("update_frequency", "monthly")
         priority = metadata.get("priority", 5)
@@ -429,7 +427,7 @@ class PowerBIOptimizer:
         else:
             return update_frequency
 
-    def _calculate_optimization_potential(self, metrics: Dict[str, Any]) -> float:
+    def _calculate_optimization_potential(self, metrics: dict[str, Any]) -> float:
         """Calculate potential performance improvement with star schema."""
         # Simple calculation - would be refined with benchmarking
         record_count = metrics.get("total_records", 0)

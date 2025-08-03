@@ -3,13 +3,11 @@
 Script CI/CD unificato per test automatici
 Supporta diverse strategie di test con fallback automatico
 """
-
 import argparse
 import subprocess
 import sys
-import time
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import Optional
 
 
 class CITestRunner:
@@ -19,12 +17,20 @@ class CITestRunner:
         self.strategy = strategy
         self.timeout = timeout
         self.project_root = Path(__file__).parent.parent
-        sys.path.insert(0, str(self.project_root / "src"))
-        sys.path.insert(0, str(self.project_root))
+
+        # Issue #84: Use scripts package path setup instead of sys.path manipulation
+        try:
+            from . import setup_project_path
+
+            setup_project_path()
+        except ImportError:
+            # Fallback for legacy usage
+            if str(self.project_root) not in sys.path:
+                sys.path.insert(0, str(self.project_root))
 
     def run_command(
         self, cmd: str, timeout: Optional[int] = None
-    ) -> Tuple[bool, str, str]:
+    ) -> tuple[bool, str, str]:
         """Esegue un comando con timeout"""
         if timeout is None:
             timeout = self.timeout
@@ -106,7 +112,7 @@ class CITestRunner:
                 print(f"  • {test}")
             return False
         else:
-            print(f"\n✅ Tutti i test essenziali passati!")
+            print("\n✅ Tutti i test essenziali passati!")
             return True
 
     def run_minimal_tests(self) -> bool:

@@ -11,7 +11,7 @@ import threading
 import time
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Dict, List, Optional, Set
+from typing import Optional
 
 from .logger import get_logger
 
@@ -39,8 +39,8 @@ class TempFileManager:
             return
 
         self._initialized = True
-        self._temp_dirs: Set[Path] = set()
-        self._temp_files: Set[Path] = set()
+        self._temp_dirs: set[Path] = set()
+        self._temp_files: set[Path] = set()
         self._cleanup_registered = False
 
         # Directory base per file temporanei
@@ -163,7 +163,7 @@ class TempFileManager:
             logger.warning(f"Errore rimozione directory {dir_path}: {e}")
             return False
 
-    def cleanup_all(self) -> Dict[str, int]:
+    def cleanup_all(self) -> dict[str, int]:
         """Rimuove tutti i file e directory temporanei tracciati."""
         results = {"files_removed": 0, "dirs_removed": 0, "errors": 0}
 
@@ -214,7 +214,7 @@ class TempFileManager:
 
         return removed_count
 
-    def get_temp_stats(self) -> Dict:
+    def get_temp_stats(self) -> dict:
         """Ottiene statistiche sui file temporanei."""
         stats = {
             "tracked_files": len(self._temp_files),

@@ -14,7 +14,7 @@ import logging
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 from .api_benchmarks import APIBenchmark
 from .concurrent_user_simulator import ConcurrentUserSimulator
@@ -51,7 +51,7 @@ class PerformanceTestSuite:
             self.regression_detector = None
 
         # Test results
-        self.test_results: Dict[str, Any] = {}
+        self.test_results: dict[str, Any] = {}
 
         # Setup logging
         self._setup_logging()
@@ -71,7 +71,7 @@ class PerformanceTestSuite:
 
         self.logger = logging.getLogger(__name__)
 
-    def run_api_performance_tests(self) -> Dict[str, Any]:
+    def run_api_performance_tests(self) -> dict[str, Any]:
         """Run comprehensive API performance tests."""
         self.logger.info("Starting API performance tests...")
 
@@ -95,7 +95,7 @@ class PerformanceTestSuite:
             self.logger.info(f"Testing endpoint: {endpoint}")
 
             # Test multiple times for statistical significance
-            for i in range(10):
+            for _i in range(10):
                 result = self.api_benchmark.benchmark_endpoint(
                     endpoint, sla_target_ms=sla_target
                 )
@@ -143,12 +143,12 @@ class PerformanceTestSuite:
         self.test_results["api_performance"] = api_report
         return api_report
 
-    def run_database_performance_tests(self) -> Dict[str, Any]:
+    def run_database_performance_tests(self) -> dict[str, Any]:
         """Run comprehensive database performance tests."""
         self.logger.info("Starting database performance tests...")
 
         # Run common database benchmarks
-        common_results = self.db_benchmark.benchmark_common_queries()
+        self.db_benchmark.benchmark_common_queries()
 
         # Run concurrent database tests
         self.logger.info("Running concurrent database tests...")
@@ -161,18 +161,18 @@ class PerformanceTestSuite:
             },
         ] * 10  # 30 total queries
 
-        sqlite_concurrent = self.db_benchmark.concurrent_database_test(
+        self.db_benchmark.concurrent_database_test(
             test_queries, concurrent_connections=10, database_type="sqlite"
         )
 
         # Test DuckDB if available
-        duckdb_concurrent = self.db_benchmark.concurrent_database_test(
+        self.db_benchmark.concurrent_database_test(
             test_queries, concurrent_connections=10, database_type="duckdb"
         )
 
         # Run stress tests
         self.logger.info("Running database stress tests...")
-        sqlite_stress = self.db_benchmark.stress_test_database(
+        self.db_benchmark.stress_test_database(
             database_type="sqlite", duration_seconds=60, queries_per_second=10
         )
 
@@ -217,7 +217,7 @@ class PerformanceTestSuite:
         self.test_results["database_performance"] = db_report
         return db_report
 
-    def run_memory_performance_tests(self) -> Dict[str, Any]:
+    def run_memory_performance_tests(self) -> dict[str, Any]:
         """Run comprehensive memory performance tests."""
         self.logger.info("Starting memory performance tests...")
 
@@ -244,7 +244,7 @@ class PerformanceTestSuite:
         self.test_results["memory_performance"] = memory_report
         return memory_report
 
-    def run_load_tests(self) -> Dict[str, Any]:
+    def run_load_tests(self) -> dict[str, Any]:
         """Run comprehensive load tests with concurrent users."""
         self.logger.info("Starting load tests...")
 
@@ -301,9 +301,11 @@ class PerformanceTestSuite:
                 )
                 self.regression_detector.record_performance_metric(
                     f"load_test_error_rate_{result.concurrent_users}_users",
-                    result.failed_requests / result.total_requests
-                    if result.total_requests > 0
-                    else 0,
+                    (
+                        result.failed_requests / result.total_requests
+                        if result.total_requests > 0
+                        else 0
+                    ),
                 )
 
         self.test_results["load_testing"] = load_report
@@ -311,7 +313,7 @@ class PerformanceTestSuite:
 
         return {"load_testing": load_report, "resource_utilization": resource_report}
 
-    def run_full_performance_suite(self) -> Dict[str, Any]:
+    def run_full_performance_suite(self) -> dict[str, Any]:
         """Run the complete performance testing suite."""
         self.logger.info("Starting comprehensive performance testing suite...")
 
@@ -319,25 +321,25 @@ class PerformanceTestSuite:
 
         try:
             # 1. API Performance Tests
-            api_results = self.run_api_performance_tests()
+            self.run_api_performance_tests()
 
             # Cool down period
             time.sleep(30)
 
             # 2. Database Performance Tests
-            db_results = self.run_database_performance_tests()
+            self.run_database_performance_tests()
 
             # Cool down period
             time.sleep(30)
 
             # 3. Memory Performance Tests
-            memory_results = self.run_memory_performance_tests()
+            self.run_memory_performance_tests()
 
             # Cool down period
             time.sleep(30)
 
             # 4. Load Tests (includes resource monitoring)
-            load_results = self.run_load_tests()
+            self.run_load_tests()
 
             suite_duration = time.time() - suite_start_time
 
@@ -354,7 +356,7 @@ class PerformanceTestSuite:
             self.logger.error(f"Performance testing suite failed: {e}")
             raise
 
-    def generate_comprehensive_report(self, suite_duration: float) -> Dict[str, Any]:
+    def generate_comprehensive_report(self, suite_duration: float) -> dict[str, Any]:
         """Generate comprehensive performance report with actionable insights."""
 
         timestamp = datetime.now()
@@ -420,7 +422,7 @@ class PerformanceTestSuite:
 
         return report
 
-    def _generate_overall_insights(self) -> List[str]:
+    def _generate_overall_insights(self) -> list[str]:
         """Generate overall performance insights."""
         insights = []
 
@@ -463,7 +465,7 @@ class PerformanceTestSuite:
 
         return insights[:10]  # Limit to top 10 insights
 
-    def _generate_actionable_recommendations(self) -> List[str]:
+    def _generate_actionable_recommendations(self) -> list[str]:
         """Generate actionable performance recommendations."""
         recommendations = []
 
@@ -484,11 +486,11 @@ class PerformanceTestSuite:
             for insight in db_insights:
                 if "slow" in insight.lower() or "memory" in insight.lower():
                     recommendations.append(
-                        f"Database: Consider query optimization or indexing"
+                        "Database: Consider query optimization or indexing"
                     )
                 elif "error" in insight.lower():
                     recommendations.append(
-                        f"Database: Address connection and error handling"
+                        "Database: Address connection and error handling"
                     )
 
         # Memory recommendations
@@ -547,7 +549,7 @@ class PerformanceTestSuite:
         if "database_performance" in self.test_results:
             db_data = self.test_results["database_performance"]
             # Check for high error rates
-            for db_type, db_results in db_data.get("results", {}).items():
+            for _db_type, db_results in db_data.get("results", {}).items():
                 error_rate = db_results.get("error_rate", 0)
                 if error_rate > 0.05:  # >5% error rate
                     score -= 20
@@ -566,7 +568,7 @@ class PerformanceTestSuite:
         # Load testing impact
         if "load_testing" in self.test_results:
             load_data = self.test_results["load_testing"]
-            for test_name, test_data in load_data.get("tests", {}).items():
+            for _test_name, test_data in load_data.get("tests", {}).items():
                 success_rate = test_data.get("success_rate", 1.0)
                 if success_rate < 0.95:  # <95% success rate
                     score -= (1 - success_rate) * 25
@@ -587,7 +589,7 @@ class PerformanceTestSuite:
 
         return max(0, min(100, int(score)))
 
-    def _analyze_sla_compliance(self) -> Dict[str, Any]:
+    def _analyze_sla_compliance(self) -> dict[str, Any]:
         """Analyze SLA compliance across all tests."""
         compliance = {
             "overall_compliance_rate": 1.0,
@@ -630,7 +632,7 @@ class PerformanceTestSuite:
 
         return compliance
 
-    def _generate_markdown_summary(self, report: Dict[str, Any], output_path: Path):
+    def _generate_markdown_summary(self, report: dict[str, Any], output_path: Path):
         """Generate markdown summary report."""
 
         md_content = f"""# Performance Test Report
@@ -661,7 +663,7 @@ class PerformanceTestSuite:
             md_content += f"- {rec}\n"
 
         if report["regression_alerts"]:
-            md_content += f"\n### Regression Alerts\n"
+            md_content += "\n### Regression Alerts\n"
             for alert in report["regression_alerts"][:5]:
                 md_content += f"- **{alert.get('severity', 'unknown').upper()}**: {alert.get('description', 'N/A')}\n"
 

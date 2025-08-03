@@ -14,17 +14,13 @@ Features:
 Performance target: <500ms for 10k records
 """
 
-import json
-import urllib.parse
-from datetime import datetime
-from typing import Any, Dict, List, Optional, Union
+from typing import Optional
 from xml.etree.ElementTree import Element, SubElement, tostring
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse, PlainTextResponse
 
-from src.database.sqlite.repository import get_unified_repository
 from src.utils.logger import get_logger
 
 from .dependencies import (
@@ -33,7 +29,6 @@ from .dependencies import (
     get_repository,
     log_api_request,
 )
-from .models import ODataEntitySet, ODataMetadata, ODataResponse
 
 logger = get_logger(__name__)
 
@@ -97,7 +92,7 @@ def create_odata_router() -> APIRouter:
         that PowerBI uses to understand the data structure.
         """
         try:
-            base_url = str(request.base_url).rstrip("/") + "/odata"
+            str(request.base_url).rstrip("/") + "/odata"
 
             # Create CSDL XML document
             edmx = Element(
@@ -688,7 +683,7 @@ def create_odata_router() -> APIRouter:
 # Helper functions for OData query processing
 
 
-def _apply_odata_filter(data: List[Dict], filter_expr: str) -> List[Dict]:
+def _apply_odata_filter(data: list[dict], filter_expr: str) -> list[dict]:
     """Apply basic OData $filter expressions"""
     if not filter_expr:
         return data
@@ -704,7 +699,7 @@ def _apply_odata_filter(data: List[Dict], filter_expr: str) -> List[Dict]:
     return filtered_data
 
 
-def _matches_odata_filter(record: Dict, filter_expr: str) -> bool:
+def _matches_odata_filter(record: dict, filter_expr: str) -> bool:
     """Check if a record matches an OData filter expression"""
     if not filter_expr:
         return True
@@ -769,7 +764,7 @@ def _matches_odata_filter(record: Dict, filter_expr: str) -> bool:
         return True
 
 
-def _apply_odata_orderby(data: List[Dict], orderby_expr: str) -> List[Dict]:
+def _apply_odata_orderby(data: list[dict], orderby_expr: str) -> list[dict]:
     """Apply OData $orderby expression"""
     if not orderby_expr:
         return data

@@ -21,13 +21,12 @@ Features:
 import threading
 from contextlib import contextmanager
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Optional
 
 from src.database.duckdb import DuckDBManager
-from src.database.duckdb import get_manager as get_duckdb_manager
 from src.utils.logger import get_logger
 
-from .manager import SQLiteMetadataManager, get_metadata_manager
+from .manager import SQLiteMetadataManager
 
 logger = get_logger(__name__)
 
@@ -69,7 +68,7 @@ class UnifiedDataRepository:
         description: str = None,
         istat_agency: str = None,
         priority: int = 5,
-        metadata: Dict[str, Any] = None,
+        metadata: dict[str, Any] = None,
     ) -> bool:
         """Register a dataset in both metadata registry and analytics engine.
 
@@ -129,7 +128,7 @@ class UnifiedDataRepository:
             logger.error(f"Failed to register dataset {dataset_id} completely: {e}")
             return False
 
-    def get_dataset_complete(self, dataset_id: str) -> Optional[Dict[str, Any]]:
+    def get_dataset_complete(self, dataset_id: str) -> Optional[dict[str, Any]]:
         """Get complete dataset information from both databases.
 
         Args:
@@ -162,7 +161,7 @@ class UnifiedDataRepository:
             logger.error(f"Failed to get complete dataset info for {dataset_id}: {e}")
             return None
 
-    def _get_dataset_analytics_stats(self, dataset_id: str) -> Dict[str, Any]:
+    def _get_dataset_analytics_stats(self, dataset_id: str) -> dict[str, Any]:
         """Get analytics statistics for a dataset from DuckDB.
 
         Args:
@@ -209,7 +208,7 @@ class UnifiedDataRepository:
 
     def list_datasets_complete(
         self, category: str = None, with_analytics: bool = None
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """List datasets with complete information from both databases.
 
         Args:
@@ -329,10 +328,10 @@ class UnifiedDataRepository:
     def execute_analytics_query(
         self,
         query: str,
-        params: List[Any] = None,
+        params: list[Any] = None,
         user_id: str = None,
         cache_minutes: int = 10,
-    ) -> List[Tuple]:
+    ) -> list[tuple]:
         """Execute analytics query with audit logging.
 
         Args:
@@ -400,7 +399,7 @@ class UnifiedDataRepository:
         measure_code: str = None,
         start_year: int = None,
         end_year: int = None,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Get time series data for a dataset with metadata integration.
 
         Args:
@@ -493,9 +492,100 @@ class UnifiedDataRepository:
             logger.error(f"Failed to get time series for {dataset_id}: {e}")
             return []
 
+    # Categorization Rules Operations
+
+    def get_categorization_rules(
+        self, category: str = None, active_only: bool = True
+    ) -> list[dict[str, Any]]:
+        """Get categorization rules for dataflow analysis.
+
+        Args:
+            category: Optional category filter
+            active_only: Whether to return only active rules
+
+        Returns:
+            List of categorization rules
+        """
+        try:
+            return self.metadata_manager.get_categorization_rules(category, active_only)
+        except Exception as e:
+            logger.error(f"Failed to get categorization rules: {e}")
+            return []
+
+    def create_categorization_rule(
+        self,
+        rule_id: str,
+        category: str,
+        keywords: list[str],
+        priority: int = 5,
+        description: str = None,
+    ) -> bool:
+        """Create a new categorization rule.
+
+        Args:
+            rule_id: Unique rule identifier
+            category: Target category
+            keywords: List of keywords for matching
+            priority: Rule priority (higher = more important)
+            description: Optional description
+
+        Returns:
+            bool: True if rule created successfully
+        """
+        try:
+            return self.metadata_manager.create_categorization_rule(
+                rule_id, category, keywords, priority, description
+            )
+        except Exception as e:
+            logger.error(f"Failed to create categorization rule: {e}")
+            return False
+
+    def update_categorization_rule(
+        self,
+        rule_id: str,
+        keywords: list[str] = None,
+        priority: int = None,
+        is_active: bool = None,
+        description: str = None,
+    ) -> bool:
+        """Update an existing categorization rule.
+
+        Args:
+            rule_id: Rule identifier to update
+            keywords: Optional new keywords list
+            priority: Optional new priority
+            is_active: Optional active status
+            description: Optional new description
+
+        Returns:
+            bool: True if rule updated successfully
+        """
+        try:
+            return self.metadata_manager.update_categorization_rule(
+                rule_id, keywords, priority, is_active, description
+            )
+        except Exception as e:
+            logger.error(f"Failed to update categorization rule: {e}")
+            return False
+
+    def delete_categorization_rule(self, rule_id: str) -> bool:
+        """Delete a categorization rule.
+
+        Args:
+            rule_id: Rule identifier to delete
+
+        Returns:
+            bool: True if rule deleted successfully
+        """
+        try:
+            return self.metadata_manager.delete_categorization_rule(rule_id)
+        except Exception as e:
+            logger.error(f"Failed to delete categorization rule: {e}")
+            return False
+
     # System Operations
 
-    def get_system_status(self) -> Dict[str, Any]:
+    def get_system_status(self) -> dict[str, Any]:
         """Get complete system status from both databases.
 
         Returns:
@@ -534,7 +624,7 @@ class UnifiedDataRepository:
                 },
                 "cache": {
                     "size": len(self._cache),
-                    "hit_rate": "not_implemented",  # TODO: Implement cache hit rate tracking
+                    "hit_rate": "pending_issue_63",  # Cache metrics to be implemented in Issue #63
                 },
                 "timestamp": datetime.now().isoformat(),
             }
@@ -589,7 +679,7 @@ class UnifiedDataRepository:
 
     # Convenience Methods (Aliases for backward compatibility)
 
-    def list_datasets(self, category: str = None) -> List[Dict[str, Any]]:
+    def list_datasets(self, category: str = None) -> list[dict[str, Any]]:
         """List datasets (alias for list_datasets_complete for backward compatibility).
 
         Args:

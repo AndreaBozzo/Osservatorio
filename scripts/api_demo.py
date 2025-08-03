@@ -5,15 +5,18 @@
 A human-friendly script to demonstrate and test the FastAPI endpoints.
 Perfect for showcasing the API capabilities to stakeholders.
 """
-
-import json
 import time
-from datetime import datetime
-from typing import Any, Dict
+from typing import Any
 
 import requests
 
-BASE_URL = "http://localhost:8000"
+try:
+    from src.utils.config import Config
+
+    BASE_URL = Config.API_BASE_URL
+except ImportError:
+    # Fallback for development
+    BASE_URL = "http://localhost:8000"
 
 
 def print_banner():
@@ -33,8 +36,8 @@ def print_step(step_num: int, title: str, description: str = ""):
 
 
 def make_request(
-    method: str, endpoint: str, headers: Dict = None, data: Dict = None
-) -> Dict[str, Any]:
+    method: str, endpoint: str, headers: dict = None, data: dict = None
+) -> dict[str, Any]:
     """Make an API request and return formatted response"""
     url = f"{BASE_URL}{endpoint}"
 
@@ -61,7 +64,7 @@ def make_request(
                 "headers": dict(response.headers),
                 "data": json_response,
             }
-        except:
+        except Exception:
             return {
                 "status_code": response.status_code,
                 "headers": dict(response.headers),
@@ -173,7 +176,7 @@ def demo_performance_metrics():
 
     for endpoint, name in endpoints_to_test:
         start_time = time.time()
-        result = make_request("GET", endpoint)
+        make_request("GET", endpoint)
         end_time = time.time()
 
         response_time = (end_time - start_time) * 1000

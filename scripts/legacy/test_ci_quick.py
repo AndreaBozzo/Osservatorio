@@ -3,11 +3,8 @@
 Script per test rapidi in ambiente CI/CD
 Esegue solo i test essenziali per ridurre i tempi di build
 """
-
 import subprocess
 import sys
-import time
-from pathlib import Path
 
 
 def run_command(cmd, timeout=300):
@@ -63,7 +60,7 @@ def main():
             print(f"  • {test}")
         sys.exit(1)
     else:
-        print(f"\n✅ Tutti i test essenziali passati!")
+        print("\n✅ Tutti i test essenziali passati!")
         print("Build ready for deployment")
 
 

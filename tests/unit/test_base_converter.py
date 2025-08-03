@@ -3,14 +3,10 @@ Test cases for BaseIstatConverter
 Tests the abstract base class functionality shared by PowerBI and Tableau converters.
 """
 
-import json
-import os
-import tempfile
 import unittest
-from unittest.mock import Mock, mock_open, patch
+from unittest.mock import Mock, patch
 
 import pandas as pd
-import pytest
 
 from src.converters.base_converter import BaseIstatConverter
 from src.converters.factory import ConverterFactory
@@ -51,7 +47,9 @@ class TestBaseIstatConverter(unittest.TestCase):
             "message": "http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message",
             "generic": "http://www.sdmx.org/resources/sdmxml/schemas/v2_1/data/generic",
             "common": "http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common",
+            "structure": "http://www.sdmx.org/resources/sdmxml/schemas/v2_1/structure",
             "xsi": "http://www.w3.org/2001/XMLSchema-instance",
+            "xml": "http://www.w3.org/XML/1998/namespace",
         }
         self.assertEqual(self.converter.namespaces, expected_namespaces)
 
@@ -82,27 +80,12 @@ class TestBaseIstatConverter(unittest.TestCase):
         self.assertIn("test", converter.datasets_config["categories"])
 
     @patch("src.converters.base_converter.get_dataset_config_manager")
-    @patch("os.path.exists")
-    @patch("builtins.open", new_callable=mock_open)
-    def test_load_datasets_config_json_fallback(
-        self, mock_file, mock_exists, mock_config
-    ):
-        """Test JSON fallback when SQLite fails."""
+    def test_load_datasets_config_sqlite_error_fallback(self, mock_config):
+        """Test fallback when SQLite fails (returns empty config)."""
         # Mock SQLite failure
         mock_manager = Mock()
         mock_manager.get_datasets_config.side_effect = Exception("SQLite failed")
         mock_config.return_value = mock_manager
-
-        # Mock JSON file exists
-        mock_exists.return_value = True
-
-        # Mock JSON content
-        json_content = {
-            "total_datasets": 3,
-            "categories": {"fallback": ["FB1"]},
-            "datasets": [],
-        }
-        mock_file.return_value.read.return_value = json.dumps(json_content)
 
         class TestConverter(BaseIstatConverter):
             def _format_output(self, df, dataset_info):
@@ -116,8 +99,8 @@ class TestBaseIstatConverter(unittest.TestCase):
 
         converter = TestConverter()
 
-        self.assertEqual(converter.datasets_config["total_datasets"], 3)
-        self.assertEqual(converter.datasets_config["source"], "json fallback")
+        self.assertEqual(converter.datasets_config["total_datasets"], 0)
+        self.assertEqual(converter.datasets_config["source"], "sqlite_error")
 
     def test_categorize_dataset_popolazione(self):
         """Test dataset categorization for population data."""

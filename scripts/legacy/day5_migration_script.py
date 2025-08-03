@@ -6,14 +6,12 @@ Implements migration scripts with rollback capability as required by Day 5 deliv
 This script migrates data from legacy storage patterns to the new UnifiedDataRepository
 pattern with SQLite metadata + DuckDB analytics.
 """
-
 import json
 import shutil
-import sqlite3
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
 class Day5MigrationScript:
@@ -22,7 +20,7 @@ class Day5MigrationScript:
     def __init__(self):
         self.project_root = Path(__file__).parent.parent
         self.backup_dir = self.project_root / "data" / "migration_backups"
-        self.migration_log: List[Dict[str, Any]] = []
+        self.migration_log: list[dict[str, Any]] = []
 
     def create_migration_backup(self) -> str:
         """Create backup before migration."""
@@ -58,8 +56,7 @@ class Day5MigrationScript:
     def migrate_json_configs_to_sqlite(self) -> bool:
         """Migrate JSON configuration files to SQLite metadata."""
         try:
-            # Import here to avoid module issues
-            sys.path.insert(0, str(self.project_root))
+            # Issue #84: Use proper imports without sys.path manipulation
             from src.database.sqlite.repository import UnifiedDataRepository
 
             repo = UnifiedDataRepository()
@@ -75,7 +72,7 @@ class Day5MigrationScript:
             for config_file in config_files:
                 config_path = self.project_root / config_file
                 if config_path.exists():
-                    with open(config_path, "r", encoding="utf-8") as f:
+                    with open(config_path, encoding="utf-8") as f:
                         config_data = json.load(f)
 
                     # Extract dataset information
@@ -122,8 +119,7 @@ class Day5MigrationScript:
     def validate_migration(self) -> bool:
         """Validate that migration was successful."""
         try:
-            # Import here to avoid module issues
-            sys.path.insert(0, str(self.project_root))
+            # Issue #84: Use proper imports without sys.path manipulation
             from src.database.sqlite.repository import UnifiedDataRepository
 
             repo = UnifiedDataRepository()
@@ -289,5 +285,6 @@ def main():
 
 if __name__ == "__main__":
     # Add project root to Python path
-    sys.path.insert(0, str(Path(__file__).parent.parent))
+    # Issue #84: Removed unsafe sys.path manipulation
+    # Use proper package imports or run from project root
     sys.exit(main())

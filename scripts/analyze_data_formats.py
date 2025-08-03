@@ -13,23 +13,29 @@ Usage:
     python scripts/analyze_data_formats.py --dataset DCIS_POPRES1
     python scripts/analyze_data_formats.py --format json
 """
-
 import argparse
 import json
-import os
-import sys
 import xml.etree.ElementTree as ET
 from datetime import datetime
-from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any
 
-# Add src to path for imports
-sys.path.append(str(Path(__file__).parent.parent))
+try:
+    from osservatorio_istat.api.production_istat_client import ProductionIstatClient
+    from osservatorio_istat.services.service_factory import (
+        get_dataflow_analysis_service,
+    )
+    from osservatorio_istat.utils.logger import get_logger
+    from osservatorio_istat.utils.temp_file_manager import TempFileManager
+except ImportError:
+    # Development mode fallback
+    import sys
 
-from src.analyzers.dataflow_analyzer import IstatDataflowAnalyzer
-from src.api.istat_api import IstatAPITester
-from src.utils.logger import get_logger
-from src.utils.temp_file_manager import TempFileManager
+    # Issue #84: Removed unsafe sys.path manipulation
+    # Use proper package imports or run from project root
+    from src.api.production_istat_client import ProductionIstatClient
+    from src.services.service_factory import get_dataflow_analysis_service
+    from src.utils.logger import get_logger
+    from src.utils.temp_file_manager import TempFileManager
 
 logger = get_logger(__name__)
 
@@ -38,11 +44,14 @@ class DataFormatAnalyzer:
     """Analizza formati dati ISTAT per database design"""
 
     def __init__(self):
-        self.api_client = IstatAPITester()
-        self.analyzer = IstatDataflowAnalyzer()
+        # Issue #84: Migrated from IstatAPITester to ProductionIstatClient
+        # ProductionIstatClient already imported at module level
+
+        self.api_client = ProductionIstatClient(enable_cache_fallback=True)
+        self.analyzer = get_dataflow_analysis_service()
         self.temp_manager = TempFileManager()
 
-    def analyze_istat_datasets(self, sample_size: int = 10) -> Dict[str, Any]:
+    def analyze_istat_datasets(self, sample_size: int = 10) -> dict[str, Any]:
         """
         Analizza tutti i dataset ISTAT disponibili
 
@@ -68,7 +77,8 @@ class DataFormatAnalyzer:
         try:
             # Get all available dataflows
             logger.info("Discovering available datasets...")
-            dataflows = self.api_client.discover_available_datasets()
+            dataflows_result = self.api_client.get_dataflows()
+            dataflows = dataflows_result.get("dataflows", [])
             analysis_results["total_datasets"] = len(dataflows)
 
             # Analyze sample of datasets in detail
@@ -86,9 +96,11 @@ class DataFormatAnalyzer:
                 )
 
                 try:
-                    # Fetch sample data
-                    test_result = self.api_client.test_specific_dataset(dataset_id)
-                    xml_data = test_result.get("data", "")
+                    # Fetch sample data using production client
+                    dataset_result = self.api_client.fetch_dataset(
+                        dataset_id, include_data=True
+                    )
+                    xml_data = dataset_result.get("data", {}).get("content", "")
 
                     # Analyze structure
                     structure = self._analyze_xml_structure(xml_data)
@@ -131,8 +143,8 @@ class DataFormatAnalyzer:
         return analysis_results
 
     def estimate_storage_requirements(
-        self, analysis_results: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, analysis_results: dict[str, Any]
+    ) -> dict[str, Any]:
         """
         Stima requisiti di storage
 
@@ -146,7 +158,7 @@ class DataFormatAnalyzer:
 
         volume_dist = analysis_results.get("volume_distribution", {})
         total_datasets = analysis_results.get("total_datasets", 509)
-        analyzed_datasets = analysis_results.get("analyzed_datasets", 1)
+        analysis_results.get("analyzed_datasets", 1)
 
         # Calculate average volume per dataset
         avg_volume_mb = volume_dist.get("average_mb", 30)
@@ -159,7 +171,6 @@ class DataFormatAnalyzer:
 
         # Annual growth estimates
         annual_new_datasets = 50  # Estimated new datasets per year
-        annual_updates = 12  # Average updates per dataset per year
 
         annual_raw_growth_gb = (
             annual_new_datasets * avg_volume_mb + total_datasets * avg_volume_mb * 0.1
@@ -200,8 +211,8 @@ class DataFormatAnalyzer:
         return storage_requirements
 
     def generate_database_recommendations(
-        self, analysis_results: Dict[str, Any], storage_requirements: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, analysis_results: dict[str, Any], storage_requirements: dict[str, Any]
+    ) -> dict[str, Any]:
         """
         Genera raccomandazioni per scelta database
 
@@ -284,14 +295,12 @@ class DataFormatAnalyzer:
         logger.info("Database recommendations generated")
         return recommendations
 
-    def _analyze_xml_structure(self, xml_data: str) -> Dict[str, Any]:
+    def _analyze_xml_structure(self, xml_data: str) -> dict[str, Any]:
         """Analizza la struttura di un dataset XML SDMX"""
         try:
             root = ET.fromstring(xml_data)
 
             # Count dimensions and measures
-            dimensions = []
-            measures = []
 
             # SDMX namespace handling
             namespaces = {
@@ -343,15 +352,15 @@ class DataFormatAnalyzer:
             logger.warning(f"Error analyzing XML structure: {e}")
             return {"error": str(e), "complexity": "unknown"}
 
-    def _is_time_series(self, structure: Dict[str, Any]) -> bool:
+    def _is_time_series(self, structure: dict[str, Any]) -> bool:
         """Determina se un dataset è una serie temporale"""
         return structure.get("has_time_dimension", False)
 
-    def _is_structured(self, structure: Dict[str, Any]) -> bool:
+    def _is_structured(self, structure: dict[str, Any]) -> bool:
         """Determina se un dataset è strutturato"""
         return structure.get("dimensions_count", 0) > 0
 
-    def _analyze_volume_distribution(self, volume_data: List[Dict]) -> Dict[str, Any]:
+    def _analyze_volume_distribution(self, volume_data: list[dict]) -> dict[str, Any]:
         """Analizza la distribuzione dei volumi"""
         if not volume_data:
             return {"error": "No volume data available"}
@@ -366,7 +375,7 @@ class DataFormatAnalyzer:
             "total_mb": round(sum(volumes), 2),
         }
 
-    def _summarize_structure_patterns(self, structure_patterns: Dict) -> Dict[str, Any]:
+    def _summarize_structure_patterns(self, structure_patterns: dict) -> dict[str, Any]:
         """Riassume i pattern strutturali"""
         if not structure_patterns:
             return {"error": "No structure patterns available"}
@@ -398,7 +407,7 @@ class DataFormatAnalyzer:
             ),
         }
 
-    def _analyze_access_patterns(self, datasets: List[Dict]) -> Dict[str, Any]:
+    def _analyze_access_patterns(self, datasets: list[dict]) -> dict[str, Any]:
         """Analizza i pattern di accesso"""
         # Simulate access patterns based on dataset categories
         categories = {}
@@ -481,7 +490,7 @@ def main():
         sys.exit(1)
 
 
-def _format_text_output(results: Dict[str, Any]) -> str:
+def _format_text_output(results: dict[str, Any]) -> str:
     """Format results as readable text"""
     output = []
     output.append("# ISTAT Data Format Analysis Report")

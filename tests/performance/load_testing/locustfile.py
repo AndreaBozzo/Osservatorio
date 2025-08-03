@@ -14,21 +14,20 @@ Test scenarios:
 
 import json
 import random
-import time
-from typing import Dict, List
 
 from locust import HttpUser, between, task
 
-# Import JWT token generator
 try:
     from .jwt_token_generator import PerformanceJWTGenerator
 except ImportError:
-    # Fallback for direct execution
-    import sys
-    from pathlib import Path
+    # Fallback for direct execution - use relative import
+    try:
+        from jwt_token_generator import PerformanceJWTGenerator
+    except ImportError:
+        # Final fallback for development
 
-    sys.path.append(str(Path(__file__).parent))
-    from jwt_token_generator import PerformanceJWTGenerator
+        # Issue #84: Removed unsafe sys.path manipulation
+        from jwt_token_generator import PerformanceJWTGenerator
 
 # Test data for realistic scenarios
 SAMPLE_DATASETS = [
@@ -212,7 +211,7 @@ class PowerBIUser(HttpUser):
     @task(6)
     def test_odata_batch_query(self):
         """Test OData batch query for PowerBI."""
-        dataset_id = random.choice(SAMPLE_DATASETS)
+        random.choice(SAMPLE_DATASETS)
 
         # Simulate PowerBI batch queries
         queries = [
@@ -223,7 +222,7 @@ class PowerBIUser(HttpUser):
 
         for i, query_params in enumerate(queries):
             with self.client.get(
-                f"/odata/Datasets",
+                "/odata/Datasets",
                 params=query_params,
                 headers=self.headers,
                 catch_response=True,

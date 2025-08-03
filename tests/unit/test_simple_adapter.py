@@ -3,17 +3,10 @@
 Tests the lightweight DuckDB adapter for immediate use.
 """
 
-import os
-import tempfile
-
 import pandas as pd
 import pytest
 
-from src.database.duckdb.simple_adapter import (
-    SimpleDuckDBAdapter,
-    create_adapter,
-    create_temp_adapter,
-)
+from src.database.duckdb.simple_adapter import create_adapter, create_temp_adapter
 
 
 class TestSimpleDuckDBAdapter:
@@ -242,7 +235,7 @@ class TestSimpleDuckDBAdapter:
         # This might work or fail depending on foreign key enforcement
         try:
             adapter.insert_observations(obs_df)
-        except:
+        except Exception:
             pass  # Expected if foreign keys are enforced
 
         adapter.close()

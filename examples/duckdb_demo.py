@@ -4,15 +4,21 @@ This script demonstrates how to use the new DuckDB functionality
 for high-performance analytics on ISTAT statistical data.
 """
 
-import sys
 from pathlib import Path
 
 import pandas as pd
 
-# Add src to path for imports
-sys.path.append(str(Path(__file__).parent.parent / "src"))
+# Use proper package imports
+try:
+    from osservatorio_istat.database.duckdb.simple_adapter import (
+        create_adapter,
+        create_file_adapter,
+    )
+except ImportError:
+    # Development mode fallback
 
-from database.duckdb.simple_adapter import create_adapter, create_file_adapter
+    # Issue #84: Removed unsafe sys.path manipulation
+    from database.duckdb.simple_adapter import create_adapter, create_file_adapter
 
 
 def demo_basic_functionality():
@@ -109,7 +115,7 @@ def demo_data_insertion_and_queries():
         # Demo time series query
         print("\n📊 Time Series Analysis:")
         ts_data = adapter.get_time_series("DEMO_POP", "IT")
-        print(f"Italy population trend:")
+        print("Italy population trend:")
         for _, row in ts_data.iterrows():
             print(f"  {row['year']}: {row['obs_value']:,} inhabitants")
 
@@ -271,7 +277,9 @@ def demo_file_persistence():
         file_adapter2 = create_file_adapter("demo_persistence.duckdb")
         summary = file_adapter2.get_dataset_summary()
 
-        print(f"✅ Data persisted: {summary.iloc[0]['total_observations']} observations")
+        print(
+            f"✅ Data persisted: {summary.iloc[0]['total_observations']} observations"
+        )
         print(f"   Dataset: {summary.iloc[0]['dataset_name']}")
 
         file_adapter2.close()
@@ -288,7 +296,7 @@ def demo_file_persistence():
             if db_path.exists():
                 db_path.unlink()
                 print("🧹 Cleaned up demo database file")
-        except:
+        except Exception:
             pass
 
 

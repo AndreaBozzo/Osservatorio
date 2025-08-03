@@ -1,5 +1,5 @@
-"""
-Secure path validation utilities for file operations.
+"""Secure path validation utilities for file operations.
+
 Prevents directory traversal attacks and ensures safe file operations.
 """
 
@@ -164,20 +164,35 @@ class SecurePathValidator:
         try:
             path_obj = Path(path)
 
-            # Check if path is within base directory
+            # Check if path is within base directory only for relative paths
+            # or when the absolute path is actually within base directory
             resolved_path = path_obj.resolve()
 
-            # Ensure path is within base directory
-            try:
-                resolved_path.relative_to(self.base_directory)
-            except ValueError:
-                logger.warning(f"Path outside base directory: {path}")
-                return False
+            # Always check if path is within base directory for absolute paths
+            if path_obj.is_absolute():
+                try:
+                    resolved_path.relative_to(self.base_directory)
+                except ValueError:
+                    # Path is outside base directory - reject it
+                    logger.warning(f"Path outside base directory: {path}")
+                    return False
+            else:
+                # For relative paths, resolve them against base directory and check
+                full_path = (self.base_directory / path_obj).resolve()
+                try:
+                    full_path.relative_to(self.base_directory)
+                    resolved_path = full_path
+                except ValueError:
+                    logger.warning(f"Relative path escapes base directory: {path}")
+                    return False
 
             # Validate each path component (skip drive letters on Windows)
             for part in path_obj.parts:
                 # Skip Windows drive letters (e.g., 'C:', 'C:\')
                 if re.match(r"^[A-Za-z]:[\\/]?$", part):
+                    continue
+                # Skip root path on Unix-like systems
+                if part == "/":
                     continue
                 if not self.validate_filename(part):
                     return False
@@ -304,14 +319,14 @@ class SecurePathValidator:
         try:
             path_obj = Path(path)
 
-            # If absolute path, make it relative to base
+            # If absolute path, check if it's valid
             if path_obj.is_absolute():
-                # Only allow if already within base directory
+                # Only allow if already within base directory or temp directory
                 if not self.validate_path(path):
                     return None
                 safe_path = path_obj.resolve()
             else:
-                # Make relative path safe
+                # Make relative path safe by resolving within base directory
                 safe_path = (self.base_directory / path).resolve()
 
             # Final validation
@@ -319,7 +334,7 @@ class SecurePathValidator:
                 return None
 
             # Create parent directories if requested
-            if create_dirs:
+            if create_dirs and safe_path.parent:
                 safe_path.parent.mkdir(parents=True, exist_ok=True)
 
             return safe_path
