@@ -195,7 +195,7 @@ class TestUnifiedDataIngestionPipeline:
         await asyncio.sleep(0.1)
 
         # Check if job is tracked (might be too fast to catch)
-        job_status = await pipeline.get_job_status("test_job_123")
+        await pipeline.get_job_status("test_job_123")
 
         # Wait for completion
         result = await task

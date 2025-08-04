@@ -275,7 +275,7 @@ class PerformanceMonitor:
             "error_rate_percent": round(error_rate, 2),
             "average_memory_usage_mb": round(avg_memory, 1),
             "average_cpu_usage_percent": round(avg_cpu, 1),
-            "operation_types": list(set(m.operation_type for m in recent_metrics)),
+            "operation_types": list({m.operation_type for m in recent_metrics}),
         }
 
     def detect_performance_regressions(
@@ -311,7 +311,7 @@ class PerformanceMonitor:
                 return regressions
 
             # Group by operation type
-            operation_types = set(m.operation_type for m in recent_metrics)
+            operation_types = {m.operation_type for m in recent_metrics}
 
             for op_type in operation_types:
                 recent_ops = [m for m in recent_metrics if m.operation_type == op_type]
@@ -373,9 +373,9 @@ class PerformanceMonitor:
                                 historical_avg_throughput, 1
                             ),
                             "decrease_percent": round(throughput_decrease, 1),
-                            "severity": "high"
-                            if throughput_decrease > 50
-                            else "medium",
+                            "severity": (
+                                "high" if throughput_decrease > 50 else "medium"
+                            ),
                         }
                     )
 

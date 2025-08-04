@@ -17,6 +17,7 @@ import psutil
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+# Project imports (after path modification)
 from src.pipeline import PipelineConfig, PipelineService
 from src.utils.logger import get_logger
 
@@ -154,9 +155,11 @@ class ScalingStressTest:
                     "start_memory_mb": start_memory,
                     "end_memory_mb": end_memory,
                     "memory_delta_mb": end_memory - start_memory,
-                    "memory_per_record": (end_memory - start_memory) / record_count
-                    if record_count > 0
-                    else 0,
+                    "memory_per_record": (
+                        (end_memory - start_memory) / record_count
+                        if record_count > 0
+                        else 0
+                    ),
                     "status": result.status.value,
                 }
 
@@ -177,12 +180,14 @@ class ScalingStressTest:
 
         return {
             "memory_scaling_results": memory_results,
-            "max_records_tested": max(r["record_count"] for r in memory_results)
-            if memory_results
-            else 0,
-            "memory_efficiency": "good"
-            if all(r["memory_per_record"] < 1.0 for r in memory_results)
-            else "poor",
+            "max_records_tested": (
+                max(r["record_count"] for r in memory_results) if memory_results else 0
+            ),
+            "memory_efficiency": (
+                "good"
+                if all(r["memory_per_record"] < 1.0 for r in memory_results)
+                else "poor"
+            ),
         }
 
     async def _test_concurrent_scaling(self):
@@ -252,14 +257,18 @@ class ScalingStressTest:
 
         return {
             "concurrency_results": concurrency_results,
-            "optimal_concurrency": max(
-                concurrency_results, key=lambda x: x["throughput"]
-            )["concurrency_level"]
-            if concurrency_results
-            else 1,
-            "max_throughput": max(r["throughput"] for r in concurrency_results)
-            if concurrency_results
-            else 0,
+            "optimal_concurrency": (
+                max(concurrency_results, key=lambda x: x["throughput"])[
+                    "concurrency_level"
+                ]
+                if concurrency_results
+                else 1
+            ),
+            "max_throughput": (
+                max(r["throughput"] for r in concurrency_results)
+                if concurrency_results
+                else 0
+            ),
         }
 
     async def _test_large_dataset_handling(self):
@@ -311,9 +320,11 @@ class ScalingStressTest:
                     "duration_seconds": end_time - start_time,
                     "memory_usage_mb": end_memory,
                     "memory_delta_mb": end_memory - start_memory,
-                    "throughput": result.records_processed / (end_time - start_time)
-                    if (end_time - start_time) > 0
-                    else 0,
+                    "throughput": (
+                        result.records_processed / (end_time - start_time)
+                        if (end_time - start_time) > 0
+                        else 0
+                    ),
                     "status": result.status.value,
                     "records_processed": result.records_processed,
                 }
@@ -340,9 +351,11 @@ class ScalingStressTest:
 
         return {
             "large_dataset_results": large_dataset_results,
-            "max_records_handled": max(r["record_count"] for r in large_dataset_results)
-            if large_dataset_results
-            else 0,
+            "max_records_handled": (
+                max(r["record_count"] for r in large_dataset_results)
+                if large_dataset_results
+                else 0
+            ),
             "performance_degradation": self._analyze_performance_degradation(
                 large_dataset_results
             ),
@@ -394,9 +407,11 @@ class ScalingStressTest:
                     "successful": successful,
                     "total_records": total_records,
                     "duration": end_time - start_time,
-                    "throughput": total_records / (end_time - start_time)
-                    if (end_time - start_time) > 0
-                    else 0,
+                    "throughput": (
+                        total_records / (end_time - start_time)
+                        if (end_time - start_time) > 0
+                        else 0
+                    ),
                 }
 
                 batch_results.append(batch_result)
@@ -410,11 +425,11 @@ class ScalingStressTest:
 
         return {
             "batch_size_results": batch_results,
-            "optimal_batch_size": max(batch_results, key=lambda x: x["throughput"])[
-                "batch_size"
-            ]
-            if batch_results
-            else 100,
+            "optimal_batch_size": (
+                max(batch_results, key=lambda x: x["throughput"])["batch_size"]
+                if batch_results
+                else 100
+            ),
         }
 
     async def _test_resource_limits(self):
@@ -512,7 +527,7 @@ class ScalingStressTest:
 
         # Check if throughput decreases with size
         throughputs = [r["throughput"] for r in results]
-        sizes = [r["record_count"] for r in results]
+        [r["record_count"] for r in results]
 
         # Simple degradation check
         if throughputs[0] > throughputs[-1] * 1.5:  # 50% degradation
@@ -567,10 +582,9 @@ class ScalingStressTest:
             },
         }
 
-        report_path = (
-            Path("data/performance_results")
-            / f"scaling_stress_test_{end_time.strftime('%Y%m%d_%H%M%S')}.json"
-        )
+        report_path = Path(
+            "data/performance_results"
+        ) / f"scaling_stress_test_{end_time.strftime('%Y%m%d_%H%M%S')}.json"
 
         import json
 

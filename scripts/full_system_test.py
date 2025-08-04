@@ -15,6 +15,7 @@ from pathlib import Path
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+# Project imports (after path modification)
 from src.pipeline import PipelineConfig, PipelineService
 from src.utils.logger import get_logger
 
@@ -348,7 +349,7 @@ class SystemTestSuite:
             try:
                 from src.database.sqlite.repository import UnifiedDataRepository
 
-                repo = UnifiedDataRepository()
+                UnifiedDataRepository()
                 db_ok = True
                 print(f"   Database repository: {'✅' if db_ok else '❌'}")
                 checks.append(db_ok)
@@ -431,19 +432,22 @@ class SystemTestSuite:
                 "failed": total - passed,
                 "success_rate": success_rate,
             },
-            "assessment": "excellent"
-            if success_rate >= 90
-            else "good"
-            if success_rate >= 75
-            else "fair"
-            if success_rate >= 50
-            else "poor",
+            "assessment": (
+                "excellent"
+                if success_rate >= 90
+                else (
+                    "good"
+                    if success_rate >= 75
+                    else "fair"
+                    if success_rate >= 50
+                    else "poor"
+                )
+            ),
         }
 
-        report_path = (
-            Path("data/performance_results")
-            / f"full_system_test_{end_time.strftime('%Y%m%d_%H%M%S')}.json"
-        )
+        report_path = Path(
+            "data/performance_results"
+        ) / f"full_system_test_{end_time.strftime('%Y%m%d_%H%M%S')}.json"
         with open(report_path, "w", encoding="utf-8") as f:
             json.dump(report_data, f, indent=2)
 

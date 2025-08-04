@@ -45,7 +45,7 @@ dataset_configs = [
         "target_formats": ["powerbi"]
     },
     {
-        "dataset_id": "DCIS_POPRES1", 
+        "dataset_id": "DCIS_POPRES1",
         "sdmx_data": xml_data_2,
         "target_formats": ["powerbi", "tableau"]
     },
@@ -64,7 +64,7 @@ for dataset_id, result in results.items():
 ## 🧪 **Testing & Validation**
 
 ```bash
-# Real data processing test  
+# Real data processing test
 python scripts/test_real_data_processing.py
 
 # Production pipeline test
@@ -132,17 +132,17 @@ config = PipelineConfig(
     batch_size=1000,
     max_concurrent=4,
     timeout_seconds=300,
-    
+
     # Quality thresholds
     min_quality_score=60.0,
     enable_quality_checks=True,
     fail_on_quality=False,  # or True for critical pipelines
-    
+
     # Output settings
     store_raw_data=True,
     store_analytics=True,
     generate_reports=True,
-    
+
     # Retry settings
     max_retries=3,
     retry_delay=2.0
@@ -255,7 +255,7 @@ except DataIngestionError as e:
 ## 📈 **Performance (Issue #63 Requirements)**
 
 ### **Performance Targets (Met)**
-- ✅ **API Response**: <100ms for dataset operations  
+- ✅ **API Response**: <100ms for dataset operations
 - ✅ **Batch Processing**: 10+ datasets in <30 seconds
 - ✅ **Error Rate**: <1% failures under normal conditions
 - ✅ **Memory Usage**: <512MB normal, <1GB peak

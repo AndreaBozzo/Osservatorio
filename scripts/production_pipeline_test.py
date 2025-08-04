@@ -14,6 +14,7 @@ from pathlib import Path
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+# Project imports (after path modification)
 from src.api.production_istat_client import ProductionIstatClient
 from src.pipeline import PipelineConfig, PipelineService
 from src.utils.logger import get_logger
@@ -211,9 +212,9 @@ async def test_production_performance():
             operation_type="production_ingest",
             dataset_id=dataset_id,
             records_processed=result.records_processed,
-            quality_score=result.quality_score.overall_score
-            if result.quality_score
-            else None,
+            quality_score=(
+                result.quality_score.overall_score if result.quality_score else None
+            ),
             error_count=1 if result.error_message else 0,
         )
 

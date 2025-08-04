@@ -22,15 +22,16 @@ repos:
     rev: v0.1.8
     hooks:
       - id: ruff
-        args: [--fix, --exit-non-zero-on-fix]
+        args: [--fix]
       - id: ruff-format
 
-  - repo: https://github.com/psf/black
-    rev: 23.12.1
-    hooks:
-      - id: black
-        language_version: python3
-        args: [--line-length=88]
+# Black disabled - using ruff-format instead which is faster and compatible
+  # - repo: https://github.com/psf/black
+  #   rev: 23.12.1
+  #   hooks:
+  #     - id: black
+  #       language_version: python3
+  #       args: [--line-length=88]
 
   - repo: https://github.com/pycqa/isort
     rev: 5.13.2

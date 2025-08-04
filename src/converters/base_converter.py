@@ -45,7 +45,9 @@ class BaseIstatConverter(ABC):
             config = self.config_manager.get_datasets_config()
 
             if config and config.get("total_datasets", 0) > 0:
-                logger.info(f"✅ Loaded {config['total_datasets']} datasets from SQLite")
+                logger.info(
+                    f"✅ Loaded {config['total_datasets']} datasets from SQLite"
+                )
                 return config
             else:
                 logger.warning("SQLite config empty, returning minimal config")

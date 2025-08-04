@@ -443,16 +443,16 @@ class UnifiedDataIngestionPipeline:
         """Update dataset metadata in SQLite."""
         try:
             # Update dataset processing metadata
-            metadata_update = {
+            {
                 "dataset_id": dataset_id,
-                "last_processed": result.end_time.isoformat()
-                if result.end_time
-                else None,
+                "last_processed": (
+                    result.end_time.isoformat() if result.end_time else None
+                ),
                 "processing_status": result.status.value,
                 "records_processed": result.records_processed,
-                "quality_score": result.quality_score.overall_score
-                if result.quality_score
-                else None,
+                "quality_score": (
+                    result.quality_score.overall_score if result.quality_score else None
+                ),
                 "target_formats": list(conversion_results.keys()),
             }
 

@@ -13,6 +13,7 @@ from pathlib import Path
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+# Project imports (after path modification)
 from src.pipeline import PipelineConfig, PipelineService
 from src.utils.logger import get_logger
 
@@ -99,9 +100,11 @@ async def test_with_real_istat_files():
                     "status": result.status.value,
                     "records": result.records_processed,
                     "duration": duration,
-                    "quality": result.quality_score.overall_score
-                    if result.quality_score
-                    else 0,
+                    "quality": (
+                        result.quality_score.overall_score
+                        if result.quality_score
+                        else 0
+                    ),
                 }
             )
 

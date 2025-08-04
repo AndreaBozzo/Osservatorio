@@ -13,6 +13,7 @@ from pathlib import Path
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+# Project imports (after path modification)
 from src.database.duckdb.manager import DuckDBManager
 from src.database.sqlite.repository import UnifiedDataRepository
 from src.pipeline import PipelineConfig, PipelineService
@@ -72,10 +73,15 @@ def check_prerequisites():
 
     # Check key modules
     try:
-        from src.pipeline import PipelineService
+        import importlib.util
 
-        print("✅ Pipeline service: Available")
-        checks.append(True)
+        spec = importlib.util.find_spec("src.pipeline.PipelineService")
+        if spec is not None:
+            print("✅ Pipeline service: Available")
+            checks.append(True)
+        else:
+            print("❌ Pipeline service: Module not found")
+            checks.append(False)
     except ImportError as e:
         print(f"❌ Pipeline service: {e}")
         checks.append(False)
@@ -93,11 +99,11 @@ async def setup_databases():
 
     try:
         # Initialize SQLite repository
-        repository = UnifiedDataRepository()
+        UnifiedDataRepository()
         print("✅ SQLite metadata database initialized")
 
         # Initialize DuckDB
-        duckdb_manager = DuckDBManager()
+        DuckDBManager()
         print("✅ DuckDB analytics database initialized")
 
         # Check database files
