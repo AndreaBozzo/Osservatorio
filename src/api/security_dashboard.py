@@ -12,7 +12,7 @@ Real-time security monitoring and alerting system:
 from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Any
+from typing import Any, Optional
 
 from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import HTMLResponse
@@ -20,7 +20,7 @@ from pydantic import BaseModel
 
 from src.auth.enhanced_rate_limiter import EnhancedRateLimiter
 from src.auth.security_middleware import AuthenticationMiddleware
-from src.database.sqlite.manager import SQLiteMetadataManager
+from src.database.sqlite.manager_factory import get_audit_manager
 from src.utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -66,18 +66,19 @@ class SecurityDashboard:
         self,
         enhanced_limiter: EnhancedRateLimiter,
         auth_middleware: AuthenticationMiddleware,
-        db_manager: SQLiteMetadataManager,
+        db_path: Optional[str] = None,
     ):
         """Initialize security dashboard
 
         Args:
             enhanced_limiter: Enhanced rate limiter instance
             auth_middleware: Authentication middleware
-            db_manager: Database manager
+            db_path: SQLite database path
         """
         self.enhanced_limiter = enhanced_limiter
         self.auth_middleware = auth_middleware
-        self.db = db_manager
+        # Initialize specialized manager for audit operations
+        self.audit_manager = get_audit_manager(db_path)
         self.logger = logger
 
         # Alert thresholds
@@ -103,7 +104,7 @@ class SecurityDashboard:
             threat_score = self._calculate_threat_score(limiter_metrics)
 
             # Get additional metrics
-            with self.db.transaction() as conn:
+            with self.audit_manager.transaction() as conn:
                 cursor = conn.cursor()
 
                 # Active API keys count
@@ -153,7 +154,7 @@ class SecurityDashboard:
             alerts = []
             since = datetime.utcnow() - timedelta(hours=hours)
 
-            with self.db.transaction() as conn:
+            with self.audit_manager.transaction() as conn:
                 cursor = conn.cursor()
 
                 # Rate limit violations
@@ -261,7 +262,7 @@ class SecurityDashboard:
         try:
             blocked_ips = []
 
-            with self.db.transaction() as conn:
+            with self.audit_manager.transaction() as conn:
                 cursor = conn.cursor()
                 cursor.execute(
                     """
@@ -302,7 +303,7 @@ class SecurityDashboard:
             True if successful, False otherwise
         """
         try:
-            with self.db.transaction() as conn:
+            with self.audit_manager.transaction() as conn:
                 cursor = conn.cursor()
                 cursor.execute(
                     """
@@ -337,7 +338,7 @@ class SecurityDashboard:
             since = datetime.utcnow() - timedelta(hours=hours)
             stats = {}
 
-            with self.db.transaction() as conn:
+            with self.audit_manager.transaction() as conn:
                 cursor = conn.cursor()
 
                 # Violations by endpoint
@@ -444,7 +445,7 @@ class SecurityDashboard:
             stats = {}
             since = datetime.utcnow() - timedelta(hours=24)
 
-            with self.db.transaction() as conn:
+            with self.audit_manager.transaction() as conn:
                 cursor = conn.cursor()
                 cursor.execute(
                     """
@@ -569,12 +570,12 @@ class SecurityDashboard:
 def create_security_router(
     enhanced_limiter: EnhancedRateLimiter,
     auth_middleware: AuthenticationMiddleware,
-    db_manager: SQLiteMetadataManager,
+    db_path: Optional[str] = None,
 ) -> APIRouter:
     """Create FastAPI router for security dashboard endpoints"""
 
     router = APIRouter(prefix="/api/security", tags=["security"])
-    dashboard = SecurityDashboard(enhanced_limiter, auth_middleware, db_manager)
+    dashboard = SecurityDashboard(enhanced_limiter, auth_middleware, db_path)
 
     @router.get("/metrics", response_model=SecurityMetrics)
     async def get_security_metrics():

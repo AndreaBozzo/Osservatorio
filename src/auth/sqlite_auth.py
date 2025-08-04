@@ -17,7 +17,11 @@ from typing import Optional
 
 import bcrypt
 
-from src.database.sqlite.manager import SQLiteMetadataManager
+from src.database.sqlite.manager_factory import (
+    get_audit_manager,
+    get_configuration_manager,
+    get_user_manager,
+)
 from src.utils.logger import get_logger
 from src.utils.security_enhanced import SecurityManager
 
@@ -44,9 +48,12 @@ class SQLiteAuthManager:
     KEY_PREFIX = "osv_"
     KEY_LENGTH = 32
 
-    def __init__(self, sqlite_manager: SQLiteMetadataManager):
+    def __init__(self, db_path: Optional[str] = None):
         """Initialize auth manager with SQLite backend"""
-        self.db = sqlite_manager
+        # Initialize specialized managers
+        self.audit_manager = get_audit_manager(db_path)
+        self.config_manager = get_configuration_manager(db_path)
+        self.user_manager = get_user_manager(db_path)
         self.logger = logger
 
         # Ensure auth schema exists
@@ -58,7 +65,7 @@ class SQLiteAuthManager:
         """Ensure authentication schema exists in SQLite"""
         try:
             # Extend existing api_credentials table with auth-specific columns
-            with self.db.transaction() as conn:
+            with self.audit_manager.transaction() as conn:
                 cursor = conn.cursor()
 
                 # Add auth columns if they don't exist
@@ -155,7 +162,7 @@ class SQLiteAuthManager:
                 expires_at = datetime.now() + timedelta(days=expires_days)
 
             # Store in database
-            with self.db.transaction() as conn:
+            with self.audit_manager.transaction() as conn:
                 cursor = conn.cursor()
 
                 # Generate unique service_name to avoid constraint conflicts
@@ -235,7 +242,7 @@ class SQLiteAuthManager:
             if not api_key.startswith(self.KEY_PREFIX):
                 return None
 
-            with self.db.transaction() as conn:
+            with self.audit_manager.transaction() as conn:
                 cursor = conn.cursor()
 
                 # Get all active API keys for verification
@@ -312,7 +319,7 @@ class SQLiteAuthManager:
             True if successfully revoked, False otherwise
         """
         try:
-            with self.db.transaction() as conn:
+            with self.audit_manager.transaction() as conn:
                 cursor = conn.cursor()
 
                 cursor.execute(
@@ -350,7 +357,7 @@ class SQLiteAuthManager:
             List of APIKey objects (without actual key values)
         """
         try:
-            with self.db.transaction() as conn:
+            with self.audit_manager.transaction() as conn:
                 cursor = conn.cursor()
 
                 if include_revoked:
@@ -444,7 +451,7 @@ class SQLiteAuthManager:
     def _update_key_usage(self, api_key_id: int):
         """Update API key usage statistics"""
         try:
-            with self.db.transaction() as conn:
+            with self.audit_manager.transaction() as conn:
                 cursor = conn.cursor()
 
                 cursor.execute(
@@ -477,7 +484,7 @@ class SQLiteAuthManager:
             }
 
             # Use existing audit logging from SQLite manager
-            with self.db.transaction() as conn:
+            with self.audit_manager.transaction() as conn:
                 cursor = conn.cursor()
 
                 cursor.execute(

@@ -14,7 +14,7 @@ import hashlib
 from datetime import datetime, timedelta
 from typing import Optional
 
-from src.database.sqlite.manager import SQLiteMetadataManager
+from src.database.sqlite.manager_factory import get_audit_manager
 from src.utils.logger import get_logger
 
 from .models import APIKey
@@ -87,9 +87,10 @@ class SQLiteRateLimiter:
     WINDOW_HOUR = "hour"
     WINDOW_DAY = "day"
 
-    def __init__(self, sqlite_manager: SQLiteMetadataManager):
+    def __init__(self, db_path: Optional[str] = None):
         """Initialize rate limiter with SQLite backend"""
-        self.db = sqlite_manager
+        # Initialize specialized manager for rate limiting operations
+        self.audit_manager = get_audit_manager(db_path)
         self.logger = logger
 
         # Ensure rate limiting schema exists
@@ -100,7 +101,7 @@ class SQLiteRateLimiter:
     def _ensure_rate_limit_schema(self):
         """Ensure rate limiting tables exist"""
         try:
-            with self.db.transaction() as conn:
+            with self.audit_manager.transaction() as conn:
                 cursor = conn.cursor()
 
                 # Check if rate_limits table exists and has old schema
@@ -349,7 +350,7 @@ class SQLiteRateLimiter:
     ) -> int:
         """Get request count for time window"""
         try:
-            with self.db.transaction() as conn:
+            with self.audit_manager.transaction() as conn:
                 cursor = conn.cursor()
 
                 cursor.execute(
@@ -388,7 +389,7 @@ class SQLiteRateLimiter:
                 (self.WINDOW_DAY, 1440),
             ]
 
-            with self.db.transaction() as conn:
+            with self.audit_manager.transaction() as conn:
                 cursor = conn.cursor()
 
                 for window_type, minutes in windows:
@@ -462,7 +463,7 @@ class SQLiteRateLimiter:
         try:
             exceeded_by = result.limit - result.remaining
 
-            with self.db.transaction() as conn:
+            with self.audit_manager.transaction() as conn:
                 cursor = conn.cursor()
 
                 cursor.execute(
@@ -502,7 +503,7 @@ class SQLiteRateLimiter:
         try:
             now = datetime.utcnow()
 
-            with self.db.transaction() as conn:
+            with self.audit_manager.transaction() as conn:
                 cursor = conn.cursor()
 
                 cursor.execute(
@@ -546,7 +547,7 @@ class SQLiteRateLimiter:
                 (self.WINDOW_DAY, 1440),
             ]
 
-            with self.db.transaction() as conn:
+            with self.audit_manager.transaction() as conn:
                 cursor = conn.cursor()
 
                 for window_type, minutes in windows:
