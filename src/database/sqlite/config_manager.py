@@ -57,7 +57,7 @@ class ConfigurationManager(BaseSQLiteManager):
             # Insert or update configuration
             query = """
                 INSERT OR REPLACE INTO system_config (
-                    key, value, config_type, updated_at
+                    config_key, config_value, config_type, updated_at
                 ) VALUES (?, ?, ?, CURRENT_TIMESTAMP)
             """
 
@@ -86,16 +86,16 @@ class ConfigurationManager(BaseSQLiteManager):
         """
         try:
             query = """
-                SELECT value, config_type
+                SELECT config_value, config_type
                 FROM system_config
-                WHERE key = ?
+                WHERE config_key = ?
             """
 
             results = self.execute_query(query, (key,))
 
             if results:
                 row = results[0]
-                value = row["value"]
+                value = row["config_value"]
                 config_type = row["config_type"]
 
                 # Convert value based on type
@@ -154,7 +154,7 @@ class ConfigurationManager(BaseSQLiteManager):
             True if deleted successfully, False otherwise
         """
         try:
-            query = "DELETE FROM system_config WHERE key = ?"
+            query = "DELETE FROM system_config WHERE config_key = ?"
             affected_rows = self.execute_update(query, (key,))
 
             if affected_rows > 0:
@@ -180,24 +180,24 @@ class ConfigurationManager(BaseSQLiteManager):
         try:
             if key_pattern:
                 query = """
-                    SELECT key, value, config_type
+                    SELECT config_key, config_value, config_type
                     FROM system_config
-                    WHERE key LIKE ?
-                    ORDER BY key
+                    WHERE config_key LIKE ?
+                    ORDER BY config_key
                 """
                 results = self.execute_query(query, (key_pattern,))
             else:
                 query = """
-                    SELECT key, value, config_type
+                    SELECT config_key, config_value, config_type
                     FROM system_config
-                    ORDER BY key
+                    ORDER BY config_key
                 """
                 results = self.execute_query(query)
 
             configs = {}
             for row in results:
-                key = row["key"]
-                value = row["value"]
+                key = row["config_key"]
+                value = row["config_value"]
                 config_type = row["config_type"]
 
                 # Convert value based on type (same logic as get_config)

@@ -64,9 +64,9 @@ class DatasetManager(BaseSQLiteManager):
             # Insert dataset
             query = """
                 INSERT OR REPLACE INTO dataset_registry (
-                    dataset_id, name, category, description, metadata,
-                    istat_agency, priority, created_at, updated_at, is_active
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1)
+                    dataset_id, name, category, description, metadata_json,
+                    istat_agency, priority, last_updated, is_active
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, 1)
             """
 
             affected_rows = self.execute_update(
@@ -115,14 +115,18 @@ class DatasetManager(BaseSQLiteManager):
                 dataset = dict(row)
 
                 # Parse metadata JSON
-                if dataset.get("metadata"):
+                if dataset.get("metadata_json"):
                     try:
-                        dataset["metadata"] = json.loads(dataset["metadata"])
+                        dataset["metadata"] = json.loads(dataset["metadata_json"])
                     except json.JSONDecodeError:
                         logger.warning(
                             f"Invalid metadata JSON for dataset {dataset_id}"
                         )
                         dataset["metadata"] = {}
+                    # Remove the raw JSON field
+                    del dataset["metadata_json"]
+                else:
+                    dataset["metadata"] = {}
 
                 logger.debug(f"Dataset retrieved: {dataset_id}")
                 return dataset
@@ -180,14 +184,18 @@ class DatasetManager(BaseSQLiteManager):
                 dataset = dict(row)
 
                 # Parse metadata JSON
-                if dataset.get("metadata"):
+                if dataset.get("metadata_json"):
                     try:
-                        dataset["metadata"] = json.loads(dataset["metadata"])
+                        dataset["metadata"] = json.loads(dataset["metadata_json"])
                     except json.JSONDecodeError:
                         logger.warning(
                             f"Invalid metadata JSON for dataset {dataset['dataset_id']}"
                         )
                         dataset["metadata"] = {}
+                    # Remove the raw JSON field
+                    del dataset["metadata_json"]
+                else:
+                    dataset["metadata"] = {}
 
                 datasets.append(dataset)
 
