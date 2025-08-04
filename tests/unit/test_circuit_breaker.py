@@ -3,6 +3,7 @@
 Test suite for circuit_breaker.py
 Currently 0% coverage - high priority for coverage improvement
 """
+
 import time
 from datetime import datetime, timedelta
 from unittest.mock import Mock
@@ -29,7 +30,7 @@ class TestCircuitBreaker:
         cb = CircuitBreaker()
         assert cb.failure_threshold == 5
         assert cb.recovery_timeout == 60
-        assert cb.expected_exception == Exception
+        assert cb.expected_exception is Exception
         assert cb.state == CircuitState.CLOSED
         assert cb.failure_count == 0
         assert cb.last_failure_time is None
@@ -41,7 +42,7 @@ class TestCircuitBreaker:
         )
         assert cb.failure_threshold == 10
         assert cb.recovery_timeout == 120
-        assert cb.expected_exception == ValueError
+        assert cb.expected_exception is ValueError
 
     def test_closed_state_success(self):
         """Test successful calls in CLOSED state"""

@@ -3,6 +3,7 @@
 Script per pulizia dei file temporanei del sistema ISTAT.
 Può essere eseguito manualmente o schedulato via cron/task scheduler.
 """
+
 import argparse
 from pathlib import Path
 

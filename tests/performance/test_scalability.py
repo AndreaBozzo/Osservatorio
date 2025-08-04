@@ -239,12 +239,12 @@ class TestScalabilityPerformance:
         )
 
         # Allow up to 1.2x slower than expected (20% tolerance for system variations)
-        assert (
-            parquet_write_ratio < 1.2
-        ), f"Parquet write not optimally faster: {parquet_write_ratio:.2f}x vs Excel"
-        assert (
-            parquet_read_ratio < 1.2
-        ), f"Parquet read not optimally faster: {parquet_read_ratio:.2f}x vs Excel"
+        assert parquet_write_ratio < 1.2, (
+            f"Parquet write not optimally faster: {parquet_write_ratio:.2f}x vs Excel"
+        )
+        assert parquet_read_ratio < 1.2, (
+            f"Parquet read not optimally faster: {parquet_read_ratio:.2f}x vs Excel"
+        )
 
     def test_categorization_performance(self):
         """Test categorization performance with many datasets."""

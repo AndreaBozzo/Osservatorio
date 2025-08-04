@@ -105,7 +105,7 @@ def demo_star_schema_generation(optimizer: PowerBIOptimizer, dataset_id: str):
                 f"   Recommended Refresh Frequency: {metrics.get('recommended_refresh_frequency', 'unknown')}"
             )
             print(
-                f"   Star Schema Optimization Potential: {metrics.get('star_schema_optimization_potential', 0)*100:.1f}%"
+                f"   Star Schema Optimization Potential: {metrics.get('star_schema_optimization_potential', 0) * 100:.1f}%"
             )
         else:
             print(f"   ⚠️ Could not retrieve performance metrics: {metrics['error']}")
@@ -142,7 +142,7 @@ def demo_dax_measures(optimizer: PowerBIOptimizer, dataset_id: str):
         measures_cached = optimizer.dax_engine.get_standard_measures(dataset_id)
         cache_time = time.time() - start_time
 
-        print(f"✅ Cached retrieval completed in {cache_time*1000:.2f}ms")
+        print(f"✅ Cached retrieval completed in {cache_time * 1000:.2f}ms")
         print(f"   Cache hit: {measures == measures_cached}")
 
     except Exception as e:

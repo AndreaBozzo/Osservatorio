@@ -15,6 +15,7 @@ Usage:
     python scripts/generate_api_key.py revoke --id 123
     python scripts/generate_api_key.py test --key osv_abc123...
 """
+
 import argparse
 import sys
 from datetime import datetime, timedelta

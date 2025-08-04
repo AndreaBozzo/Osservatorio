@@ -5,26 +5,41 @@ This module provides a unified pipeline for orchestrating the complete flow:
 ISTAT API → SDMX Parsing → Data Transformation → Quality Assessment → Storage
 
 Key Components:
-- PipelineController: Main orchestrator for end-to-end processing
-- EnhancedSDMXParser: Complete ISTAT SDMX XML structure parsing
-- DataQualityValidator: Comprehensive data quality assessment
+- UnifiedDataIngestionPipeline: Core pipeline orchestrator
+- IngestionJobManager: Batch processing and job management
+- PipelineService: High-level service interface
 - PipelineConfig: Configurable processing parameters and quality thresholds
 
 Usage:
-    from src.pipeline import UnifiedPipelineController, PipelineConfig
+    from src.pipeline import PipelineService, PipelineConfig
 
     config = PipelineConfig()
-    controller = UnifiedPipelineController(config)
-    result = await controller.process_dataset("DCIS_POPRES1")
+    service = PipelineService(config)
+    result = await service.process_dataset("DCIS_POPRES1")
 """
 
-from .models import PipelineConfig, PipelineResult, PipelineStatus, QualityScore
+from .job_manager import IngestionJobManager
+from .models import (
+    BatchResult,
+    PipelineConfig,
+    PipelineResult,
+    PipelineStatus,
+    QualityLevel,
+    QualityScore,
+)
+from .pipeline_service import PipelineService
+from .unified_ingestion import UnifiedDataIngestionPipeline
 
 __all__ = [
+    "UnifiedDataIngestionPipeline",
+    "IngestionJobManager",
+    "PipelineService",
     "PipelineConfig",
     "PipelineResult",
     "PipelineStatus",
+    "BatchResult",
     "QualityScore",
+    "QualityLevel",
 ]
 
 # Version info for Issue #63 implementation

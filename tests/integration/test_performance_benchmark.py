@@ -189,9 +189,9 @@ class TestPerformanceBenchmark:
         memory_increase = final_memory - initial_memory
 
         # Memory increase should be reasonable (less than 50MB)
-        assert (
-            memory_increase < 50 * 1024 * 1024
-        ), f"Memory leak detected: {memory_increase / 1024 / 1024:.1f}MB increase"
+        assert memory_increase < 50 * 1024 * 1024, (
+            f"Memory leak detected: {memory_increase / 1024 / 1024:.1f}MB increase"
+        )
 
 
 class TestPerformanceRegression:

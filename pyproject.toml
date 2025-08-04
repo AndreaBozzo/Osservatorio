@@ -250,7 +250,8 @@ ignore = [
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]
 "tests/**/*" = ["B011"]
-"scripts/legacy/**" = ["F401", "E402"]  # legacy scripts can have import issues
+"scripts/**" = ["F401", "E402"]  # all scripts can have import issues after path modification
+"examples/**" = ["E402"]  # examples can have imports after path modification
 "scripts/benchmark_*" = ["B015"]  # benchmark scripts may have unused comparisons
 "src/api/fastapi_app.py" = ["E402"]  # router imports after app definition
 

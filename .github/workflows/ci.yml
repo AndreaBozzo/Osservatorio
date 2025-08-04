@@ -34,7 +34,8 @@ jobs:
 
       - name: Check code formatting
         run: |
-          black --check .
+          ruff check .
+          ruff format --check .
           isort --check-only --profile=black .
 
       - name: Basic security scan

@@ -2,6 +2,7 @@
 """
 Script per migrare i file nella nuova struttura.
 """
+
 import shutil
 from pathlib import Path
 
