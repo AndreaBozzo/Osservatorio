@@ -131,7 +131,7 @@ async def test_with_real_istat_files():
 
     print(f"Files Processed: {len(results)}")
     print(f"Successful: {successful}")
-    print(f"Success Rate: {(successful/len(results)*100):.1f}%")
+    print(f"Success Rate: {(successful / len(results) * 100):.1f}%")
     print(f"Total Records: {total_records:,}")
     print(f"Total Duration: {total_duration:.2f}s")
 
@@ -221,11 +221,11 @@ async def test_batch_with_real_data():
             else:
                 print(f"   ❌ {result.dataset_id}: {result.error_message}")
 
-        print(f"   Success Rate: {(successful/len(results)*100):.1f}%")
+        print(f"   Success Rate: {(successful / len(results) * 100):.1f}%")
         print(f"   Total Records: {total_records:,}")
 
         if duration > 0:
-            print(f"   Batch Throughput: {total_records/duration:.1f} records/sec")
+            print(f"   Batch Throughput: {total_records / duration:.1f} records/sec")
 
         return results
 

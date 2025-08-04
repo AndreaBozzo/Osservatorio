@@ -83,7 +83,7 @@ class TestDuckDBPerformance:
             # Generate test data
             test_data = pd.DataFrame(
                 {
-                    "dataset_id": [f"PERF_TEST_{i//100}" for i in range(size)],
+                    "dataset_id": [f"PERF_TEST_{i // 100}" for i in range(size)],
                     "year": [2020 + (i % 5) for i in range(size)],
                     "territory_code": [f"IT_{i % 20:02d}" for i in range(size)],
                     "territory_name": [f"Territory {i % 20}" for i in range(size)],
@@ -345,7 +345,7 @@ class TestDuckDBPerformance:
             {
                 "dataset_row_id": list(range(1, large_dataset_size + 1)),
                 "dataset_id": [
-                    f"LARGE_TEST_{i//1000}" for i in range(large_dataset_size)
+                    f"LARGE_TEST_{i // 1000}" for i in range(large_dataset_size)
                 ],
                 "year": [2015 + (i % 10) for i in range(large_dataset_size)],
                 "territory_code": [
@@ -389,7 +389,7 @@ class TestDuckDBPerformance:
 
         logger.info(
             f"Bulk insert 100k records: {insert_metrics['execution_time_seconds']:.2f}s, "
-            f"{large_dataset_size/insert_metrics['execution_time_seconds']:.0f} records/sec"
+            f"{large_dataset_size / insert_metrics['execution_time_seconds']:.0f} records/sec"
         )
 
         # Test aggregation performance
@@ -488,7 +488,7 @@ class TestDuckDBPerformance:
         test_size = 10000
         test_data = pd.DataFrame(
             {
-                "dataset_id": [f"INDEX_TEST_{i//100}" for i in range(test_size)],
+                "dataset_id": [f"INDEX_TEST_{i // 100}" for i in range(test_size)],
                 "year": [2015 + (i % 10) for i in range(test_size)],
                 "territory_code": [f"T_{i % 50:02d}" for i in range(test_size)],
                 "obs_value": [float(i * 1.5 + (i % 1000)) for i in range(test_size)],
@@ -591,7 +591,7 @@ class TestDuckDBPerformance:
             # Generate data compatible with simple_adapter schema
             test_data = pd.DataFrame(
                 {
-                    "dataset_id": [f"MEM_TEST_{i//100}" for i in range(size)],
+                    "dataset_id": [f"MEM_TEST_{i // 100}" for i in range(size)],
                     "year": [2020 + (i % 5) for i in range(size)],
                     "territory_code": [f"T_{i % 20:02d}" for i in range(size)],
                     "obs_value": [float(i) for i in range(size)],
@@ -630,7 +630,7 @@ class TestDuckDBPerformance:
             logger.info(
                 f"Memory usage for {size} records: "
                 f"{memory_patterns[size]['insert_delta']:.1f}MB delta, "
-                f"{memory_patterns[size]['memory_per_record']*1000:.2f} KB/record"
+                f"{memory_patterns[size]['memory_per_record'] * 1000:.2f} KB/record"
             )
 
             # Clean up for next iteration

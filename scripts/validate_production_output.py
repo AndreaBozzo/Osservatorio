@@ -82,7 +82,7 @@ def validate_powerbi_outputs():
                 # Sample data check
                 print("   Sample data:")
                 for i, row in df.head(2).iterrows():
-                    print(f"     Row {i+1}: {dict(row)}")
+                    print(f"     Row {i + 1}: {dict(row)}")
 
                 validation_results.append(True)
             else:
@@ -112,7 +112,7 @@ def validate_powerbi_outputs():
     )
     print("\n📈 VALIDATION SUMMARY:")
     print(f"   Files validated: {len(validation_results)}")
-    print(f"   Success rate: {success_rate*100:.1f}%")
+    print(f"   Success rate: {success_rate * 100:.1f}%")
 
     return success_rate >= 0.8
 

@@ -235,9 +235,9 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
                 headers["Access-Control-Allow-Credentials"] = "true"
 
             # Expose headers that client can access
-            headers[
-                "Access-Control-Expose-Headers"
-            ] = "X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset"
+            headers["Access-Control-Expose-Headers"] = (
+                "X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset"
+            )
 
             return headers
 

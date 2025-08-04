@@ -552,7 +552,7 @@ class ScalingStressTest:
 
         print(f"Test Categories: {total_tests}")
         print(f"Successful: {successful_tests}")
-        print(f"Success Rate: {(successful_tests/total_tests*100):.1f}%")
+        print(f"Success Rate: {(successful_tests / total_tests * 100):.1f}%")
 
         # Analyze results for scaling insights
         scaling_insights = self._analyze_scaling_insights()
@@ -582,9 +582,10 @@ class ScalingStressTest:
             },
         }
 
-        report_path = Path(
-            "data/performance_results"
-        ) / f"scaling_stress_test_{end_time.strftime('%Y%m%d_%H%M%S')}.json"
+        report_path = (
+            Path("data/performance_results")
+            / f"scaling_stress_test_{end_time.strftime('%Y%m%d_%H%M%S')}.json"
+        )
 
         import json
 

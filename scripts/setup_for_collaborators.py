@@ -87,7 +87,7 @@ def check_prerequisites():
         checks.append(False)
 
     success_rate = sum(checks) / len(checks)
-    print(f"\n📊 Prerequisites: {success_rate*100:.1f}% ready")
+    print(f"\n📊 Prerequisites: {success_rate * 100:.1f}% ready")
 
     return success_rate >= 0.8
 

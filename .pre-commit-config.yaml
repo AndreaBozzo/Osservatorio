@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v5.0.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
@@ -17,13 +17,14 @@ repos:
       - id: check-xml
       - id: detect-private-key
 
-  # Modern Python formatters and linters
+  # Modern Python formatters and linters - CHECK ONLY mode (aligned with CI)
   - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: v0.1.8
+    rev: v0.12.7
     hooks:
       - id: ruff
-        args: [--fix]
+        # No args needed - 'ruff check' is default behavior (no auto-fix)
       - id: ruff-format
+        args: [--check]  # Check only, no auto-format
 
 # Black disabled - using ruff-format instead which is faster and compatible
   # - repo: https://github.com/psf/black
@@ -34,10 +35,10 @@ repos:
   #       args: [--line-length=88]
 
   - repo: https://github.com/pycqa/isort
-    rev: 5.13.2
+    rev: 6.0.1
     hooks:
       - id: isort
-        args: [--profile=black, --line-length=88]
+        args: [--check-only, --profile=black, --line-length=88]  # Check only mode
 
   # flake8 temporarily disabled - ruff provides similar functionality
   # - repo: https://github.com/pycqa/flake8

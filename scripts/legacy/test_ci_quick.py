@@ -3,6 +3,7 @@
 Script per test rapidi in ambiente CI/CD
 Esegue solo i test essenziali per ridurre i tempi di build
 """
+
 import subprocess
 import sys
 

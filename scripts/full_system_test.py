@@ -445,9 +445,10 @@ class SystemTestSuite:
             ),
         }
 
-        report_path = Path(
-            "data/performance_results"
-        ) / f"full_system_test_{end_time.strftime('%Y%m%d_%H%M%S')}.json"
+        report_path = (
+            Path("data/performance_results")
+            / f"full_system_test_{end_time.strftime('%Y%m%d_%H%M%S')}.json"
+        )
         with open(report_path, "w", encoding="utf-8") as f:
             json.dump(report_data, f, indent=2)
 

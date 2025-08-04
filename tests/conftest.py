@@ -399,7 +399,7 @@ def sample_performance_test_data():
         base_dt = datetime.fromisoformat(base_date)
 
         return {
-            "dataset_id": [f"PERF_TEST_{i//100}" for i in range(size)],
+            "dataset_id": [f"PERF_TEST_{i // 100}" for i in range(size)],
             "territory_code": [f"IT_{i % 20:02d}" for i in range(size)],
             "territory_name": [f"Territory {i % 20}" for i in range(size)],
             "year": [2020 + (i % 5) for i in range(size)],

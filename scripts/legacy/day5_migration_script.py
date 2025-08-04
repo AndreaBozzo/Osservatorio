@@ -6,6 +6,7 @@ Implements migration scripts with rollback capability as required by Day 5 deliv
 This script migrates data from legacy storage patterns to the new UnifiedDataRepository
 pattern with SQLite metadata + DuckDB analytics.
 """
+
 import json
 import shutil
 import sys

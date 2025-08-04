@@ -840,12 +840,12 @@ def render_sidebar():
     info = CATEGORIES[category]
     st.sidebar.markdown(
         f"""
-    <div style="background: linear-gradient(135deg, {info['color']}20, {info['color']}10);
+    <div style="background: linear-gradient(135deg, {info["color"]}20, {info["color"]}10);
                 padding: 1rem; border-radius: 10px; margin: 1rem 0;">
-        <h4>{info['emoji']} {category.title()}</h4>
-        <p style="font-size: 0.9rem; margin: 0.5rem 0;">{info['description']}</p>
+        <h4>{info["emoji"]} {category.title()}</h4>
+        <p style="font-size: 0.9rem; margin: 0.5rem 0;">{info["description"]}</p>
         <div style="font-size: 0.8rem; color: #666;">
-            <strong>Priorità:</strong> {info['priority']}/10<br>
+            <strong>Priorità:</strong> {info["priority"]}/10<br>
             <strong>Fonte:</strong> ISTAT SDMX API
         </div>
     </div>
@@ -898,13 +898,13 @@ def render_sidebar():
     freshness = get_data_freshness_status()
     st.sidebar.markdown(
         f"""
-    <div style="background: linear-gradient(135deg, #{freshness['color']}20, #{freshness['color']}10);
+    <div style="background: linear-gradient(135deg, #{freshness["color"]}20, #{freshness["color"]}10);
                 padding: 0.8rem; border-radius: 8px; margin: 0.5rem 0;">
         <div style="font-size: 0.9rem; font-weight: 600;">
-            🟢 Status: {freshness['staleness']}
+            🟢 Status: {freshness["staleness"]}
         </div>
         <div style="font-size: 0.8rem; color: #666;">
-            Ultimo aggiornamento: {freshness['last_refresh']}
+            Ultimo aggiornamento: {freshness["last_refresh"]}
         </div>
     </div>
     """,
@@ -1057,10 +1057,10 @@ def render_category_dashboard(category, datasets, year_range):
         f"""
     <div class="category-section">
         <div class="category-title">
-            {info['emoji']} Analisi {category.title()}
+            {info["emoji"]} Analisi {category.title()}
         </div>
         <div class="category-description">
-            {info['description']}
+            {info["description"]}
         </div>
     </div>
     """,
@@ -1075,7 +1075,7 @@ def render_category_dashboard(category, datasets, year_range):
         if category == "popolazione":
             st.metric("🏠 Valore Attuale", f"{metrics['latest']:,.0f}", "abitanti")
         elif category == "economia":
-            st.metric("💰 PIL Attuale", f"{metrics['latest']/1000:.1f}B", "EUR")
+            st.metric("💰 PIL Attuale", f"{metrics['latest'] / 1000:.1f}B", "EUR")
         else:
             st.metric("📊 Valore Attuale", f"{metrics['latest']:.1f}%", "tasso")
 
@@ -1093,7 +1093,7 @@ def render_category_dashboard(category, datasets, year_range):
         if category == "popolazione":
             st.metric("📊 Media Periodo", f"{metrics['avg']:,.0f}", "abitanti")
         elif category == "economia":
-            st.metric("📊 Media Periodo", f"{metrics['avg']/1000:.1f}B", "EUR")
+            st.metric("📊 Media Periodo", f"{metrics['avg'] / 1000:.1f}B", "EUR")
         else:
             st.metric("📊 Media Periodo", f"{metrics['avg']:.1f}%", "tasso")
 
@@ -1157,9 +1157,9 @@ def render_category_dashboard(category, datasets, year_range):
                 st.write(f"**Massimo:** {max_val:,.0f}")
                 st.write(f"**Media:** {mean_val:,.0f}")
             elif category == "economia":
-                st.write(f"**Minimo:** {min_val/1000:.1f}B €")
-                st.write(f"**Massimo:** {max_val/1000:.1f}B €")
-                st.write(f"**Media:** {mean_val/1000:.1f}B €")
+                st.write(f"**Minimo:** {min_val / 1000:.1f}B €")
+                st.write(f"**Massimo:** {max_val / 1000:.1f}B €")
+                st.write(f"**Media:** {mean_val / 1000:.1f}B €")
             else:
                 st.write(f"**Minimo:** {min_val:.1f}%")
                 st.write(f"**Massimo:** {max_val:.1f}%")

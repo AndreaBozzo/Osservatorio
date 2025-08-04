@@ -289,7 +289,7 @@ class TestDataflowServiceIntegration:
             xmlns:str="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/structure"
             xmlns:com="http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common">
             <message:DataSet>
-                {''.join(dataflows_xml)}
+                {"".join(dataflows_xml)}
             </message:DataSet>
         </message:StructureSpecificData>"""
 

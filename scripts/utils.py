@@ -9,6 +9,7 @@ Common functions used across multiple scripts including:
 - Error handling
 - Script setup patterns
 """
+
 import json
 import logging
 from datetime import datetime

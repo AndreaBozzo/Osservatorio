@@ -162,14 +162,14 @@ class QualityDemonstration:
 
                 if "Circuit breaker is open" in str(e):
                     self.print_success(
-                        f"Circuit breaker aperto dopo {failures-1} fallimenti"
+                        f"Circuit breaker aperto dopo {failures - 1} fallimenti"
                     )
                     self.print_metric("Tempo protezione", f"{error_time:.3f}s")
                     circuit_opened = True
                     break
                 else:
                     self.print_info(
-                        f"Tentativo {i+1}: {str(e)[:30]}... ({error_time:.3f}s)"
+                        f"Tentativo {i + 1}: {str(e)[:30]}... ({error_time:.3f}s)"
                     )
 
         if circuit_opened:
@@ -249,7 +249,7 @@ class QualityDemonstration:
             self.print_metric("Datasets processati", f"{successful + failed}/{total}")
             self.print_metric("Successi", str(successful))
             self.print_metric("Fallimenti", str(failed))
-            self.print_metric("Throughput", f"{total/batch_time:.1f} ds/sec")
+            self.print_metric("Throughput", f"{total / batch_time:.1f} ds/sec")
 
             # Confronto con processing sequenziale teorico
             estimated_sequential = total * 2.0  # Stima 2s per dataset

@@ -2,6 +2,7 @@
 """
 Example: Using Real ISTAT XML Files
 """
+
 import asyncio
 import sys
 from pathlib import Path

@@ -5,6 +5,7 @@ Manual testing script for ProductionIstatClient with real ISTAT API.
 This script performs comprehensive testing against the actual ISTAT API
 to validate production readiness and performance characteristics.
 """
+
 import asyncio
 import time
 from datetime import datetime
@@ -94,7 +95,7 @@ class RealAPITester:
 
             # Show some examples
             for i, dataflow in enumerate(dataflows.get("dataflows", [])[:3]):
-                print(f"    {i+1}. {dataflow['name']} (ID: {dataflow['id']})")
+                print(f"    {i + 1}. {dataflow['name']} (ID: {dataflow['id']})")
 
             if len(dataflows.get("dataflows", [])) > 0:
                 self.test_results["dataflows_fetch"] = "PASS"
@@ -143,9 +144,9 @@ class RealAPITester:
                 return result_data
             else:
                 print(f"  ❌ Data error: {data_info.get('error', 'Unknown')}")
-                self.test_results[
-                    "single_dataset_fetch"
-                ] = f"FAIL: {data_info.get('error')}"
+                self.test_results["single_dataset_fetch"] = (
+                    f"FAIL: {data_info.get('error')}"
+                )
                 return None
 
         except Exception as e:
@@ -251,9 +252,9 @@ class RealAPITester:
             if sync_result.metadata_updated:
                 self.test_results["repository_integration"] = "PASS"
             else:
-                self.test_results[
-                    "repository_integration"
-                ] = "FAIL: Metadata not updated"
+                self.test_results["repository_integration"] = (
+                    "FAIL: Metadata not updated"
+                )
 
         except Exception as e:
             print(f"  ❌ Error: {e}")

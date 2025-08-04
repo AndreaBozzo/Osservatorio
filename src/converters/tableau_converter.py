@@ -324,7 +324,7 @@ class IstatXMLtoTableauConverter(BaseIstatConverter):
                 ),  # 2024-03
                 (
                     r"^(\d{4})-Q(\d)$",
-                    lambda m: f"{m.group(1)}-{str(int(m.group(2))*3).zfill(2)}-01",
+                    lambda m: f"{m.group(1)}-{str(int(m.group(2)) * 3).zfill(2)}-01",
                 ),  # 2024-Q1
                 (r"^(\d{4})-(\d{1,2})-(\d{1,2})$", lambda m: time_str),  # 2024-03-15
             ]
@@ -437,7 +437,7 @@ class IstatXMLtoTableauConverter(BaseIstatConverter):
             "successful_conversions": len(successful),
             "failed_conversions": len(failed),
             "success_rate": (
-                f"{(len(successful)/len(self.conversion_results)*100):.1f}%"
+                f"{(len(successful) / len(self.conversion_results) * 100):.1f}%"
                 if self.conversion_results
                 else "0%"
             ),
@@ -523,7 +523,7 @@ class IstatXMLtoTableauConverter(BaseIstatConverter):
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
         instructions = f"""# ISTRUZIONI TABLEAU - IMPORT DATI ISTAT
-Generato il: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+Generato il: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 Directory output: {output_dir}
 
 ## 📊 DATASET CONVERTITI ({len(successful_datasets)} pronti)
@@ -544,12 +544,12 @@ Directory output: {output_dir}
                 csv_file = Path(ds["output_files"].get("csv", "N/A")).name
                 excel_file = Path(ds["output_files"].get("excel", "N/A")).name
                 instructions += f"""
-**{ds['name']}**
+**{ds["name"]}**
 - File CSV: `{csv_file}`
 - File Excel: `{excel_file}`
-- Righe: {ds['cleaned_rows']:,}
-- Colonne: {len(ds['columns'])}
-- Colonne disponibili: {', '.join(ds['columns'][:5])}{'...' if len(ds['columns']) > 5 else ''}
+- Righe: {ds["cleaned_rows"]:,}
+- Colonne: {len(ds["columns"])}
+- Colonne disponibili: {", ".join(ds["columns"][:5])}{"..." if len(ds["columns"]) > 5 else ""}
 """
 
         instructions += """

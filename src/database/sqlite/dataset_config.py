@@ -306,7 +306,7 @@ class DatasetConfigManager:
                 # Execute update
                 update_sql = f"""
                     UPDATE dataset_registry
-                    SET {', '.join(update_fields)}
+                    SET {", ".join(update_fields)}
                     WHERE dataset_id = ?
                 """
                 update_values.append(dataset_id)

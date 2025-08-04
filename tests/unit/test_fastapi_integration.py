@@ -587,9 +587,9 @@ class TestFastAPIIntegration:
         if "x-process-time" in response.headers:
             process_time_ms = float(response.headers["x-process-time"])
             # Allow some flexibility in test environment
-            assert (
-                process_time_ms < 1000
-            ), f"Dataset list took {process_time_ms}ms (target: <100ms)"
+            assert process_time_ms < 1000, (
+                f"Dataset list took {process_time_ms}ms (target: <100ms)"
+            )
 
         # Test dataset detail performance (<200ms target)
         time.time()
@@ -600,9 +600,9 @@ class TestFastAPIIntegration:
 
         if "x-process-time" in response.headers:
             process_time_ms = float(response.headers["x-process-time"])
-            assert (
-                process_time_ms < 2000
-            ), f"Dataset detail took {process_time_ms}ms (target: <200ms)"
+            assert process_time_ms < 2000, (
+                f"Dataset detail took {process_time_ms}ms (target: <200ms)"
+            )
 
 
 class TestFastAPIStartupShutdown:

@@ -233,7 +233,7 @@ class IstatXMLToPowerBIConverter(BaseIstatConverter):
                 ),
                 (
                     r"^(\d{4})-Q(\d)$",
-                    lambda m: f"{m.group(1)}-{str(int(m.group(2))*3).zfill(2)}-01",
+                    lambda m: f"{m.group(1)}-{str(int(m.group(2)) * 3).zfill(2)}-01",
                 ),
                 (r"^(\d{4})-(\d{1,2})-(\d{1,2})$", lambda m: time_str),
             ]
@@ -401,7 +401,7 @@ class IstatXMLToPowerBIConverter(BaseIstatConverter):
             "successful_conversions": len(successful),
             "failed_conversions": len(failed),
             "success_rate": (
-                f"{(len(successful)/len(self.conversion_results)*100):.1f}%"
+                f"{(len(successful) / len(self.conversion_results) * 100):.1f}%"
                 if self.conversion_results
                 else "0%"
             ),
@@ -460,7 +460,7 @@ class IstatXMLToPowerBIConverter(BaseIstatConverter):
 
         guide_content = f"""# Guida Integrazione PowerBI - Dati ISTAT
 
-Generato il: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+Generato il: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 
 ## 📊 Dataset Convertiti ({len(successful_datasets)} pronti)
 
@@ -478,12 +478,12 @@ Generato il: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
             guide_content += f"\n### {category.upper()}\n"
             for ds in datasets:
                 guide_content += f"""
-**{ds['name']}**
-- File CSV: `{Path(ds['output_files']['csv']).name}`
-- File Excel: `{Path(ds['output_files']['excel']).name}`
-- File Parquet: `{Path(ds['output_files']['parquet']).name}`
-- Righe: {ds['cleaned_rows']:,}
-- Colonne: {len(ds['columns'])}
+**{ds["name"]}**
+- File CSV: `{Path(ds["output_files"]["csv"]).name}`
+- File Excel: `{Path(ds["output_files"]["excel"]).name}`
+- File Parquet: `{Path(ds["output_files"]["parquet"]).name}`
+- Righe: {ds["cleaned_rows"]:,}
+- Colonne: {len(ds["columns"])}
 """
 
         guide_content += """

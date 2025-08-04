@@ -10,6 +10,7 @@ Performs comprehensive security audit of authentication & security standardizati
 - Structured logging security
 - Legacy component removal verification
 """
+
 import json
 import sys
 from datetime import datetime
@@ -264,7 +265,7 @@ class SecurityAuditReport:
                         self.add_finding(
                             "HIGH",
                             "configuration",
-                            f"⚠️ Potential hardcoded secret at line {i+1}: {line.strip()}",
+                            f"⚠️ Potential hardcoded secret at line {i + 1}: {line.strip()}",
                         )
 
         return True

@@ -5,6 +5,7 @@
 A human-friendly script to verify that all components are working correctly.
 Run this script to get a quick overview of system health.
 """
+
 import sys
 from datetime import datetime
 from pathlib import Path

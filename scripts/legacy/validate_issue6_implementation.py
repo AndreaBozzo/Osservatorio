@@ -12,6 +12,7 @@ Usage:
     # Legacy support (run from project root):
     python scripts/validate_issue6_implementation.py
 """
+
 import json
 import sys
 from datetime import datetime
@@ -401,7 +402,7 @@ def generate_validation_report():
         "issue": "#6 - Enhanced Rate Limiting and API Protection",
         "total_tests": total,
         "passed_tests": passed,
-        "success_rate": f"{(passed/total)*100:.1f}%",
+        "success_rate": f"{(passed / total) * 100:.1f}%",
         "results": results,
         "status": "PASS" if passed == total else "FAIL",
         "summary": {

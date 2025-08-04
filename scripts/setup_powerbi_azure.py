@@ -255,12 +255,12 @@ class PowerBISetupWizard:
             filtered_content.append("\n")
 
         filtered_content.append("\n# PowerBI Configuration\n")
-        filtered_content.append(f'POWERBI_TENANT_ID={self.config["tenant_id"]}\n')
-        filtered_content.append(f'POWERBI_CLIENT_ID={self.config["client_id"]}\n')
+        filtered_content.append(f"POWERBI_TENANT_ID={self.config['tenant_id']}\n")
+        filtered_content.append(f"POWERBI_CLIENT_ID={self.config['client_id']}\n")
         filtered_content.append(
-            f'POWERBI_CLIENT_SECRET={self.config["client_secret"]}\n'
+            f"POWERBI_CLIENT_SECRET={self.config['client_secret']}\n"
         )
-        filtered_content.append(f'POWERBI_WORKSPACE_ID={self.config["workspace_id"]}\n')
+        filtered_content.append(f"POWERBI_WORKSPACE_ID={self.config['workspace_id']}\n")
 
         # Salva file
         with open(self.env_file, "w", encoding="utf-8") as f:

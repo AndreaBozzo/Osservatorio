@@ -137,7 +137,7 @@ class TestQueryBuilderPerformance:
 
         print(f"Built 1000 complex queries in {build_time:.4f}s")
         print(
-            f"Average time per query: {avg_time_per_query:.6f}s ({avg_time_per_query*1000:.3f}ms)"
+            f"Average time per query: {avg_time_per_query:.6f}s ({avg_time_per_query * 1000:.3f}ms)"
         )
 
         # Should build queries very quickly
@@ -203,7 +203,7 @@ class TestQueryBuilderPerformance:
         )
         print(f"Average query time: {avg_query_time:.4f}s")
         print(f"Max query time: {max_query_time:.4f}s")
-        print(f"Queries per second: {total_queries/total_time:.1f}")
+        print(f"Queries per second: {total_queries / total_time:.1f}")
 
         # Performance assertions
         assert avg_query_time < 0.1  # Average should be reasonable
@@ -258,7 +258,7 @@ class TestQueryBuilderPerformance:
                 memory_increase = current_memory - baseline_memory
 
                 print(
-                    f"After {i+1} queries: {current_memory:.1f} MB (+{memory_increase:.1f} MB)"
+                    f"After {i + 1} queries: {current_memory:.1f} MB (+{memory_increase:.1f} MB)"
                 )
 
                 # Memory growth should be bounded
@@ -402,7 +402,7 @@ class TestQueryBuilderPerformance:
         results = {}
 
         for i, pattern in enumerate(query_patterns):
-            pattern_name = f"Pattern_{i+1}"
+            pattern_name = f"Pattern_{i + 1}"
             times = []
 
             for run in range(10):  # 10 runs per pattern
@@ -437,15 +437,15 @@ class TestQueryBuilderPerformance:
         # Performance assertions
         for pattern, metrics in results.items():
             # All patterns should complete in reasonable time
-            assert (
-                metrics["avg_time"] < 0.5
-            ), f"{pattern} too slow: {metrics['avg_time']:.4f}s"
+            assert metrics["avg_time"] < 0.5, (
+                f"{pattern} too slow: {metrics['avg_time']:.4f}s"
+            )
 
             # Variance should be reasonable (cached queries should be consistent)
             time_variance = max(metrics["times"]) - min(metrics["times"])
-            assert (
-                time_variance < 0.3
-            ), f"{pattern} too much variance: {time_variance:.4f}s"
+            assert time_variance < 0.3, (
+                f"{pattern} too much variance: {time_variance:.4f}s"
+            )
 
         # Check overall cache performance
         cache_stats = cache.get_stats()
@@ -531,8 +531,8 @@ class TestQueryBuilderPerformance:
 
         # Success Criteria 3: <100ms for cached queries, <500ms uncached
         # Note: This is with mocked manager, real performance may vary
-        print(f"✓ Cached queries: {avg_cached*1000:.1f}ms (<100ms target)")
-        print(f"✓ Uncached queries: {avg_uncached*1000:.1f}ms (<500ms target)")
+        print(f"✓ Cached queries: {avg_cached * 1000:.1f}ms (<100ms target)")
+        print(f"✓ Uncached queries: {avg_uncached * 1000:.1f}ms (<500ms target)")
 
         # With mock, we can't test exact timing, but we validate the pattern
         assert avg_cached < avg_uncached  # Cached should be faster

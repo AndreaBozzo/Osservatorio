@@ -151,7 +151,7 @@ async def test_production_batch_processing():
 
         print(f"   Successful: {successful}")
         print(f"   Failed: {failed}")
-        print(f"   Success Rate: {(successful/len(batch_results)*100):.1f}%")
+        print(f"   Success Rate: {(successful / len(batch_results) * 100):.1f}%")
         print(f"   Total Records: {total_records}")
 
         return batch_results
@@ -427,7 +427,7 @@ async def main():
         total_tests = len(results)
 
         print(f"Tests Completed: {success_count}/{total_tests}")
-        print(f"Success Rate: {(success_count/total_tests*100):.1f}%")
+        print(f"Success Rate: {(success_count / total_tests * 100):.1f}%")
         print(f"Total Duration: {total_duration:.2f}s")
 
         if success_count == total_tests:
