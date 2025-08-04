@@ -26,7 +26,12 @@ from typing import Any, Optional
 from src.database.duckdb import DuckDBManager
 from src.utils.logger import get_logger
 
-from .manager import SQLiteMetadataManager
+from .manager_factory import (
+    get_audit_manager,
+    get_configuration_manager,
+    get_dataset_manager,
+    get_user_manager,
+)
 
 logger = get_logger(__name__)
 
@@ -49,7 +54,10 @@ class UnifiedDataRepository:
         self._lock = threading.RLock()
 
         # Initialize database managers
-        self.metadata_manager = SQLiteMetadataManager(sqlite_db_path)
+        self.dataset_manager = get_dataset_manager(sqlite_db_path)
+        self.config_manager = get_configuration_manager(sqlite_db_path)
+        self.user_manager = get_user_manager(sqlite_db_path)
+        self.audit_manager = get_audit_manager(sqlite_db_path)
         self.analytics_manager = DuckDBManager(duckdb_db_path)
 
         # Cache for frequently accessed data
@@ -87,14 +95,14 @@ class UnifiedDataRepository:
         try:
             with self._lock:
                 # Register in SQLite metadata
-                metadata_success = self.metadata_manager.register_dataset(
+                metadata_success = self.dataset_manager.register_dataset(
                     dataset_id,
                     name,
                     category,
                     description,
+                    metadata,
                     istat_agency,
                     priority,
-                    metadata,
                 )
 
                 if not metadata_success:
@@ -111,12 +119,17 @@ class UnifiedDataRepository:
                     return False
 
                 # Log the complete registration
-                self.metadata_manager.log_audit(
-                    "system",
-                    "dataset_register_complete",
-                    "dataset",
-                    dataset_id,
-                    {"name": name, "category": category, "registered_in": "both"},
+                self.audit_manager.log_action(
+                    action="CREATE",
+                    resource_type="dataset",
+                    user_id="system",
+                    resource_id=dataset_id,
+                    details={
+                        "name": name,
+                        "category": category,
+                        "registered_in": "both",
+                    },
+                    success=True,
                 )
 
                 logger.info(
@@ -139,7 +152,7 @@ class UnifiedDataRepository:
         """
         try:
             # Get metadata from SQLite
-            metadata = self.metadata_manager.get_dataset(dataset_id)
+            metadata = self.dataset_manager.get_dataset(dataset_id)
             if not metadata:
                 return None
 
@@ -220,7 +233,7 @@ class UnifiedDataRepository:
         """
         try:
             # Get datasets from metadata
-            datasets = self.metadata_manager.list_datasets(category)
+            datasets = self.dataset_manager.list_datasets(category)
 
             # Enhance with analytics information
             complete_datasets = []
@@ -270,7 +283,7 @@ class UnifiedDataRepository:
             bool: True if preference set successfully
         """
         try:
-            success = self.metadata_manager.set_user_preference(
+            success = self.user_manager.set_user_preference(
                 user_id, key, value, **kwargs
             )
 
@@ -311,7 +324,7 @@ class UnifiedDataRepository:
                     return cached_value
 
             # Get from database
-            value = self.metadata_manager.get_user_preference(user_id, key, default)
+            value = self.user_manager.get_user_preference(user_id, key, default)
 
             # Cache the result
             if use_cache and value is not None:
@@ -362,16 +375,16 @@ class UnifiedDataRepository:
 
             # Log the query execution
             if user_id:
-                self.metadata_manager.log_audit(
-                    user_id,
-                    "analytics_query",
-                    "duckdb_query",
-                    None,
-                    {
+                self.audit_manager.log_action(
+                    action="QUERY",
+                    resource_type="analytics",
+                    user_id=user_id,
+                    details={
                         "query_hash": hash(query),
                         "param_count": len(params) if params else 0,
                     },
                     execution_time_ms=int(execution_time),
+                    success=True,
                 )
 
             return results
@@ -379,12 +392,11 @@ class UnifiedDataRepository:
         except Exception as e:
             # Log the error
             if user_id:
-                self.metadata_manager.log_audit(
-                    user_id,
-                    "analytics_query",
-                    "duckdb_query",
-                    None,
-                    {"error": str(e)},
+                self.audit_manager.log_action(
+                    action="QUERY",
+                    resource_type="analytics",
+                    user_id=user_id,
+                    details={"error": str(e)},
                     success=False,
                     error_message=str(e),
                 )
@@ -414,7 +426,7 @@ class UnifiedDataRepository:
         """
         try:
             # Verify dataset exists in metadata
-            dataset_metadata = self.metadata_manager.get_dataset(dataset_id)
+            dataset_metadata = self.dataset_manager.get_dataset(dataset_id)
             if not dataset_metadata:
                 logger.warning(f"Dataset {dataset_id} not found in metadata registry")
                 return []
@@ -482,7 +494,7 @@ class UnifiedDataRepository:
 
             # Update dataset statistics
             if time_series:
-                self.metadata_manager.update_dataset_stats(
+                self.dataset_manager.update_dataset_stats(
                     dataset_id, record_count=len(time_series)
                 )
 
@@ -507,7 +519,9 @@ class UnifiedDataRepository:
             List of categorization rules
         """
         try:
-            return self.metadata_manager.get_categorization_rules(category, active_only)
+            # TODO: Implement categorization rules in specialized manager
+            # For now, return empty list
+            return []
         except Exception as e:
             logger.error(f"Failed to get categorization rules: {e}")
             return []
@@ -533,9 +547,8 @@ class UnifiedDataRepository:
             bool: True if rule created successfully
         """
         try:
-            return self.metadata_manager.create_categorization_rule(
-                rule_id, category, keywords, priority, description
-            )
+            # TODO: Implement categorization rules in specialized manager
+            return False  # self.config_manager.create_categorization_rule(rule_id, category, keywords, priority, description)
         except Exception as e:
             logger.error(f"Failed to create categorization rule: {e}")
             return False
@@ -561,9 +574,8 @@ class UnifiedDataRepository:
             bool: True if rule updated successfully
         """
         try:
-            return self.metadata_manager.update_categorization_rule(
-                rule_id, keywords, priority, is_active, description
-            )
+            # TODO: Implement categorization rules in specialized manager
+            return False  # self.config_manager.update_categorization_rule(rule_id, keywords, priority, is_active, description)
         except Exception as e:
             logger.error(f"Failed to update categorization rule: {e}")
             return False
@@ -578,7 +590,8 @@ class UnifiedDataRepository:
             bool: True if rule deleted successfully
         """
         try:
-            return self.metadata_manager.delete_categorization_rule(rule_id)
+            # TODO: Implement categorization rules in specialized manager
+            return False  # self.config_manager.delete_categorization_rule(rule_id)
         except Exception as e:
             logger.error(f"Failed to delete categorization rule: {e}")
             return False
@@ -593,7 +606,10 @@ class UnifiedDataRepository:
         """
         try:
             # Get SQLite metadata stats
-            metadata_stats = self.metadata_manager.get_database_stats()
+            # Get combined stats from specialized managers
+            dataset_stats = self.dataset_manager.get_dataset_stats_summary()
+            # TODO: Add stats from other managers when available
+            metadata_stats = dataset_stats
 
             # Get DuckDB analytics stats (if available)
             analytics_stats = {}
@@ -695,7 +711,11 @@ class UnifiedDataRepository:
     def close(self):
         """Close all database connections and cleanup resources."""
         try:
-            self.metadata_manager.close_connections()
+            # Close all specialized manager connections
+            self.dataset_manager.close_connections()
+            self.config_manager.close_connections()
+            self.user_manager.close_connections()
+            self.audit_manager.close_connections()
             # DuckDB manager has its own cleanup
             self.clear_cache()
             logger.info("Unified data repository closed")

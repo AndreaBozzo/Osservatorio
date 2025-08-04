@@ -12,6 +12,7 @@ from datetime import datetime
 import pytest
 
 from src.database.sqlite.repository import UnifiedDataRepository
+from src.database.sqlite.schema import MetadataSchema
 from tests.utils.database_cleanup import safe_database_cleanup
 
 
@@ -39,6 +40,11 @@ class TestUnifiedDataRepository:
     def repository(self, temp_paths):
         """Create unified data repository."""
         sqlite_path, duckdb_path = temp_paths
+
+        # Initialize SQLite schema before creating repository
+        schema = MetadataSchema(sqlite_path)
+        schema.create_schema()
+
         repo = UnifiedDataRepository(sqlite_path, duckdb_path)
         yield repo
         repo.close()

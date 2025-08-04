@@ -19,30 +19,30 @@ Key Components:
 """
 
 # New specialized managers (recommended)
-from .audit_manager import AuditManager, get_audit_manager
+from .audit_manager import AuditManager
 from .base_manager import BaseSQLiteManager
-from .config_manager import ConfigurationManager, get_configuration_manager
-from .dataset_manager import DatasetManager, get_dataset_manager
+from .config_manager import ConfigurationManager
+from .dataset_manager import DatasetManager
 
 # Legacy imports (for backward compatibility)
 from .manager import SQLiteMetadataManager, get_metadata_manager, reset_metadata_manager
+
+# Factory functions (recommended for getting instances)
 from .manager_factory import (
     SQLiteManagerFactory,
     get_all_managers,
+    get_audit_manager,
+    get_configuration_manager,
+    get_dataset_manager,
+    get_user_manager,
 )
-from .manager_factory import get_audit_manager as factory_get_audit_manager
-from .manager_factory import (
-    get_configuration_manager as factory_get_configuration_manager,
-)
-from .manager_factory import get_dataset_manager as factory_get_dataset_manager
-from .manager_factory import get_user_manager as factory_get_user_manager
 from .repository import (
     UnifiedDataRepository,
     get_unified_repository,
     reset_unified_repository,
 )
 from .schema import MetadataSchema, create_metadata_schema
-from .user_manager import UserManager, get_user_manager
+from .user_manager import UserManager
 
 __all__ = [
     # New specialized managers

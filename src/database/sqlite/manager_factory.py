@@ -44,7 +44,9 @@ class SQLiteManagerFactory:
         Returns:
             DatasetManager instance
         """
-        effective_path = db_path or cls._default_db_path
+        effective_path = (
+            db_path or cls._default_db_path or "data/databases/osservatorio_metadata.db"
+        )
         cache_key = f"dataset_{effective_path}"
 
         if cache_key not in cls._instances:
@@ -65,7 +67,9 @@ class SQLiteManagerFactory:
         Returns:
             ConfigurationManager instance
         """
-        effective_path = db_path or cls._default_db_path
+        effective_path = (
+            db_path or cls._default_db_path or "data/databases/osservatorio_metadata.db"
+        )
         cache_key = f"config_{effective_path}"
 
         if cache_key not in cls._instances:
@@ -84,7 +88,9 @@ class SQLiteManagerFactory:
         Returns:
             UserManager instance
         """
-        effective_path = db_path or cls._default_db_path
+        effective_path = (
+            db_path or cls._default_db_path or "data/databases/osservatorio_metadata.db"
+        )
         cache_key = f"user_{effective_path}"
 
         if cache_key not in cls._instances:
@@ -103,7 +109,9 @@ class SQLiteManagerFactory:
         Returns:
             AuditManager instance
         """
-        effective_path = db_path or cls._default_db_path
+        effective_path = (
+            db_path or cls._default_db_path or "data/databases/osservatorio_metadata.db"
+        )
         cache_key = f"audit_{effective_path}"
 
         if cache_key not in cls._instances:

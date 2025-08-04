@@ -237,16 +237,21 @@ class DatasetManager(BaseSQLiteManager):
                 update_fields.append("record_count = ?")
                 params.append(record_count)
 
+            # Note: file_size field doesn't exist in current schema
+            # Skip file_size updates for now
             if file_size is not None:
-                update_fields.append("file_size = ?")
-                params.append(file_size)
+                logger.debug(
+                    f"file_size update skipped (field not in schema): {file_size}"
+                )
 
             if quality_score is not None:
                 update_fields.append("quality_score = ?")
                 params.append(quality_score)
 
+            # Note: last_processed field doesn't exist in current schema
+            # Use last_updated instead
             if last_processed is not None:
-                update_fields.append("last_processed = ?")
+                update_fields.append("last_updated = ?")
                 params.append(last_processed)
 
             if not update_fields:
@@ -343,7 +348,7 @@ class DatasetManager(BaseSQLiteManager):
                     COUNT(DISTINCT category) as categories,
                     SUM(record_count) as total_records,
                     AVG(quality_score) as avg_quality_score,
-                    MAX(last_processed) as last_processing
+                    MAX(last_updated) as last_processing
                 FROM dataset_registry
             """
 
