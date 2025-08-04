@@ -376,8 +376,8 @@ class UnifiedDataRepository:
             # Log the query execution
             if user_id:
                 self.audit_manager.log_action(
-                    action="QUERY",
-                    resource_type="analytics",
+                    action="analytics_query",
+                    resource_type="duckdb_query",
                     user_id=user_id,
                     details={
                         "query_hash": hash(query),
@@ -393,8 +393,8 @@ class UnifiedDataRepository:
             # Log the error
             if user_id:
                 self.audit_manager.log_action(
-                    action="QUERY",
-                    resource_type="analytics",
+                    action="analytics_query",
+                    resource_type="duckdb_query",
                     user_id=user_id,
                     details={"error": str(e)},
                     success=False,
@@ -605,11 +605,29 @@ class UnifiedDataRepository:
             Dictionary with system status information
         """
         try:
-            # Get SQLite metadata stats
-            # Get combined stats from specialized managers
+            # Get SQLite metadata stats from all specialized managers
+            metadata_stats = {}
+
+            # Dataset stats
             dataset_stats = self.dataset_manager.get_dataset_stats_summary()
-            # TODO: Add stats from other managers when available
-            metadata_stats = dataset_stats
+            metadata_stats.update(dataset_stats)
+
+            # Add table counts using BaseSQLiteManager connection
+            conn = self.dataset_manager._get_connection()
+            table_counts = {
+                "dataset_registry": "SELECT COUNT(*) FROM dataset_registry",
+                "user_preferences": "SELECT COUNT(*) FROM user_preferences",
+                "audit_log": "SELECT COUNT(*) FROM audit_log",
+                "system_config": "SELECT COUNT(*) FROM system_config",
+            }
+
+            for table_name, query in table_counts.items():
+                try:
+                    cursor = conn.execute(query)
+                    metadata_stats[f"{table_name}_count"] = cursor.fetchone()[0]
+                except Exception as e:
+                    logger.debug(f"Could not get count for {table_name}: {e}")
+                    metadata_stats[f"{table_name}_count"] = 0
 
             # Get DuckDB analytics stats (if available)
             analytics_stats = {}

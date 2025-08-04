@@ -500,29 +500,35 @@ class MetadataSchema(BaseSQLiteManager):
             bool: True if schema dropped successfully, False otherwise.
         """
         try:
-            if self.db_path.exists():
+            from pathlib import Path
+
+            db_path_obj = Path(self.db_path)
+            if db_path_obj.exists():
                 # Force close any connections and clear WAL files on Windows
                 import gc
                 import time
 
+                # First, close all existing connections to avoid locks
+                self.close_connections()
+
                 # First, drop all tables to clear the schema content
                 try:
-                    # Use BaseSQLiteManager's transaction for consistency
-                    with self.transaction() as conn:
-                        # Get all tables
-                        cursor = conn.execute(
-                            "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'"
-                        )
-                        tables = [row[0] for row in cursor.fetchall()]
+                    # Get a fresh connection for drop operations
+                    conn = self._get_connection()
+                    # Get all tables
+                    cursor = conn.execute(
+                        "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'"
+                    )
+                    tables = [row[0] for row in cursor.fetchall()]
 
-                        # Drop all tables
-                        for table in tables:
-                            conn.execute(f"DROP TABLE IF EXISTS {table}")
+                    # Drop all tables
+                    for table in tables:
+                        conn.execute(f"DROP TABLE IF EXISTS {table}")
 
-                        # Checkpoint and close
-                        conn.execute("PRAGMA wal_checkpoint(TRUNCATE)")
-                        # Transaction is automatically committed by context manager
-                        logger.debug("All tables dropped from database")
+                    # Checkpoint and commit
+                    conn.execute("PRAGMA wal_checkpoint(TRUNCATE)")
+                    conn.commit()
+                    logger.debug("All tables dropped from database")
                 except Exception as e:
                     logger.debug(f"Error dropping tables (continuing): {e}")
 
@@ -533,7 +539,7 @@ class MetadataSchema(BaseSQLiteManager):
                 max_attempts = 3
                 for attempt in range(max_attempts):
                     try:
-                        self.db_path.unlink()
+                        db_path_obj.unlink()
                         logger.info("SQLite metadata database dropped successfully")
                         return True
                     except PermissionError:

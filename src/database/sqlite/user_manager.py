@@ -136,7 +136,7 @@ class UserManager(BaseSQLiteManager):
                         f"User preference retrieved (boolean): {user_id}.{preference_key} = {parsed_value}"
                     )
                     return parsed_value
-                elif preference_type == "number":
+                elif preference_type in ("number", "integer"):
                     try:
                         # Try integer first, then float
                         if "." in value:
@@ -202,7 +202,7 @@ class UserManager(BaseSQLiteManager):
                         preferences[key] = value
                 elif preference_type == "boolean":
                     preferences[key] = value.lower() in ("true", "1", "yes", "on")
-                elif preference_type == "number":
+                elif preference_type in ("number", "integer"):
                     try:
                         preferences[key] = float(value) if "." in value else int(value)
                     except ValueError:

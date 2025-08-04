@@ -196,6 +196,10 @@ class AuditManager(BaseSQLiteManager):
                 else:
                     log_entry["details"] = {}
 
+                # Convert SQLite integer to boolean
+                if "success" in log_entry:
+                    log_entry["success"] = bool(log_entry["success"])
+
                 audit_logs.append(log_entry)
 
             logger.debug(f"Retrieved {len(audit_logs)} audit log entries")

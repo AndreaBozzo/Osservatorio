@@ -41,7 +41,7 @@ class TestAPIKeyManagement(unittest.TestCase):
         self.temp_db.close()
 
         self.sqlite_manager = SQLiteMetadataManager(self.temp_db.name)
-        self.auth_manager = SQLiteAuthManager(self.sqlite_manager)
+        self.auth_manager = SQLiteAuthManager(self.temp_db.name)
 
     def tearDown(self):
         """Clean up test database"""
@@ -205,7 +205,7 @@ class TestJWTManager(unittest.TestCase):
         self.temp_db.close()
 
         self.sqlite_manager = SQLiteMetadataManager(self.temp_db.name)
-        self.jwt_manager = JWTManager(self.sqlite_manager, secret_key="test_secret_key")
+        self.jwt_manager = JWTManager(self.temp_db.name, secret_key="test_secret_key")
 
     def tearDown(self):
         """Clean up test database"""
@@ -267,7 +267,7 @@ class TestJWTManager(unittest.TestCase):
     def test_verify_token_expired(self):
         """Test verification of expired JWT token"""
         # Create JWT manager with very short expiration
-        short_jwt = JWTManager(self.sqlite_manager, secret_key="test_secret")
+        short_jwt = JWTManager(self.temp_db.name, secret_key="test_secret")
         short_jwt.access_token_expire_minutes = 0.01  # ~0.6 seconds
 
         api_key = APIKey(id=1, name="Test", scopes=["read"])
@@ -325,7 +325,7 @@ class TestRateLimiter(unittest.TestCase):
         self.temp_db.close()
 
         self.sqlite_manager = SQLiteMetadataManager(self.temp_db.name)
-        self.rate_limiter = SQLiteRateLimiter(self.sqlite_manager)
+        self.rate_limiter = SQLiteRateLimiter(self.temp_db.name)
 
         # Create test API key
         self.test_api_key = APIKey(
@@ -485,9 +485,9 @@ class TestAuthenticationIntegration(unittest.TestCase):
 
         # Initialize components
         self.sqlite_manager = SQLiteMetadataManager(self.temp_db.name)
-        self.auth_manager = SQLiteAuthManager(self.sqlite_manager)
-        self.jwt_manager = JWTManager(self.sqlite_manager, secret_key="test_secret")
-        self.rate_limiter = SQLiteRateLimiter(self.sqlite_manager)
+        self.auth_manager = SQLiteAuthManager(self.temp_db.name)
+        self.jwt_manager = JWTManager(self.temp_db.name, secret_key="test_secret")
+        self.rate_limiter = SQLiteRateLimiter(self.temp_db.name)
 
         # Initialize middleware
         self.auth_middleware = AuthenticationMiddleware(
