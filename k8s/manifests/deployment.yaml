@@ -1,0 +1,165 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dataflow-analyzer
+  namespace: osservatorio
+  labels:
+    app.kubernetes.io/name: dataflow-analyzer
+    app.kubernetes.io/instance: dataflow-analyzer
+    app.kubernetes.io/version: "2.0.0"
+    app.kubernetes.io/component: api
+    app.kubernetes.io/part-of: osservatorio-platform
+    app.kubernetes.io/managed-by: kubectl
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: dataflow-analyzer
+      app.kubernetes.io/instance: dataflow-analyzer
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: dataflow-analyzer
+        app.kubernetes.io/instance: dataflow-analyzer
+        app.kubernetes.io/version: "2.0.0"
+        app.kubernetes.io/component: api
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8001"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: dataflow-analyzer
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      containers:
+      - name: dataflow-analyzer
+        image: osservatorio/dataflow-analyzer:2.0.0
+        imagePullPolicy: Always
+        ports:
+        - name: http
+          containerPort: 8000
+          protocol: TCP
+        - name: metrics
+          containerPort: 8001
+          protocol: TCP
+        env:
+        # Environment variables from ConfigMap
+        - name: DATAFLOW_DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: dataflow-analyzer-secrets
+              key: database_url
+        - name: DATAFLOW_REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: dataflow-analyzer-secrets
+              key: redis_password
+        - name: DATAFLOW_JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: dataflow-analyzer-secrets
+              key: jwt_secret
+        envFrom:
+        - configMapRef:
+            name: dataflow-analyzer-config
+        # Volume mounts for configuration
+        volumeMounts:
+        - name: config
+          mountPath: /etc/config
+          readOnly: true
+        - name: secrets
+          mountPath: /etc/secrets
+          readOnly: true
+        - name: tmp
+          mountPath: /tmp
+        - name: cache
+          mountPath: /app/cache
+        # Resource limits and requests
+        resources:
+          requests:
+            cpu: 200m
+            memory: 512Mi
+            ephemeral-storage: 1Gi
+          limits:
+            cpu: 1000m
+            memory: 1Gi
+            ephemeral-storage: 2Gi
+        # Health checks
+        startupProbe:
+          httpGet:
+            path: /health/startup
+            port: http
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 5
+          failureThreshold: 6
+          successThreshold: 1
+        livenessProbe:
+          httpGet:
+            path: /health/live
+            port: http
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+          successThreshold: 1
+        readinessProbe:
+          httpGet:
+            path: /health/ready
+            port: http
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 5
+          failureThreshold: 3
+          successThreshold: 1
+        # Security context
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: true
+      # Volumes
+      volumes:
+      - name: config
+        configMap:
+          name: dataflow-analyzer-config
+      - name: secrets
+        secret:
+          secretName: dataflow-analyzer-secrets
+      - name: tmp
+        emptyDir: {}
+      - name: cache
+        emptyDir:
+          sizeLimit: 1Gi
+      # Pod disruption and scheduling
+      terminationGracePeriodSeconds: 30
+      restartPolicy: Always
+      dnsPolicy: ClusterFirst
+      nodeSelector:
+        kubernetes.io/os: linux
+      tolerations:
+      - key: "osservatorio.io/workload"
+        operator: "Equal"
+        value: "api"
+        effect: "NoSchedule"
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app.kubernetes.io/name
+                  operator: In
+                  values:
+                  - dataflow-analyzer
+              topologyKey: kubernetes.io/hostname
