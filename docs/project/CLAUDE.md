@@ -10,12 +10,12 @@ A few rules for Claude:
 
 ## Project Overview
 
-Osservatorio is an Italian statistical data processing platform with FastAPI backend and modern development infrastructure. Infrastructure modernization completed (Day 1-7), data ingestion layer still in development.
+Osservatorio is an Italian statistical data processing and visualization
+platform. It processes public open datas into insightful resources, while unifying the sources.
 
-**Status**: Infrastructure Ready, Data Layer In Development
-**Architecture**: FastAPI + Basic Auth + DuckDB/SQLite + Modern DevOps (Docker, CI/CD)
-**Current Branch**: issue-83-dataflow-analyzer-modernization
-**Missing**: Production data ingestion pipeline, full ISTAT integration
+**Status**: In development, phase 1
+**Architecture**: FastAPI + Basic Auth + DuckDB/SQLite + Modern DevOps (Docker, CI/CD), Kubernetes
+**Missing**: Friendly interface, full ISTAT integration, more datas, clean orchestration
 **Documentation**: [README.md](../../README.md) and [docs/](../)
 
 ## Essential Commands
