@@ -2,10 +2,13 @@
 Test configuration and fixtures for osservatorio scuola tests.
 """
 
+import gc
 import os
 import shutil
+import sqlite3
 import sys
 import tempfile
+from contextlib import contextmanager
 from pathlib import Path
 from unittest.mock import Mock, patch
 
@@ -543,6 +546,70 @@ def sample_conversion_test_cases():
             "expected_schema_version": "2.0",
         },
     ]
+
+
+# Database testing fixtures for clean resource management
+
+
+@contextmanager
+def temporary_database():
+    """Context manager for creating and cleaning up temporary databases"""
+    temp_db = tempfile.mktemp(suffix=".db")
+
+    try:
+        # Create the schema
+        from src.database.sqlite.schema import MetadataSchema
+
+        schema_manager = MetadataSchema(temp_db)
+        schema_manager.create_schema()
+        schema_manager.close_connections()
+        del schema_manager
+
+        yield temp_db
+
+    finally:
+        # Force garbage collection to close connections
+        gc.collect()
+
+        # Close any remaining connections
+        try:
+            # Force close any remaining sqlite connections
+            for obj in gc.get_objects():
+                if isinstance(obj, sqlite3.Connection):
+                    try:
+                        if hasattr(obj, "close"):
+                            obj.close()
+                    except Exception:
+                        pass
+        except Exception:
+            pass
+
+        # Wait for Windows file handles to be released
+        import time
+
+        time.sleep(0.1)
+
+        # Remove temp database
+        try:
+            if os.path.exists(temp_db):
+                os.remove(temp_db)
+        except (PermissionError, OSError):
+            # File still in use, skip removal
+            pass
+
+
+@pytest.fixture
+def temp_db():
+    """Provide a temporary database path for tests"""
+    with temporary_database() as db_path:
+        yield db_path
+
+
+@pytest.fixture(scope="class")
+def temp_db_class():
+    """Provide a temporary database path for class-scoped tests"""
+    with temporary_database() as db_path:
+        yield db_path
 
 
 # Test markers for different test categories

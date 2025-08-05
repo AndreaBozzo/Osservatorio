@@ -30,11 +30,14 @@ class TestIstatXMLToPowerBIConverter:
         converter = IstatXMLToPowerBIConverter()
         config = converter.datasets_config
 
-        # Should load from SQLite metadata (which has real data after migration)
+        # Should load from SQLite metadata database (now has real data)
         assert "total_datasets" in config
         assert "source" in config
-        assert config["source"] == "sqlite_metadata"
+        assert (
+            config["source"] == "sqlite_metadata"
+        )  # Database now populated with datasets
         assert isinstance(config["datasets"], list)
+        assert config["total_datasets"] > 0  # Verify we have data
 
     def test_datasets_config_structure(self):
         """Test datasets config structure after initialization."""
