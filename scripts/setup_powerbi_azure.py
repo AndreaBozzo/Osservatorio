@@ -9,13 +9,8 @@ import sys
 import webbrowser
 from datetime import datetime
 from pathlib import Path
-from urllib.parse import urlparse
-
-# Aggiungi il path del progetto
-sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.api.powerbi_api import PowerBIAPIClient
-from src.utils.config import Config
 
 
 class PowerBISetupWizard:
@@ -246,7 +241,7 @@ class PowerBISetupWizard:
         # Leggi .env esistente se presente
         env_content = []
         if self.env_file.exists():
-            with open(self.env_file, "r", encoding="utf-8") as f:
+            with open(self.env_file, encoding="utf-8") as f:
                 env_content = f.readlines()
 
         # Rimuovi configurazioni PowerBI esistenti
@@ -260,12 +255,12 @@ class PowerBISetupWizard:
             filtered_content.append("\n")
 
         filtered_content.append("\n# PowerBI Configuration\n")
-        filtered_content.append(f'POWERBI_TENANT_ID={self.config["tenant_id"]}\n')
-        filtered_content.append(f'POWERBI_CLIENT_ID={self.config["client_id"]}\n')
+        filtered_content.append(f"POWERBI_TENANT_ID={self.config['tenant_id']}\n")
+        filtered_content.append(f"POWERBI_CLIENT_ID={self.config['client_id']}\n")
         filtered_content.append(
-            f'POWERBI_CLIENT_SECRET={self.config["client_secret"]}\n'
+            f"POWERBI_CLIENT_SECRET={self.config['client_secret']}\n"
         )
-        filtered_content.append(f'POWERBI_WORKSPACE_ID={self.config["workspace_id"]}\n')
+        filtered_content.append(f"POWERBI_WORKSPACE_ID={self.config['workspace_id']}\n")
 
         # Salva file
         with open(self.env_file, "w", encoding="utf-8") as f:

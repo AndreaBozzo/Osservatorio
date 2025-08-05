@@ -11,7 +11,7 @@ import time
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Optional
 
 import pandas as pd
 
@@ -62,8 +62,8 @@ class QueryOptimizer:
         """
         self.manager = manager or DuckDBManager()
         self.schema_config = get_schema_config()
-        self.query_cache: Dict[str, Any] = {}  # Simple in-memory cache
-        self.performance_log: List[QueryPerformance] = []
+        self.query_cache: dict[str, Any] = {}  # Simple in-memory cache
+        self.performance_log: list[QueryPerformance] = []
         self.cache_ttl = timedelta(minutes=30)
 
     def create_advanced_indexes(self) -> None:
@@ -95,16 +95,16 @@ class QueryOptimizer:
         for index_sql in advanced_indexes:
             try:
                 self.manager.execute_statement(index_sql)
-                logger.debug(f"Created advanced index successfully")
+                logger.debug("Created advanced index successfully")
             except Exception as e:
                 logger.warning(f"Failed to create index: {e}")
 
     def get_time_series_data(
         self,
-        dataset_ids: List[str],
+        dataset_ids: list[str],
         start_year: int,
         end_year: int,
-        territories: Optional[List[str]] = None,
+        territories: Optional[list[str]] = None,
     ) -> pd.DataFrame:
         """Optimized time series data retrieval.
 
@@ -126,7 +126,7 @@ class QueryOptimizer:
             return cached_result
 
         # Build optimized query
-        schema = self.schema_config["main_schema"]
+        self.schema_config["main_schema"]
         analytics_schema = self.schema_config["analytics_schema"]
 
         territory_filter = ""
@@ -170,9 +170,9 @@ class QueryOptimizer:
 
     def get_territory_comparison(
         self,
-        measure_codes: List[str],
+        measure_codes: list[str],
         year: int,
-        territories: Optional[List[str]] = None,
+        territories: Optional[list[str]] = None,
     ) -> pd.DataFrame:
         """Optimized territory comparison query.
 
@@ -241,7 +241,7 @@ class QueryOptimizer:
         return result
 
     def get_category_trends(
-        self, categories: List[str], start_year: int, end_year: int
+        self, categories: list[str], start_year: int, end_year: int
     ) -> pd.DataFrame:
         """Optimized category trend analysis.
 
@@ -368,7 +368,7 @@ class QueryOptimizer:
         logger.info(f"Top performers query executed in {execution_time:.3f}s")
         return result
 
-    def analyze_query_performance(self, query: str) -> Dict[str, Any]:
+    def analyze_query_performance(self, query: str) -> dict[str, Any]:
         """Analyze query performance and provide optimization suggestions.
 
         Args:
@@ -422,7 +422,7 @@ class QueryOptimizer:
         self.query_cache.clear()
         logger.info("Query cache cleared")
 
-    def get_cache_stats(self) -> Dict[str, Any]:
+    def get_cache_stats(self) -> dict[str, Any]:
         """Get cache performance statistics.
 
         Returns:
@@ -532,7 +532,7 @@ class QueryOptimizer:
         if len(self.performance_log) > 1000:
             self.performance_log = self.performance_log[-500:]
 
-    def _get_optimization_suggestions(self, query: str, plan_data: Any) -> List[str]:
+    def _get_optimization_suggestions(self, query: str, plan_data: Any) -> list[str]:
         """Generate optimization suggestions based on query and execution plan.
 
         Args:

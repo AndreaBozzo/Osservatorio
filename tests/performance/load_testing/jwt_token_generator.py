@@ -5,23 +5,34 @@ This module generates valid JWT tokens for performance testing by:
 - Reading existing API keys from SQLite database
 - Using the actual JWT manager to create valid tokens
 - Providing tokens with appropriate scopes for testing
+
+Usage:
+    # Issue #84: Run from project root
+    python -m tests.performance.load_testing.jwt_token_generator
 """
 
-import logging
 import os
 import sys
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
-# Add project root to path
-project_root = Path(__file__).parent.parent.parent.parent
-sys.path.insert(0, str(project_root))
+try:
+    # Try direct imports when run as module
+    from src.auth.jwt_manager import JWTManager
+    from src.auth.models import APIKey
+    from src.database.sqlite.manager import get_metadata_manager
+    from src.utils.logger import get_logger
+except ImportError:
+    # Fallback for legacy usage
+    project_root = Path(__file__).parent.parent.parent.parent
+    if str(project_root) not in sys.path:
+        sys.path.insert(0, str(project_root))
 
-from src.auth.jwt_manager import JWTManager
-from src.auth.models import APIKey
-from src.database.sqlite.manager import get_metadata_manager
-from src.utils.logger import get_logger
+    from src.auth.jwt_manager import JWTManager
+    from src.auth.models import APIKey
+    from src.database.sqlite.manager import get_metadata_manager
+    from src.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -43,7 +54,7 @@ class PerformanceJWTGenerator:
             logger.error(f"Failed to initialize JWT generator: {e}")
             raise
 
-    def get_available_api_keys(self) -> List[Dict[str, Any]]:
+    def get_available_api_keys(self) -> list[dict[str, Any]]:
         """Get all available API keys from database."""
         try:
             with self.metadata_manager.transaction() as conn:
@@ -74,7 +85,7 @@ class PerformanceJWTGenerator:
             logger.error(f"Failed to get API keys: {e}")
             return []
 
-    def create_test_api_key_if_needed(self) -> Optional[Dict[str, Any]]:
+    def create_test_api_key_if_needed(self) -> Optional[dict[str, Any]]:
         """Create a test API key for performance testing if none exist."""
         try:
             # Check if any performance test keys exist
@@ -139,7 +150,7 @@ class PerformanceJWTGenerator:
     def generate_jwt_token(
         self,
         api_key_id: Optional[int] = None,
-        scopes: Optional[List[str]] = None,
+        scopes: Optional[list[str]] = None,
         rate_limit: int = 1000,
     ) -> Optional[str]:
         """Generate a JWT token for performance testing.
@@ -197,8 +208,8 @@ class PerformanceJWTGenerator:
             return None
 
     def generate_multiple_tokens(
-        self, count: int = 5, scopes: Optional[List[str]] = None
-    ) -> List[str]:
+        self, count: int = 5, scopes: Optional[list[str]] = None
+    ) -> list[str]:
         """Generate multiple JWT tokens for concurrent testing.
 
         Args:
@@ -255,7 +266,7 @@ class PerformanceJWTGenerator:
             logger.error(f"Token verification failed: {e}")
             return False
 
-    def get_token_info(self, token: str) -> Optional[Dict[str, Any]]:
+    def get_token_info(self, token: str) -> Optional[dict[str, Any]]:
         """Get information about a JWT token.
 
         Args:
@@ -313,7 +324,7 @@ def main():
         token = generator.generate_jwt_token()
 
         if token:
-            print(f"✅ Token generated successfully!")
+            print("✅ Token generated successfully!")
             print(f"Token (first 50 chars): {token[:50]}...")
 
             # Verify the token

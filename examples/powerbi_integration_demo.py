@@ -10,27 +10,33 @@ This demo showcases the complete PowerBI integration capabilities:
 - Metadata bridge functionality
 
 Usage:
+    # Issue #84: Use proper package imports
+    python -m examples.powerbi_integration_demo
+
+    # Legacy support (run from project root):
     python examples/powerbi_integration_demo.py
 """
 
 import sys
+from datetime import datetime, timedelta
 from pathlib import Path
 
-# Add both project root and src to Python path
-project_root = Path(__file__).parent.parent
-sys.path.insert(0, str(project_root))
-sys.path.insert(0, str(project_root / "src"))
+# Issue #84: Proper package imports without sys.path manipulation
+try:
+    # Try package imports first (when run as module)
+    from src.database.sqlite.repository import UnifiedDataRepository
+    from src.integrations.powerbi.incremental import IncrementalRefreshManager
+except ImportError:
+    # Fallback for legacy usage (when run as script)
+    project_root = Path(__file__).parent.parent
+    if str(project_root) not in sys.path:
+        sys.path.insert(0, str(project_root))
 
-import json
-from datetime import datetime, timedelta
-
-import pandas as pd
-
-from database.sqlite.repository import UnifiedDataRepository
-from integrations.powerbi.incremental import IncrementalRefreshManager
-from integrations.powerbi.metadata_bridge import MetadataBridge
-from integrations.powerbi.optimizer import PowerBIOptimizer
-from integrations.powerbi.templates import TemplateGenerator
+    from src.database.sqlite.repository import UnifiedDataRepository
+    from src.integrations.powerbi.incremental import IncrementalRefreshManager
+    from src.integrations.powerbi.metadata_bridge import MetadataBridge
+    from src.integrations.powerbi.optimizer import PowerBIOptimizer
+    from src.integrations.powerbi.templates import TemplateGenerator
 
 
 def setup_demo_data(repository: UnifiedDataRepository) -> str:
@@ -74,7 +80,7 @@ def demo_star_schema_generation(optimizer: PowerBIOptimizer, dataset_id: str):
         print(f"Generating star schema for dataset: {dataset_id}")
         star_schema = optimizer.generate_star_schema(dataset_id)
 
-        print(f"✅ Star schema generated successfully!")
+        print("✅ Star schema generated successfully!")
         print(f"   Fact Table: {star_schema.fact_table}")
         print(f"   Dimension Tables: {len(star_schema.dimension_tables)}")
 
@@ -99,7 +105,7 @@ def demo_star_schema_generation(optimizer: PowerBIOptimizer, dataset_id: str):
                 f"   Recommended Refresh Frequency: {metrics.get('recommended_refresh_frequency', 'unknown')}"
             )
             print(
-                f"   Star Schema Optimization Potential: {metrics.get('star_schema_optimization_potential', 0)*100:.1f}%"
+                f"   Star Schema Optimization Potential: {metrics.get('star_schema_optimization_potential', 0) * 100:.1f}%"
             )
         else:
             print(f"   ⚠️ Could not retrieve performance metrics: {metrics['error']}")
@@ -136,7 +142,7 @@ def demo_dax_measures(optimizer: PowerBIOptimizer, dataset_id: str):
         measures_cached = optimizer.dax_engine.get_standard_measures(dataset_id)
         cache_time = time.time() - start_time
 
-        print(f"✅ Cached retrieval completed in {cache_time*1000:.2f}ms")
+        print(f"✅ Cached retrieval completed in {cache_time * 1000:.2f}ms")
         print(f"   Cache hit: {measures == measures_cached}")
 
     except Exception as e:
@@ -160,7 +166,7 @@ def demo_incremental_refresh(
             refresh_frequency="daily",
         )
 
-        print(f"✅ Refresh policy created:")
+        print("✅ Refresh policy created:")
         print(f"   Dataset ID: {policy.dataset_id}")
         print(f"   Incremental Window: {policy.incremental_window_days} days")
         print(f"   Historical Window: {policy.historical_window_years} years")
@@ -172,7 +178,7 @@ def demo_incremental_refresh(
         since_date = datetime.now() - timedelta(days=7)
         changes = refresh_manager.change_tracker.detect_changes(dataset_id, since_date)
 
-        print(f"✅ Change detection completed:")
+        print("✅ Change detection completed:")
         print(f"   Has Changes: {changes.get('has_changes', False)}")
         print(f"   Total Changes: {changes.get('total_changes', 0)}")
         print(f"   Summary: {changes.get('change_summary', 'No summary available')}")
@@ -180,11 +186,12 @@ def demo_incremental_refresh(
         # Execute incremental refresh
         print("\n⚡ Executing incremental refresh...")
         refresh_result = refresh_manager.execute_incremental_refresh(
-            dataset_id, force=True  # Force refresh for demo
+            dataset_id,
+            force=True,  # Force refresh for demo
         )
 
         if "error" not in refresh_result:
-            print(f"✅ Incremental refresh completed:")
+            print("✅ Incremental refresh completed:")
             print(f"   Records Processed: {refresh_result.get('records_processed', 0)}")
             print(
                 f"   Refresh Timestamp: {refresh_result.get('refresh_timestamp', 'unknown')}"
@@ -217,13 +224,13 @@ def demo_template_generation(template_generator: TemplateGenerator, dataset_id: 
             dataset_id=dataset_id, template_name="Demo Popolazione Regioni Template"
         )
 
-        print(f"✅ Template generated successfully:")
+        print("✅ Template generated successfully:")
         print(f"   Template ID: {template.template_id}")
         print(f"   Name: {template.name}")
         print(f"   Category: {template.category}")
         print(f"   Description: {template.description}")
 
-        print(f"\n📊 Template Components:")
+        print("\n📊 Template Components:")
         print(f"   DAX Measures: {len(template.dax_measures)}")
         for measure_name in list(template.dax_measures.keys())[:5]:  # Show first 5
             print(f"     - {measure_name}")
@@ -235,7 +242,7 @@ def demo_template_generation(template_generator: TemplateGenerator, dataset_id: 
             print(f"     - {viz['type']}: {viz['title']}")
 
         # Create PBIT file
-        print(f"\n💾 Creating PBIT file...")
+        print("\n💾 Creating PBIT file...")
         output_path = Path("templates/powerbi/demo_popolazione_template.pbit")
 
         try:
@@ -260,7 +267,7 @@ def demo_template_generation(template_generator: TemplateGenerator, dataset_id: 
             print(f"⚠️ Could not create PBIT file: {e}")
 
         # Show available templates
-        print(f"\n📚 Available Templates:")
+        print("\n📚 Available Templates:")
         templates = template_generator.get_available_templates()
         for tmpl in templates:
             print(
@@ -299,7 +306,7 @@ def demo_metadata_bridge(metadata_bridge: MetadataBridge, dataset_id: str):
             ],
         )
 
-        print(f"✅ Dataset lineage created:")
+        print("✅ Dataset lineage created:")
         print(f"   Dataset ID: {lineage.dataset_id}")
         print(f"   Source System: {lineage.source_system}")
         print(f"   Dependencies: {lineage.dependencies}")
@@ -309,12 +316,12 @@ def demo_metadata_bridge(metadata_bridge: MetadataBridge, dataset_id: str):
             print(f"     - {step['step']}: {step['description']}")
 
         # Propagate quality scores
-        print(f"\n🎯 Propagating quality scores...")
+        print("\n🎯 Propagating quality scores...")
         quality_result = metadata_bridge.propagate_quality_scores(dataset_id)
 
         if "error" not in quality_result:
             quality_scores = quality_result["quality_scores"]
-            print(f"✅ Quality scores propagated:")
+            print("✅ Quality scores propagated:")
             print(f"   Overall Quality: {quality_scores.get('overall_quality', 0):.3f}")
             print(
                 f"   Territories Analyzed: {quality_scores.get('territories_analyzed', 0)}"
@@ -329,10 +336,10 @@ def demo_metadata_bridge(metadata_bridge: MetadataBridge, dataset_id: str):
             print(f"⚠️ Quality propagation info: {quality_result['error']}")
 
         # Sync usage analytics
-        print(f"\n📊 Syncing usage analytics...")
+        print("\n📊 Syncing usage analytics...")
         usage_metrics = metadata_bridge.sync_usage_analytics(dataset_id)
 
-        print(f"✅ Usage analytics synchronized:")
+        print("✅ Usage analytics synchronized:")
         print(f"   Dataset ID: {usage_metrics.dataset_id}")
         print(f"   Views: {usage_metrics.views}")
         print(f"   Refreshes: {usage_metrics.refreshes}")
@@ -340,17 +347,17 @@ def demo_metadata_bridge(metadata_bridge: MetadataBridge, dataset_id: str):
         print(f"   Reports Using: {len(usage_metrics.reports_using)}")
 
         # Generate governance report
-        print(f"\n📋 Generating governance report...")
+        print("\n📋 Generating governance report...")
         governance_report = metadata_bridge.get_governance_report(dataset_id)
 
         if "error" not in governance_report:
-            print(f"✅ Governance report generated:")
+            print("✅ Governance report generated:")
             print(f"   Report Generated: {governance_report['report_generated']}")
             print(f"   Datasets Analyzed: {governance_report['datasets_analyzed']}")
 
             if governance_report["datasets"]:
                 dataset_gov = governance_report["datasets"][0]
-                print(f"   Dataset Governance:")
+                print("   Dataset Governance:")
                 print(f"     - Has Lineage: {dataset_gov.get('has_lineage', False)}")
                 print(
                     f"     - Has Usage Data: {dataset_gov.get('has_usage_data', False)}"
@@ -396,14 +403,14 @@ def demo_end_to_end_integration(
 
     try:
         # Step 1: Star Schema Generation
-        print(f"\n1️⃣ Generating star schema...")
+        print("\n1️⃣ Generating star schema...")
         star_schema = optimizer.generate_star_schema(dataset_id)
         print(
             f"   ✅ Star schema created with {len(star_schema.dimension_tables)} dimensions"
         )
 
         # Step 2: Incremental Refresh Setup
-        print(f"\n2️⃣ Setting up incremental refresh...")
+        print("\n2️⃣ Setting up incremental refresh...")
         refresh_policy = refresh_manager.create_refresh_policy(
             dataset_id, refresh_frequency="daily"
         )
@@ -412,21 +419,21 @@ def demo_end_to_end_integration(
         )
 
         # Step 3: Template Generation
-        print(f"\n3️⃣ Generating PowerBI template...")
+        print("\n3️⃣ Generating PowerBI template...")
         template = template_generator.generate_template(dataset_id)
         print(
             f"   ✅ Template created with {len(template.visualizations)} visualizations"
         )
 
         # Step 4: Metadata Bridge Setup
-        print(f"\n4️⃣ Setting up metadata bridge...")
+        print("\n4️⃣ Setting up metadata bridge...")
         lineage = metadata_bridge.create_dataset_lineage(dataset_id)
         print(
             f"   ✅ Lineage created with {len(lineage.transformations)} transformation steps"
         )
 
         # Step 5: Quality Score Integration
-        print(f"\n5️⃣ Integrating quality scores...")
+        print("\n5️⃣ Integrating quality scores...")
         quality_result = metadata_bridge.propagate_quality_scores(dataset_id)
         if "error" not in quality_result:
             overall_quality = quality_result["quality_scores"].get("overall_quality", 0)
@@ -437,12 +444,14 @@ def demo_end_to_end_integration(
             )
 
         # Step 6: Governance Validation
-        print(f"\n6️⃣ Validating governance...")
+        print("\n6️⃣ Validating governance...")
         governance = metadata_bridge.get_governance_report(dataset_id)
         if "error" not in governance and governance["datasets"]:
             dataset_gov = governance["datasets"][0]
-            print(f"   ✅ Governance validated:")
-            print(f"      - Lineage: {'✅' if dataset_gov.get('has_lineage') else '❌'}")
+            print("   ✅ Governance validated:")
+            print(
+                f"      - Lineage: {'✅' if dataset_gov.get('has_lineage') else '❌'}"
+            )
             print(
                 f"      - Usage Data: {'✅' if dataset_gov.get('has_usage_data') else '❌'}"
             )
@@ -450,19 +459,19 @@ def demo_end_to_end_integration(
                 f"      - PowerBI Integration: {'✅' if dataset_gov.get('powerbi_integrated') else '❌'}"
             )
         else:
-            print(f"   ⚠️ Governance validation: Limited data available")
+            print("   ⚠️ Governance validation: Limited data available")
 
-        print(f"\n🎉 End-to-end pipeline completed successfully!")
+        print("\n🎉 End-to-end pipeline completed successfully!")
         print(f"   Dataset {dataset_id} is now fully integrated with PowerBI")
 
         # Summary
-        print(f"\n📊 Integration Summary:")
-        print(f"   - Star schema optimized for PowerBI performance")
-        print(f"   - Incremental refresh configured for daily updates")
-        print(f"   - PowerBI template ready for deployment")
-        print(f"   - Data lineage tracked and documented")
-        print(f"   - Quality scores integrated into reports")
-        print(f"   - Governance controls in place")
+        print("\n📊 Integration Summary:")
+        print("   - Star schema optimized for PowerBI performance")
+        print("   - Incremental refresh configured for daily updates")
+        print("   - PowerBI template ready for deployment")
+        print("   - Data lineage tracked and documented")
+        print("   - Quality scores integrated into reports")
+        print("   - Governance controls in place")
 
     except Exception as e:
         print(f"❌ Pipeline error: {e}")
@@ -501,12 +510,12 @@ def main():
             optimizer, refresh_manager, template_generator, metadata_bridge, dataset_id
         )
 
-        print(f"\n🎯 Demo completed successfully!")
-        print(f"All PowerBI integration features have been demonstrated.")
+        print("\n🎯 Demo completed successfully!")
+        print("All PowerBI integration features have been demonstrated.")
 
         # Cleanup note
         print(f"\n🧹 Note: Demo dataset '{dataset_id}' remains in the system.")
-        print(f"You can use it for further testing or remove it manually if needed.")
+        print("You can use it for further testing or remove it manually if needed.")
 
     except Exception as e:
         print(f"\n❌ Demo failed with error: {e}")

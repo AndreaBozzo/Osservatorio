@@ -1,0 +1,44 @@
+# Osservatorio ISTAT Data Platform - Basic CI
+# Light CI pipeline for development workflow
+
+name: Basic CI
+
+on:
+  push:
+    branches: [main, develop, issue-*]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  # Basic testing and code quality
+  test:
+    name: Tests & Code Quality
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .[dev]
+
+      - name: Run basic tests
+        run: |
+          pytest -c pytest-ci.ini tests/unit/ -v
+
+      - name: Check code formatting
+        run: |
+          ruff check .
+          ruff format --check .
+          isort --check-only --profile=black .
+
+      - name: Basic security scan
+        run: |
+          bandit -r src/ -f json -o bandit-report.json --severity-level high
+        continue-on-error: true

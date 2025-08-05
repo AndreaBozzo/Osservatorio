@@ -3,14 +3,10 @@ Base converter class for ISTAT SDMX data processing.
 Eliminates code duplication between PowerBI and Tableau converters.
 """
 
-import json
 import os
-import re
 import xml.etree.ElementTree as ET
 from abc import ABC, abstractmethod
-from datetime import datetime
-from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Optional
 
 import pandas as pd
 
@@ -27,13 +23,8 @@ class BaseIstatConverter(ABC):
 
     def __init__(self):
         """Initialize the base converter with common components."""
-        # Common SDMX namespaces
-        self.namespaces = {
-            "message": "http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message",
-            "generic": "http://www.sdmx.org/resources/sdmxml/schemas/v2_1/data/generic",
-            "common": "http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common",
-            "xsi": "http://www.w3.org/2001/XMLSchema-instance",
-        }
+        # Common SDMX namespaces - Issue #84: Use centralized configuration
+        self.namespaces = Config.SDMX_NAMESPACES.copy()
 
         # Initialize secure path validator
         self.path_validator = create_secure_validator(os.getcwd())
@@ -45,66 +36,38 @@ class BaseIstatConverter(ABC):
         self.datasets_config = self._load_datasets_config()
         self.conversion_results = []
 
-    def _load_datasets_config(self) -> Dict:
-        """Load dataset configuration from SQLite with JSON fallback."""
+    def _load_datasets_config(self) -> dict:
+        """Load dataset configuration from SQLite metadata database."""
         try:
-            # Try to load from SQLite first
             logger.info(
                 "Loading dataset configuration from SQLite metadata database..."
             )
             config = self.config_manager.get_datasets_config()
 
             if config and config.get("total_datasets", 0) > 0:
-                logger.info(f"✅ Loaded {config['total_datasets']} datasets from SQLite")
+                logger.info(
+                    f"✅ Loaded {config['total_datasets']} datasets from SQLite"
+                )
                 return config
             else:
-                logger.warning(
-                    "SQLite config empty or invalid, falling back to JSON..."
-                )
-                return self._load_json_fallback_config()
+                logger.warning("SQLite config empty, returning minimal config")
+                return {
+                    "total_datasets": 0,
+                    "categories": {},
+                    "datasets": [],
+                    "source": "sqlite_empty",
+                }
 
         except Exception as e:
-            logger.warning(f"SQLite config loading failed: {e}")
-            logger.info("Falling back to JSON configuration...")
-            return self._load_json_fallback_config()
-
-    def _load_json_fallback_config(self) -> Dict:
-        """Load configuration from JSON files as fallback."""
-        try:
-            # Look for JSON config files
-            for json_file in [
-                "tableau_istat_datasets_config.json",
-                "istat_datasets_config.json",
-            ]:
-                if os.path.exists(json_file):
-                    logger.info(f"Loading configuration from {json_file}")
-                    with open(json_file, "r", encoding="utf-8") as f:
-                        config = json.load(f)
-                        config["source"] = "json fallback"
-                        logger.info(
-                            f"✅ Loaded {config.get('total_datasets', 0)} datasets from JSON"
-                        )
-                        return config
-
-            # Return minimal config if no files found
-            logger.warning("No configuration files found, using minimal config")
+            logger.error(f"SQLite config loading failed: {e}")
             return {
                 "total_datasets": 0,
                 "categories": {},
                 "datasets": [],
-                "source": "minimal fallback",
+                "source": "sqlite_error",
             }
 
-        except Exception as e:
-            logger.error(f"Failed to load JSON fallback config: {e}")
-            return {
-                "total_datasets": 0,
-                "categories": {},
-                "datasets": [],
-                "source": "error fallback",
-            }
-
-    def _parse_sdmx_xml(self, xml_file: str) -> List[Dict]:
+    def _parse_sdmx_xml(self, xml_file: str) -> list[dict]:
         """Parse SDMX XML file and extract observations."""
         try:
             tree = ET.parse(xml_file)
@@ -145,7 +108,7 @@ class BaseIstatConverter(ABC):
             logger.error(f"Error parsing SDMX XML: {e}")
             return []
 
-    def _extract_observation_from_element(self, elem) -> Optional[Dict]:
+    def _extract_observation_from_element(self, elem) -> Optional[dict]:
         """Extract observation data from XML element."""
         try:
             obs_data = {}
@@ -351,7 +314,7 @@ class BaseIstatConverter(ABC):
 
         return "altro", category_priorities["altro"]
 
-    def _validate_data_quality(self, df: pd.DataFrame) -> Dict:
+    def _validate_data_quality(self, df: pd.DataFrame) -> dict:
         """Validate data quality and return quality metrics."""
         if df.empty:
             return {
@@ -396,18 +359,18 @@ class BaseIstatConverter(ABC):
 
     # Abstract methods that subclasses must implement
     @abstractmethod
-    def _format_output(self, df: pd.DataFrame, dataset_info: Dict) -> Dict:
+    def _format_output(self, df: pd.DataFrame, dataset_info: dict) -> dict:
         """Format output data for specific target (PowerBI, Tableau, etc.)."""
         pass
 
     @abstractmethod
-    def _generate_metadata(self, dataset_info: Dict) -> Dict:
+    def _generate_metadata(self, dataset_info: dict) -> dict:
         """Generate metadata for specific target."""
         pass
 
     @abstractmethod
     def convert_xml_to_target(
         self, xml_input: str, dataset_id: str, dataset_name: str
-    ) -> Dict:
+    ) -> dict:
         """Main conversion method - must be implemented by subclasses."""
         pass

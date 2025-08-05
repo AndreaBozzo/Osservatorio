@@ -1,6 +1,13 @@
 """
 Script di validazione offline per componenti PowerBI Day 6.
 Simula connessioni Microsoft e valida logica senza autenticazione reale.
+
+Usage:
+    # Issue #84: Use proper package imports
+    python -m scripts.validate_powerbi_offline
+
+    # Legacy support (run from project root):
+    python scripts/validate_powerbi_offline.py
 """
 
 import json
@@ -14,9 +21,15 @@ from unittest.mock import Mock, patch
 
 import pandas as pd
 
-# Add project root to Python path
-project_root = Path(__file__).parent.parent
-sys.path.insert(0, str(project_root))
+try:
+    from . import setup_project_path
+
+    setup_project_path()
+except ImportError:
+    # Fallback for legacy usage
+    project_root = Path(__file__).parent.parent
+    if str(project_root) not in sys.path:
+        sys.path.insert(0, str(project_root))
 
 
 # Mock MSAL per evitare dipendenza da credenziali Microsoft
@@ -75,9 +88,10 @@ def validate_powerbi_api_offline():
             with patch(
                 "src.api.powerbi_api.msal.ConfidentialClientApplication", MockMSAL
             ):
-                with patch("requests.Session.get") as mock_get, patch(
-                    "requests.Session.post"
-                ) as mock_post:
+                with (
+                    patch("requests.Session.get") as mock_get,
+                    patch("requests.Session.post") as mock_post,
+                ):
                     # Setup mock responses
                     mock_get.return_value = MockResponse(
                         {
@@ -382,12 +396,15 @@ def validate_incremental_refresh():
 
         from src.integrations.powerbi.incremental import IncrementalRefreshManager
 
-        with patch(
-            "src.integrations.powerbi.incremental.IncrementalRefreshManager.create_refresh_policy",
-            return_value=mock_policy,
-        ), patch(
-            "src.integrations.powerbi.incremental.IncrementalRefreshManager.get_refresh_policy",
-            return_value=mock_policy,
+        with (
+            patch(
+                "src.integrations.powerbi.incremental.IncrementalRefreshManager.create_refresh_policy",
+                return_value=mock_policy,
+            ),
+            patch(
+                "src.integrations.powerbi.incremental.IncrementalRefreshManager.get_refresh_policy",
+                return_value=mock_policy,
+            ),
         ):
             refresh_mgr = IncrementalRefreshManager(mock_repo)
 
@@ -504,7 +521,9 @@ def validate_metadata_bridge():
                 quality_result = mock_quality("TEST_DATASET")
                 if "error" not in quality_result:
                     results["quality_sync"] = True
-                    results["details"].append("✅ Quality score synchronization working")
+                    results["details"].append(
+                        "✅ Quality score synchronization working"
+                    )
 
             # Mock usage analytics
             with patch.object(bridge, "sync_usage_analytics") as mock_usage:
@@ -586,13 +605,13 @@ def validate_end_to_end_pipeline():
                 # Simula elaborazione step
                 if step == "star_schema_generation":
                     # Mock star schema
-                    schema_result = {"fact_table": "fact_test", "dimensions": 6}
+                    pass
                 elif step == "template_generation":
                     # Mock template
-                    template_result = {"template_id": "tpl_123", "visualizations": 5}
+                    pass
                 elif step == "quality_propagation":
                     # Mock quality sync
-                    quality_result = {"overall_quality": 0.85, "measures": 3}
+                    pass
 
                 completed_steps.append(step)
 

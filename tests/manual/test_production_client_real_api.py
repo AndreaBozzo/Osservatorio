@@ -7,16 +7,18 @@ to validate production readiness and performance characteristics.
 """
 
 import asyncio
-import os
-import sys
 import time
 from datetime import datetime
 
-# Add project root to path
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+try:
+    from osservatorio_istat.api.production_istat_client import ProductionIstatClient
+    from osservatorio_istat.database.sqlite.repository import get_unified_repository
+except ImportError:
+    # Development mode fallback
 
-from src.api.production_istat_client import ProductionIstatClient
-from src.database.sqlite.repository import get_unified_repository
+    # Issue #84: Removed unsafe sys.path manipulation
+    from src.api.production_istat_client import ProductionIstatClient
+    from src.database.sqlite.repository import get_unified_repository
 
 
 class RealAPITester:
@@ -93,7 +95,7 @@ class RealAPITester:
 
             # Show some examples
             for i, dataflow in enumerate(dataflows.get("dataflows", [])[:3]):
-                print(f"    {i+1}. {dataflow['name']} (ID: {dataflow['id']})")
+                print(f"    {i + 1}. {dataflow['name']} (ID: {dataflow['id']})")
 
             if len(dataflows.get("dataflows", [])) > 0:
                 self.test_results["dataflows_fetch"] = "PASS"
@@ -142,9 +144,9 @@ class RealAPITester:
                 return result_data
             else:
                 print(f"  ❌ Data error: {data_info.get('error', 'Unknown')}")
-                self.test_results[
-                    "single_dataset_fetch"
-                ] = f"FAIL: {data_info.get('error')}"
+                self.test_results["single_dataset_fetch"] = (
+                    f"FAIL: {data_info.get('error')}"
+                )
                 return None
 
         except Exception as e:
@@ -170,11 +172,11 @@ class RealAPITester:
             print(f"  🔄 Consistency: {quality.consistency:.1f}%")
 
             if quality.validation_errors:
-                print(f"  ⚠️  Validation errors:")
+                print("  ⚠️  Validation errors:")
                 for error in quality.validation_errors[:3]:
                     print(f"    - {error}")
             else:
-                print(f"  ✅ No validation errors")
+                print("  ✅ No validation errors")
 
             self.test_results["quality_validation"] = "PASS"
 
@@ -202,12 +204,12 @@ class RealAPITester:
             print(f"  📊 Batch time: {batch_result.total_time:.3f}s")
 
             if batch_result.successful:
-                print(f"  🎉 Successful datasets:")
+                print("  🎉 Successful datasets:")
                 for dataset_id in batch_result.successful:
                     print(f"    - {dataset_id}")
 
             if batch_result.failed:
-                print(f"  💥 Failed datasets:")
+                print("  💥 Failed datasets:")
                 for dataset_id, error in batch_result.failed:
                     print(f"    - {dataset_id}: {error}")
 
@@ -250,9 +252,9 @@ class RealAPITester:
             if sync_result.metadata_updated:
                 self.test_results["repository_integration"] = "PASS"
             else:
-                self.test_results[
-                    "repository_integration"
-                ] = "FAIL: Metadata not updated"
+                self.test_results["repository_integration"] = (
+                    "FAIL: Metadata not updated"
+                )
 
         except Exception as e:
             print(f"  ❌ Error: {e}")
@@ -303,8 +305,8 @@ class RealAPITester:
         # Test invalid dataset
         try:
             print("  Testing invalid dataset...")
-            result = self.client.fetch_dataset("INVALID_DATASET_12345")
-            print(f"  ⚠️  Unexpected success for invalid dataset")
+            self.client.fetch_dataset("INVALID_DATASET_12345")
+            print("  ⚠️  Unexpected success for invalid dataset")
             self.test_results["error_invalid_dataset"] = "UNEXPECTED_SUCCESS"
         except Exception as e:
             print(f"  ✅ Expected error for invalid dataset: {type(e).__name__}")
@@ -345,7 +347,7 @@ class RealAPITester:
         self.test_health_check()
 
         # API tests
-        dataflows = self.test_dataflows_fetch()
+        self.test_dataflows_fetch()
         dataset_data = self.test_single_dataset_fetch()
         self.test_quality_validation()
 
@@ -367,7 +369,7 @@ class RealAPITester:
         failed = 0
 
         for test_name, result in self.test_results.items():
-            status = "✅ PASS" if result == "PASS" else f"❌ FAIL"
+            status = "✅ PASS" if result == "PASS" else "❌ FAIL"
             print(f"{test_name:25} {status}")
 
             if result == "PASS":

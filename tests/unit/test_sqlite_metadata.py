@@ -5,7 +5,6 @@ Tests the SQLite metadata manager, schema creation, and CRUD operations
 for the hybrid SQLite + DuckDB architecture.
 """
 
-import json
 import tempfile
 import threading
 from datetime import datetime, timedelta
@@ -47,7 +46,7 @@ class TestMetadataSchema:
 
     def test_schema_default_config(self, temp_db_path):
         """Test that default configuration is inserted."""
-        schema = create_metadata_schema(temp_db_path)
+        create_metadata_schema(temp_db_path)
 
         # Test that we can get a default config value
         import sqlite3
@@ -84,9 +83,9 @@ class TestMetadataSchema:
                     tables = cursor.fetchall()
                     # If we can connect and have no user tables, schema was effectively dropped
                     # (sqlite_sequence and other sqlite_* tables are system tables that may remain)
-                    assert (
-                        len(tables) == 0
-                    ), f"Database still contains user tables: {tables}"
+                    assert len(tables) == 0, (
+                        f"Database still contains user tables: {tables}"
+                    )
             except sqlite3.DatabaseError:
                 # If we can't connect, database was properly invalidated
                 pass

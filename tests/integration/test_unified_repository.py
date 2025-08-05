@@ -8,7 +8,6 @@ and DuckDB analytics operations in the hybrid architecture.
 import tempfile
 import threading
 from datetime import datetime
-from pathlib import Path
 
 import pytest
 

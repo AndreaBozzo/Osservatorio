@@ -6,14 +6,8 @@ import json
 import os
 import tempfile
 import xml.etree.ElementTree as ET
-from pathlib import Path
-from unittest.mock import Mock, mock_open, patch
 
 import pandas as pd
-import pytest
-
-# Since converters might be in main files, we'll import them differently
-# This is a test for the conversion logic that might be in the main scripts
 
 
 class TestDataConversion:
@@ -158,7 +152,7 @@ class TestDataConversion:
             assert os.path.exists(temp_file)
 
             # Read back and verify
-            with open(temp_file, "r", encoding="utf-8") as f:
+            with open(temp_file, encoding="utf-8") as f:
                 data = json.load(f)
 
             assert len(data) == 2

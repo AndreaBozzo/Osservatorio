@@ -10,15 +10,14 @@ import asyncio
 import time
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Optional
 
 import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
-from ..converters.base_converter import BaseIstatConverter
 from ..database.sqlite.dataset_config import get_dataset_config_manager
 from ..utils.logger import get_logger
 from ..utils.security_enhanced import rate_limit, security_manager
@@ -40,8 +39,8 @@ class ClientStatus(Enum):
 class BatchResult:
     """Result of batch dataset processing."""
 
-    successful: List[str]
-    failed: List[Tuple[str, str]]  # (dataset_id, error_message)
+    successful: list[str]
+    failed: list[tuple[str, str]]  # (dataset_id, error_message)
     total_time: float
     timestamp: datetime
 
@@ -54,7 +53,7 @@ class QualityResult:
     quality_score: float
     completeness: float
     consistency: float
-    validation_errors: List[str]
+    validation_errors: list[str]
     timestamp: datetime
 
 
@@ -155,7 +154,10 @@ class ProductionIstatClient:
 
     def __init__(self, repository=None, enable_cache_fallback=True):
         """Initialize production client."""
-        self.base_url = "https://sdmx.istat.it/SDMXWS/rest/"
+        # Issue #84: Use centralized configuration
+        from ..utils.config import Config
+
+        self.base_url = Config.ISTAT_SDMX_BASE_URL
 
         # Initialize repository integration
         self.repository = repository
@@ -182,14 +184,10 @@ class ProductionIstatClient:
             "last_request_time": None,
         }
 
-        # XML parsing namespaces (shared with converters)
-        self.namespaces = {
-            "message": "http://www.sdmx.org/resources/sdmxml/schemas/v2_1/message",
-            "generic": "http://www.sdmx.org/resources/sdmxml/schemas/v2_1/data/generic",
-            "common": "http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common",
-            "str": "http://www.sdmx.org/resources/sdmxml/schemas/v2_1/structure",
-            "xsi": "http://www.w3.org/2001/XMLSchema-instance",
-        }
+        # XML parsing namespaces (shared with converters) - Issue #84: Use centralized config
+        self.namespaces = Config.SDMX_NAMESPACES.copy()
+        # Add structure namespace alias for backwards compatibility
+        self.namespaces["str"] = Config.SDMX_NAMESPACES["structure"]
 
     def _create_session(self) -> requests.Session:
         """Create session with connection pooling and retry logic."""
@@ -222,7 +220,7 @@ class ProductionIstatClient:
 
         return session
 
-    def get_status(self) -> Dict[str, Any]:
+    def get_status(self) -> dict[str, Any]:
         """Get current client status and metrics."""
         return {
             "status": self.status.value,
@@ -234,7 +232,7 @@ class ProductionIstatClient:
 
     @rate_limit(max_requests=100, window=3600)
     def _make_request(
-        self, endpoint: str, params: Optional[Dict] = None, timeout: int = 30
+        self, endpoint: str, params: Optional[dict] = None, timeout: int = 30
     ) -> requests.Response:
         """Make API request with fault tolerance."""
         if not self.circuit_breaker.can_proceed():
@@ -298,7 +296,7 @@ class ProductionIstatClient:
                 current_avg * (total_requests - 1) + response_time
             ) / total_requests
 
-    def fetch_dataflows(self, limit: Optional[int] = None) -> Dict[str, Any]:
+    def fetch_dataflows(self, limit: Optional[int] = None) -> dict[str, Any]:
         """Fetch available dataflows from ISTAT API with cache fallback."""
         try:
             response = self._make_request("dataflow/IT1")
@@ -350,7 +348,7 @@ class ProductionIstatClient:
 
     def fetch_dataset(
         self, dataset_id: str, include_data: bool = True
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Fetch single dataset with optional data."""
         try:
             result = {
@@ -427,6 +425,9 @@ class ProductionIstatClient:
                     if "404" in str(e) and self.enable_cache_fallback:
                         # Re-raise to trigger outer fallback handling
                         raise e
+                    elif not self.enable_cache_fallback:
+                        # If cache fallback is disabled, re-raise the exception
+                        raise e
                     else:
                         result["data"] = {"status": "error", "error": str(e)}
 
@@ -454,7 +455,7 @@ class ProductionIstatClient:
             # If no fallback or fallback failed, re-raise original error
             raise e
 
-    async def fetch_dataset_batch(self, dataset_ids: List[str]) -> BatchResult:
+    async def fetch_dataset_batch(self, dataset_ids: list[str]) -> BatchResult:
         """Fetch multiple datasets asynchronously."""
         start_time = time.time()
         successful = []
@@ -541,7 +542,7 @@ class ProductionIstatClient:
                 timestamp=datetime.now(),
             )
 
-    def sync_to_repository(self, dataset_data: Dict) -> SyncResult:
+    def sync_to_repository(self, dataset_data: dict) -> SyncResult:
         """Synchronize dataset to repository."""
         dataset_id = dataset_data.get("dataset_id")
         start_time = time.time()
@@ -552,7 +553,6 @@ class ProductionIstatClient:
 
             if self.repository:
                 # Full repository integration with SQLite + DuckDB
-                from xml.etree.ElementTree import fromstring as parse_xml
 
                 # Extract dataset info for registration
                 dataset_name = dataset_data.get("dataset_name", dataset_id)
@@ -583,8 +583,7 @@ class ProductionIstatClient:
                             "observations_count", 0
                         )
 
-                        # For now, just track the sync without inserting actual data
-                        # TODO: Parse SDMX XML and insert structured data into DuckDB
+                        # Track sync completion - SDMX XML parsing to be implemented in Issue #63
                         records_synced = (
                             observations_count
                             if isinstance(observations_count, int)
@@ -635,7 +634,7 @@ class ProductionIstatClient:
             logger.error(f"Repository sync failed for {dataset_id}: {str(e)}")
             raise
 
-    def health_check(self) -> Dict[str, Any]:
+    def health_check(self) -> dict[str, Any]:
         """Perform health check on ISTAT API."""
         try:
             # Test basic connectivity
@@ -658,6 +657,48 @@ class ProductionIstatClient:
                 "client_status": self.status.value,
                 "timestamp": datetime.now().isoformat(),
             }
+
+    def test_api_connectivity(self) -> list[dict[str, Any]]:
+        """Test API connectivity to multiple endpoints."""
+        test_endpoints = [
+            ("dataflow/IT1", "Dataflow endpoint"),
+            ("datastructure/IT1", "Data structure endpoint"),
+            ("data/IT1", "Data endpoint"),
+        ]
+
+        results = []
+
+        for endpoint, description in test_endpoints:
+            try:
+                start_time = time.time()
+                response = self._make_request(endpoint, timeout=10)
+                response_time = time.time() - start_time
+
+                results.append(
+                    {
+                        "endpoint": endpoint,
+                        "description": description,
+                        "success": True,
+                        "status_code": response.status_code,
+                        "response_time": response_time,
+                        "timestamp": datetime.now().isoformat(),
+                    }
+                )
+
+            except Exception as e:
+                results.append(
+                    {
+                        "endpoint": endpoint,
+                        "description": description,
+                        "success": False,
+                        "status_code": 0,
+                        "response_time": 0.0,
+                        "error": str(e),
+                        "timestamp": datetime.now().isoformat(),
+                    }
+                )
+
+        return results
 
     def close(self):
         """Clean up resources."""

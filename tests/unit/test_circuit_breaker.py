@@ -6,7 +6,7 @@ Currently 0% coverage - high priority for coverage improvement
 
 import time
 from datetime import datetime, timedelta
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import Mock
 
 import pytest
 
@@ -30,7 +30,7 @@ class TestCircuitBreaker:
         cb = CircuitBreaker()
         assert cb.failure_threshold == 5
         assert cb.recovery_timeout == 60
-        assert cb.expected_exception == Exception
+        assert cb.expected_exception is Exception
         assert cb.state == CircuitState.CLOSED
         assert cb.failure_count == 0
         assert cb.last_failure_time is None
@@ -42,7 +42,7 @@ class TestCircuitBreaker:
         )
         assert cb.failure_threshold == 10
         assert cb.recovery_timeout == 120
-        assert cb.expected_exception == ValueError
+        assert cb.expected_exception is ValueError
 
     def test_closed_state_success(self):
         """Test successful calls in CLOSED state"""
@@ -58,7 +58,7 @@ class TestCircuitBreaker:
         """Test failed calls in CLOSED state"""
         mock_func = Mock(side_effect=Exception("Test error"))
 
-        with pytest.raises(Exception):
+        with pytest.raises(Exception, match="Test error"):
             self.breaker.call(mock_func)
 
         assert self.breaker.state == CircuitState.CLOSED
@@ -70,7 +70,7 @@ class TestCircuitBreaker:
         mock_func = Mock(side_effect=Exception("Test error"))
 
         # Generate enough failures to trigger state change
-        for i in range(self.breaker.failure_threshold):
+        for _ in range(self.breaker.failure_threshold):
             with pytest.raises(Exception):
                 self.breaker.call(mock_func)
 
@@ -125,7 +125,7 @@ class TestCircuitBreaker:
 
         mock_func = Mock(side_effect=Exception("Test error"))
 
-        with pytest.raises(Exception):
+        with pytest.raises(Exception, match="Test error"):
             self.breaker.call(mock_func)
 
         assert self.breaker.state == CircuitState.OPEN
@@ -168,7 +168,7 @@ class TestCircuitBreaker:
         # Generate failures
         mock_func = Mock(side_effect=Exception("Test error"))
 
-        for i in range(self.breaker.failure_threshold):
+        for _ in range(self.breaker.failure_threshold):
             with pytest.raises(Exception):
                 self.breaker.call(mock_func)
 
@@ -205,14 +205,17 @@ class TestCircuitBreaker:
         assert stats["failure_threshold"] == 3
 
     def test_decorator_functionality(self):
-        """Test CircuitBreaker as decorator - NOT IMPLEMENTED"""
-        # CircuitBreaker doesn't support decorator pattern
-        # This test verifies that attempting to use as decorator fails appropriately
-        with pytest.raises(TypeError):
+        """Test CircuitBreaker as decorator - NOW IMPLEMENTED"""
 
-            @self.breaker
-            def test_function():
-                return "success"
+        # CircuitBreaker now supports decorator pattern
+        @self.breaker
+        def test_function():
+            return "success"
+
+        # Should work normally
+        result = test_function()
+        assert result == "success"
+        assert self.breaker.get_stats()["total_calls"] == 1
 
     def test_context_manager(self):
         """Test CircuitBreaker as context manager - NOT IMPLEMENTED"""
@@ -295,7 +298,7 @@ class TestCircuitBreakerIntegration:
         # Simulate successful calls
         external_service.get_data.return_value = {"data": "success"}
 
-        for i in range(5):
+        for _ in range(5):
             result = service_breaker.call(external_service.get_data)
             assert result == {"data": "success"}
 
@@ -304,7 +307,7 @@ class TestCircuitBreakerIntegration:
         # Simulate service failures
         external_service.get_data.side_effect = Exception("Service unavailable")
 
-        for i in range(3):
+        for _ in range(3):
             with pytest.raises(Exception):
                 service_breaker.call(external_service.get_data)
 
@@ -322,7 +325,7 @@ class TestCircuitBreakerIntegration:
         # Force failures to open circuit
         mock_service.call.side_effect = Exception("Service down")
 
-        for i in range(2):
+        for _ in range(2):
             with pytest.raises(Exception):
                 breaker.call(mock_service.call)
 
@@ -353,7 +356,7 @@ class TestCircuitBreakerIntegration:
             results.append(result)
 
         threads = []
-        for i in range(10):
+        for _ in range(10):
             thread = threading.Thread(target=worker)
             threads.append(thread)
             thread.start()

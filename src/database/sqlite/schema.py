@@ -14,9 +14,8 @@ Tables:
 
 import json
 import sqlite3
-from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 from src.utils.logger import get_logger
 from src.utils.security_enhanced import SecurityManager
@@ -29,7 +28,7 @@ class MetadataSchema:
     """SQLite metadata schema manager for the hybrid architecture."""
 
     # Schema version for migrations
-    SCHEMA_VERSION = "1.0.0"
+    SCHEMA_VERSION = "1.1.0"
 
     # Table creation SQL statements
     SCHEMA_SQL = {
@@ -122,6 +121,19 @@ class MetadataSchema:
                 applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """,
+        "categorization_rules": """
+            CREATE TABLE IF NOT EXISTS categorization_rules (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                rule_id TEXT NOT NULL UNIQUE,
+                category TEXT NOT NULL,
+                keywords_json TEXT NOT NULL,
+                priority INTEGER NOT NULL DEFAULT 5,
+                is_active BOOLEAN DEFAULT 1,
+                description TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """,
     }
 
     # Index creation SQL statements
@@ -137,6 +149,9 @@ class MetadataSchema:
         "CREATE INDEX IF NOT EXISTS idx_audit_log_action ON audit_log(action)",
         "CREATE INDEX IF NOT EXISTS idx_system_config_key ON system_config(config_key)",
         "CREATE INDEX IF NOT EXISTS idx_system_config_env ON system_config(environment)",
+        "CREATE INDEX IF NOT EXISTS idx_categorization_rules_category ON categorization_rules(category)",
+        "CREATE INDEX IF NOT EXISTS idx_categorization_rules_active ON categorization_rules(is_active)",
+        "CREATE INDEX IF NOT EXISTS idx_categorization_rules_priority ON categorization_rules(priority DESC)",
     ]
 
     def __init__(self, db_path: Optional[str] = None):
@@ -182,11 +197,17 @@ class MetadataSchema:
                 # Record schema version
                 conn.execute(
                     "INSERT OR REPLACE INTO schema_migrations (version, description) VALUES (?, ?)",
-                    (self.SCHEMA_VERSION, "Initial SQLite metadata schema"),
+                    (
+                        self.SCHEMA_VERSION,
+                        "SQLite metadata schema with categorization rules",
+                    ),
                 )
 
                 # Insert default system configuration
                 self._insert_default_config(conn)
+
+                # Insert default categorization rules
+                self._insert_default_categorization_rules(conn)
 
                 conn.commit()
                 logger.info("SQLite metadata schema created successfully")
@@ -261,6 +282,154 @@ class MetadataSchema:
                 (key, value, type_, desc, sensitive),
             )
 
+    def _insert_default_categorization_rules(self, conn: sqlite3.Connection) -> None:
+        """Insert default categorization rules for dataflow analysis."""
+
+        default_rules = [
+            {
+                "rule_id": "pop_rule",
+                "category": "popolazione",
+                "keywords": [
+                    "popolazione",
+                    "popul",
+                    "residente",
+                    "demografic",
+                    "demo",
+                    "nascite",
+                    "morti",
+                    "stranieri",
+                    "cittadini",
+                    "anagrafe",
+                    "matrimoni",
+                    "divorzi",
+                    "migrazioni",
+                    "natalità",
+                    "mortalità",
+                ],
+                "priority": 10,
+                "description": "Identifica dataflow relativi a popolazione e demografia",
+            },
+            {
+                "rule_id": "econ_rule",
+                "category": "economia",
+                "keywords": [
+                    "pil",
+                    "gdp",
+                    "economia",
+                    "economic",
+                    "inflazione",
+                    "prezzi",
+                    "price",
+                    "reddito",
+                    "income",
+                    "consumi",
+                    "spesa",
+                    "export",
+                    "import",
+                    "commercio",
+                    "bilancia",
+                    "prodotto_interno",
+                ],
+                "priority": 9,
+                "description": "Identifica dataflow relativi a economia e indicatori economici",
+            },
+            {
+                "rule_id": "work_rule",
+                "category": "lavoro",
+                "keywords": [
+                    "lavoro",
+                    "occupazione",
+                    "disoccupazione",
+                    "employment",
+                    "unemploy",
+                    "forze_lavoro",
+                    "attività",
+                    "inattivi",
+                    "occupati",
+                    "cerca_lavoro",
+                    "tasso_occupazione",
+                ],
+                "priority": 8,
+                "description": "Identifica dataflow relativi a lavoro e occupazione",
+            },
+            {
+                "rule_id": "terr_rule",
+                "category": "territorio",
+                "keywords": [
+                    "regione",
+                    "provincia",
+                    "comune",
+                    "territorial",
+                    "geographic",
+                    "territorio",
+                    "amministrativo",
+                    "confini",
+                    "enti_locali",
+                    "municipalità",
+                    "circoscrizione",
+                ],
+                "priority": 7,
+                "description": "Identifica dataflow relativi a territorio e divisioni amministrative",
+            },
+            {
+                "rule_id": "edu_rule",
+                "category": "istruzione",
+                "keywords": [
+                    "istruzione",
+                    "scuola",
+                    "università",
+                    "education",
+                    "student",
+                    "studenti",
+                    "alunni",
+                    "laureati",
+                    "diploma",
+                    "formazione",
+                    "educazione",
+                    "insegnanti",
+                    "docenti",
+                ],
+                "priority": 6,
+                "description": "Identifica dataflow relativi a istruzione e formazione",
+            },
+            {
+                "rule_id": "health_rule",
+                "category": "salute",
+                "keywords": [
+                    "sanita",
+                    "salute",
+                    "ospedale",
+                    "health",
+                    "medical",
+                    "sanitario",
+                    "medico",
+                    "malattie",
+                    "ricoveri",
+                    "cure",
+                    "farmaci",
+                    "prevenzione",
+                    "mortalità",
+                    "cause_morte",
+                ],
+                "priority": 5,
+                "description": "Identifica dataflow relativi a sanità e salute pubblica",
+            },
+        ]
+
+        for rule in default_rules:
+            conn.execute(
+                """INSERT OR IGNORE INTO categorization_rules
+                   (rule_id, category, keywords_json, priority, description)
+                   VALUES (?, ?, ?, ?, ?)""",
+                (
+                    rule["rule_id"],
+                    rule["category"],
+                    json.dumps(rule["keywords"]),
+                    rule["priority"],
+                    rule["description"],
+                ),
+            )
+
     def verify_schema(self) -> bool:
         """Verify that the schema is properly created.
 
@@ -301,7 +470,7 @@ class MetadataSchema:
             logger.error(f"Schema verification failed: {e}")
             return False
 
-    def get_table_info(self, table_name: str) -> List[Dict[str, Any]]:
+    def get_table_info(self, table_name: str) -> list[dict[str, Any]]:
         """Get information about a specific table.
 
         Args:

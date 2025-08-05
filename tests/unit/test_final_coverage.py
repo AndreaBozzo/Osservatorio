@@ -5,8 +5,6 @@ Simple working tests for missing coverage.
 
 from unittest.mock import Mock, patch
 
-import pytest
-
 from src.utils.circuit_breaker import CircuitState
 
 
@@ -54,33 +52,6 @@ class TestFinalCoveragePush:
         assert isinstance(stats, dict)
         assert "state" in stats
         assert "failure_count" in stats
-
-    @patch("builtins.print")
-    def test_istat_api_print_methods(self, mock_print):
-        """Test ISTAT API methods that use print."""
-        from src.api.istat_api import IstatAPITester
-
-        tester = IstatAPITester()
-
-        # These methods might have print statements we can cover
-        assert hasattr(tester, "base_url")
-        assert hasattr(tester, "session")
-        assert hasattr(tester, "test_results")
-
-    def test_dataflow_analyzer_basic_methods(self):
-        """Test dataflow analyzer basic functionality."""
-        from src.analyzers.dataflow_analyzer import IstatDataflowAnalyzer
-
-        analyzer = IstatDataflowAnalyzer()
-
-        # Test initialization
-        assert hasattr(analyzer, "session")
-        assert hasattr(analyzer, "base_url")
-
-        # Test URL building
-        if hasattr(analyzer, "build_dataflow_url"):
-            url = analyzer.build_dataflow_url()
-            assert isinstance(url, str)
 
     def test_converter_initialization_coverage(self):
         """Test converter initialization edge cases."""
@@ -227,21 +198,6 @@ class TestFinalCoveragePush:
             assert (
                 result is not None or result is None
             )  # Just check it returns something
-
-    def test_dataflow_analyzer_utilities(self):
-        """Test dataflow analyzer utility methods."""
-        from src.analyzers.dataflow_analyzer import IstatDataflowAnalyzer
-
-        analyzer = IstatDataflowAnalyzer()
-
-        # Test if utility methods exist and can be called
-        if hasattr(analyzer, "get_priority_score"):
-            score = analyzer.get_priority_score("test")
-            assert isinstance(score, int)
-
-        # Test session setup
-        assert hasattr(analyzer, "session")
-        assert analyzer.session is not None
 
     def test_additional_secure_operations(self):
         """Test additional secure operations."""

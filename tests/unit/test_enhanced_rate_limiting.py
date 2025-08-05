@@ -9,12 +9,8 @@ Tests all components with proper mocking and real validation:
 - Configuration management
 """
 
-import json
-import time
 from contextlib import contextmanager
-from datetime import datetime, timedelta
-from typing import Any, Dict
-from unittest.mock import MagicMock, Mock, call, patch
+from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
@@ -22,11 +18,10 @@ from src.api.security_dashboard import AlertLevel, SecurityDashboard, SecurityMe
 from src.auth.enhanced_rate_limiter import (
     AdaptiveConfig,
     EnhancedRateLimiter,
-    SuspiciousActivity,
     ThreatLevel,
 )
 from src.auth.models import APIKey
-from src.auth.rate_limiter import RateLimitConfig, RateLimitResult
+from src.auth.rate_limiter import RateLimitConfig
 from src.auth.security_config import SecurityConfig, SecurityManager
 from src.database.sqlite.manager import SQLiteMetadataManager
 

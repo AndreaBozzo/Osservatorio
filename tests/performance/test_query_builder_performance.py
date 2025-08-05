@@ -9,9 +9,6 @@ This module tests the performance characteristics of the query builder:
 """
 
 import gc
-import os
-import tempfile
-import threading
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from unittest.mock import Mock
@@ -25,7 +22,6 @@ from src.database.duckdb.query_builder import (
     DuckDBQueryBuilder,
     FilterOperator,
     QueryCache,
-    create_query_builder,
 )
 
 
@@ -75,7 +71,7 @@ class TestQueryBuilderPerformance:
         uncached_times = []
         for _ in range(5):
             start_time = time.time()
-            result = builder.select("*").from_table("test").execute(use_cache=False)
+            builder.select("*").from_table("test").execute(use_cache=False)
             uncached_times.append(time.time() - start_time)
             builder._reset_query_state()
 
@@ -85,7 +81,7 @@ class TestQueryBuilderPerformance:
         cached_times = []
         for _ in range(5):
             start_time = time.time()
-            result = builder.select("*").from_table("test").execute(use_cache=True)
+            builder.select("*").from_table("test").execute(use_cache=True)
             cached_times.append(time.time() - start_time)
             builder._reset_query_state()
 
@@ -141,7 +137,7 @@ class TestQueryBuilderPerformance:
 
         print(f"Built 1000 complex queries in {build_time:.4f}s")
         print(
-            f"Average time per query: {avg_time_per_query:.6f}s ({avg_time_per_query*1000:.3f}ms)"
+            f"Average time per query: {avg_time_per_query:.6f}s ({avg_time_per_query * 1000:.3f}ms)"
         )
 
         # Should build queries very quickly
@@ -163,15 +159,15 @@ class TestQueryBuilderPerformance:
                 # Mix of cached and uncached queries
                 if i % 3 == 0:
                     # Repeating query (should hit cache after first execution)
-                    result = (
+                    (
                         builder.select("*")
-                        .from_table(f"table_common")
+                        .from_table("table_common")
                         .where("id", FilterOperator.GT, 100)
                         .execute()
                     )
                 else:
                     # Unique query per thread
-                    result = (
+                    (
                         builder.select("*")
                         .from_table(f"table_{thread_id}")
                         .where("value", FilterOperator.EQ, i)
@@ -195,7 +191,7 @@ class TestQueryBuilderPerformance:
 
         # Analyze results
         all_times = []
-        for thread_id, times in results:
+        for _thread_id, times in results:
             all_times.extend(times)
 
         avg_query_time = sum(all_times) / len(all_times)
@@ -207,7 +203,7 @@ class TestQueryBuilderPerformance:
         )
         print(f"Average query time: {avg_query_time:.4f}s")
         print(f"Max query time: {max_query_time:.4f}s")
-        print(f"Queries per second: {total_queries/total_time:.1f}")
+        print(f"Queries per second: {total_queries / total_time:.1f}")
 
         # Performance assertions
         assert avg_query_time < 0.1  # Average should be reasonable
@@ -233,26 +229,26 @@ class TestQueryBuilderPerformance:
         for i in range(200):
             # Mix of different query patterns
             if i % 4 == 0:
-                result = (
+                (
                     builder.select("*")
                     .from_table("large_table")
                     .where("year", FilterOperator.EQ, 2020 + (i % 4))
                     .execute()
                 )
             elif i % 4 == 1:
-                result = (
+                (
                     builder.select_time_series(f"dataset_{i % 10}")
                     .year_range(2020, 2023)
                     .execute()
                 )
             elif i % 4 == 2:
-                result = (
+                (
                     builder.select_territory_comparison("measure_1", 2023)
                     .territories([f"T{j:03d}" for j in range(10)])
                     .execute()
                 )
             else:
-                result = builder.select_category_trends("category_A").execute()
+                builder.select_category_trends("category_A").execute()
 
             builder._reset_query_state()
 
@@ -262,7 +258,7 @@ class TestQueryBuilderPerformance:
                 memory_increase = current_memory - baseline_memory
 
                 print(
-                    f"After {i+1} queries: {current_memory:.1f} MB (+{memory_increase:.1f} MB)"
+                    f"After {i + 1} queries: {current_memory:.1f} MB (+{memory_increase:.1f} MB)"
                 )
 
                 # Memory growth should be bounded
@@ -337,7 +333,7 @@ class TestQueryBuilderPerformance:
         start_time = time.time()
 
         for i in range(20):  # More than max_size
-            result = builder.select("*").from_table(f"table_{i}").execute()
+            builder.select("*").from_table(f"table_{i}").execute()
             builder._reset_query_state()
 
         eviction_time = time.time() - start_time
@@ -406,14 +402,14 @@ class TestQueryBuilderPerformance:
         results = {}
 
         for i, pattern in enumerate(query_patterns):
-            pattern_name = f"Pattern_{i+1}"
+            pattern_name = f"Pattern_{i + 1}"
             times = []
 
             for run in range(10):  # 10 runs per pattern
                 start_time = time.time()
 
                 try:
-                    result = pattern().execute()
+                    pattern().execute()
                     execution_time = time.time() - start_time
                     times.append(execution_time)
                 except Exception as e:
@@ -441,19 +437,19 @@ class TestQueryBuilderPerformance:
         # Performance assertions
         for pattern, metrics in results.items():
             # All patterns should complete in reasonable time
-            assert (
-                metrics["avg_time"] < 0.5
-            ), f"{pattern} too slow: {metrics['avg_time']:.4f}s"
+            assert metrics["avg_time"] < 0.5, (
+                f"{pattern} too slow: {metrics['avg_time']:.4f}s"
+            )
 
             # Variance should be reasonable (cached queries should be consistent)
             time_variance = max(metrics["times"]) - min(metrics["times"])
-            assert (
-                time_variance < 0.3
-            ), f"{pattern} too much variance: {time_variance:.4f}s"
+            assert time_variance < 0.3, (
+                f"{pattern} too much variance: {time_variance:.4f}s"
+            )
 
         # Check overall cache performance
         cache_stats = cache.get_stats()
-        print(f"\nCache Performance:")
+        print("\nCache Performance:")
         print(f"  Hit rate: {cache_stats['hit_rate_percent']:.1f}%")
         print(f"  Cache size: {cache_stats['cache_size']}")
 
@@ -510,14 +506,14 @@ class TestQueryBuilderPerformance:
         uncached_time = []
         for _ in range(3):
             start_time = time.time()
-            result = builder.select("*").from_table("test").execute(use_cache=False)
+            builder.select("*").from_table("test").execute(use_cache=False)
             uncached_time.append(time.time() - start_time)
             builder._reset_query_state()
 
         cached_times = []
         for _ in range(3):
             start_time = time.time()
-            result = builder.select("*").from_table("test").execute(use_cache=True)
+            builder.select("*").from_table("test").execute(use_cache=True)
             cached_times.append(time.time() - start_time)
             builder._reset_query_state()
 
@@ -535,8 +531,8 @@ class TestQueryBuilderPerformance:
 
         # Success Criteria 3: <100ms for cached queries, <500ms uncached
         # Note: This is with mocked manager, real performance may vary
-        print(f"✓ Cached queries: {avg_cached*1000:.1f}ms (<100ms target)")
-        print(f"✓ Uncached queries: {avg_uncached*1000:.1f}ms (<500ms target)")
+        print(f"✓ Cached queries: {avg_cached * 1000:.1f}ms (<100ms target)")
+        print(f"✓ Uncached queries: {avg_uncached * 1000:.1f}ms (<500ms target)")
 
         # With mock, we can't test exact timing, but we validate the pattern
         assert avg_cached < avg_uncached  # Cached should be faster

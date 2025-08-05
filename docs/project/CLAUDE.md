@@ -1,156 +1,92 @@
 # CLAUDE.md - Developer Context & Commands
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides essential guidance to Claude Code when working with this repository.
+***DO NOT MODIFY BELOW***
+A few rules for Claude:
+1- Use tokens efficiently
+2-Refer to PROJECT_STATE.md to track progresses.
+3-Best practices, always.
+***DO NOT MODIFY ABOVE***
 
 ## Project Overview
 
-This is an Italian data processing system for ISTAT (Italian National Institute of Statistics) data with Tableau/Power BI integration. The system fetches, processes, and converts ISTAT statistical data into formats suitable for visualization and analysis.
+Osservatorio is an Italian statistical data processing platform with FastAPI backend and modern development infrastructure. Infrastructure modernization completed (Day 1-7), data ingestion layer still in development.
 
-**Current Status**: Production-ready platform with ProductionIstatClient enterprise architecture (Issue #66 Complete - 83.3% EXCELLENT Quality)
+**Status**: Infrastructure Ready, Data Layer In Development
+**Architecture**: FastAPI + Basic Auth + DuckDB/SQLite + Modern DevOps (Docker, CI/CD)
+**Current Branch**: issue-83-dataflow-analyzer-modernization
+**Missing**: Production data ingestion pipeline, full ISTAT integration
+**Documentation**: [README.md](../../README.md) and [docs/](../)
 
-**Documentation**: See [docs/README.md](docs/README.md) for organized documentation
+## Essential Commands
 
-**Important**: Always refer to [PROJECT_STATE.md](docs/project/PROJECT_STATE.md) for current development context before making any changes to the codebase.
+### Modern Development Commands
+- `make help` - Show all available commands
+- `make install` - Install with modern dependency management
+- `make test-fast` - Fast unit tests
+- `make quality` - Run all quality checks (lint, format, security)
+- `docker-compose up -d` - Start development environment
 
-**Strategic Update (v11.0.0)**: ProductionIstatClient with enterprise patterns (connection pooling, circuit breaker, cache fallback) and hybrid SQLite + DuckDB architecture for optimal performance and resilience.
+### Testing & Validation
+- `pytest tests/unit/` - Unit tests
+- `pytest tests/integration/` - Integration tests
+- `pytest tests/performance/` - Performance benchmarks
+- `make security-check` - Security scanning with Bandit
 
-## 🚨 SECURITY & LEGACY CONSOLIDATION PRIORITIES (29 Luglio 2025)
+### FastAPI Development
+- `uvicorn src.api.fastapi_app:app --reload` - Start FastAPI server
+- `curl http://localhost:8000/health` - Health check
+- `curl http://localhost:8000/docs` - OpenAPI documentation
+- `pytest tests/unit/test_fastapi_integration.py -v` - API tests
 
-### **CRITICAL: Legacy Code Cleanup Required**
-Before implementing new features, address these **security and architectural concerns**:
-
-**Legacy Components to Remove/Modernize** (Issue #84):
-- ❌ **src/api/istat_api.py** - Contains deprecated `IstatAPITester` class (marked for removal)
-- ❌ **dashboard/app.py** - Uses hardcoded sample data instead of `UnifiedDataRepository`
-- ❌ **Scripts sys.path manipulation** - Multiple scripts use anti-pattern imports
-- ❌ **src/analyzers/dataflow_analyzer.py** - Legacy patterns not aligned with modern architecture (Issue #83)
-
-**Security Review Required**:
-- 🔍 **Credential Management** - Ensure no hardcoded secrets in any legacy components
-- 🔍 **Path Validation** - All legacy file operations must use `SecurePathValidator`
-- 🔍 **Database Access** - Direct SQLite connections should use `UnifiedDataRepository`
-- 🔍 **Import Patterns** - Remove all `sys.path.append()` usage for security
-
-**Before Adding New Features**: Complete Issue #84 (Legacy Consolidation) to ensure clean architectural foundation.
-
-## Development Commands
-
-### ProductionIstatClient Commands (NEW 29/07/2025 - Issue #66 Complete)
-#### Quality Demonstration & Verification
-- `python quality_demo.py` - 🎯 Complete quality demonstration (83.3% EXCELLENT rating)
-- `python scripts/health_check.py` - 🏥 Interactive system health check with visual status
-- `python -c "from src.api.production_istat_client import ProductionIstatClient; client = ProductionIstatClient(); print(client.get_status())"` - Quick client status check
-
-#### ProductionIstatClient Testing
-- `python -c "from src.api.production_istat_client import ProductionIstatClient; print('Production client ready')"` - Test client import
-- `pytest tests/integration/test_production_istat_client.py -v` - Run production client integration tests
-- `python -c "from src.database.sqlite.repository import get_unified_repository; print('Repository ready')"` - Test repository integration
-
-#### FastAPI Testing & Documentation
-- `pytest tests/unit/test_fastapi_integration.py -v` - Run FastAPI integration tests
-- Visit `http://localhost:8000/docs` - Interactive Swagger UI documentation
-- Visit `http://localhost:8000/redoc` - Alternative ReDoc documentation
-- `curl http://localhost:8000/health` - Quick health check (requires server running)
-
-### JWT Authentication Commands (NEW 25/07/2025 - Day 7 Complete)
-#### API Key Management
-- `python scripts/generate_api_key.py create --name "MyApp" --scopes read,write` - Create new API key
-- `python scripts/generate_api_key.py list` - List active API keys
-- `python scripts/generate_api_key.py revoke --id 123 --reason "Security"` - Revoke API key
-- `python scripts/generate_api_key.py test --key osv_your_key_here` - Test API key validity
-- `python scripts/generate_api_key.py stats` - Show usage statistics
-- `python scripts/generate_api_key.py cleanup` - Clean expired tokens
-
-#### Authentication Testing
-- `pytest tests/unit/test_auth_system.py -v` - Run authentication unit tests (29 tests)
-- `python test_auth_integration.py` - Run complete integration test (18 scenarios)
-- `bandit -r src/auth/` - Run security scan on authentication modules
-- `python -c "from src.auth import SQLiteAuthManager; print('✅ Auth system ready')"` - Verify auth system
-
-#### JWT Security Features
-- **API Keys**: Cryptographically secure with bcrypt hashing
-- **JWT Tokens**: HS256/RS256 with blacklisting support
-- **Rate Limiting**: Sliding window algorithm per API key/IP
-- **Security Headers**: OWASP-compliant middleware
-- **Scopes**: read, write, admin, analytics, powerbi, tableau
+### Infrastructure (Day 1-7 Completed)
+- All utility files modernized (.pre-commit-config.yaml, pyproject.toml, Dockerfile, etc.)
+- GitHub Actions CI/CD pipeline configured
+- Multi-stage Docker builds ready
+- Security middleware and authentication system implemented
 
 ### Makefile Commands (Recommended)
-The project includes a comprehensive Makefile for streamlined development workflows:
-
-#### Quick Start
-- `make help` - Show all available commands
-- `make dev-setup` - Complete development environment setup
-- `make status` - Show project status and health check
-- `make examples` - Show common development workflow examples
-
-#### Testing Workflows
-- `make test-fast` - Fast unit tests (~20s)
-- `make test-critical` - Critical path tests (~10s)
-- `make test-integration` - Integration tests (~10s)
-- `make test` - Optimized development testing workflow (~30s)
-- `make test-full` - Complete test suite with coverage (~300s)
-
-#### PowerBI Integration
-- `make powerbi-validate` - Validate PowerBI integration offline (100% success rate)
-- `make powerbi-demo` - Run PowerBI integration demonstration
-- `make powerbi-test` - Run PowerBI specific tests
-
-#### Code Quality
-- `make format` - Format code with black and isort
-- `make lint` - Run linting tools (black, isort, flake8)
-- `make pre-commit` - Run pre-commit hooks manually
-
-#### Development Workflows
-- `make dev-commit` - Pre-commit workflow (format + critical tests)
-- `make dev-push` - Pre-push workflow (format + test + lint)
-- `make ci` - Simulate CI/CD pipeline
-
-#### Database Management
-- `make db-init` - Initialize database schemas (SQLite + DuckDB)
-- `make db-status` - Check database status and health
-
-#### Utilities
-- `make clean` - Clean temporary files and caches
-- `make benchmark` - Run performance benchmarks
+- `make help` - Show all commands
+- `make status` - Project status
+- `make test-fast` - Fast tests (~20s)
+- `make test` - Development workflow (~30s)
+- `make powerbi-validate` - PowerBI validation
+- `make format` - Code formatting
+- `make lint` - Code linting
+- `make clean` - Clean temp files
 - `make dashboard` - Run Streamlit dashboard
 
-### Core Commands (Direct Python)
-> **Note**: Some modules require Python path setup due to relative imports. Use the alternative commands shown below for modules that fail with direct execution.
+### Data Ingestion
+- `python scripts/download_istat_data.ps1`
+Primordial ingestion layer with a shell script, needs to be
+revamped/rehauled for unified pipeline, orchestration
+and automation, work in progress.
 
-- `python convert_to_tableau.py` - Main conversion script to convert ISTAT XML data to Tableau formats
-- `python -c "import sys; sys.path.append('.'); from src.api import istat_api; print('ISTAT API module loaded')"` - Test ISTAT API connectivity and data access
-- `python src/analyzers/dataflow_analyzer.py` - Analyze available ISTAT dataflows
-- `powershell scripts/download_istat_data.ps1` - Download ISTAT datasets via PowerShell
+### Data Processing
+- `python -c "from src.services.dataflow_analysis_service import DataflowAnalysisService; print('Service ready')"` - Dataflow service
+- `python -m scripts.organize_data_files` - Organize data files (Issue #84: modernized)
+- `python -m scripts.cleanup_temp_files` - Clean temporary files (Issue #84: modernized)
 
-### PowerBI Integration Commands (Enterprise-Ready)
-- `python examples/powerbi_integration_demo.py` - Complete PowerBI integration demonstration
-- `python scripts/validate_powerbi_offline.py` - Comprehensive offline validation (100% success rate)
-- `python src/api/powerbi_api.py` - Test PowerBI API connectivity and diagnostics
-- `python scripts/setup_powerbi_azure.py` - Guided setup for Azure AD and PowerBI configuration
-- `python scripts/test_powerbi_upload.py` - Test dataset upload to PowerBI Service
+### PowerBI Integration
+- `python -m examples.powerbi_integration_demo` - PowerBI demo (Issue #84: modernized)
+- `python -m scripts.validate_powerbi_offline` - Offline validation (Issue #84: modernized)
+- `pytest tests/unit/test_powerbi_api.py -v` - PowerBI tests
+- `pytest tests/integration/test_powerbi_integration.py -v` - Integration tests
 
-### PowerBI Components Testing
-- `pytest tests/unit/test_powerbi_api.py -v` - PowerBI API client unit tests
-- `pytest tests/unit/test_powerbi_converter.py -v` - PowerBI converter tests
-- `pytest tests/integration/test_powerbi_integration.py -v` - Full integration tests
-- `python -c "from src.integrations.powerbi.optimizer import PowerBIOptimizer; print('✅ Star Schema Optimizer loaded')"` - Test optimizer
-- `python -c "from src.integrations.powerbi.templates import TemplateGenerator; print('✅ Template Generator loaded')"` - Test template generator
+### CI/CD & Dashboard
+- `python -m scripts.test_ci --strategy auto` - CI tests with fallback (Issue #84: modernized)
+- `streamlit run dashboard/app.py` - Run dashboard locally
+- **Live Dashboard**: [https://osservatorio-dashboard.streamlit.app/](https://osservatorio-dashboard.streamlit.app/)
 
-### CI/CD Commands
-- `python scripts/test_ci.py --strategy auto --generate-data` - Run CI tests with automatic fallback and data generation
-- `python scripts/test_ci.py --strategy quick` - Run essential tests for CI/CD
-- `python scripts/test_ci.py --strategy minimal` - Run minimal ultra-robust tests for CI/CD
-- `python scripts/generate_test_data.py` - Generate mock data for CI/CD testing
-- `streamlit run dashboard/app.py` - Run dashboard locally (Streamlit 1.45.0, verified 20/07/2025)
-- **Dashboard live**: [https://osservatorio-dashboard.streamlit.app/](https://osservatorio-dashboard.streamlit.app/) ✅ OPERATIVO
+### Utilities (Issue #84: All scripts modernized)
+- `python -m scripts.cleanup_temp_files` - Clean temp files
+- `python -m scripts.organize_data_files` - Organize data files
+- `python -m scripts.health_check` - System health check
+- `python -m scripts.generate_test_data` - Generate test data
+- `python -m scripts.run_performance_tests` - Performance testing
+- `python -m scripts.validate_issue6_implementation` - Issue #6 validation
 
-### File Management Commands
-- `python scripts/cleanup_temp_files.py` - Clean up temporary files
-- `python scripts/cleanup_temp_files.py --stats` - Show temporary files statistics
-- `python scripts/cleanup_temp_files.py --max-age 48` - Clean files older than 48 hours
-- `python scripts/organize_data_files.py` - Organize data files according to best practices
-- `python scripts/organize_data_files.py --dry-run` - Preview file organization changes
-- `python scripts/schedule_cleanup.py` - Set up automatic cleanup scheduling
+**📖 See [Script Usage Guide](../scripts/SCRIPT_USAGE_GUIDE.md) for complete documentation**
 
 ### Development Environment
 - **Python Version**: 3.13.3 (verified 20/07/2025)
@@ -267,219 +203,109 @@ The project includes a comprehensive Makefile for streamlined development workfl
 - `pre-commit run --all-files` - Run pre-commit hooks
 
 ### Security Features
-- **Secure Path Validation**: All file operations use `SecurePathValidator` to prevent directory traversal attacks
-- **HTTPS Enforcement**: All API endpoints use HTTPS for secure communication
-- **Input Sanitization**: Filenames and paths are sanitized to prevent injection attacks
-- **Safe File Operations**: Custom `safe_open()` method validates paths before file operations
-- **Extension Validation**: Only approved file extensions are allowed (.json, .csv, .xlsx, .ps1, etc.)
-- **Path Traversal Protection**: Prevents `../` and absolute path attacks
-- **Windows Path Support**: Proper handling of Windows drive letters (C:\) and path separators
-- **Reserved Name Handling**: Prevents use of Windows reserved names (CON, PRN, AUX, etc.)
-- **Enhanced Error Handling**: All converter operations include robust error handling with secure error messages
-- **XML Parsing Security**: ET.fromstring() used instead of ET.parse() for direct XML content parsing
-- **Path Validation Integration**: All converter methods use secure path validation for file operations
+- **Path Validation**: Directory traversal protection, secure file operations
+- **Input Sanitization**: XSS/injection prevention, safe XML parsing
+- **Rate Limiting**: API protection with sliding window algorithm
+- **JWT Authentication**: Secure API keys with bcrypt hashing
 
-## Project Architecture (Updated 25/07/2025 - Day 7 Complete)
+## Project Architecture
 
-### System Architecture Overview
+### System Overview
 ```
-┌─────────────────────┐     ┌─────────────────────┐     ┌─────────────────────┐
-│   DuckDB Engine     │     │  SQLite Metadata    │     │   PowerBI Service   │
-├─────────────────────┤     ├─────────────────────┤     ├─────────────────────┤
-│ • ISTAT Analytics   │     │ • Dataset Registry  │     │ • Workspaces        │
-│ • Time Series       │     │ • User Preferences  │     │ • Datasets          │
-│ • Aggregations      │     │ • API Keys/Auth     │     │ • Reports           │
-│ • Performance Data  │     │ • Audit Logging     │     │ • Dashboards        │
-└─────────────────────┘     └─────────────────────┘     └─────────────────────┘
-         ↓                           ↓                           ↑
-    ┌────────────────────────────────┐                           │
-    │   Unified Data Repository      │                           │
-    │   (Facade Pattern)             │                           │
-    └────────────────────────────────┘                           │
-                 ↓                                               │
-    ┌────────────────────────────────────────────────────────────┤
-    │                  🔐 JWT Authentication Layer               │
-    │   API Keys • JWT Tokens • Rate Limiting • Security Headers │
-    └─────────────────────────────────────────────────────────────┘
-                                    ↓
-              ┌─────────────────────────────────────┐
-              │          REST API Layer             │
-              │    (FastAPI - Future Implementation) │
-              └─────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│                 🚀 ProductionIstatClient                       │
+│    Circuit Breaker • Connection Pool • Rate Limiter            │
+└─────────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+┌─────────────────────────────────────────────────────────────────┐
+│              🔄 Unified Repository (Facade Pattern)            │
+│  📊 DuckDB Analytics • 🗃️ SQLite Metadata • 💾 Cache Fallback  │
+└─────────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    🌐 ISTAT SDMX API                          │
+│            509+ datasets with intelligent fallback            │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
 ### Core Components
 
-1. **Authentication System (Day 7 - NEW!)**:
-   - `src/auth/sqlite_auth.py` - SQLite-backed API key management with bcrypt hashing
-   - `src/auth/jwt_manager.py` - JWT token creation, validation, and blacklisting
-   - `src/auth/rate_limiter.py` - Sliding window rate limiting per API key/IP
-   - `src/auth/security_middleware.py` - OWASP security headers and auth middleware
-   - `scripts/generate_api_key.py` - CLI tool for API key management
-   - `tests/unit/test_auth_system.py` - Comprehensive authentication test suite (29 tests)
+1. **ProductionIstatClient** (`src/api/production_istat_client.py`):
+   - Enterprise-ready ISTAT client with circuit breaker, connection pooling, rate limiting
+   - Cache fallback system for offline capability (<100ms response)
 
-2. **Data Pipeline Flow**:
-   - `src/api/istat_api.py` - ISTAT SDMX API client and data fetcher
-   - `src/analyzers/dataflow_analyzer.py` - Analyzes available ISTAT dataflows and categorizes them
-   - `src/converters/tableau_converter.py` - Converter for Tableau formats (CSV/Excel/JSON)
-   - `src/converters/powerbi_converter.py` - PowerBI converter (CSV, Excel, Parquet, JSON)
-   - `convert_to_tableau.py` - Wrapper script for Tableau conversions
-   - `src/api/powerbi_api.py` - Enterprise PowerBI REST API client with MSAL authentication
-   - `src/integrations/powerbi/optimizer.py` - Star Schema Optimizer with DAX measures generation
-   - `src/integrations/powerbi/templates.py` - PowerBI Template Generator (.pbit files)
-   - `src/integrations/powerbi/incremental.py` - Incremental Refresh Manager with change detection
-   - `src/integrations/powerbi/metadata_bridge.py` - Data governance and lineage tracking
-   - `examples/powerbi_integration_demo.py` - Complete PowerBI enterprise demo
-   - `scripts/validate_powerbi_offline.py` - 100% offline validation system
+2. **Authentication System** (`src/auth/`):
+   - JWT tokens with bcrypt hashing (`sqlite_auth.py`, `jwt_manager.py`)
+   - Rate limiting and security middleware (`rate_limiter.py`, `security_middleware.py`)
 
-2. **Data Processing Architecture**:
-   - Raw ISTAT data is fetched via SDMX API endpoints
-   - XML data is parsed and categorized by topic (popolazione, economia, lavoro, territorio, istruzione, salute)
-   - Data is cleaned, standardized, and converted to multiple formats
-   - Basic generation of import instructions and metadata
-   - Direct XML content parsing with `_parse_xml_content()` methods
-   - Automatic dataset categorization with priority scoring
-   - Data quality validation with completeness scoring
-   - Programmatic conversion APIs for both PowerBI and Tableau
+3. **Database Architecture** (`src/database/`):
+   - **DuckDB**: Analytics engine (`duckdb/manager.py`, `query_builder.py`)
+   - **SQLite**: Metadata and configuration (`sqlite/repository.py`, `dataset_config.py`)
+   - **Unified Repository**: Facade pattern combining both databases
 
-3. **Configuration System (UPDATED 28/07/2025 - Issues #59 & #62 Complete)**:
-   - `src/utils/config.py` - Centralized configuration management with environment variables
-   - `src/utils/logger.py` - Loguru-based logging configuration
-   - `src/database/sqlite/dataset_config.py` - **NEW!** SQLite-based dataset configuration manager with caching
-   - `scripts/migrate_json_to_sqlite.py` - **NEW!** Migration utility for JSON → SQLite configuration migration
-   - `tableau_config.json` - Legacy Tableau server configuration (maintained for fallback)
+4. **Data Processing** (`src/converters/`, `src/services/`):
+   - **BaseConverter Architecture**: Unified foundation (`base_converter.py`, `factory.py`)
+   - **PowerBI Integration**: Converter, optimizer, templates (`powerbi_converter.py`, `integrations/powerbi/`)
+   - **Tableau Integration**: Converter and API client (`tableau_converter.py`, `api/tableau_api.py`)
+   - **Dataflow Analysis**: Modern service with REST endpoints (`services/dataflow_analysis_service.py`)
 
-4. **Security & Utilities**:
-   - `src/utils/secure_path.py` - Secure path validation and file operations
-   - `src/utils/temp_file_manager.py` - Temporary file management with automatic cleanup
-   - All file operations use validated paths and safe file handling
-   - HTTPS enforcement for all external API calls
+5. **Utilities & Configuration** (`src/utils/`):
+   - **Security**: Path validation, temp file management (`secure_path.py`, `temp_file_manager.py`)
+   - **Configuration**: Centralized config and logging (`config.py`, `logger.py`)
+   - **Resilience**: Circuit breaker patterns (`circuit_breaker.py`, `security_enhanced.py`)
 
-5. **DuckDB Analytics Engine** (UPDATED 21/07/2025):
-   - **DuckDBManager**: Full-featured connection manager
-     - `execute_query(query, parameters)` - Parameterized query execution
-     - `execute_statement(statement, parameters)` - DDL/DML operations
-     - `bulk_insert(table_name, data)` - Optimized bulk data insertion
-     - `get_performance_stats()` - Real-time performance monitoring
-   - **SimpleDuckDBAdapter**: Lightweight interface for immediate use
-     - `create_istat_schema()` - Automatic ISTAT schema creation
-     - `insert_observations(df)` - Direct DataFrame insertion
-     - `get_time_series(dataset_id, territory_code)` - Analytics queries
-   - **QueryOptimizer**: Advanced query optimization
-     - `create_advanced_indexes()` - Automatic index management
-     - `get_cache_stats()` - Cache performance monitoring
-     - `optimize_table_statistics()` - Query plan optimization
-   - **PartitionManager**: Data partitioning strategies
-     - Year-based, territory-based, and hybrid partitioning
-     - Automatic partition pruning for optimal performance
+### Data Flow
+1. **ISTAT SDMX API** → **ProductionIstatClient** (with circuit breaker & cache fallback)
+2. **XML Processing** → **BaseConverter** → **PowerBI/Tableau formats**
+3. **Storage** → **DuckDB** (analytics) + **SQLite** (metadata) via **Unified Repository**
+4. **Authentication** → **JWT tokens** + **Rate limiting** + **Security middleware**
 
-6. **Performance Testing & Monitoring System** (NEW 21/07/2025):
-   - **DuckDBPerformanceProfiler**: Advanced performance profiler (`tests/performance/test_duckdb_performance.py`)
-     - `start_profiling()` - Begin performance measurement session
-     - `end_profiling()` - End session and return metrics (execution time, memory, CPU)
-     - Memory usage tracking with psutil integration
-     - Real-time CPU percentage monitoring
-   - **PerformanceRegressionDetector**: Automated regression detection (`scripts/performance_regression_detector.py`)
-     - `run_full_analysis()` - Complete regression analysis pipeline
-     - `detect_regressions(metrics)` - Compare against baselines with statistical analysis
-     - `generate_performance_report()` - Markdown reports with trends and alerts
-     - Configurable thresholds (minor 10%, moderate 25%, severe 50%)
-     - Baseline management with historical data retention (50 measurements per metric)
-   - **Performance Test Categories**: Comprehensive test coverage
-     - Bulk insert performance (1k to 100k+ records)
-     - Query optimization with cache hit/miss analysis
-     - Concurrent execution testing (1-8 threads)
-     - Memory usage patterns and scaling analysis
-     - Indexing impact measurement
-     - Large dataset performance validation
+### Directory Structure (Current)
+```
+src/
+├── analyzers/          # Data analysis (minimal)
+├── api/               # API clients & endpoints
+│   ├── production_istat_client.py    # Main ISTAT client
+│   ├── powerbi_api.py                # PowerBI integration
+│   ├── tableau_api.py                # Tableau integration
+│   ├── dataflow_analysis_api.py      # Analysis endpoints
+│   └── fastapi_app.py                # FastAPI application
+├── auth/              # JWT Authentication System
+│   ├── sqlite_auth.py    # API key management
+│   ├── jwt_manager.py    # JWT tokens
+│   ├── rate_limiter.py   # Rate limiting
+│   └── security_middleware.py # Security headers
+├── converters/        # Data format converters
+│   ├── base_converter.py      # Unified foundation
+│   ├── powerbi_converter.py   # PowerBI formats
+│   ├── tableau_converter.py   # Tableau formats
+│   └── factory.py             # Factory pattern
+├── database/          # Hybrid database architecture
+│   ├── duckdb/        # Analytics engine
+│   │   ├── manager.py          # Connection management
+│   │   ├── query_builder.py    # Query interface
+│   │   └── simple_adapter.py   # Lightweight interface
+│   └── sqlite/        # Metadata & configuration
+│       ├── repository.py       # Unified repository
+│       ├── dataset_config.py   # Configuration manager
+│       └── manager.py          # SQLite management
+├── integrations/      # External service integrations
+│   └── powerbi/       # PowerBI enterprise features
+├── services/          # Business logic services
+│   └── dataflow_analysis_service.py
+└── utils/             # Core utilities
+    ├── config.py           # Configuration
+    ├── logger.py           # Logging
+    ├── secure_path.py      # Path validation
+    ├── circuit_breaker.py  # Resilience patterns
+    └── temp_file_manager.py # File management
+```
 
-7. **Converter APIs**:
-   - **PowerBI Converter**: `IstatXMLToPowerBIConverter`
-     - `convert_xml_to_powerbi(xml_input, dataset_id, dataset_name)` - Main conversion API
-     - `_parse_xml_content(xml_content)` - Direct XML parsing to DataFrame
-     - `_categorize_dataset(dataset_id, dataset_name)` - Auto-categorization with priority
-     - `_validate_data_quality(df)` - Data quality assessment
-     - `_generate_powerbi_formats(df, dataset_info)` - Multi-format generation
-   - **Tableau Converter**: `IstatXMLtoTableauConverter`
-     - `convert_xml_to_tableau(xml_input, dataset_id, dataset_name)` - Main conversion API
-     - `_parse_xml_content(xml_content)` - Direct XML parsing to DataFrame
-     - `_categorize_dataset(dataset_id, dataset_name)` - Auto-categorization with priority
-     - `_validate_data_quality(df)` - Data quality assessment
-     - `_generate_tableau_formats(df, dataset_info)` - Multi-format generation
+## Key Features
 
-### Directory Structure (Updated 25/07/2025 - Day 7 Complete)
-- `src/` - Source code modules
-  - `api/` - API clients (ISTAT, PowerBI, Tableau)
-  - `analyzers/` - Data analysis and categorization
-  - `auth/` - **NEW! JWT Authentication System (Day 7)**
-    - `models.py` - Authentication data models (APIKey, AuthToken, TokenClaims)
-    - `sqlite_auth.py` - SQLite API key management with bcrypt
-    - `jwt_manager.py` - JWT token creation, validation, blacklisting
-    - `rate_limiter.py` - Sliding window rate limiting with SQLite
-    - `security_middleware.py` - OWASP security headers & auth middleware
-  - `converters/` - Data format converters (Tableau, PowerBI)
-  - `database/` - Hybrid database architecture
-    - `duckdb/` - DuckDB analytics engine (7 files)
-      - `manager.py` - Connection management & pooling
-      - `schema.py` - ISTAT data schemas
-      - `simple_adapter.py` - Lightweight interface
-      - `query_builder.py` - Fluent query interface
-      - `query_optimizer.py` - Query optimization & caching
-      - `partitioning.py` - Data partitioning strategies
-      - `config.py` - DuckDB configuration
-    - `sqlite/` - SQLite metadata layer (4 files)
-      - `manager.py` - SQLite connection & transaction management
-      - `schema.py` - Metadata schema (6 tables)
-      - `repository.py` - Unified data repository facade
-      - `dataset_config.py` - **NEW!** Dataset configuration manager with caching (Issue #59)
-   - `src/converters/` - **REFACTORED!** Unified converter architecture (Issue #62):
-      - `base_converter.py` - **NEW!** Abstract BaseIstatConverter with shared XML parsing logic
-      - `factory.py` - **NEW!** Factory pattern for converter instantiation
-      - `powerbi_converter.py` - **UPDATED!** Now inherits from BaseIstatConverter
-      - `tableau_converter.py` - **UPDATED!** Now inherits from BaseIstatConverter
-  - `integrations/` - External service integrations
-    - `powerbi/` - PowerBI enterprise integration (5 files)
-      - `optimizer.py` - Star schema optimizer
-      - `templates.py` - .pbit template generator
-      - `incremental.py` - Incremental refresh manager
-      - `metadata_bridge.py` - Data governance bridge
-  - `scrapers/` - Web scraping and data extraction
-  - `utils/` - Core utilities (7 files)
-    - `security_enhanced.py` - Security management
-    - `circuit_breaker.py` - Resilience patterns
-    - `config.py` - Configuration management
-    - `logger.py` - Structured logging
-    - `secure_path.py` - Secure file operations
-    - `temp_file_manager.py` - Temporary file management
-- `data/` - Data storage
-  - `raw/` - Raw ISTAT XML files
-  - `processed/` - Converted files
-    - `tableau/` - Tableau-ready files
-    - `powerbi/` - PowerBI-optimized files (CSV, Excel, Parquet, JSON)
-  - `cache/` - Cached API responses
-  - `reports/` - Analysis reports and summaries
-- `scripts/` - Automation scripts (PowerShell for data download, CI/CD utilities)
-  - `migrate_json_to_sqlite.py` - **NEW!** JSON to SQLite migration utility (Issue #59)
-- `tests/` - Test suites (unit, integration, performance) - SIGNIFICANTLY EXPANDED!
-  - `unit/` - Unit tests for individual components (290+ tests)
-    - `test_duckdb_basic.py` - NEW! Basic DuckDB functionality tests
-    - `test_duckdb_integration.py` - NEW! Comprehensive DuckDB tests (45 tests)
-    - `test_simple_adapter.py` - NEW! Simple DuckDB adapter tests
-    - `test_json_sqlite_migration.py` - **NEW!** JSON to SQLite migration tests (19 tests, Issue #59)
-    - `test_base_converter.py` - **NEW!** BaseConverter architecture tests (18 tests, Issue #62)
-    - `test_tableau_api.py` - Comprehensive Tableau API tests (20 tests)
-    - `test_temp_file_manager.py` - Temp file management tests (26 tests)
-    - `test_istat_api.py` - Enhanced ISTAT API tests (25 tests)
-    - `test_final_coverage.py` - Edge cases and utilities (17 tests)
-    - Plus existing: config, logger, dataflow_analyzer, converters, security, etc.
-  - `integration/` - Integration tests for system components (26 tests)
-  - `performance/` - Performance and scalability tests (8 tests)
-- `examples/` - NEW! Usage examples
-  - `duckdb_demo.py` - Complete DuckDB demonstration
-
-### Key Data Flow Categories, this might be a residual from the very
-### first data pull from ISTAT API, from an SDGs, we'll look into this
-The system categorizes ISTAT data into 7 main areas with priority scoring:
+### Data Categories (ISTAT SDGs)
 1. **Popolazione** (Population) - Priority 10
 2. **Economia** (Economy) - Priority 9
 3. **Lavoro** (Employment) - Priority 8
@@ -488,477 +314,37 @@ The system categorizes ISTAT data into 7 main areas with priority scoring:
 6. **Salute** (Health) - Priority 5
 7. **Altro** (Other) - Priority 1
 
-### Data Quality Validation
-The system now includes comprehensive data quality assessment:
-- **Completeness Score**: Percentage of non-null values in dataset
-- **Data Quality Score**: Overall quality assessment including numeric data validation
-- **Metrics Reporting**: Total rows, columns, and quality scoring for each dataset
-- **Validation Integration**: Automatic quality assessment during conversion process
+### Output Formats
+- **PowerBI**: CSV, Excel, Parquet, JSON
+- **Tableau**: CSV, Excel, JSON
+- **Quality Assessment**: Completeness scoring, data validation
 
-### Integration Points
-- **ISTAT SDMX API**: `http://sdmx.istat.it/SDMXWS/rest/` - Primary data source
-- **Tableau Server**: OAuth-enabled connections for BigQuery, Google Sheets, Box, Dropbox
-- **PowerBI Service**: REST API integration with Microsoft identity platform (MSAL)
-- **Output Formats**:
-  - Tableau: CSV (direct import), Excel (with metadata), JSON (for APIs)
-  - PowerBI: CSV, Excel, Parquet (optimized performance), JSON
+### Testing Infrastructure
+- **540+ Tests**: 100% passing rate
+- **Coverage**: Unit, integration, performance tests
+- **Quality Score**: 83.3% EXCELLENT rating
 
-## Important Notes
-
-- All ISTAT data is fetched from official SDMX endpoints
-- The system handles Italian regional data with proper geographic mapping
-- Tableau integration supports both Server and Public versions
-- PowerShell scripts are optimized for Windows environments
-- Rate limiting is implemented for API calls (2-3 second delays)
-- Data validation includes completeness scoring and quality reports
-
-## File Management
-
-### Temporary Files
-- All temporary files are managed by `TempFileManager` class
-- Files are stored in system temp directory under `osservatorio_istat/`
-- Automatic cleanup on application exit
-- Manual cleanup available via `cleanup_temp_files.py` script
-
-### Directory Structure for Temporary Files
-- `temp/api_responses/` - API response files (dataflow_response.xml, data_DCIS_*.xml, structure_DCIS_*.xml)
-- `temp/samples/` - Sample data files
-- `temp/misc/` - Other temporary files
-
-### Best Practices
-- Temporary files are automatically organized and cleaned up
-- Use `--dry-run` flag to preview changes before applying
-- Schedule regular cleanup with `schedule_cleanup.py`
-- Monitor temp file usage with `--stats` option
-
-## Environment Configuration
-
-Required environment variables (optional, defaults provided):
-- `ISTAT_API_BASE_URL` - ISTAT API base URL
-- `ISTAT_API_TIMEOUT` - API request timeout
-- `TABLEAU_SERVER_URL` - Tableau server URL
-- `TABLEAU_USERNAME` - Tableau username
-- `TABLEAU_PASSWORD` - Tableau password
-- `POWERBI_CLIENT_ID` - PowerBI App registration client ID
-- `POWERBI_CLIENT_SECRET` - PowerBI App registration client secret
-- `POWERBI_TENANT_ID` - Azure AD tenant ID
-- `POWERBI_WORKSPACE_ID` - PowerBI workspace ID (optional)
-- `LOG_LEVEL` - Logging level (INFO, DEBUG, etc.)
-- `ENABLE_CACHE` - Enable data caching
-
-## Testing Infrastructure
-
-### Test Suite Overview
-The project includes a developing test framework with basic coverage:
-
-- **Test Infrastructure**: 215 tests collected across unit, integration, and performance categories
-- **Current Focus**: Core functionality testing for dashboard and data processing
-- **Coverage**: Basic test coverage with HTML reports in `htmlcov/` directory
-- **Status**: Test framework in development, improving coverage incrementally
-- **Quality**: Focus on critical functionality rather than comprehensive coverage
-
-### Test Categories
-1. **Core Components** (139 unit tests passing):
-   - `test_config.py` - Configuration management
-   - `test_logger.py` - Logging system
-   - `test_dataflow_analyzer.py` - ISTAT dataflow analysis
-   - `test_istat_api.py` - ISTAT API connectivity
-   - `test_powerbi_api.py` - PowerBI API integration
-   - `test_converters.py` - Data format conversions
-   - `test_secure_path.py` - Security utilities and path validation
-   - `test_powerbi_converter.py` - PowerBI converter functionality (14 tests)
-   - `test_tableau_converter.py` - Tableau converter functionality (15 tests)
-
-2. **Performance Tests**:
-   - Scalability tests with 1000+ dataflows
-   - Concurrent API request handling
-   - Memory usage optimization
-   - File I/O performance benchmarks
-
-3. **Integration Tests**:
-   - Complete pipeline testing
-   - API integration workflows
-   - System component integration
-
-### Test Configuration
-- **pytest.ini** - Test configuration with performance markers
-- **conftest.py** - Shared test fixtures and setup
-- **Requirements**: `pytest`, `pytest-cov`, `pytest-mock`, `psutil`, `seaborn`, `matplotlib`
-
-### New Dependencies
-- **numpy** - Added for numerical data validation in quality assessment
-- **pandas** - Enhanced usage for DataFrame operations and data quality validation
-- **pathlib** - Improved path handling for secure file operations
-
-## Programmatic API Usage
-
-### PowerBI Converter API
-```python
-from src.converters.powerbi_converter import IstatXMLToPowerBIConverter
-
-# Initialize converter
-converter = IstatXMLToPowerBIConverter()
-
-# Convert XML content directly
-result = converter.convert_xml_to_powerbi(
-    xml_input="<xml content>",  # or path to XML file
-    dataset_id="DCIS_POPRES1",
-    dataset_name="Popolazione residente"
-)
-
-# Result structure
-{
-    "success": True,
-    "files_created": {
-        "csv_file": "path/to/file.csv",
-        "excel_file": "path/to/file.xlsx",
-        "parquet_file": "path/to/file.parquet",
-        "json_file": "path/to/file.json"
-    },
-    "data_quality": {
-        "total_rows": 1000,
-        "total_columns": 5,
-        "completeness_score": 0.95,
-        "data_quality_score": 0.87
-    },
-    "summary": {
-        "dataset_id": "DCIS_POPRES1",
-        "category": "popolazione",
-        "priority": 10,
-        "files_created": 4
-    }
-}
-```
-
-### Tableau Converter API
-```python
-from src.converters.tableau_converter import IstatXMLtoTableauConverter
-
-# Initialize converter
-converter = IstatXMLtoTableauConverter()
-
-# Convert XML content directly
-result = converter.convert_xml_to_tableau(
-    xml_input="<xml content>",  # or path to XML file
-    dataset_id="DCIS_POPRES1",
-    dataset_name="Popolazione residente"
-)
-
-# Result structure (similar to PowerBI but with Tableau-specific formats)
-{
-    "success": True,
-    "files_created": {
-        "csv_file": "path/to/file.csv",
-        "excel_file": "path/to/file.xlsx",
-        "json_file": "path/to/file.json"
-    },
-    "data_quality": {...},
-    "summary": {...}
-}
-```
-
-### Individual Method Usage
-```python
-# Parse XML content to DataFrame
-df = converter._parse_xml_content(xml_content)
-
-# Categorize dataset
-category, priority = converter._categorize_dataset("DCIS_POPRES1", "Popolazione residente")
-
-# Validate data quality
-quality_report = converter._validate_data_quality(df)
-
-# Generate multiple formats
-files = converter._generate_powerbi_formats(df, dataset_info)
-```
-
-## Common Tasks
-
-- To process new ISTAT data: Run the PowerShell download script, then execute the main conversion script
-- To analyze available datasets: Use the dataflow analyzer to categorize and prioritize datasets
-- To test API connectivity: Run the ISTAT API tester with comprehensive reporting
-- To generate Tableau imports: The converter automatically creates import instructions and metadata
-- To generate PowerBI imports: Run `istat_xml_to_powerbi.py` to create optimized PowerBI formats with integration guide
-- To setup PowerBI integration: Run `python scripts/setup_powerbi_azure.py` for guided Azure AD configuration
-- To test PowerBI connectivity: Use `python src/api/powerbi_api.py` to verify authentication and workspace access
-- To test PowerBI upload: Run `python scripts/test_powerbi_upload.py` to test dataset upload to PowerBI Service
-- **New**: To convert XML programmatically: Use the converter APIs directly in your Python code
-- **New**: To validate data quality: Use `_validate_data_quality()` method for quality assessment
-- **New**: To categorize datasets: Use `_categorize_dataset()` for automatic categorization with priority
-- **Issue #59**: To migrate JSON configs to SQLite: Run `python scripts/migrate_json_to_sqlite.py` for centralized configuration management
-- **Issue #59**: To rollback migration: Follow procedures in `docs/guides/JSON_SQLITE_MIGRATION_ROLLBACK.md` for safe rollback
-- **Issue #62**: BaseConverter architecture implemented: Use `from src.converters.factory import create_powerbi_converter, create_tableau_converter` for unified converter access
-
-## Recent Updates (July 2025)
-
-### 🚨 CRITICAL SECURITY & ARCHITECTURE UPDATES (29 Luglio 2025)
-
-**SECURITY PRIORITIES** (Issue #84 - Legacy Consolidation):
-- ❌ **DEPRECATED CODE**: `IstatAPITester` in `src/api/istat_api.py` marked for removal
-- ❌ **HARDCODED DATA**: Dashboard uses sample data instead of `UnifiedDataRepository`
-- ❌ **UNSAFE IMPORTS**: Multiple scripts use `sys.path.append()` anti-patterns
-- 🔍 **SECURITY AUDIT REQUIRED**: All legacy components need credential and path validation review
-
-**NEW TABLEAU MILESTONE APPROACH** (Issues #85-87):
-- **Phase 1** (#85): Tableau Server API Integration & Authentication (1-2 days)
-- **Phase 2** (#86): Data Extract Generation & Publishing (2-3 days)
-- **Phase 3** (#87): Template Generation & PowerBI Feature Parity (2-3 days)
-
-### Major Achievements
-- **Dashboard Live**: [https://osservatorio-dashboard.streamlit.app/](https://osservatorio-dashboard.streamlit.app/)
-- **Security Implementation**: SecurityManager with path validation and rate limiting
-- **CI/CD Setup**: GitHub Actions workflow with automated testing
-- **Rate Limiting**: Basic API protection (ISTAT: 50 req/hr, PowerBI: 100 req/hr)
-- **Data Pipeline**: ISTAT API integration with available datasets
-- **Performance**: Caching system with 30min TTL
-- ⚠️ **LEGACY DEBT IDENTIFIED**: 4 new issues created for architecture consolidation
-
-### 🔧 Core Components Status
-
-#### Security Management System ✅ ADDED, MORE TESTING NEEDED.
-- **SecurityManager Class** (`src/utils/security_enhanced.py`):
-  - Path validation with directory traversal protection
-  - Rate limiting with configurable thresholds (ISTAT: 50 req/hr, PowerBI: 100 req/hr)
-  - Input sanitization and validation across all endpoints
-  - Secure password hashing with PBKDF2
-  - IP blocking and security headers
-  - Comprehensive security decorators
-
-#### Circuit Breaker Implementation ✅ ACTIVE, MORE TESTS NEEDED.
-- **Circuit Breaker Pattern** (`src/utils/circuit_breaker.py`):
-  - Resilient external API calls with automatic recovery
-  - Automatic failure detection and recovery
-  - Configurable failure thresholds
-  - State management (CLOSED/OPEN/HALF_OPEN)
-  - Statistics and monitoring with real-time metrics
-
-#### Real-Time Data Pipeline ✅ OPERATIONAL, but barebone.
-- **IstatRealTimeDataLoader** (`dashboard/data_loader.py`):
-  - Live ISTAT API integration with 509+ datasets
-  - Automatic retry mechanism with exponential backoff
-  - Intelligent caching with 30min TTL
-  - Progress indicators and loading states
-  - Graceful fallback to cached data when API unavailable
-
-#### Enhanced Testing Suite ✅ SIGNIFICANTLY IMPROVED COVERAGE (19/01/2025)
-- **Security Tests** (`tests/unit/test_security_enhanced.py`):
-  - 15+ comprehensive security test cases
-  - Path validation testing with Windows path support
-  - Rate limiting verification with time-based testing
-  - Input sanitization validation with injection prevention
-  - Authentication system testing with OAuth flow
-
-- **NEW! Tableau API Tests** (`tests/unit/test_tableau_api.py`):
-  - 20 comprehensive test cases for TableauServerAnalyzer
-  - Full coverage of data extraction, categorization, and strategy generation
-  - Edge cases for malformed data and error handling
-  - Mock-based testing for external dependencies
-
-- **NEW! Temp File Manager Tests** (`tests/unit/test_temp_file_manager.py`):
-  - 26 test cases covering singleton pattern, context managers
-  - File and directory lifecycle management
-  - Error handling and cleanup verification
-  - Thread safety and integration testing
-
-- **EXPANDED! ISTAT API Tests** (`tests/unit/test_istat_api.py`):
-  - 25+ enhanced test cases for IstatAPITester
-  - Rate limiting, error handling, and timeout scenarios
-  - XML parsing and data quality validation
-  - Comprehensive mock-based API testing
-
-### 🚀 Dashboard Deployment ✅ LIVE, BUT BAREBONE.
+## Integration Points
+- **ISTAT SDMX API**: `http://sdmx.istat.it/SDMXWS/rest/` (509+ datasets)
+- **PowerBI Service**: REST API with MSAL authentication
+- **Tableau Server**: OAuth connections
 - **Live Dashboard**: [https://osservatorio-dashboard.streamlit.app/](https://osservatorio-dashboard.streamlit.app/)
-- **Deployment Guide**: Complete documentation in `STREAMLIT_DEPLOYMENT.md`
-- **Configuration**: Streamlit config optimized for production with security headers
-- **Performance**: Load time optimized with caching and async loading
-- **Real-Time Data**: Live ISTAT API integration with progress indicators
-- **Error Handling**: Graceful degradation with fallback mechanisms
 
-### 🛡️ Security Implementations ✅ BASIC AND NOT FULLY TESTED
-- **API Rate Limiting**:
-  - ISTAT API: 50 requests/hour per endpoint (actively enforced)
-  - PowerBI API: 100 requests/hour per endpoint (actively enforced)
-  - Automatic rate limit enforcement with IP blocking
-  - Configurable per-endpoint limits with time-based windows
+## Important Characteristics
+- All data from official ISTAT SDMX endpoints
+- Italian regional data with geographic mapping
+- Rate limiting: 100 requests/hour with sliding window
+- Automatic temporary file management with cleanup
+- Enterprise-grade security and resilience patterns
 
-- **Path Security**:
-  - Directory traversal protection (all file operations secured)
-  - File extension validation with whitelist approach
-  - Windows reserved name handling with comprehensive detection
-  - Base directory restrictions with absolute path validation
+## Environment Variables
+Key environment variables (all optional, defaults provided):
+- `ISTAT_API_BASE_URL`, `ISTAT_API_TIMEOUT` - ISTAT API configuration
+- `POWERBI_CLIENT_ID`, `POWERBI_CLIENT_SECRET`, `POWERBI_TENANT_ID` - PowerBI Azure AD
+- `TABLEAU_SERVER_URL`, `TABLEAU_USERNAME`, `TABLEAU_PASSWORD` - Tableau server
+- `LOG_LEVEL`, `ENABLE_CACHE` - System configuration
 
-- **Input Validation**:
-  - XSS prevention with automatic sanitization
-  - SQL injection protection with parameterized queries
-  - Command injection prevention with input validation
-  - Path traversal prevention with secure path validation
+---
 
-### 🔧 CI/CD Improvements ✅ OPERATIONAL
-- **GitHub Actions**: Fixed workflow blocking issues with comprehensive testing
-- **Security Scanning**: Integrated Bandit and Safety checks with automated reports
-- **Deployment Pipeline**: Automated testing and deployment with zero-downtime
-- **Error Handling**: Robust fallback mechanisms with circuit breaker pattern
-- **Performance Testing**: Automated performance benchmarks with trend analysis
-
-## Previous Updates (July 2025)
-
-### Major Enhancements
-- **Test Framework**: Basic testing infrastructure with pytest (developing coverage)
-- **Converter APIs**: Programmatic APIs for both PowerBI and Tableau converters
-- **Security**: Integration of SecurePathValidator across file operations
-- **Data Quality**: Basic data quality assessment system
-- **Auto-Categorization**: Dataset categorization with priority scoring
-
-### New Methods Added
-- `convert_xml_to_powerbi()` and `convert_xml_to_tableau()` - Main conversion APIs
-- `_parse_xml_content()` - Direct XML content parsing
-- `_categorize_dataset()` - Automatic categorization with priority scoring
-- `_validate_data_quality()` - Comprehensive data quality assessment
-- `_generate_powerbi_formats()` and `_generate_tableau_formats()` - Multi-format generation
-
-### Testing Improvements
-- **Unit Tests**: 139 tests covering core functionality
-- **Integration Tests**: 26 system integration tests
-- **Performance Tests**: 8 basic performance benchmarks
-- **Test Coverage**: Coverage of main APIs and methods
-
-### Security Enhancements
-- **SecurityManager Class**: Basic security management with path validation and rate limiting
-- **Circuit Breaker Pattern**: Basic resilience for external API calls
-- **Rate Limiting**: Basic implementation on ISTAT API (50 req/hr) and PowerBI API (100 req/hr)
-- **Path Traversal Protection**: Basic validation against directory traversal attacks
-- **Input Sanitization**: Basic sanitization of user inputs
-- **Security Headers**: HTTP security headers for dashboard
-- **Password Hashing**: Basic password handling with PBKDF2
-- **IP Blocking**: Basic IP blocking for suspicious activities
-- Basic error handling with secure error messages
-- XML parsing security improvements
-- Path validation integration in converter methods
-- Secure file operations
-
-## 📝 Documentation & Process (UPDATED 20/07/2025)
-
-### Documentation Structure ✅ VERIFICATA
-- **Main Documentation**: [docs/README.md](docs/README.md) - Organized project documentation
-- **API Reference**: [docs/api-mapping.md](docs/api-mapping.md) - Complete ISTAT endpoint mapping
-- **Architecture Decisions**: [docs/adr/](docs/adr/) - ADR records per decisioni tecniche
-- **Contributing Guide**: [docs/guides/CONTRIBUTING.md](docs/guides/CONTRIBUTING.md) - Formattato e strutturato
-- **Project State**: [PROJECT_STATE.md](PROJECT_STATE.md) - Stato sviluppo corrente
-
-### Development Process ✅ ATTIVO
-- **Git Workflow**: Feature branches con commit convenzionali
-- **Code Quality**: black, flake8, isort, pre-commit hooks
-- **Testing**: pytest con coverage reporting (292 tests verificati)
-- **CI/CD**: GitHub Actions con testing automatico
-- **Security**: Bandit e Safety checks integrati
-
-### Environment Specs ✅ VERIFICATE 21/07/2025
-- **Python**: 3.13.3 (tags/v3.13.3:6280bb5, Apr 8 2025)
-- **Testing**: pytest 8.3.5
-- **Dashboard**: Streamlit 1.45.0
-- **Total Tests**: 319+ (all passing, significantly expanded)
-- **Coverage**: Improved with DuckDB modules
-- **NEW: DuckDB**: High-performance analytics engine integrated
-
-## Recent Updates (28/07/2025) - Issues #59 & #62: SQLite Migration + BaseConverter Architecture Complete
-
-### 🔄 **Issue #59 Implementation - JSON to SQLite Dataset Config Migration**
-- **Complete Migration System** - Full migration from JSON-based to SQLite dataset configurations
-  - Comprehensive migration utility (`scripts/migrate_json_to_sqlite.py`) with validation and backup
-  - New `DatasetConfigManager` class for centralized SQLite-based configuration management
-  - Updated PowerBI and Tableau converters with SQLite-first, JSON-fallback approach
-  - 5-minute caching system for improved performance over JSON file reads
-- **Zero-Downtime Migration** - Production-safe migration with comprehensive rollback strategy
-  - Automatic JSON backup with timestamp-based organization in `backups/` directory
-  - Multiple rollback strategies: temporary, partial, and complete rollback options
-  - Recovery time < 15 minutes for complete rollback with zero data loss guarantee
-  - Detailed rollback documentation in `docs/guides/JSON_SQLITE_MIGRATION_ROLLBACK.md`
-- **Comprehensive Testing & Validation** - Enterprise-grade quality assurance
-  - 19 comprehensive migration tests covering all scenarios (`test_json_sqlite_migration.py`)
-  - Updated existing converter tests to work with new SQLite-first approach
-  - Pre/post migration validation with data integrity checks
-  - Performance improvements verified through caching benchmarks
-
-### 🏗️ **Issue #62 Implementation - BaseConverter Architecture Consolidation**
-- **Complete Code Deduplication** - Unified converter foundation eliminating duplicate code
-  - Abstract BaseIstatConverter (`src/converters/base_converter.py`) - 342 lines of shared logic
-  - Factory Pattern (`src/converters/factory.py`) - Centralized converter instantiation with lazy loading
-  - PowerBI/Tableau Inheritance - Both converters now inherit from BaseIstatConverter
-  - BaseConverter Tests (`tests/unit/test_base_converter.py`) - 18 comprehensive tests with 100% pass rate
-- **Architectural Benefits** - Strategic foundation for extensible converter ecosystem
-  - **Code Reduction**: ~500 lines eliminated (~23% reduction in converter modules)
-  - **Single Source of Truth**: Unified XML parsing, configuration loading, and data validation
-  - **Extensibility**: Plugin-ready architecture for future converter types (Excel, CSV, etc.)
-  - **Maintenance**: Simplified bug fixes and feature additions across all converters
-
-### 🚀 **Combined Benefits Achieved (Issues #59 & #62)**
-- **Centralized Configuration**: All 14 dataset configurations now stored in SQLite metadata database (Issue #59)
-- **Performance Improved**: SQLite queries with caching vs JSON file reads for each converter initialization (Issue #59)
-- **Code Simplified**: ~500 lines of duplicate code eliminated with unified BaseConverter architecture (Issue #62)
-- **Backward Compatible**: Seamless fallback to JSON if SQLite unavailable, ensuring zero service disruption (Issue #59)
-- **Production Ready**: Comprehensive testing, validation, and rollback procedures documented and tested (Both issues)
-
-## Previous Updates (25/07/2025) - Day 7: JWT Authentication System Complete
-
-### 🔐 Major Security Implementation (Day 7)
-- **Complete JWT Authentication System** - Enterprise-grade authentication with SQLite backend
-  - SQLite API key management with bcrypt hashing and scope-based permissions
-  - JWT token system with HS256/RS256 support and token blacklisting
-  - Sliding window rate limiting per API key and IP address
-  - OWASP-compliant security headers middleware
-  - CLI tool for API key management with full CRUD operations
-- **Security Validation** - Comprehensive security audit and testing
-  - Bandit security scan: 0 high severity issues (1 minor false positive)
-  - SQL injection protection with parameterized queries
-  - Database connection cleanup and transaction safety
-  - Cross-platform testing (Windows/Linux compatibility)
-- **Testing Infrastructure** - Robust test suite for authentication
-  - 29 unit test methods covering all authentication components
-  - Integration test with 18 scenarios for complete authentication flows
-  - Database cleanup fixes for Windows file lock issues
-  - Nested transaction handling improvements
-
-### 🔧 Database & Security Improvements (Day 7)
-- **Transaction Safety** - Enhanced SQLite transaction management
-  - Automatic nested transaction detection and handling
-  - Proper connection cleanup with retry mechanism for Windows
-  - Fixed ResourceWarning and PermissionError in test cleanup
-- **SQL Security** - Complete protection against SQL injection
-  - Replaced f-string SQL construction with parameterized queries
-  - All database queries use prepared statements
-  - Security compliance verified with Bandit scan
-
-## Previous Updates (21/07/2025) - Day 3: DuckDB Performance Testing & Optimization
-
-### 🚀 Major Additions
-- **Comprehensive Performance Testing Suite** - 7 test categories with advanced profiling (670+ lines of code)
-- **Performance Regression Detection** - Automated monitoring and alerting system (520+ lines of code)
-- **Outstanding Performance Results** - Record-breaking benchmarks documented and validated
-- **Enhanced Test Infrastructure** - Fixed performance test issues with tolerance handling
-- **Production-Ready Monitoring** - Real-time performance tracking and baseline management
-
-### 🔧 Technical Improvements
-- **Advanced Profiling** - Memory, CPU, and execution time monitoring with psutil integration
-- **Statistical Analysis** - Baseline tracking with median-based regression detection
-- **Concurrent Testing** - Multi-threaded performance validation (1-8 threads)
-- **Scalability Testing** - Large dataset performance validation (100k+ records)
-- **Memory Analysis** - Linear scaling validation and memory usage patterns
-
-### 📊 Performance Achievements (Day 3)
-- **High-performance bulk insert** - >2k records/second validated in tests
-- **Fast queries** - Aggregation queries optimized for large datasets
-- **5x+ speedup** - Query caching effectiveness validated
-- **<1KB per record** - Memory usage with linear scaling confirmed
-- **8-thread concurrency** - Concurrent execution scaling tested and validated
-
-### 🛡️ Quality & Reliability
-- **Flake8 Compliance** - All modulo operator spacing and import issues fixed
-- **Pre-commit Hooks** - All quality checks passing (black, isort, flake8)
-- **Test Reliability** - All 319+ tests passing consistently
-- **Regression Prevention** - Automated performance monitoring prevents degradation
-
-## Important Instructions
-Respect existing implementations and verify functionality before making changes.
-ALWAYS check current test status and coverage before modifying code.
-Use the CONTRIBUTING.md guide for development standards and processes.
-Refer to PROJECT_STATE.md for current development context.
+**Version**: 11.0.0 | **Status**: Development | **Quality**: 83.3% EXCELLENT
+**Last Updated**: July 31, 2025

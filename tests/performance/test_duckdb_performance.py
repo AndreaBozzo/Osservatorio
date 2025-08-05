@@ -5,18 +5,14 @@ operations in the ISTAT data processing pipeline.
 """
 
 import gc
-import os
-import sys
 import time
-from pathlib import Path
-from typing import Dict, List, Tuple
 
 import pandas as pd
 import psutil
 import pytest
 
 from src.database.duckdb.manager import DuckDBManager
-from src.database.duckdb.query_optimizer import QueryOptimizer, create_optimizer
+from src.database.duckdb.query_optimizer import create_optimizer
 from src.database.duckdb.simple_adapter import SimpleDuckDBAdapter
 from src.utils.logger import get_logger
 
@@ -31,7 +27,7 @@ class DuckDBPerformanceProfiler:
         self.baseline_memory = None
         self.start_time = None
 
-    def start_profiling(self) -> Dict[str, float]:
+    def start_profiling(self) -> dict[str, float]:
         """Start performance profiling session."""
         gc.collect()  # Clean garbage before measurement
         self.baseline_memory = self.process.memory_info().rss / 1024 / 1024  # MB
@@ -42,7 +38,7 @@ class DuckDBPerformanceProfiler:
             "start_time": self.start_time,
         }
 
-    def end_profiling(self) -> Dict[str, float]:
+    def end_profiling(self) -> dict[str, float]:
         """End profiling and return metrics."""
         end_time = time.perf_counter()
         current_memory = self.process.memory_info().rss / 1024 / 1024  # MB
@@ -87,7 +83,7 @@ class TestDuckDBPerformance:
             # Generate test data
             test_data = pd.DataFrame(
                 {
-                    "dataset_id": [f"PERF_TEST_{i//100}" for i in range(size)],
+                    "dataset_id": [f"PERF_TEST_{i // 100}" for i in range(size)],
                     "year": [2020 + (i % 5) for i in range(size)],
                     "territory_code": [f"IT_{i % 20:02d}" for i in range(size)],
                     "territory_name": [f"Territory {i % 20}" for i in range(size)],
@@ -213,7 +209,7 @@ class TestDuckDBPerformance:
 
             # Second run (cache hit)
             self.profiler.start_profiling()
-            result2 = query_func()
+            query_func()
             metrics_hit = self.profiler.end_profiling()
 
             query_results[query_name] = {
@@ -242,7 +238,6 @@ class TestDuckDBPerformance:
     def test_concurrent_query_performance(self):
         """Test concurrent query execution performance."""
         import concurrent.futures
-        import threading
 
         # Setup shared data
         adapter = SimpleDuckDBAdapter()
@@ -273,7 +268,7 @@ class TestDuckDBPerformance:
         obs_df = pd.DataFrame(observations)
         adapter.insert_observations(obs_df)
 
-        def execute_query(thread_id: int) -> Tuple[int, float, int]:
+        def execute_query(thread_id: int) -> tuple[int, float, int]:
             """Execute query in separate thread."""
             start_time = time.perf_counter()
 
@@ -350,7 +345,7 @@ class TestDuckDBPerformance:
             {
                 "dataset_row_id": list(range(1, large_dataset_size + 1)),
                 "dataset_id": [
-                    f"LARGE_TEST_{i//1000}" for i in range(large_dataset_size)
+                    f"LARGE_TEST_{i // 1000}" for i in range(large_dataset_size)
                 ],
                 "year": [2015 + (i % 10) for i in range(large_dataset_size)],
                 "territory_code": [
@@ -394,7 +389,7 @@ class TestDuckDBPerformance:
 
         logger.info(
             f"Bulk insert 100k records: {insert_metrics['execution_time_seconds']:.2f}s, "
-            f"{large_dataset_size/insert_metrics['execution_time_seconds']:.0f} records/sec"
+            f"{large_dataset_size / insert_metrics['execution_time_seconds']:.0f} records/sec"
         )
 
         # Test aggregation performance
@@ -493,7 +488,7 @@ class TestDuckDBPerformance:
         test_size = 10000
         test_data = pd.DataFrame(
             {
-                "dataset_id": [f"INDEX_TEST_{i//100}" for i in range(test_size)],
+                "dataset_id": [f"INDEX_TEST_{i // 100}" for i in range(test_size)],
                 "year": [2015 + (i % 10) for i in range(test_size)],
                 "territory_code": [f"T_{i % 50:02d}" for i in range(test_size)],
                 "obs_value": [float(i * 1.5 + (i % 1000)) for i in range(test_size)],
@@ -596,7 +591,7 @@ class TestDuckDBPerformance:
             # Generate data compatible with simple_adapter schema
             test_data = pd.DataFrame(
                 {
-                    "dataset_id": [f"MEM_TEST_{i//100}" for i in range(size)],
+                    "dataset_id": [f"MEM_TEST_{i // 100}" for i in range(size)],
                     "year": [2020 + (i % 5) for i in range(size)],
                     "territory_code": [f"T_{i % 20:02d}" for i in range(size)],
                     "obs_value": [float(i) for i in range(size)],
@@ -611,7 +606,7 @@ class TestDuckDBPerformance:
                     adapter.insert_metadata(
                         dataset_id, f"Memory Test {dataset_id}", "performance", 5
                     )
-                except:
+                except Exception:
                     # Metadata might already exist from previous iterations
                     pass
 
@@ -621,9 +616,7 @@ class TestDuckDBPerformance:
             post_insert_memory = get_memory_usage()
 
             # Measure memory after query
-            result = self.manager.execute_query(
-                "SELECT COUNT(*) FROM istat.istat_observations"
-            )
+            self.manager.execute_query("SELECT COUNT(*) FROM istat.istat_observations")
             post_query_memory = get_memory_usage()
 
             memory_patterns[size] = {
@@ -637,7 +630,7 @@ class TestDuckDBPerformance:
             logger.info(
                 f"Memory usage for {size} records: "
                 f"{memory_patterns[size]['insert_delta']:.1f}MB delta, "
-                f"{memory_patterns[size]['memory_per_record']*1000:.2f} KB/record"
+                f"{memory_patterns[size]['memory_per_record'] * 1000:.2f} KB/record"
             )
 
             # Clean up for next iteration
@@ -661,7 +654,7 @@ class TestDuckDBPerformance:
         adapter.close()
 
 
-def generate_performance_report(test_results: Dict) -> str:
+def generate_performance_report(test_results: dict) -> str:
     """Generate comprehensive performance report."""
     report = [
         "# DuckDB Performance Test Report",

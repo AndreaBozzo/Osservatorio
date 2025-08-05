@@ -12,9 +12,8 @@ This module provides a unified interface for:
 """
 
 import json
-import sqlite3
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 from src.database.sqlite.schema import MetadataSchema
 from src.utils.logger import get_logger
@@ -25,16 +24,25 @@ logger = get_logger(__name__)
 class DatasetConfigManager:
     """Manages dataset configurations from SQLite metadata database."""
 
-    def __init__(self, db_path: Optional[str] = None):
+    def __init__(self, db_path: Optional[str] = None, repository=None):
         """Initialize the dataset configuration manager.
 
         Args:
             db_path: Path to SQLite database. If None, uses default.
+            repository: UnifiedDataRepository instance for database operations.
         """
         self.schema = MetadataSchema(db_path)
         self._config_cache = {}
         self._cache_timestamp = None
         self._cache_ttl = 300  # 5 minutes cache TTL
+
+        # Issue #84: Use UnifiedDataRepository instead of direct connections
+        if repository:
+            self.repository = repository
+        else:
+            from src.database.sqlite.repository import get_unified_repository
+
+            self.repository = get_unified_repository()
 
         # Ensure schema exists
         if not self.schema.verify_schema():
@@ -53,64 +61,57 @@ class DatasetConfigManager:
         cache_age = (datetime.now() - self._cache_timestamp).total_seconds()
         return cache_age < self._cache_ttl
 
-    def _load_datasets_from_sqlite(self) -> List[Dict[str, Any]]:
+    def _load_datasets_from_sqlite(self) -> list[dict[str, Any]]:
         """Load all active datasets from SQLite database.
 
         Returns:
             List of dataset dictionaries.
         """
         try:
-            conn = sqlite3.connect(self.schema.db_path)
-            try:
-                cursor = conn.execute(
-                    """
-                    SELECT dataset_id, name, category, description, istat_agency,
-                           priority, metadata_json, quality_score, record_count,
-                           created_at, updated_at
-                    FROM dataset_registry
-                    WHERE is_active = 1
-                    ORDER BY priority DESC, name ASC
-                """
-                )
+            # Issue #84: Use UnifiedDataRepository with proper method calls
+            # Use the list_datasets method which is available in the metadata manager
+            datasets_raw = self.repository.metadata_manager.list_datasets(
+                active_only=True
+            )
 
-                datasets = []
-                for row in cursor.fetchall():
-                    # Parse metadata JSON if available
-                    metadata = {}
-                    if row[6]:  # metadata_json column
-                        try:
-                            metadata = json.loads(row[6])
-                        except json.JSONDecodeError:
-                            logger.warning(
-                                f"Invalid metadata JSON for dataset {row[0]}"
-                            )
+            datasets = []
+            for dataset_data in datasets_raw:
+                # Convert from repository format to converter format
+                metadata = {}
+                if "metadata" in dataset_data and dataset_data["metadata"]:
+                    try:
+                        if isinstance(dataset_data["metadata"], str):
+                            metadata = json.loads(dataset_data["metadata"])
+                        else:
+                            metadata = dataset_data["metadata"]
+                    except (json.JSONDecodeError, TypeError):
+                        logger.warning(
+                            f"Invalid metadata for dataset {dataset_data.get('dataset_id', 'unknown')}"
+                        )
 
-                    dataset = {
-                        "dataflow_id": row[0],
-                        "name": row[1],
-                        "category": row[2],
-                        "description": row[3],
-                        "agency": row[4],
-                        "priority": row[5],
-                        "quality": row[7],
-                        "record_count": row[8],
-                        "created_at": row[9],
-                        "updated_at": row[10],
-                        **metadata,  # Merge any additional metadata
-                    }
-                    datasets.append(dataset)
+                dataset = {
+                    "dataflow_id": dataset_data.get("dataset_id", ""),
+                    "name": dataset_data.get("name", ""),
+                    "category": dataset_data.get("category", ""),
+                    "description": dataset_data.get("description", ""),
+                    "agency": dataset_data.get("istat_agency", "ISTAT"),
+                    "priority": dataset_data.get("priority", 5),
+                    "quality": dataset_data.get("quality_score", 0.0),
+                    "record_count": dataset_data.get("record_count", 0),
+                    "created_at": dataset_data.get("created_at"),
+                    "updated_at": dataset_data.get("updated_at"),
+                    **metadata,  # Merge any additional metadata
+                }
+                datasets.append(dataset)
 
-                logger.info(f"Loaded {len(datasets)} active datasets from SQLite")
-                return datasets
-
-            finally:
-                conn.close()
+            logger.info(f"Loaded {len(datasets)} active datasets from SQLite")
+            return datasets
 
         except Exception as e:
             logger.error(f"Failed to load datasets from SQLite: {e}")
             return []
 
-    def get_datasets_config(self, force_refresh: bool = False) -> Dict[str, Any]:
+    def get_datasets_config(self, force_refresh: bool = False) -> dict[str, Any]:
         """Get complete datasets configuration in the expected format.
 
         Args:
@@ -153,7 +154,7 @@ class DatasetConfigManager:
         )
         return config
 
-    def get_datasets_by_category(self, category: str) -> List[Dict[str, Any]]:
+    def get_datasets_by_category(self, category: str) -> list[dict[str, Any]]:
         """Get all datasets for a specific category.
 
         Args:
@@ -165,7 +166,7 @@ class DatasetConfigManager:
         config = self.get_datasets_config()
         return [ds for ds in config["datasets"] if ds["category"] == category]
 
-    def get_dataset_by_id(self, dataset_id: str) -> Optional[Dict[str, Any]]:
+    def get_dataset_by_id(self, dataset_id: str) -> Optional[dict[str, Any]]:
         """Get a specific dataset by its ID.
 
         Args:
@@ -182,7 +183,7 @@ class DatasetConfigManager:
 
     def get_high_priority_datasets(
         self, limit: Optional[int] = None
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Get high priority datasets (priority >= 7).
 
         Args:
@@ -213,7 +214,7 @@ class DatasetConfigManager:
             logger.error(f"Failed to refresh configuration cache: {e}")
             return False
 
-    def get_categories_summary(self) -> Dict[str, int]:
+    def get_categories_summary(self) -> dict[str, int]:
         """Get summary of datasets by category.
 
         Returns:
@@ -222,7 +223,7 @@ class DatasetConfigManager:
         config = self.get_datasets_config()
         return {cat: len(ds_list) for cat, ds_list in config["categories"].items()}
 
-    def add_dataset(self, dataset_config: Dict[str, Any]) -> bool:
+    def add_dataset(self, dataset_config: dict[str, Any]) -> bool:
         """Add a new dataset configuration to SQLite.
 
         Args:
@@ -232,49 +233,32 @@ class DatasetConfigManager:
             True if added successfully, False otherwise.
         """
         try:
-            conn = sqlite3.connect(self.schema.db_path)
-            try:
-                # Prepare dataset data
-                insert_sql = """
-                    INSERT INTO dataset_registry
-                    (dataset_id, name, category, description, istat_agency,
-                     priority, is_active, metadata_json, quality_score, record_count)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """
+            # Issue #84: Use UnifiedDataRepository register_dataset method
+            success = self.repository.metadata_manager.register_dataset(
+                dataset_id=dataset_config.get("dataflow_id"),
+                name=dataset_config.get("name", ""),
+                category=dataset_config.get("category", ""),
+                description=dataset_config.get("description", ""),
+                metadata=dataset_config,
+            )
 
-                conn.execute(
-                    insert_sql,
-                    (
-                        dataset_config.get("dataflow_id"),
-                        dataset_config.get("name", ""),
-                        dataset_config.get("category", ""),
-                        dataset_config.get("description", ""),
-                        dataset_config.get("agency", "ISTAT"),
-                        dataset_config.get("priority", 5),
-                        True,  # is_active
-                        json.dumps(dataset_config, ensure_ascii=False),
-                        dataset_config.get("quality", 0.0),
-                        dataset_config.get("record_count", 0),
-                    ),
-                )
-
-                conn.commit()
-
+            if success:
                 # Invalidate cache
                 self._config_cache = {}
                 self._cache_timestamp = None
-
                 logger.info(f"Added dataset: {dataset_config.get('dataflow_id')}")
                 return True
-
-            finally:
-                conn.close()
+            else:
+                logger.error(
+                    f"Failed to register dataset: {dataset_config.get('dataflow_id')}"
+                )
+                return False
 
         except Exception as e:
             logger.error(f"Failed to add dataset: {e}")
             return False
 
-    def update_dataset(self, dataset_id: str, updates: Dict[str, Any]) -> bool:
+    def update_dataset(self, dataset_id: str, updates: dict[str, Any]) -> bool:
         """Update an existing dataset configuration.
 
         Args:
@@ -285,6 +269,10 @@ class DatasetConfigManager:
             True if updated successfully, False otherwise.
         """
         try:
+            # Issue #84: Use direct database connection for complex updates
+            # This is acceptable since it's a complex update operation not covered by the repository interface
+            import sqlite3
+
             conn = sqlite3.connect(self.schema.db_path)
             try:
                 # Build dynamic update query
@@ -318,7 +306,7 @@ class DatasetConfigManager:
                 # Execute update
                 update_sql = f"""
                     UPDATE dataset_registry
-                    SET {', '.join(update_fields)}
+                    SET {", ".join(update_fields)}
                     WHERE dataset_id = ?
                 """
                 update_values.append(dataset_id)
@@ -354,6 +342,10 @@ class DatasetConfigManager:
             True if deactivated successfully, False otherwise.
         """
         try:
+            # Issue #84: Use direct database connection for deactivation
+            # This is acceptable since deactivation is not a standard repository operation
+            import sqlite3
+
             conn = sqlite3.connect(self.schema.db_path)
             try:
                 cursor = conn.execute(
