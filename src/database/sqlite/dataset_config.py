@@ -68,9 +68,9 @@ class DatasetConfigManager:
             List of dataset dictionaries.
         """
         try:
-            # Issue #84: Use UnifiedDataRepository with proper method calls
-            # Use the list_datasets method which is available in the metadata manager
-            datasets_raw = self.repository.metadata_manager.list_datasets(
+            # Issue #84: Use UnifiedDataRepository with specialized managers
+            # Use the list_datasets method which is available in the dataset manager
+            datasets_raw = self.repository.dataset_manager.list_datasets(
                 active_only=True
             )
 
@@ -234,7 +234,7 @@ class DatasetConfigManager:
         """
         try:
             # Issue #84: Use UnifiedDataRepository register_dataset method
-            success = self.repository.metadata_manager.register_dataset(
+            success = self.repository.dataset_manager.register_dataset(
                 dataset_id=dataset_config.get("dataflow_id"),
                 name=dataset_config.get("name", ""),
                 category=dataset_config.get("category", ""),

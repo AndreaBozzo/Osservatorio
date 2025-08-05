@@ -26,6 +26,7 @@ from typing import Any, Optional
 from src.database.duckdb import DuckDBManager
 from src.utils.logger import get_logger
 
+from .manager import get_metadata_manager
 from .manager_factory import (
     get_audit_manager,
     get_configuration_manager,
@@ -58,6 +59,7 @@ class UnifiedDataRepository:
         self.config_manager = get_configuration_manager(sqlite_db_path)
         self.user_manager = get_user_manager(sqlite_db_path)
         self.audit_manager = get_audit_manager(sqlite_db_path)
+        self.metadata_manager = get_metadata_manager(sqlite_db_path)
         self.analytics_manager = DuckDBManager(duckdb_db_path)
 
         # Cache for frequently accessed data
@@ -519,9 +521,9 @@ class UnifiedDataRepository:
             List of categorization rules
         """
         try:
-            # TODO: Implement categorization rules in specialized manager
-            # For now, return empty list
-            return []
+            return self.metadata_manager.get_categorization_rules(
+                category=category, active_only=active_only
+            )
         except Exception as e:
             logger.error(f"Failed to get categorization rules: {e}")
             return []
@@ -547,8 +549,9 @@ class UnifiedDataRepository:
             bool: True if rule created successfully
         """
         try:
-            # TODO: Implement categorization rules in specialized manager
-            return False  # self.config_manager.create_categorization_rule(rule_id, category, keywords, priority, description)
+            return self.metadata_manager.create_categorization_rule(
+                rule_id, category, keywords, priority, description
+            )
         except Exception as e:
             logger.error(f"Failed to create categorization rule: {e}")
             return False
@@ -574,8 +577,13 @@ class UnifiedDataRepository:
             bool: True if rule updated successfully
         """
         try:
-            # TODO: Implement categorization rules in specialized manager
-            return False  # self.config_manager.update_categorization_rule(rule_id, keywords, priority, is_active, description)
+            return self.metadata_manager.update_categorization_rule(
+                rule_id,
+                keywords=keywords,
+                priority=priority,
+                is_active=is_active,
+                description=description,
+            )
         except Exception as e:
             logger.error(f"Failed to update categorization rule: {e}")
             return False
@@ -590,8 +598,7 @@ class UnifiedDataRepository:
             bool: True if rule deleted successfully
         """
         try:
-            # TODO: Implement categorization rules in specialized manager
-            return False  # self.config_manager.delete_categorization_rule(rule_id)
+            return self.metadata_manager.delete_categorization_rule(rule_id)
         except Exception as e:
             logger.error(f"Failed to delete categorization rule: {e}")
             return False
@@ -734,6 +741,7 @@ class UnifiedDataRepository:
             self.config_manager.close_connections()
             self.user_manager.close_connections()
             self.audit_manager.close_connections()
+            self.metadata_manager.close_connections()
             # DuckDB manager has its own cleanup
             self.clear_cache()
             logger.info("Unified data repository closed")

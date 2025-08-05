@@ -394,7 +394,7 @@ class PowerBIOptimizer:
             schema_data = json.dumps(schema.to_dict())
 
             # Store in dataset metadata table
-            self.repo.metadata_manager.set_config(
+            self.repo.config_manager.set_config(
                 f"dataset.{dataset_id}.powerbi_star_schema", schema_data
             )
 

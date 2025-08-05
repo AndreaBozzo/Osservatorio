@@ -195,3 +195,8 @@ def get_audit_manager(db_path: Optional[str] = None) -> AuditManager:
 def get_all_managers(db_path: Optional[str] = None) -> dict[str, BaseSQLiteManager]:
     """Get all manager instances."""
     return SQLiteManagerFactory.get_all_managers(db_path)
+
+
+def reset_all_managers() -> None:
+    """Reset all manager instances (for testing)."""
+    SQLiteManagerFactory.clear_cache()

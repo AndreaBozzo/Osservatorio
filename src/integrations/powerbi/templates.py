@@ -418,7 +418,7 @@ class TemplateGenerator:
 
             for dataset in datasets:
                 dataset_id = dataset["dataset_id"]
-                template_config = self.repository.metadata_manager.get_config(
+                template_config = self.repository.config_manager.get_config(
                     f"dataset.{dataset_id}.powerbi_template"
                 )
 
@@ -674,7 +674,7 @@ class TemplateGenerator:
             # Extract dataset_id from template_id (assuming format "template_{dataset_id}")
             dataset_id = template.template_id.replace("template_", "")
 
-            self.repository.metadata_manager.set_config(
+            self.repository.config_manager.set_config(
                 f"dataset.{dataset_id}.powerbi_template", json.dumps(template_data)
             )
 

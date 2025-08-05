@@ -313,7 +313,7 @@ class IncrementalRefreshManager:
             RefreshPolicy if exists, None otherwise
         """
         try:
-            policy_data = self.repository.metadata_manager.get_config(
+            policy_data = self.repository.config_manager.get_config(
                 f"dataset.{dataset_id}.incremental_refresh_policy"
             )
 
@@ -445,7 +445,7 @@ class IncrementalRefreshManager:
         """Store refresh policy in SQLite metadata."""
         try:
             policy_json = json.dumps(policy.to_dict())
-            self.repository.metadata_manager.set_config(
+            self.repository.config_manager.set_config(
                 f"dataset.{policy.dataset_id}.incremental_refresh_policy", policy_json
             )
         except Exception as e:
@@ -455,7 +455,7 @@ class IncrementalRefreshManager:
     def _get_last_refresh_timestamp(self, dataset_id: str) -> datetime:
         """Get last refresh timestamp from metadata."""
         try:
-            timestamp_str = self.repository.metadata_manager.get_config(
+            timestamp_str = self.repository.config_manager.get_config(
                 f"dataset.{dataset_id}.last_incremental_refresh"
             )
 
@@ -472,7 +472,7 @@ class IncrementalRefreshManager:
     def _update_last_refresh_timestamp(self, dataset_id: str) -> None:
         """Update last refresh timestamp in metadata."""
         try:
-            self.repository.metadata_manager.set_config(
+            self.repository.config_manager.set_config(
                 f"dataset.{dataset_id}.last_incremental_refresh",
                 datetime.now().isoformat(),
             )

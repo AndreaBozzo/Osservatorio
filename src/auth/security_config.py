@@ -118,7 +118,7 @@ class SecurityManager:
 
             # Create enhanced rate limiter
             return EnhancedRateLimiter(
-                sqlite_manager=self.db_manager,
+                db_path=None,  # Will use default path through managers
                 redis_url=self.config.redis_url,
                 adaptive_config=adaptive_config,
             )
