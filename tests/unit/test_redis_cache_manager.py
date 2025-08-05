@@ -4,7 +4,6 @@ Unit tests for RedisCacheManager
 Tests the distributed Redis caching functionality.
 """
 
-import asyncio
 import json
 from unittest.mock import AsyncMock, MagicMock, patch
 

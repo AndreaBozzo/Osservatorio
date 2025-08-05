@@ -5,12 +5,12 @@ Provides startup, liveness, and readiness probes with dependency checking.
 """
 
 import asyncio
-import psutil
 import time
-from datetime import datetime, timedelta
+from datetime import datetime
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable
 
+import psutil
 from pydantic import BaseModel
 
 from ...utils.logger import get_logger
@@ -20,6 +20,7 @@ from ..distributed.circuit_breaker import circuit_breaker_registry
 
 class HealthStatus(str, Enum):
     """Health status values."""
+
     HEALTHY = "healthy"
     DEGRADED = "degraded"
     UNHEALTHY = "unhealthy"
@@ -28,6 +29,7 @@ class HealthStatus(str, Enum):
 
 class HealthCheck(BaseModel):
     """Individual health check result."""
+
     name: str
     status: HealthStatus
     message: str = ""
@@ -39,12 +41,13 @@ class HealthCheck(BaseModel):
 
 class ServiceHealth(BaseModel):
     """Overall service health status."""
+
     status: HealthStatus
     timestamp: datetime
     uptime_seconds: float
-    checks: List[HealthCheck]
-    system_info: Dict[str, Any]
-    dependencies: Dict[str, Any]
+    checks: list[HealthCheck]
+    system_info: dict[str, Any]
+    dependencies: dict[str, Any]
 
 
 class K8sHealthManager:
@@ -75,8 +78,8 @@ class K8sHealthManager:
         self._shutdown_requested = False
 
         # Health checks registry
-        self._health_checks: Dict[str, Callable] = {}
-        self._check_results: Dict[str, HealthCheck] = {}
+        self._health_checks: dict[str, Callable] = {}
+        self._check_results: dict[str, HealthCheck] = {}
 
         # Register default health checks
         self._register_default_checks()
@@ -118,8 +121,7 @@ class K8sHealthManager:
             # Run check with timeout
             if asyncio.iscoroutinefunction(check_func):
                 status, message = await asyncio.wait_for(
-                    check_func(),
-                    timeout=self.config.liveness_timeout
+                    check_func(), timeout=self.config.liveness_timeout
                 )
             else:
                 status, message = check_func()
@@ -150,7 +152,7 @@ class K8sHealthManager:
             response_time_ms=round(response_time, 2),
             last_check=datetime.now(),
             check_count=check_count,
-            failure_count=failure_count
+            failure_count=failure_count,
         )
 
     async def _check_system_resources(self) -> tuple[HealthStatus, str]:
@@ -164,7 +166,7 @@ class K8sHealthManager:
             cpu_percent = psutil.cpu_percent(interval=1)
 
             # Disk usage
-            disk = psutil.disk_usage('/')
+            disk = psutil.disk_usage("/")
             disk_percent = (disk.used / disk.total) * 100
 
             # Determine status based on thresholds
@@ -243,8 +245,7 @@ class K8sHealthManager:
             for check_name in critical_checks:
                 if check_name in self._health_checks:
                     result = await self._run_health_check(
-                        check_name,
-                        self._health_checks[check_name]
+                        check_name, self._health_checks[check_name]
                     )
 
                     # Fail if critical check is unhealthy
@@ -288,7 +289,9 @@ class K8sHealthManager:
 
                 # Allow degraded state but log warning
                 elif result.status == HealthStatus.DEGRADED:
-                    self.logger.warning(f"Degraded health check: {name} - {result.message}")
+                    self.logger.warning(
+                        f"Degraded health check: {name} - {result.message}"
+                    )
 
             self._is_ready = all_healthy
             return all_healthy
@@ -345,7 +348,7 @@ class K8sHealthManager:
             uptime_seconds=system_info["uptime_seconds"],
             checks=check_results,
             system_info=system_info,
-            dependencies=dependencies
+            dependencies=dependencies,
         )
 
     def mark_ready(self) -> None:
@@ -389,7 +392,7 @@ class K8sHealthManager:
 
         return False
 
-    def get_probe_endpoints(self) -> Dict[str, str]:
+    def get_probe_endpoints(self) -> dict[str, str]:
         """
         Get standard Kubernetes probe endpoint paths.
 
@@ -400,5 +403,5 @@ class K8sHealthManager:
             "startup": "/health/startup",
             "liveness": "/health/live",
             "readiness": "/health/ready",
-            "detailed": "/health/status"
+            "detailed": "/health/status",
         }

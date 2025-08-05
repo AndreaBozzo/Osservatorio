@@ -5,7 +5,7 @@ Follows 12-factor app principles with configuration via environment variables.
 """
 
 import os
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -181,11 +181,11 @@ class EnvironmentConfig(BaseModel):
         # String value
         return value
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert configuration to dictionary."""
         return self.model_dump()
 
-    def validate_required_for_production(self) -> List[str]:
+    def validate_required_for_production(self) -> list[str]:
         """
         Validate that all required configuration for production is present.
 
@@ -208,7 +208,7 @@ class EnvironmentConfig(BaseModel):
 
         return errors
 
-    def get_kubernetes_labels(self) -> Dict[str, str]:
+    def get_kubernetes_labels(self) -> dict[str, str]:
         """Get standard Kubernetes labels for this service."""
         return {
             "app.kubernetes.io/name": self.service_name,
@@ -218,7 +218,7 @@ class EnvironmentConfig(BaseModel):
             "app.kubernetes.io/managed-by": "helm",
         }
 
-    def get_resource_requirements(self) -> Dict[str, Dict[str, str]]:
+    def get_resource_requirements(self) -> dict[str, dict[str, str]]:
         """Get Kubernetes resource requirements based on configuration."""
         # Base requirements
         requests = {"cpu": "100m", "memory": "256Mi"}

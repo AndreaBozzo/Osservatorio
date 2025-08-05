@@ -8,29 +8,32 @@ import asyncio
 import time
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Callable, Dict, Optional, Union
+from typing import Any, Callable, Optional
 
 from ...utils.logger import get_logger
 
 
 class CircuitState(Enum):
     """Circuit breaker states."""
-    CLOSED = "closed"      # Normal operation
-    OPEN = "open"          # Failing, blocking calls
+
+    CLOSED = "closed"  # Normal operation
+    OPEN = "open"  # Failing, blocking calls
     HALF_OPEN = "half_open"  # Testing if service recovered
 
 
 @dataclass
 class CircuitBreakerConfig:
     """Circuit breaker configuration."""
-    failure_threshold: int = 5           # Failures before opening
-    success_threshold: int = 3           # Successes to close from half-open
-    timeout: float = 60.0               # Seconds to wait before half-open
-    expected_exception: type = Exception # Exception type to count as failure
+
+    failure_threshold: int = 5  # Failures before opening
+    success_threshold: int = 3  # Successes to close from half-open
+    timeout: float = 60.0  # Seconds to wait before half-open
+    expected_exception: type = Exception  # Exception type to count as failure
 
 
 class CircuitBreakerError(Exception):
     """Raised when circuit breaker is open."""
+
     pass
 
 
@@ -45,11 +48,7 @@ class CircuitBreaker:
     - Closing circuit after successful recovery
     """
 
-    def __init__(
-        self,
-        name: str,
-        config: Optional[CircuitBreakerConfig] = None
-    ):
+    def __init__(self, name: str, config: Optional[CircuitBreakerConfig] = None):
         """
         Initialize circuit breaker.
 
@@ -109,8 +108,7 @@ class CircuitBreaker:
     def _should_attempt_reset(self) -> bool:
         """Check if we should attempt to reset the circuit."""
         return (
-            self._state == CircuitState.OPEN and
-            time.time() >= self._next_attempt_time
+            self._state == CircuitState.OPEN and time.time() >= self._next_attempt_time
         )
 
     def _record_success(self) -> None:
@@ -213,15 +211,19 @@ class CircuitBreaker:
             Wrapped function
         """
         if asyncio.iscoroutinefunction(func):
+
             async def async_wrapper(*args, **kwargs):
                 return await self.call(func, *args, **kwargs)
+
             return async_wrapper
         else:
+
             def sync_wrapper(*args, **kwargs):
                 return asyncio.run(self.call(func, *args, **kwargs))
+
             return sync_wrapper
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """
         Get circuit breaker statistics.
 
@@ -239,12 +241,12 @@ class CircuitBreaker:
             "current_failure_count": self._failure_count,
             "current_success_count": self._success_count,
             "failure_rate": (
-                self._total_failures / self._total_calls
-                if self._total_calls > 0 else 0
+                self._total_failures / self._total_calls if self._total_calls > 0 else 0
             ),
             "success_rate": (
                 self._total_successes / self._total_calls
-                if self._total_calls > 0 else 0
+                if self._total_calls > 0
+                else 0
             ),
             "last_failure_time": self._last_failure_time,
             "last_success_time": self._last_success_time,
@@ -256,7 +258,7 @@ class CircuitBreaker:
                 "success_threshold": self.config.success_threshold,
                 "timeout": self.config.timeout,
                 "expected_exception": self.config.expected_exception.__name__,
-            }
+            },
         }
 
     def reset_stats(self) -> None:
@@ -288,13 +290,11 @@ class CircuitBreakerRegistry:
     """Registry for managing multiple circuit breakers."""
 
     def __init__(self):
-        self._breakers: Dict[str, CircuitBreaker] = {}
+        self._breakers: dict[str, CircuitBreaker] = {}
         self.logger = get_logger(__name__)
 
     def register(
-        self,
-        name: str,
-        config: Optional[CircuitBreakerConfig] = None
+        self, name: str, config: Optional[CircuitBreakerConfig] = None
     ) -> CircuitBreaker:
         """
         Register a new circuit breaker.
@@ -320,14 +320,11 @@ class CircuitBreakerRegistry:
         """Get circuit breaker by name."""
         return self._breakers.get(name)
 
-    def get_all_stats(self) -> Dict[str, Dict[str, Any]]:
+    def get_all_stats(self) -> dict[str, dict[str, Any]]:
         """Get statistics for all registered circuit breakers."""
-        return {
-            name: breaker.get_stats()
-            for name, breaker in self._breakers.items()
-        }
+        return {name: breaker.get_stats() for name, breaker in self._breakers.items()}
 
-    def get_health_summary(self) -> Dict[str, Any]:
+    def get_health_summary(self) -> dict[str, Any]:
         """Get health summary of all circuit breakers."""
         total_breakers = len(self._breakers)
         open_breakers = sum(1 for b in self._breakers.values() if b.is_open)
@@ -340,9 +337,8 @@ class CircuitBreakerRegistry:
             "half_open_breakers": half_open_breakers,
             "overall_health": "healthy" if open_breakers == 0 else "degraded",
             "breaker_states": {
-                name: breaker.state.value
-                for name, breaker in self._breakers.items()
-            }
+                name: breaker.state.value for name, breaker in self._breakers.items()
+            },
         }
 
     def reset_all_stats(self) -> None:

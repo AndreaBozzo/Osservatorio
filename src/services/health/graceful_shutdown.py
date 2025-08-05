@@ -8,9 +8,8 @@ in containerized environments.
 import asyncio
 import logging
 import signal
-import sys
-from typing import Callable, List, Optional
 from datetime import datetime
+from typing import Callable
 
 
 class GracefulShutdownHandler:
@@ -34,7 +33,7 @@ class GracefulShutdownHandler:
         self.logger = logging.getLogger(f"{__name__}.{service_name}")
 
         # Shutdown hooks
-        self._shutdown_hooks: List[Callable] = []
+        self._shutdown_hooks: list[Callable] = []
         self._is_shutting_down = False
         self._shutdown_event = asyncio.Event()
 
@@ -58,13 +57,13 @@ class GracefulShutdownHandler:
             return
 
         # Handle SIGTERM (Kubernetes pod termination)
-        if hasattr(signal, 'SIGTERM'):
+        if hasattr(signal, "SIGTERM"):
             self._original_handlers[signal.SIGTERM] = signal.signal(
                 signal.SIGTERM, self._signal_handler
             )
 
         # Handle SIGINT (Ctrl+C)
-        if hasattr(signal, 'SIGINT'):
+        if hasattr(signal, "SIGINT"):
             self._original_handlers[signal.SIGINT] = signal.signal(
                 signal.SIGINT, self._signal_handler
             )
@@ -74,7 +73,9 @@ class GracefulShutdownHandler:
 
     def _signal_handler(self, signum: int, frame) -> None:
         """Handle shutdown signals."""
-        signal_name = signal.Signals(signum).name if hasattr(signal, 'Signals') else str(signum)
+        signal_name = (
+            signal.Signals(signum).name if hasattr(signal, "Signals") else str(signum)
+        )
         self.logger.info(f"Received {signal_name}, initiating graceful shutdown")
 
         # Trigger shutdown in async context
@@ -123,13 +124,15 @@ class GracefulShutdownHandler:
                         shutdown_tasks.append(loop.run_in_executor(None, hook))
 
                 except Exception as e:
-                    self.logger.error(f"Error preparing shutdown hook {hook.__name__}: {e}")
+                    self.logger.error(
+                        f"Error preparing shutdown hook {hook.__name__}: {e}"
+                    )
 
             # Wait for all hooks to complete with timeout
             if shutdown_tasks:
                 await asyncio.wait_for(
                     asyncio.gather(*shutdown_tasks, return_exceptions=True),
-                    timeout=self.timeout_seconds
+                    timeout=self.timeout_seconds,
                 )
 
             shutdown_duration = (datetime.now() - start_time).total_seconds()
@@ -139,7 +142,9 @@ class GracefulShutdownHandler:
 
         except asyncio.TimeoutError:
             shutdown_duration = (datetime.now() - start_time).total_seconds()
-            self.logger.warning(f"Graceful shutdown timed out after {shutdown_duration:.2f}s")
+            self.logger.warning(
+                f"Graceful shutdown timed out after {shutdown_duration:.2f}s"
+            )
             return False
 
         except Exception as e:
@@ -175,8 +180,9 @@ class GracefulShutdownHandler:
         self.restore_signal_handlers()
 
 
-def create_shutdown_handler(service_name: str = "service",
-                          timeout_seconds: int = 30) -> GracefulShutdownHandler:
+def create_shutdown_handler(
+    service_name: str = "service", timeout_seconds: int = 30
+) -> GracefulShutdownHandler:
     """
     Create a graceful shutdown handler.
 

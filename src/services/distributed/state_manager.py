@@ -7,8 +7,8 @@ ensuring services can be scaled horizontally without state dependencies.
 
 import asyncio
 import logging
-from typing import Any, Dict, Optional, Set
 from datetime import datetime, timedelta
+from typing import Any, Optional
 
 
 class StatelessServiceManager:
@@ -33,8 +33,8 @@ class StatelessServiceManager:
         self.logger = logging.getLogger(f"{__name__}.{service_name}")
 
         # Resource tracking
-        self._active_resources: Set[str] = set()
-        self._cleanup_callbacks: Dict[str, callable] = {}
+        self._active_resources: set[str] = set()
+        self._cleanup_callbacks: dict[str, callable] = {}
 
         # Service state
         self._is_shutting_down = False
@@ -44,7 +44,9 @@ class StatelessServiceManager:
         self._max_memory_mb: Optional[int] = None
         self._max_cpu_cores: Optional[float] = None
 
-    def register_resource(self, resource_id: str, cleanup_callback: callable = None) -> None:
+    def register_resource(
+        self, resource_id: str, cleanup_callback: callable = None
+    ) -> None:
         """
         Register a resource that needs cleanup on shutdown.
 
@@ -102,7 +104,7 @@ class StatelessServiceManager:
             if cleanup_tasks:
                 await asyncio.wait_for(
                     asyncio.gather(*cleanup_tasks, return_exceptions=True),
-                    timeout=timeout_seconds
+                    timeout=timeout_seconds,
                 )
 
             # Clear resource tracking
@@ -116,7 +118,9 @@ class StatelessServiceManager:
 
         except asyncio.TimeoutError:
             shutdown_duration = (datetime.now() - start_time).total_seconds()
-            self.logger.warning(f"Graceful shutdown timed out after {shutdown_duration:.2f}s")
+            self.logger.warning(
+                f"Graceful shutdown timed out after {shutdown_duration:.2f}s"
+            )
             return False
 
         except Exception as e:
@@ -127,11 +131,11 @@ class StatelessServiceManager:
         """Check if the service is currently shutting down."""
         return self._is_shutting_down
 
-    def get_active_resources(self) -> Set[str]:
+    def get_active_resources(self) -> set[str]:
         """Get set of currently active resource IDs."""
         return self._active_resources.copy()
 
-    def get_service_info(self) -> Dict[str, Any]:
+    def get_service_info(self) -> dict[str, Any]:
         """
         Get service information for monitoring and debugging.
 
@@ -149,8 +153,9 @@ class StatelessServiceManager:
             "resource_ids": list(self._active_resources),
         }
 
-    def set_resource_limits(self, max_memory_mb: Optional[int] = None,
-                          max_cpu_cores: Optional[float] = None) -> None:
+    def set_resource_limits(
+        self, max_memory_mb: Optional[int] = None, max_cpu_cores: Optional[float] = None
+    ) -> None:
         """
         Set resource limits for monitoring (informational only).
 
@@ -161,9 +166,11 @@ class StatelessServiceManager:
         self._max_memory_mb = max_memory_mb
         self._max_cpu_cores = max_cpu_cores
 
-        self.logger.info(f"Resource limits set: memory={max_memory_mb}MB, cpu={max_cpu_cores} cores")
+        self.logger.info(
+            f"Resource limits set: memory={max_memory_mb}MB, cpu={max_cpu_cores} cores"
+        )
 
-    def validate_stateless_design(self) -> Dict[str, Any]:
+    def validate_stateless_design(self) -> dict[str, Any]:
         """
         Validate that the service follows stateless design principles.
 
@@ -174,7 +181,7 @@ class StatelessServiceManager:
             "is_stateless_compliant": True,
             "issues": [],
             "recommendations": [],
-            "score": 100
+            "score": 100,
         }
 
         # Check for long-running resources (potential state)
@@ -192,7 +199,9 @@ class StatelessServiceManager:
             validation_results["score"] -= 10
 
         # Check for missing cleanup callbacks
-        resources_without_cleanup = len(self._active_resources) - len(self._cleanup_callbacks)
+        resources_without_cleanup = len(self._active_resources) - len(
+            self._cleanup_callbacks
+        )
         if resources_without_cleanup > 0:
             validation_results["issues"].append(
                 f"{resources_without_cleanup} resources registered without cleanup callbacks"
@@ -203,7 +212,9 @@ class StatelessServiceManager:
             validation_results["score"] -= 20
 
         # Final compliance check
-        validation_results["is_stateless_compliant"] = len(validation_results["issues"]) == 0
+        validation_results["is_stateless_compliant"] = (
+            len(validation_results["issues"]) == 0
+        )
 
         return validation_results
 
@@ -227,7 +238,7 @@ class ResourceManager:
         self.resource_id = resource_id
         self._cleanup_func: Optional[callable] = None
 
-    def set_cleanup(self, cleanup_func: callable) -> 'ResourceManager':
+    def set_cleanup(self, cleanup_func: callable) -> "ResourceManager":
         """
         Set cleanup function for this resource.
 
@@ -240,7 +251,7 @@ class ResourceManager:
         self._cleanup_func = cleanup_func
         return self
 
-    def __enter__(self) -> 'ResourceManager':
+    def __enter__(self) -> "ResourceManager":
         """Enter context manager."""
         self.service_manager.register_resource(self.resource_id, self._cleanup_func)
         return self
@@ -276,8 +287,9 @@ def get_default_service_manager() -> StatelessServiceManager:
     return _default_service_manager
 
 
-def create_resource_manager(resource_id: str,
-                          service_manager: Optional[StatelessServiceManager] = None) -> ResourceManager:
+def create_resource_manager(
+    resource_id: str, service_manager: Optional[StatelessServiceManager] = None
+) -> ResourceManager:
     """
     Create a resource manager for automatic cleanup.
 

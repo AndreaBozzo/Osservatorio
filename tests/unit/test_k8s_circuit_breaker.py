@@ -5,8 +5,6 @@ Tests the circuit breaker pattern implementation for Kubernetes resilience.
 """
 
 import asyncio
-import time
-from unittest.mock import Mock
 
 import pytest
 
@@ -283,7 +281,7 @@ class TestCircuitBreakerRegistry:
     def test_registry_health_summary(self, registry):
         """Test getting health summary"""
         breaker1 = registry.register("service1")
-        breaker2 = registry.register("service2")
+        registry.register("service2")
 
         # Force one breaker open
         breaker1.force_open()

@@ -4,13 +4,11 @@ Kubernetes-native configuration manager with ConfigMap and Secret support.
 Provides hot reload capabilities and configuration validation for cloud-native deployments.
 """
 
-import asyncio
 import json
-import os
 import threading
 import time
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Set
+from typing import Any, Callable, Optional
 
 from pydantic import ValidationError
 
@@ -53,8 +51,8 @@ class K8sConfigManager:
 
         self.logger = get_logger(__name__)
         self._config: Optional[EnvironmentConfig] = None
-        self._file_checksums: Dict[str, str] = {}
-        self._change_callbacks: List[Callable[[EnvironmentConfig], None]] = []
+        self._file_checksums: dict[str, str] = {}
+        self._change_callbacks: list[Callable[[EnvironmentConfig], None]] = []
         self._watch_thread: Optional[threading.Thread] = None
         self._shutdown_event = threading.Event()
         self._config_lock = threading.RLock()
@@ -109,7 +107,7 @@ class K8sConfigManager:
             self.logger.error(f"Failed to load configuration: {e}")
             raise
 
-    def _load_configmap_files(self) -> Dict[str, Any]:
+    def _load_configmap_files(self) -> dict[str, Any]:
         """Load configuration from mounted ConfigMaps."""
         config_overrides = {}
 
@@ -134,11 +132,13 @@ class K8sConfigManager:
                         self.logger.debug(f"Loaded config value for {key}")
 
                 except Exception as e:
-                    self.logger.warning(f"Failed to load config file {config_file}: {e}")
+                    self.logger.warning(
+                        f"Failed to load config file {config_file}: {e}"
+                    )
 
         return config_overrides
 
-    def _load_secret_files(self) -> Dict[str, Any]:
+    def _load_secret_files(self) -> dict[str, Any]:
         """Load configuration from mounted Secrets."""
         secret_overrides = {}
 
@@ -166,7 +166,9 @@ class K8sConfigManager:
                     self.logger.debug(f"Loaded secret for {key}")
 
                 except Exception as e:
-                    self.logger.warning(f"Failed to load secret file {secret_file}: {e}")
+                    self.logger.warning(
+                        f"Failed to load secret file {secret_file}: {e}"
+                    )
 
         return secret_overrides
 
@@ -187,13 +189,17 @@ class K8sConfigManager:
         if self.config_dir.exists():
             for config_file in self.config_dir.glob("*"):
                 if config_file.is_file():
-                    current_checksums[str(config_file)] = self._calculate_checksum(config_file)
+                    current_checksums[str(config_file)] = self._calculate_checksum(
+                        config_file
+                    )
 
         # Check Secret files
         if self.secrets_dir.exists():
             for secret_file in self.secrets_dir.glob("*"):
                 if secret_file.is_file():
-                    current_checksums[str(secret_file)] = self._calculate_checksum(secret_file)
+                    current_checksums[str(secret_file)] = self._calculate_checksum(
+                        secret_file
+                    )
 
         # Compare with previous checksums
         changed = current_checksums != self._file_checksums
@@ -219,7 +225,9 @@ class K8sConfigManager:
                             try:
                                 callback(self._config)
                             except Exception as e:
-                                self.logger.error(f"Configuration change callback failed: {e}")
+                                self.logger.error(
+                                    f"Configuration change callback failed: {e}"
+                                )
 
                         self.logger.info("Configuration reloaded successfully")
 
@@ -238,9 +246,7 @@ class K8sConfigManager:
         """Start file watching in background thread."""
         if self._watch_thread is None or not self._watch_thread.is_alive():
             self._watch_thread = threading.Thread(
-                target=self._watch_files,
-                daemon=True,
-                name="config-watcher"
+                target=self._watch_files, daemon=True, name="config-watcher"
             )
             self._watch_thread.start()
             self.logger.info("Configuration file watching started")
@@ -259,18 +265,26 @@ class K8sConfigManager:
                 raise RuntimeError("Configuration not loaded")
             return self._config
 
-    def register_change_callback(self, callback: Callable[[EnvironmentConfig], None]) -> None:
+    def register_change_callback(
+        self, callback: Callable[[EnvironmentConfig], None]
+    ) -> None:
         """Register callback for configuration changes."""
         self._change_callbacks.append(callback)
-        self.logger.debug(f"Registered configuration change callback: {callback.__name__}")
+        self.logger.debug(
+            f"Registered configuration change callback: {callback.__name__}"
+        )
 
-    def unregister_change_callback(self, callback: Callable[[EnvironmentConfig], None]) -> None:
+    def unregister_change_callback(
+        self, callback: Callable[[EnvironmentConfig], None]
+    ) -> None:
         """Unregister configuration change callback."""
         if callback in self._change_callbacks:
             self._change_callbacks.remove(callback)
-            self.logger.debug(f"Unregistered configuration change callback: {callback.__name__}")
+            self.logger.debug(
+                f"Unregistered configuration change callback: {callback.__name__}"
+            )
 
-    def validate_configuration(self) -> List[str]:
+    def validate_configuration(self) -> list[str]:
         """Validate current configuration and return any errors."""
         config = self.get_config()
 
@@ -299,7 +313,7 @@ class K8sConfigManager:
 
         return errors
 
-    def get_health_status(self) -> Dict[str, Any]:
+    def get_health_status(self) -> dict[str, Any]:
         """Get health status of configuration manager."""
         config = self.get_config()
         validation_errors = self.validate_configuration()
@@ -310,7 +324,8 @@ class K8sConfigManager:
             "service_name": config.service_name,
             "service_version": config.service_version,
             "hot_reload_enabled": self.enable_hot_reload,
-            "watching_active": self._watch_thread is not None and self._watch_thread.is_alive(),
+            "watching_active": self._watch_thread is not None
+            and self._watch_thread.is_alive(),
             "validation_errors": validation_errors,
             "last_reload": time.time(),
             "monitored_files": len(self._file_checksums),
@@ -326,7 +341,7 @@ class K8sConfigManager:
             self.logger.error(f"Manual configuration reload failed: {e}")
             return False
 
-    def export_for_debugging(self) -> Dict[str, Any]:
+    def export_for_debugging(self) -> dict[str, Any]:
         """Export configuration for debugging (sensitive values masked)."""
         config = self.get_config()
         config_dict = config.to_dict()
@@ -343,7 +358,9 @@ class K8sConfigManager:
         return {
             "configuration": config_dict,
             "health": self.get_health_status(),
-            "file_checksums": {k: v[:8] + "..." for k, v in self._file_checksums.items()},
+            "file_checksums": {
+                k: v[:8] + "..." for k, v in self._file_checksums.items()
+            },
         }
 
     @staticmethod

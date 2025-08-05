@@ -1,0 +1,13 @@
+# ServiceAccount for dataflow analyzer pods
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: dataflow-analyzer
+  namespace: osservatorio
+  labels:
+    app.kubernetes.io/name: dataflow-analyzer
+    app.kubernetes.io/instance: dataflow-analyzer
+    app.kubernetes.io/version: "2.0.0"
+    app.kubernetes.io/component: serviceaccount
+    app.kubernetes.io/part-of: osservatorio-platform
+automountServiceAccountToken: true

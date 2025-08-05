@@ -8,8 +8,8 @@ This package provides:
 - Resilience patterns
 """
 
-from .redis_cache_manager import RedisCacheManager
 from .circuit_breaker import CircuitBreaker
+from .redis_cache_manager import RedisCacheManager
 from .state_manager import StatelessServiceManager
 
 __all__ = ["RedisCacheManager", "CircuitBreaker", "StatelessServiceManager"]

@@ -4,11 +4,10 @@ Redis-based distributed caching manager for Kubernetes scalability.
 Provides distributed caching with TTL, serialization, and connection pooling.
 """
 
-import asyncio
 import json
 import pickle
-from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Union
+from datetime import datetime
+from typing import Any, Optional
 
 import redis.asyncio as redis
 from pydantic import BaseModel
@@ -26,7 +25,7 @@ class CacheEntry(BaseModel):
     expires_at: Optional[datetime] = None
     access_count: int = 0
     last_accessed: datetime
-    tags: List[str] = []
+    tags: list[str] = []
     size_bytes: int = 0
 
 
@@ -72,7 +71,7 @@ class RedisCacheManager:
 
         # Statistics tracking
         self._stats = CacheStats()
-        self._operation_times: List[float] = []
+        self._operation_times: list[float] = []
         self._hit_count = 0
         self._miss_count = 0
 
@@ -151,7 +150,9 @@ class RedisCacheManager:
     def _check_circuit_breaker(self) -> bool:
         """Check if circuit breaker should be reset."""
         if not self._is_available and self._last_failure_time:
-            if (datetime.now() - self._last_failure_time).seconds > self._circuit_breaker_timeout:
+            if (
+                datetime.now() - self._last_failure_time
+            ).seconds > self._circuit_breaker_timeout:
                 self.logger.info("Attempting to reset Redis circuit breaker")
                 self._is_available = True
                 self._failure_count = 0
@@ -206,9 +207,7 @@ class RedisCacheManager:
         """
         full_key = self._build_key(key)
 
-        result = await self._execute_with_fallback(
-            self._client.get, full_key
-        )
+        result = await self._execute_with_fallback(self._client.get, full_key)
 
         if result is not None:
             try:
@@ -223,7 +222,9 @@ class RedisCacheManager:
                 return value
 
             except Exception as e:
-                self.logger.warning(f"Failed to deserialize cached value for {key}: {e}")
+                self.logger.warning(
+                    f"Failed to deserialize cached value for {key}: {e}"
+                )
 
         self._miss_count += 1
         self.logger.debug(f"Cache miss for key: {key}")
@@ -234,7 +235,7 @@ class RedisCacheManager:
         key: str,
         value: Any,
         ttl: Optional[int] = None,
-        tags: Optional[List[str]] = None,
+        tags: Optional[list[str]] = None,
     ) -> bool:
         """
         Set value in cache.
@@ -254,7 +255,10 @@ class RedisCacheManager:
         try:
             # Try JSON serialization first, then pickle
             try:
-                if isinstance(value, (dict, list, str, int, float, bool)) or value is None:
+                if (
+                    isinstance(value, (dict, list, str, int, float, bool))
+                    or value is None
+                ):
                     serialized = json.dumps(value, default=str)
                 else:
                     raise TypeError("Use pickle for complex objects")
@@ -300,9 +304,7 @@ class RedisCacheManager:
         """
         full_key = self._build_key(key)
 
-        result = await self._execute_with_fallback(
-            self._client.delete, full_key
-        )
+        result = await self._execute_with_fallback(self._client.delete, full_key)
 
         if result:
             self.logger.debug(f"Cache delete for key: {key}")
@@ -322,14 +324,10 @@ class RedisCacheManager:
         """
         full_pattern = self._build_key(pattern)
 
-        keys = await self._execute_with_fallback(
-            self._client.keys, full_pattern
-        )
+        keys = await self._execute_with_fallback(self._client.keys, full_pattern)
 
         if keys:
-            deleted = await self._execute_with_fallback(
-                self._client.delete, *keys
-            )
+            deleted = await self._execute_with_fallback(self._client.delete, *keys)
 
             if deleted:
                 self.logger.info(f"Deleted {deleted} keys matching pattern: {pattern}")
@@ -337,7 +335,7 @@ class RedisCacheManager:
 
         return 0
 
-    async def delete_by_tags(self, tags: List[str]) -> int:
+    async def delete_by_tags(self, tags: list[str]) -> int:
         """
         Delete all keys associated with given tags.
 
@@ -353,23 +351,17 @@ class RedisCacheManager:
             tag_key = self._build_key(f"tag:{tag}")
 
             # Get all keys with this tag
-            keys = await self._execute_with_fallback(
-                self._client.smembers, tag_key
-            )
+            keys = await self._execute_with_fallback(self._client.smembers, tag_key)
 
             if keys:
                 # Delete the keys
-                deleted = await self._execute_with_fallback(
-                    self._client.delete, *keys
-                )
+                deleted = await self._execute_with_fallback(self._client.delete, *keys)
 
                 if deleted:
                     total_deleted += deleted
 
                 # Delete the tag key itself
-                await self._execute_with_fallback(
-                    self._client.delete, tag_key
-                )
+                await self._execute_with_fallback(self._client.delete, tag_key)
 
         if total_deleted > 0:
             self.logger.info(f"Deleted {total_deleted} keys for tags: {tags}")
@@ -388,9 +380,7 @@ class RedisCacheManager:
         """
         full_key = self._build_key(key)
 
-        result = await self._execute_with_fallback(
-            self._client.exists, full_key
-        )
+        result = await self._execute_with_fallback(self._client.exists, full_key)
 
         return bool(result)
 
@@ -406,9 +396,7 @@ class RedisCacheManager:
         """
         full_key = self._build_key(key)
 
-        ttl = await self._execute_with_fallback(
-            self._client.ttl, full_key
-        )
+        ttl = await self._execute_with_fallback(self._client.ttl, full_key)
 
         if ttl and ttl > 0:
             return ttl
@@ -453,11 +441,22 @@ class RedisCacheManager:
 
             self._stats = CacheStats(
                 total_keys=await self._execute_with_fallback(self._client.dbsize) or 0,
-                hit_rate=self._hit_count / total_operations if total_operations > 0 else 0,
-                miss_rate=self._miss_count / total_operations if total_operations > 0 else 0,
-                memory_usage_mb=(info.get("used_memory", 0) / 1024 / 1024) if info else 0,
-                avg_response_time_ms=sum(self._operation_times) / len(self._operation_times) if self._operation_times else 0,
-                operations_per_second=len(self._operation_times) / 60 if self._operation_times else 0,  # rough estimate
+                hit_rate=self._hit_count / total_operations
+                if total_operations > 0
+                else 0,
+                miss_rate=self._miss_count / total_operations
+                if total_operations > 0
+                else 0,
+                memory_usage_mb=(info.get("used_memory", 0) / 1024 / 1024)
+                if info
+                else 0,
+                avg_response_time_ms=sum(self._operation_times)
+                / len(self._operation_times)
+                if self._operation_times
+                else 0,
+                operations_per_second=len(self._operation_times) / 60
+                if self._operation_times
+                else 0,  # rough estimate
             )
 
         except Exception as e:
@@ -465,7 +464,7 @@ class RedisCacheManager:
 
         return self._stats
 
-    async def health_check(self) -> Dict[str, Any]:
+    async def health_check(self) -> dict[str, Any]:
         """
         Get health status of Redis cache.
 
@@ -477,7 +476,9 @@ class RedisCacheManager:
             "available": self._is_available,
             "circuit_breaker_open": not self._is_available,
             "failure_count": self._failure_count,
-            "last_failure": self._last_failure_time.isoformat() if self._last_failure_time else None,
+            "last_failure": self._last_failure_time.isoformat()
+            if self._last_failure_time
+            else None,
         }
 
         try:
@@ -487,19 +488,25 @@ class RedisCacheManager:
                 await self._client.ping()
                 latency = (datetime.now() - latency_start).total_seconds() * 1000
 
-                status.update({
-                    "status": "healthy",
-                    "latency_ms": round(latency, 2),
-                    "connection_pool_size": self._pool.connection_kwargs if self._pool else None,
-                })
+                status.update(
+                    {
+                        "status": "healthy",
+                        "latency_ms": round(latency, 2),
+                        "connection_pool_size": self._pool.connection_kwargs
+                        if self._pool
+                        else None,
+                    }
+                )
             else:
                 status["status"] = "disconnected"
 
         except Exception as e:
-            status.update({
-                "status": "unhealthy",
-                "error": str(e),
-            })
+            status.update(
+                {
+                    "status": "unhealthy",
+                    "error": str(e),
+                }
+            )
 
         return status
 

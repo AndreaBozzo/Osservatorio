@@ -7,9 +7,10 @@ for health checks and scaling decisions.
 
 import asyncio
 import logging
-import psutil
-from typing import Dict, Any, Optional
 from datetime import datetime, timedelta
+from typing import Any, Optional
+
+import psutil
 
 
 class ResourceMonitor:
@@ -44,9 +45,12 @@ class ResourceMonitor:
         self._resource_history: list = []
         self._max_history_size = 100
 
-    def set_thresholds(self, cpu_percent: float = None,
-                      memory_percent: float = None,
-                      disk_percent: float = None) -> None:
+    def set_thresholds(
+        self,
+        cpu_percent: float = None,
+        memory_percent: float = None,
+        disk_percent: float = None,
+    ) -> None:
         """
         Set resource usage thresholds.
 
@@ -62,11 +66,13 @@ class ResourceMonitor:
         if disk_percent is not None:
             self.disk_threshold_percent = disk_percent
 
-        self.logger.info(f"Resource thresholds updated: CPU={self.cpu_threshold_percent}%, "
-                        f"Memory={self.memory_threshold_percent}%, "
-                        f"Disk={self.disk_threshold_percent}%")
+        self.logger.info(
+            f"Resource thresholds updated: CPU={self.cpu_threshold_percent}%, "
+            f"Memory={self.memory_threshold_percent}%, "
+            f"Disk={self.disk_threshold_percent}%"
+        )
 
-    def get_current_resources(self) -> Dict[str, Any]:
+    def get_current_resources(self) -> dict[str, Any]:
         """
         Get current resource usage.
 
@@ -85,7 +91,7 @@ class ResourceMonitor:
             memory_total_mb = memory.total / (1024 * 1024)
 
             # Disk usage (root filesystem)
-            disk = psutil.disk_usage('/')
+            disk = psutil.disk_usage("/")
             disk_percent = (disk.used / disk.total) * 100
             disk_used_gb = disk.used / (1024 * 1024 * 1024)
             disk_total_gb = disk.total / (1024 * 1024 * 1024)
@@ -103,25 +109,25 @@ class ResourceMonitor:
                 "cpu": {
                     "usage_percent": cpu_percent,
                     "count": cpu_count,
-                    "process_percent": process_cpu_percent
+                    "process_percent": process_cpu_percent,
                 },
                 "memory": {
                     "usage_percent": memory_percent,
                     "used_mb": memory_used_mb,
                     "total_mb": memory_total_mb,
-                    "process_mb": process_memory_mb
+                    "process_mb": process_memory_mb,
                 },
                 "disk": {
                     "usage_percent": disk_percent,
                     "used_gb": disk_used_gb,
-                    "total_gb": disk_total_gb
+                    "total_gb": disk_total_gb,
                 },
                 "network": {
                     "bytes_sent": net_io.bytes_sent,
                     "bytes_recv": net_io.bytes_recv,
                     "packets_sent": net_io.packets_sent,
-                    "packets_recv": net_io.packets_recv
-                }
+                    "packets_recv": net_io.packets_recv,
+                },
             }
 
             return resources
@@ -130,7 +136,7 @@ class ResourceMonitor:
             self.logger.error(f"Error getting resource metrics: {e}")
             return {"error": str(e), "timestamp": datetime.now().isoformat()}
 
-    def check_resource_health(self) -> Dict[str, Any]:
+    def check_resource_health(self) -> dict[str, Any]:
         """
         Check if resource usage is within healthy thresholds.
 
@@ -143,7 +149,7 @@ class ResourceMonitor:
             return {
                 "status": "unknown",
                 "healthy": False,
-                "message": f"Failed to get resource metrics: {resources['error']}"
+                "message": f"Failed to get resource metrics: {resources['error']}",
             }
 
         issues = []
@@ -152,21 +158,27 @@ class ResourceMonitor:
         # Check CPU usage
         cpu_usage = resources["cpu"]["usage_percent"]
         if cpu_usage > self.cpu_threshold_percent:
-            issues.append(f"High CPU usage: {cpu_usage:.1f}% > {self.cpu_threshold_percent}%")
+            issues.append(
+                f"High CPU usage: {cpu_usage:.1f}% > {self.cpu_threshold_percent}%"
+            )
         elif cpu_usage > self.cpu_threshold_percent * 0.8:
             warnings.append(f"Elevated CPU usage: {cpu_usage:.1f}%")
 
         # Check memory usage
         memory_usage = resources["memory"]["usage_percent"]
         if memory_usage > self.memory_threshold_percent:
-            issues.append(f"High memory usage: {memory_usage:.1f}% > {self.memory_threshold_percent}%")
+            issues.append(
+                f"High memory usage: {memory_usage:.1f}% > {self.memory_threshold_percent}%"
+            )
         elif memory_usage > self.memory_threshold_percent * 0.8:
             warnings.append(f"Elevated memory usage: {memory_usage:.1f}%")
 
         # Check disk usage
         disk_usage = resources["disk"]["usage_percent"]
         if disk_usage > self.disk_threshold_percent:
-            issues.append(f"High disk usage: {disk_usage:.1f}% > {self.disk_threshold_percent}%")
+            issues.append(
+                f"High disk usage: {disk_usage:.1f}% > {self.disk_threshold_percent}%"
+            )
         elif disk_usage > self.disk_threshold_percent * 0.8:
             warnings.append(f"Elevated disk usage: {disk_usage:.1f}%")
 
@@ -194,8 +206,8 @@ class ResourceMonitor:
             "thresholds": {
                 "cpu_percent": self.cpu_threshold_percent,
                 "memory_percent": self.memory_threshold_percent,
-                "disk_percent": self.disk_threshold_percent
-            }
+                "disk_percent": self.disk_threshold_percent,
+            },
         }
 
     def start_monitoring(self) -> None:
@@ -205,7 +217,9 @@ class ResourceMonitor:
 
         self._is_monitoring = True
         self._monitoring_task = asyncio.create_task(self._monitoring_loop())
-        self.logger.info(f"Started resource monitoring (interval: {self.check_interval}s)")
+        self.logger.info(
+            f"Started resource monitoring (interval: {self.check_interval}s)"
+        )
 
     async def stop_monitoring(self) -> None:
         """Stop continuous resource monitoring."""
@@ -232,14 +246,15 @@ class ResourceMonitor:
                 self._last_check = datetime.now()
 
                 # Add to history
-                self._resource_history.append({
-                    "timestamp": self._last_check,
-                    "health": health
-                })
+                self._resource_history.append(
+                    {"timestamp": self._last_check, "health": health}
+                )
 
                 # Trim history
                 if len(self._resource_history) > self._max_history_size:
-                    self._resource_history = self._resource_history[-self._max_history_size:]
+                    self._resource_history = self._resource_history[
+                        -self._max_history_size :
+                    ]
 
                 # Log warnings/issues
                 if health["status"] == "unhealthy":
@@ -268,7 +283,8 @@ class ResourceMonitor:
         cutoff_time = datetime.now() - timedelta(minutes=minutes)
 
         return [
-            entry for entry in self._resource_history
+            entry
+            for entry in self._resource_history
             if entry["timestamp"] >= cutoff_time
         ]
 
@@ -276,7 +292,7 @@ class ResourceMonitor:
         """Check if monitoring is currently active."""
         return self._is_monitoring
 
-    def get_monitoring_status(self) -> Dict[str, Any]:
+    def get_monitoring_status(self) -> dict[str, Any]:
         """
         Get monitoring status information.
 
@@ -291,6 +307,6 @@ class ResourceMonitor:
             "thresholds": {
                 "cpu_percent": self.cpu_threshold_percent,
                 "memory_percent": self.memory_threshold_percent,
-                "disk_percent": self.disk_threshold_percent
-            }
+                "disk_percent": self.disk_threshold_percent,
+            },
         }

@@ -10,25 +10,25 @@ optimized for Kubernetes deployments with:
 - OpenTelemetry observability support
 """
 
-import asyncio
-import json
 import xml.etree.ElementTree as ET
-from datetime import datetime, timedelta
-from pathlib import Path
-from typing import Any, Dict, List, Optional
+from datetime import datetime
+from typing import Any, Optional
 
 from ..api.production_istat_client import ProductionIstatClient
 from ..database.sqlite.repository import UnifiedDataRepository
 from ..utils.logger import get_logger
 from ..utils.temp_file_manager import TempFileManager
 from .config.k8s_config_manager import K8sConfigManager
-from .distributed.circuit_breaker import CircuitBreaker, CircuitBreakerConfig, circuit_breaker_registry
+from .distributed.circuit_breaker import (
+    CircuitBreaker,
+    CircuitBreakerConfig,
+    circuit_breaker_registry,
+)
 from .distributed.redis_cache_manager import RedisCacheManager
-from .health.k8s_health_checks import K8sHealthManager, HealthStatus
+from .health.k8s_health_checks import HealthStatus, K8sHealthManager
 from .models import (
     AnalysisFilters,
     AnalysisResult,
-    BulkAnalysisRequest,
     CategorizationRule,
     CategoryResult,
     DataflowCategory,
@@ -77,7 +77,7 @@ class K8sDataflowAnalysisService:
         # Initialize distributed components
         self._redis_cache: Optional[RedisCacheManager] = None
         self._health_manager: Optional[K8sHealthManager] = None
-        self._circuit_breakers: Dict[str, CircuitBreaker] = {}
+        self._circuit_breakers: dict[str, CircuitBreaker] = {}
 
         # Service state
         self._is_initialized = False
@@ -101,13 +101,14 @@ class K8sDataflowAnalysisService:
             # Initialize distributed caching if enabled
             if self.config.enable_distributed_caching:
                 self._redis_cache = RedisCacheManager(
-                    config=self.config.redis,
-                    key_prefix="dataflow:analysis:"
+                    config=self.config.redis, key_prefix="dataflow:analysis:"
                 )
 
                 cache_initialized = await self._redis_cache.initialize()
                 if not cache_initialized:
-                    self.logger.warning("Redis cache initialization failed, continuing without caching")
+                    self.logger.warning(
+                        "Redis cache initialization failed, continuing without caching"
+                    )
                     self._redis_cache = None
 
             # Initialize health manager
@@ -143,8 +144,8 @@ class K8sDataflowAnalysisService:
             CircuitBreakerConfig(
                 failure_threshold=self.config.istat_api.max_retries,
                 timeout=self.config.istat_api.timeout,
-                expected_exception=Exception
-            )
+                expected_exception=Exception,
+            ),
         )
         self._circuit_breakers["istat_api"] = istat_breaker
 
@@ -152,10 +153,8 @@ class K8sDataflowAnalysisService:
         db_breaker = circuit_breaker_registry.register(
             "database",
             CircuitBreakerConfig(
-                failure_threshold=5,
-                timeout=30.0,
-                expected_exception=Exception
-            )
+                failure_threshold=5, timeout=30.0, expected_exception=Exception
+            ),
         )
         self._circuit_breakers["database"] = db_breaker
 
@@ -164,10 +163,8 @@ class K8sDataflowAnalysisService:
             redis_breaker = circuit_breaker_registry.register(
                 "redis_cache",
                 CircuitBreakerConfig(
-                    failure_threshold=3,
-                    timeout=10.0,
-                    expected_exception=Exception
-                )
+                    failure_threshold=3, timeout=10.0, expected_exception=Exception
+                ),
             )
             self._circuit_breakers["redis_cache"] = redis_breaker
 
@@ -198,7 +195,10 @@ class K8sDataflowAnalysisService:
             # Simple connectivity test
             status = await self.repository.get_system_status()
 
-            if status and status.get("metadata_database", {}).get("status") == "healthy":
+            if (
+                status
+                and status.get("metadata_database", {}).get("status") == "healthy"
+            ):
                 return HealthStatus.HEALTHY, "Database connection healthy"
             else:
                 return HealthStatus.DEGRADED, "Database connectivity issues"
@@ -210,11 +210,13 @@ class K8sDataflowAnalysisService:
         """Check ISTAT API connectivity and health."""
         try:
             # Simple ping test (you might need to implement this in the client)
-            if hasattr(self.istat_client, 'health_check'):
+            if hasattr(self.istat_client, "health_check"):
                 healthy = await self.istat_client.health_check()
                 return (
                     HealthStatus.HEALTHY if healthy else HealthStatus.DEGRADED,
-                    "ISTAT API accessible" if healthy else "ISTAT API connectivity issues"
+                    "ISTAT API accessible"
+                    if healthy
+                    else "ISTAT API connectivity issues",
                 )
             else:
                 # Fallback: assume healthy if circuit breaker is closed
@@ -236,11 +238,17 @@ class K8sDataflowAnalysisService:
             health_status = await self._redis_cache.health_check()
 
             if health_status["status"] == "healthy":
-                return HealthStatus.HEALTHY, f"Redis cache healthy (latency: {health_status.get('latency_ms', 0):.1f}ms)"
+                return (
+                    HealthStatus.HEALTHY,
+                    f"Redis cache healthy (latency: {health_status.get('latency_ms', 0):.1f}ms)",
+                )
             elif health_status["status"] == "degraded":
                 return HealthStatus.DEGRADED, "Redis cache degraded"
             else:
-                return HealthStatus.UNHEALTHY, f"Redis cache unhealthy: {health_status.get('error', 'unknown')}"
+                return (
+                    HealthStatus.UNHEALTHY,
+                    f"Redis cache unhealthy: {health_status.get('error', 'unknown')}",
+                )
 
         except Exception as e:
             return HealthStatus.UNHEALTHY, f"Redis health check failed: {e}"
@@ -251,7 +259,7 @@ class K8sDataflowAnalysisService:
         self.config = new_config
 
         # Update cache TTL if needed
-        if self._redis_cache and hasattr(self, '_cache_ttl_minutes'):
+        if self._redis_cache and hasattr(self, "_cache_ttl_minutes"):
             self._cache_ttl_minutes = 30  # Could be made configurable
 
     async def _get_from_cache(self, key: str, default: Any = None) -> Any:
@@ -275,7 +283,7 @@ class K8sDataflowAnalysisService:
         key: str,
         value: Any,
         ttl: Optional[int] = None,
-        tags: Optional[List[str]] = None
+        tags: Optional[list[str]] = None,
     ) -> bool:
         """Set value in distributed cache with circuit breaker protection."""
         if not self._redis_cache:
@@ -294,7 +302,7 @@ class K8sDataflowAnalysisService:
             self.logger.warning(f"Cache set failed for key {key}: {e}")
             return False
 
-    async def _get_categorization_rules(self) -> List[CategorizationRule]:
+    async def _get_categorization_rules(self) -> list[CategorizationRule]:
         """Get categorization rules with distributed caching."""
         cache_key = "categorization_rules"
 
@@ -319,15 +327,22 @@ class K8sDataflowAnalysisService:
                     rule = CategorizationRule(**rule_data)
                     rules.append(rule)
                 except Exception as e:
-                    self.logger.warning(f"Invalid categorization rule: {rule_data}, error: {e}")
+                    self.logger.warning(
+                        f"Invalid categorization rule: {rule_data}, error: {e}"
+                    )
+
+            # If no valid rules found, use fallback rules
+            if not rules:
+                self.logger.warning("No valid rules from database, using fallback rules")
+                return self._get_fallback_rules()
 
             # Cache the rules (serialize as dict)
             rules_dict = [rule.model_dump() for rule in rules]
             await self._set_in_cache(
                 cache_key,
                 rules_dict,
-                ttl=30*60,  # 30 minutes
-                tags=["categorization"]
+                ttl=30 * 60,  # 30 minutes
+                tags=["categorization"],
             )
 
             self.logger.info(f"Loaded {len(rules)} categorization rules from database")
@@ -338,19 +353,30 @@ class K8sDataflowAnalysisService:
             # Return fallback hardcoded rules
             return self._get_fallback_rules()
 
-    async def _fetch_rules_from_database(self) -> List[Dict[str, Any]]:
+    async def _fetch_rules_from_database(self) -> list[dict[str, Any]]:
         """Fetch categorization rules from database."""
         # This would be implemented based on your actual database schema
         # For now, return empty list as placeholder
         return []
 
-    def _get_fallback_rules(self) -> List[CategorizationRule]:
+    def _get_fallback_rules(self) -> list[CategorizationRule]:
         """Get fallback categorization rules when database is unavailable."""
         fallback_rules = [
             {
                 "id": "fallback_popolazione",
                 "category": DataflowCategory.POPOLAZIONE,
-                "keywords": ["popolazione", "demografico", "residenti", "abitanti", "popolazione", "anagrafico", "natalità", "mortalità", "comune", "residente"],
+                "keywords": [
+                    "popolazione",
+                    "demografico",
+                    "residenti",
+                    "abitanti",
+                    "popolazione",
+                    "anagrafico",
+                    "natalità",
+                    "mortalità",
+                    "comune",
+                    "residente",
+                ],
                 "priority": 15,
                 "is_active": True,
                 "created_at": datetime.now(),
@@ -358,7 +384,18 @@ class K8sDataflowAnalysisService:
             {
                 "id": "fallback_economia",
                 "category": DataflowCategory.ECONOMIA,
-                "keywords": ["economia", "economico", "pil", "inflazione", "commercio", "conti economici", "aggregati economici", "regionale", "valore aggiunto", "consumi"],
+                "keywords": [
+                    "economia",
+                    "economico",
+                    "pil",
+                    "inflazione",
+                    "commercio",
+                    "conti economici",
+                    "aggregati economici",
+                    "regionale",
+                    "valore aggiunto",
+                    "consumi",
+                ],
                 "priority": 15,
                 "is_active": True,
                 "created_at": datetime.now(),
@@ -366,7 +403,18 @@ class K8sDataflowAnalysisService:
             {
                 "id": "fallback_lavoro",
                 "category": DataflowCategory.LAVORO,
-                "keywords": ["lavoro", "occupazione", "disoccupazione", "impiego", "occupati", "settore", "attività economica", "giovanile", "femminile", "employment"],
+                "keywords": [
+                    "lavoro",
+                    "occupazione",
+                    "disoccupazione",
+                    "impiego",
+                    "occupati",
+                    "settore",
+                    "attività economica",
+                    "giovanile",
+                    "femminile",
+                    "employment",
+                ],
                 "priority": 15,
                 "is_active": True,
                 "created_at": datetime.now(),
@@ -374,7 +422,18 @@ class K8sDataflowAnalysisService:
             {
                 "id": "fallback_territorio",
                 "category": DataflowCategory.TERRITORIO,
-                "keywords": ["territorio", "geografico", "regionale", "provinciale", "comunale", "turismo", "turistico", "arrivi", "presenze", "ricettivi"],
+                "keywords": [
+                    "territorio",
+                    "geografico",
+                    "regionale",
+                    "provinciale",
+                    "comunale",
+                    "turismo",
+                    "turistico",
+                    "arrivi",
+                    "presenze",
+                    "ricettivi",
+                ],
                 "priority": 15,
                 "is_active": True,
                 "created_at": datetime.now(),
@@ -382,7 +441,15 @@ class K8sDataflowAnalysisService:
             {
                 "id": "fallback_istruzione",
                 "category": DataflowCategory.ISTRUZIONE,
-                "keywords": ["istruzione", "educazione", "scuola", "università", "studenti", "formazione", "education"],
+                "keywords": [
+                    "istruzione",
+                    "educazione",
+                    "scuola",
+                    "università",
+                    "studenti",
+                    "formazione",
+                    "education",
+                ],
                 "priority": 15,
                 "is_active": True,
                 "created_at": datetime.now(),
@@ -390,7 +457,16 @@ class K8sDataflowAnalysisService:
             {
                 "id": "fallback_salute",
                 "category": DataflowCategory.SALUTE,
-                "keywords": ["salute", "sanità", "sanitario", "ospedale", "medico", "health", "malattie", "mortalità"],
+                "keywords": [
+                    "salute",
+                    "sanità",
+                    "sanitario",
+                    "ospedale",
+                    "medico",
+                    "health",
+                    "malattie",
+                    "mortalità",
+                ],
                 "priority": 15,
                 "is_active": True,
                 "created_at": datetime.now(),
@@ -422,7 +498,9 @@ class K8sDataflowAnalysisService:
 
         try:
             # Check cache first
-            cache_key = f"analysis:{hash(xml_content)}:{hash(str(filters.model_dump()))}"
+            cache_key = (
+                f"analysis:{hash(xml_content)}:{hash(str(filters.model_dump()))}"
+            )
             cached_result = await self._get_from_cache(cache_key)
 
             if cached_result:
@@ -447,7 +525,7 @@ class K8sDataflowAnalysisService:
                     all_dataflows.extend(dfs)
 
                 test_results = await self._test_dataflows(
-                    all_dataflows[:filters.max_results]
+                    all_dataflows[: filters.max_results]
                 )
 
                 if filters.only_tableau_ready:
@@ -466,9 +544,12 @@ class K8sDataflowAnalysisService:
                 ),
                 "tests_performed": len(test_results),
                 "cache_hit": False,
-                "service_uptime_seconds": (datetime.now() - self._startup_time).total_seconds(),
+                "service_uptime_seconds": (
+                    datetime.now() - self._startup_time
+                ).total_seconds(),
                 "total_requests": self._request_count,
-                "avg_processing_time": self._total_processing_time / self._request_count,
+                "avg_processing_time": self._total_processing_time
+                / self._request_count,
             }
 
             result = AnalysisResult(
@@ -482,8 +563,8 @@ class K8sDataflowAnalysisService:
             await self._set_in_cache(
                 cache_key,
                 result.model_dump(),
-                ttl=15*60,  # 15 minutes
-                tags=["analysis_results"]
+                ttl=15 * 60,  # 15 minutes
+                tags=["analysis_results"],
             )
 
             # Store in database
@@ -501,9 +582,9 @@ class K8sDataflowAnalysisService:
 
     def _apply_filters(
         self,
-        categorized_dataflows: Dict[DataflowCategory, List[IstatDataflow]],
-        filters: AnalysisFilters
-    ) -> Dict[DataflowCategory, List[IstatDataflow]]:
+        categorized_dataflows: dict[DataflowCategory, list[IstatDataflow]],
+        filters: AnalysisFilters,
+    ) -> dict[DataflowCategory, list[IstatDataflow]]:
         """Apply analysis filters to categorized dataflows."""
         # Filter by categories
         if filters.categories:
@@ -526,11 +607,13 @@ class K8sDataflowAnalysisService:
         if filters.max_results > 0:
             max_per_category = max(1, filters.max_results // len(DataflowCategory))
             for category in categorized_dataflows:
-                categorized_dataflows[category] = categorized_dataflows[category][:max_per_category]
+                categorized_dataflows[category] = categorized_dataflows[category][
+                    :max_per_category
+                ]
 
         return categorized_dataflows
 
-    async def _parse_dataflow_xml(self, xml_content: str) -> List[IstatDataflow]:
+    async def _parse_dataflow_xml(self, xml_content: str) -> list[IstatDataflow]:
         """Parse XML content and extract dataflow information."""
         # This implementation would be similar to the original service
         # For brevity, returning empty list as placeholder
@@ -541,29 +624,31 @@ class K8sDataflowAnalysisService:
 
             # Define SDMX namespaces
             namespaces = {
-                'str': 'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/structure',
-                'com': 'http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common'
+                "str": "http://www.sdmx.org/resources/sdmxml/schemas/v2_1/structure",
+                "com": "http://www.sdmx.org/resources/sdmxml/schemas/v2_1/common",
             }
 
             # Extract dataflow elements
-            for dataflow_elem in root.findall('.//str:Dataflow', namespaces):
+            for dataflow_elem in root.findall(".//str:Dataflow", namespaces):
                 try:
-                    dataflow_id = dataflow_elem.get('id', '')
+                    dataflow_id = dataflow_elem.get("id", "")
 
                     # Extract names
                     name_it = None
                     name_en = None
 
-                    for name_elem in dataflow_elem.findall('.//com:Name', namespaces):
-                        lang = name_elem.get('{http://www.w3.org/XML/1998/namespace}lang', '') or name_elem.get('lang', '')
-                        if lang == 'it':
+                    for name_elem in dataflow_elem.findall(".//com:Name", namespaces):
+                        lang = name_elem.get(
+                            "{http://www.w3.org/XML/1998/namespace}lang", ""
+                        ) or name_elem.get("lang", "")
+                        if lang == "it":
                             name_it = name_elem.text
-                        elif lang == 'en':
+                        elif lang == "en":
                             name_en = name_elem.text
 
                     # Extract description
                     description = None
-                    desc_elem = dataflow_elem.find('.//com:Description', namespaces)
+                    desc_elem = dataflow_elem.find(".//com:Description", namespaces)
                     if desc_elem is not None:
                         description = desc_elem.text
 
@@ -575,7 +660,7 @@ class K8sDataflowAnalysisService:
                         description=description or "",
                         category=DataflowCategory.ALTRI,  # Will be categorized later
                         relevance_score=0,  # Will be calculated during categorization
-                        created_at=datetime.now()
+                        created_at=datetime.now(),
                     )
 
                     dataflows.append(dataflow)
@@ -591,8 +676,8 @@ class K8sDataflowAnalysisService:
         return dataflows
 
     async def _categorize_dataflows(
-        self, dataflows: List[IstatDataflow]
-    ) -> Dict[DataflowCategory, List[IstatDataflow]]:
+        self, dataflows: list[IstatDataflow]
+    ) -> dict[DataflowCategory, list[IstatDataflow]]:
         """Categorize dataflows using distributed rules."""
         rules = await self._get_categorization_rules()
         categorized = {category: [] for category in DataflowCategory}
@@ -607,7 +692,7 @@ class K8sDataflowAnalysisService:
         return categorized
 
     async def _categorize_single_dataflow(
-        self, dataflow: IstatDataflow, rules: Optional[List[CategorizationRule]] = None
+        self, dataflow: IstatDataflow, rules: Optional[list[CategorizationRule]] = None
     ) -> CategoryResult:
         """Categorize a single dataflow."""
         if rules is None:
@@ -642,10 +727,12 @@ class K8sDataflowAnalysisService:
         return CategoryResult(
             category=best_category,
             relevance_score=best_score,
-            matched_keywords=matched_keywords
+            matched_keywords=matched_keywords,
         )
 
-    async def _test_dataflows(self, dataflows: List[IstatDataflow]) -> List[DataflowTestResult]:
+    async def _test_dataflows(
+        self, dataflows: list[IstatDataflow]
+    ) -> list[DataflowTestResult]:
         """Test dataflows with circuit breaker protection."""
         test_results = []
 
@@ -654,7 +741,9 @@ class K8sDataflowAnalysisService:
                 # Use circuit breaker for ISTAT API calls
                 breaker = self._circuit_breakers.get("istat_api")
                 if breaker:
-                    test_result = await breaker.call(self._test_single_dataflow, dataflow)
+                    test_result = await breaker.call(
+                        self._test_single_dataflow, dataflow
+                    )
                 else:
                     test_result = await self._test_single_dataflow(dataflow)
 
@@ -666,18 +755,20 @@ class K8sDataflowAnalysisService:
                 failed_test = DataflowTest(
                     dataflow_id=dataflow.id,
                     data_access_success=False,
-                    error_message=str(e)
+                    error_message=str(e),
                 )
 
-                test_results.append(DataflowTestResult(
-                    dataflow=dataflow,
-                    test=failed_test,
-                    tableau_ready=False
-                ))
+                test_results.append(
+                    DataflowTestResult(
+                        dataflow=dataflow, test=failed_test, tableau_ready=False
+                    )
+                )
 
         return test_results
 
-    async def _test_single_dataflow(self, dataflow: IstatDataflow) -> DataflowTestResult:
+    async def _test_single_dataflow(
+        self, dataflow: IstatDataflow
+    ) -> DataflowTestResult:
         """Test a single dataflow for data access."""
         # This would implement the actual testing logic
         # For now, return a placeholder result
@@ -685,14 +776,10 @@ class K8sDataflowAnalysisService:
             dataflow_id=dataflow.id,
             data_access_success=True,
             size_bytes=1024,
-            observations_count=100
+            observations_count=100,
         )
 
-        return DataflowTestResult(
-            dataflow=dataflow,
-            test=test,
-            tableau_ready=True
-        )
+        return DataflowTestResult(dataflow=dataflow, test=test, tableau_ready=True)
 
     async def _store_analysis_results(self, result: AnalysisResult) -> None:
         """Store analysis results in database with circuit breaker protection."""
@@ -710,9 +797,11 @@ class K8sDataflowAnalysisService:
         """Store results in database."""
         # This would implement the actual database storage
         # For now, just log
-        self.logger.debug(f"Storing analysis results: {result.total_analyzed} dataflows processed")
+        self.logger.debug(
+            f"Storing analysis results: {result.total_analyzed} dataflows processed"
+        )
 
-    async def get_health_status(self) -> Dict[str, Any]:
+    async def get_health_status(self) -> dict[str, Any]:
         """Get comprehensive health status for monitoring."""
         if not self._health_manager:
             return {"status": "unknown", "message": "Health manager not initialized"}
@@ -724,7 +813,8 @@ class K8sDataflowAnalysisService:
             "total_requests": self._request_count,
             "error_count": self._error_count,
             "error_rate": self._error_count / max(1, self._request_count),
-            "avg_processing_time": self._total_processing_time / max(1, self._request_count),
+            "avg_processing_time": self._total_processing_time
+            / max(1, self._request_count),
             "cache_enabled": self._redis_cache is not None,
         }
 
@@ -748,8 +838,8 @@ class K8sDataflowAnalysisService:
                     "circuit_breaker": self.config.enable_circuit_breaker,
                     "tracing": self.config.enable_tracing,
                     "metrics": self.config.enable_metrics,
-                }
-            }
+                },
+            },
         }
 
     async def startup_probe(self) -> bool:
