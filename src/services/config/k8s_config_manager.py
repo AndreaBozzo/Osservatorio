@@ -177,7 +177,9 @@ class K8sConfigManager:
         import hashlib
 
         try:
-            return hashlib.md5(file_path.read_bytes()).hexdigest()
+            return hashlib.md5(
+                file_path.read_bytes(), usedforsecurity=False
+            ).hexdigest()
         except Exception:
             return ""
 
