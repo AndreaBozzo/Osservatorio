@@ -1,0 +1,172 @@
+# Kubernetes Job template for backup restoration
+# This is a template that can be customized for specific restore operations
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: dataflow-analyzer-restore-TIMESTAMP  # Replace TIMESTAMP with actual value
+  namespace: osservatorio
+  labels:
+    app.kubernetes.io/name: dataflow-analyzer
+    app.kubernetes.io/component: backup-restore
+    app.kubernetes.io/part-of: osservatorio-platform
+spec:
+  backoffLimit: 1
+  completions: 1
+  parallelism: 1
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: dataflow-analyzer
+        app.kubernetes.io/component: backup-restore
+    spec:
+      restartPolicy: Never
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      initContainers:
+      # Stop main application during restore
+      - name: scale-down
+        image: bitnami/kubectl:latest
+        command:
+        - /bin/bash
+        - -c
+        - |
+          echo "Scaling down dataflow-analyzer deployment for restore..."
+          kubectl scale deployment dataflow-analyzer --replicas=0 -n $POD_NAMESPACE
+          echo "Waiting for pods to terminate..."
+          kubectl wait --for=delete pod -l app.kubernetes.io/name=dataflow-analyzer -n $POD_NAMESPACE --timeout=300s
+        env:
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        securityContext:
+          allowPrivilegeEscalation: false
+      containers:
+      - name: restore
+        image: osservatorio/backup-utils:1.0.0
+        imagePullPolicy: Always
+        command:
+        - /bin/bash
+        - -c
+        - |
+          set -e
+          echo "Starting restore process at $(date)"
+
+          # Validate backup file
+          BACKUP_FILE="/backup/osservatorio/${BACKUP_TIMESTAMP}.tar.gz"
+          if [ ! -f "$BACKUP_FILE" ]; then
+            echo "Error: Backup file $BACKUP_FILE not found"
+            exit 1
+          fi
+
+          echo "Found backup file: $BACKUP_FILE"
+
+          # Extract backup
+          echo "Extracting backup..."
+          cd /backup/osservatorio
+          tar -xzf "${BACKUP_TIMESTAMP}.tar.gz"
+
+          # Validate backup manifest
+          MANIFEST_FILE="/backup/osservatorio/${BACKUP_TIMESTAMP}/manifest.json"
+          if [ -f "$MANIFEST_FILE" ]; then
+            echo "Backup manifest:"
+            cat "$MANIFEST_FILE"
+
+            # Check backup compatibility
+            BACKUP_VERSION=$(jq -r '.version' "$MANIFEST_FILE")
+            if [ "$BACKUP_VERSION" != "$DATAFLOW_VERSION" ]; then
+              echo "Warning: Backup version ($BACKUP_VERSION) differs from current version ($DATAFLOW_VERSION)"
+            fi
+          fi
+
+          # Clear existing data
+          echo "Clearing existing data..."
+          rm -rf /data/db/* /data/cache/* 2>/dev/null || true
+
+          # Restore database
+          echo "Restoring database..."
+          if [ -d "/backup/osservatorio/${BACKUP_TIMESTAMP}/database" ]; then
+            cp -r "/backup/osservatorio/${BACKUP_TIMESTAMP}/database/"* /data/db/
+            echo "Database restored successfully"
+          fi
+
+          # Restore cache data
+          echo "Restoring cache data..."
+          if [ -d "/backup/osservatorio/${BACKUP_TIMESTAMP}/cache" ]; then
+            cp -r "/backup/osservatorio/${BACKUP_TIMESTAMP}/cache/"* /data/cache/
+            echo "Cache data restored successfully"
+          fi
+
+          # Set proper permissions
+          chmod -R 664 /data/db/* 2>/dev/null || true
+          chmod -R 664 /data/cache/* 2>/dev/null || true
+
+          # Cleanup extracted files
+          rm -rf "/backup/osservatorio/${BACKUP_TIMESTAMP}"
+
+          echo "Restore completed successfully at $(date)"
+        env:
+        - name: BACKUP_TIMESTAMP
+          value: "REPLACE_WITH_TIMESTAMP"  # Must be replaced when creating the job
+        - name: DATAFLOW_VERSION
+          value: "2.0.0"
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+            ephemeral-storage: 1Gi
+          limits:
+            cpu: 500m
+            memory: 256Mi
+            ephemeral-storage: 2Gi
+        volumeMounts:
+        - name: database-storage
+          mountPath: /data/db
+        - name: cache-storage
+          mountPath: /data/cache
+        - name: backup-storage
+          mountPath: /backup
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: true
+      # Scale back up after restore
+      - name: scale-up
+        image: bitnami/kubectl:latest
+        command:
+        - /bin/bash
+        - -c
+        - |
+          echo "Scaling dataflow-analyzer deployment back up..."
+          kubectl scale deployment dataflow-analyzer --replicas=3 -n $POD_NAMESPACE
+          echo "Waiting for pods to become ready..."
+          kubectl wait --for=condition=available deployment/dataflow-analyzer -n $POD_NAMESPACE --timeout=300s
+          echo "Application restored and running successfully"
+        env:
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        securityContext:
+          allowPrivilegeEscalation: false
+      volumes:
+      - name: database-storage
+        persistentVolumeClaim:
+          claimName: dataflow-analyzer-db-pvc
+      - name: cache-storage
+        persistentVolumeClaim:
+          claimName: dataflow-analyzer-redis-pvc
+      - name: backup-storage
+        persistentVolumeClaim:
+          claimName: dataflow-analyzer-backup-pvc
+      serviceAccountName: dataflow-analyzer

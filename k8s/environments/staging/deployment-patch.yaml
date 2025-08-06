@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dataflow-analyzer
+spec:
+  replicas: 2
+  template:
+    spec:
+      containers:
+      - name: dataflow-analyzer
+        # Staging-specific resource limits
+        resources:
+          requests:
+            cpu: 250m
+            memory: 512Mi
+            ephemeral-storage: 1Gi
+          limits:
+            cpu: 750m
+            memory: 1Gi
+            ephemeral-storage: 2Gi
+        # Staging-specific environment variables
+        env:
+        - name: DATAFLOW_ENVIRONMENT
+          value: "staging"
+        - name: DATAFLOW_LOG_LEVEL
+          value: "INFO"
+        - name: DATAFLOW_ENABLE_DEBUG
+          value: "false"
+        - name: DATAFLOW_DATABASE_URL
+          value: "sqlite:///data/db/staging-osservatorio.db"
+        - name: DATAFLOW_ENABLE_METRICS
+          value: "true"
+        # Production-like health check settings
+        startupProbe:
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          failureThreshold: 6
+        livenessProbe:
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          initialDelaySeconds: 5
+          periodSeconds: 5

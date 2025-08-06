@@ -70,18 +70,6 @@ spec:
         envFrom:
         - configMapRef:
             name: dataflow-analyzer-config
-        # Volume mounts for configuration
-        volumeMounts:
-        - name: config
-          mountPath: /etc/config
-          readOnly: true
-        - name: secrets
-          mountPath: /etc/secrets
-          readOnly: true
-        - name: tmp
-          mountPath: /tmp
-        - name: cache
-          mountPath: /app/cache
         # Resource limits and requests
         resources:
           requests:
@@ -120,6 +108,22 @@ spec:
           timeoutSeconds: 5
           failureThreshold: 3
           successThreshold: 1
+        # Volume mounts
+        volumeMounts:
+        - name: database-storage
+          mountPath: /data/db
+        - name: cache-storage
+          mountPath: /data/cache
+        - name: backup-storage
+          mountPath: /data/backup
+        - name: config
+          mountPath: /config
+          readOnly: true
+        - name: secrets
+          mountPath: /secrets
+          readOnly: true
+        - name: tmp
+          mountPath: /tmp
         # Security context
         securityContext:
           allowPrivilegeEscalation: false
@@ -129,6 +133,15 @@ spec:
           readOnlyRootFilesystem: true
       # Volumes
       volumes:
+      - name: database-storage
+        persistentVolumeClaim:
+          claimName: dataflow-analyzer-db-pvc
+      - name: cache-storage
+        persistentVolumeClaim:
+          claimName: dataflow-analyzer-redis-pvc
+      - name: backup-storage
+        persistentVolumeClaim:
+          claimName: dataflow-analyzer-backup-pvc
       - name: config
         configMap:
           name: dataflow-analyzer-config

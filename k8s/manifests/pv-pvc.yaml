@@ -1,0 +1,28 @@
+# Persistent Volume for Database Storage
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: dataflow-analyzer-db-pv
+  labels:
+    app.kubernetes.io/name: dataflow-analyzer
+    app.kubernetes.io/component: database
+    app.kubernetes.io/part-of: osservatorio-platform
+    storage-tier: fast-ssd
+spec:
+  capacity:
+    storage: 20Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: osservatorio-fast-ssd
+  local:
+    path: /data/osservatorio/db
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - worker-node-1
