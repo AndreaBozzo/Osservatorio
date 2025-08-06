@@ -28,23 +28,17 @@ class TestRedisCacheManager:
             socket_timeout=5,
             socket_connect_timeout=5,
             max_connections=10,
-            retry_on_timeout=True
+            retry_on_timeout=True,
         )
 
     @pytest.fixture
     def cache_manager(self, redis_config):
         """Create RedisCacheManager instance for testing"""
-        return RedisCacheManager(
-            config=redis_config,
-            key_prefix="test:cache:"
-        )
+        return RedisCacheManager(config=redis_config, key_prefix="test:cache:")
 
     def test_cache_manager_initialization(self, redis_config):
         """Test RedisCacheManager initialization"""
-        manager = RedisCacheManager(
-            config=redis_config,
-            key_prefix="test:cache:"
-        )
+        manager = RedisCacheManager(config=redis_config, key_prefix="test:cache:")
 
         assert manager.config == redis_config
         assert manager.key_prefix == "test:cache:"
@@ -154,10 +148,7 @@ class TestRedisCacheManager:
 
         # Set value with tags
         success = await cache_manager.set(
-            "tagged_key",
-            "tagged_value",
-            ttl=300,
-            tags=["tag1", "tag2"]
+            "tagged_key", "tagged_value", ttl=300, tags=["tag1", "tag2"]
         )
         assert success is True
 
@@ -186,7 +177,10 @@ class TestRedisCacheManager:
         """Test deleting keys by tags"""
         mock_client = AsyncMock()
         mock_client.smembers.return_value = {b"test:cache:key1", b"test:cache:key2"}
-        mock_client.delete.side_effect = [2, 1]  # First call deletes 2 keys, second deletes tag key
+        mock_client.delete.side_effect = [
+            2,
+            1,
+        ]  # First call deletes 2 keys, second deletes tag key
 
         cache_manager._client = mock_client
         cache_manager._is_available = True
@@ -238,7 +232,7 @@ class TestRedisCacheManager:
     @pytest.mark.asyncio
     async def test_context_manager(self, redis_config):
         """Test async context manager"""
-        with patch('src.services.distributed.redis_cache_manager.redis') as mock_redis:
+        with patch("src.services.distributed.redis_cache_manager.redis") as mock_redis:
             mock_pool = MagicMock()
             mock_client = AsyncMock()
             mock_client.ping.return_value = True
@@ -264,10 +258,7 @@ class TestRedisCacheManager:
         assert success is True
 
         # Should set new TTL to 400 (300 + 100)
-        mock_client.expire.assert_called_with(
-            cache_manager._build_key("test_key"),
-            400
-        )
+        mock_client.expire.assert_called_with(cache_manager._build_key("test_key"), 400)
 
     @pytest.mark.asyncio
     async def test_flush_all(self, cache_manager):

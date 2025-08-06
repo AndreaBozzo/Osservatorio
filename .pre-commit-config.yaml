@@ -5,6 +5,7 @@ repos:
       - id: trailing-whitespace
       - id: end-of-file-fixer
       - id: check-yaml
+        exclude: '^k8s/helm-chart/templates/.*\.yaml$'  # Exclude Helm templates
       - id: check-added-large-files
         args: ['--maxkb=1024']
       - id: check-merge-conflict

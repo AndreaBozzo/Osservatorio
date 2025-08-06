@@ -2,14 +2,14 @@
 # This file includes references to all necessary resources for deploying the
 # Kubernetes-ready dataflow analyzer service.
 #
-# Usage: 
+# Usage:
 #   kubectl apply -f k8s/manifests/
 #   # OR for this example file:
 #   kubectl apply -f k8s/examples/deploy-all.yaml
 #
 # Prerequisites:
 # - Kubernetes cluster with metrics-server installed
-# - Redis cluster available  
+# - Redis cluster available
 # - PostgreSQL database available
 # - Namespace 'osservatorio' created
 
@@ -23,7 +23,7 @@ metadata:
 
 # NOTE: For production deployment, apply all manifests from k8s/manifests/ directory:
 # kubectl apply -f k8s/manifests/configmap.yaml
-# kubectl apply -f k8s/manifests/secret.yaml  
+# kubectl apply -f k8s/manifests/secret.yaml
 # kubectl apply -f k8s/manifests/rbac.yaml
 # kubectl apply -f k8s/manifests/rbac-role.yaml
 # kubectl apply -f k8s/manifests/rbac-binding.yaml

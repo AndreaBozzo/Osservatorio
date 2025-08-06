@@ -36,9 +36,7 @@ class TestK8sConfigManager:
         config_dir, secrets_dir = temp_config_dir
 
         manager = K8sConfigManager(
-            config_dir=config_dir,
-            secrets_dir=secrets_dir,
-            enable_hot_reload=False
+            config_dir=config_dir, secrets_dir=secrets_dir, enable_hot_reload=False
         )
 
         assert manager.config_dir == Path(config_dir)
@@ -47,19 +45,22 @@ class TestK8sConfigManager:
 
     def test_environment_config_loading(self):
         """Test loading configuration from environment variables"""
-        with patch.dict(os.environ, {
-            'DATAFLOW_ENVIRONMENT': 'test',
-            'DATAFLOW_SERVICE_NAME': 'test-service',
-            'DATAFLOW_DATABASE_URL': 'postgresql://test:test@localhost:5432/test',
-            'DATAFLOW_REDIS_HOST': 'localhost',
-            'DATAFLOW_ENABLE_DISTRIBUTED_CACHING': 'true'
-        }):
+        with patch.dict(
+            os.environ,
+            {
+                "DATAFLOW_ENVIRONMENT": "test",
+                "DATAFLOW_SERVICE_NAME": "test-service",
+                "DATAFLOW_DATABASE_URL": "postgresql://test:test@localhost:5432/test",
+                "DATAFLOW_REDIS_HOST": "localhost",
+                "DATAFLOW_ENABLE_DISTRIBUTED_CACHING": "true",
+            },
+        ):
             config = EnvironmentConfig.from_environment()
 
-            assert config.environment == 'test'
-            assert config.service_name == 'test-service'
-            assert config.database.url == 'postgresql://test:test@localhost:5432/test'
-            assert config.redis.host == 'localhost'
+            assert config.environment == "test"
+            assert config.service_name == "test-service"
+            assert config.database.url == "postgresql://test:test@localhost:5432/test"
+            assert config.redis.host == "localhost"
             assert config.enable_distributed_caching is True
 
     def test_configmap_file_loading(self, temp_config_dir):
@@ -71,9 +72,7 @@ class TestK8sConfigManager:
         config_data = {
             "service_name": "dataflow-analyzer",
             "environment": "production",
-            "database": {
-                "pool_size": 20
-            }
+            "database": {"pool_size": 20},
         }
 
         config_file.write_text(json.dumps(config_data))
@@ -83,9 +82,7 @@ class TestK8sConfigManager:
         text_config.write_text("DEBUG")
 
         manager = K8sConfigManager(
-            config_dir=config_dir,
-            secrets_dir=secrets_dir,
-            enable_hot_reload=False
+            config_dir=config_dir, secrets_dir=secrets_dir, enable_hot_reload=False
         )
 
         config = manager.get_config()
@@ -106,9 +103,7 @@ class TestK8sConfigManager:
         redis_password_file.write_text("redis-secret")
 
         manager = K8sConfigManager(
-            config_dir=config_dir,
-            secrets_dir=secrets_dir,
-            enable_hot_reload=False
+            config_dir=config_dir, secrets_dir=secrets_dir, enable_hot_reload=False
         )
 
         # The actual loading depends on how secrets are mapped in the configuration
@@ -120,9 +115,7 @@ class TestK8sConfigManager:
         config_dir, secrets_dir = temp_config_dir
 
         manager = K8sConfigManager(
-            config_dir=config_dir,
-            secrets_dir=secrets_dir,
-            enable_hot_reload=False
+            config_dir=config_dir, secrets_dir=secrets_dir, enable_hot_reload=False
         )
 
         validation_errors = manager.validate_configuration()
@@ -135,9 +128,7 @@ class TestK8sConfigManager:
         config_dir, secrets_dir = temp_config_dir
 
         manager = K8sConfigManager(
-            config_dir=config_dir,
-            secrets_dir=secrets_dir,
-            enable_hot_reload=False
+            config_dir=config_dir, secrets_dir=secrets_dir, enable_hot_reload=False
         )
 
         health = manager.get_health_status()
@@ -152,13 +143,12 @@ class TestK8sConfigManager:
         """Test that sensitive configuration values are masked"""
         config_dir, secrets_dir = temp_config_dir
 
-        with patch.dict(os.environ, {
-            'DATAFLOW_DATABASE_URL': 'postgresql://user:password@localhost:5432/db'
-        }):
+        with patch.dict(
+            os.environ,
+            {"DATAFLOW_DATABASE_URL": "postgresql://user:password@localhost:5432/db"},
+        ):
             manager = K8sConfigManager(
-                config_dir=config_dir,
-                secrets_dir=secrets_dir,
-                enable_hot_reload=False
+                config_dir=config_dir, secrets_dir=secrets_dir, enable_hot_reload=False
             )
 
             debug_info = manager.export_for_debugging()
@@ -171,9 +161,7 @@ class TestK8sConfigManager:
         config_dir, secrets_dir = temp_config_dir
 
         with K8sConfigManager(
-            config_dir=config_dir,
-            secrets_dir=secrets_dir,
-            enable_hot_reload=False
+            config_dir=config_dir, secrets_dir=secrets_dir, enable_hot_reload=False
         ) as manager:
             assert manager is not None
             config = manager.get_config()
@@ -184,9 +172,7 @@ class TestK8sConfigManager:
         config_dir, secrets_dir = temp_config_dir
 
         manager = K8sConfigManager(
-            config_dir=config_dir,
-            secrets_dir=secrets_dir,
-            enable_hot_reload=False
+            config_dir=config_dir, secrets_dir=secrets_dir, enable_hot_reload=False
         )
 
         assert not manager.enable_hot_reload
@@ -197,9 +183,7 @@ class TestK8sConfigManager:
         config_dir, secrets_dir = temp_config_dir
 
         manager = K8sConfigManager(
-            config_dir=config_dir,
-            secrets_dir=secrets_dir,
-            enable_hot_reload=False
+            config_dir=config_dir, secrets_dir=secrets_dir, enable_hot_reload=False
         )
 
         # Test manual reload
@@ -211,9 +195,7 @@ class TestK8sConfigManager:
         config_dir, secrets_dir = temp_config_dir
 
         manager = K8sConfigManager(
-            config_dir=config_dir,
-            secrets_dir=secrets_dir,
-            enable_hot_reload=False
+            config_dir=config_dir, secrets_dir=secrets_dir, enable_hot_reload=False
         )
 
         callback_called = False

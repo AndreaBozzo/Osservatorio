@@ -149,8 +149,12 @@ class K8sServiceValidator:
         # Mock health config with numeric values
         mock_health_config = Mock()
         mock_health_config.startup_timeout = 60.0
-        mock_health_config.liveness_timeout = 5.0  # Fixed: changed from liveness_interval
-        mock_health_config.readiness_timeout = 5.0  # Fixed: changed from readiness_interval
+        mock_health_config.liveness_timeout = (
+            5.0  # Fixed: changed from liveness_interval
+        )
+        mock_health_config.readiness_timeout = (
+            5.0  # Fixed: changed from readiness_interval
+        )
         mock_health_config.health_check_timeout = 5.0
         mock_config.health = mock_health_config
 
@@ -574,10 +578,16 @@ class K8sServiceValidator:
 
                 # If it's degraded due to system resources, that's acceptable in test environment
                 checks = service_health.get("checks", [])
-                system_check = next((c for c in checks if c.get("name") == "system_resources"), None)
+                system_check = next(
+                    (c for c in checks if c.get("name") == "system_resources"), None
+                )
 
                 if system_check and system_check.get("status") == "degraded":
-                    self.log_result("Health Probes", True, f"Readiness degraded but acceptable: {system_check.get('message', 'System resources high')}")
+                    self.log_result(
+                        "Health Probes",
+                        True,
+                        f"Readiness degraded but acceptable: {system_check.get('message', 'System resources high')}",
+                    )
                 else:
                     self.log_result("Health Probes", False, "Readiness probe failed")
                     return False

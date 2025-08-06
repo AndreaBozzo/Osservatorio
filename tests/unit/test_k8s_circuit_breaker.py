@@ -28,7 +28,7 @@ class TestCircuitBreakerConfig:
         assert config.failure_threshold == 5
         assert config.success_threshold == 3
         assert config.timeout == 60.0
-        assert config.expected_exception == Exception
+        assert config.expected_exception is Exception
 
     def test_custom_config(self):
         """Test custom configuration values"""
@@ -36,13 +36,13 @@ class TestCircuitBreakerConfig:
             failure_threshold=3,
             success_threshold=2,
             timeout=30.0,
-            expected_exception=ValueError
+            expected_exception=ValueError,
         )
 
         assert config.failure_threshold == 3
         assert config.success_threshold == 2
         assert config.timeout == 30.0
-        assert config.expected_exception == ValueError
+        assert config.expected_exception is ValueError
 
 
 class TestK8sCircuitBreaker:
@@ -54,7 +54,7 @@ class TestK8sCircuitBreaker:
         config = CircuitBreakerConfig(
             failure_threshold=3,
             success_threshold=2,
-            timeout=1.0  # Short timeout for testing
+            timeout=1.0,  # Short timeout for testing
         )
         return CircuitBreaker("test_breaker", config)
 
@@ -69,6 +69,7 @@ class TestK8sCircuitBreaker:
     @pytest.mark.asyncio
     async def test_successful_calls(self, circuit_breaker):
         """Test circuit breaker with successful calls"""
+
         async def successful_function():
             return "success"
 
@@ -88,6 +89,7 @@ class TestK8sCircuitBreaker:
     @pytest.mark.asyncio
     async def test_circuit_opening_on_failures(self, circuit_breaker):
         """Test circuit breaker opening after threshold failures"""
+
         async def failing_function():
             raise ValueError("Test failure")
 
@@ -104,6 +106,7 @@ class TestK8sCircuitBreaker:
     @pytest.mark.asyncio
     async def test_circuit_breaker_error_when_open(self, circuit_breaker):
         """Test CircuitBreakerError when circuit is open"""
+
         async def failing_function():
             raise ValueError("Test failure")
 
@@ -119,6 +122,7 @@ class TestK8sCircuitBreaker:
     @pytest.mark.asyncio
     async def test_circuit_breaker_half_open_transition(self, circuit_breaker):
         """Test transition from open to half-open state"""
+
         async def failing_function():
             raise ValueError("Test failure")
 
@@ -171,6 +175,7 @@ class TestK8sCircuitBreaker:
 
     def test_circuit_breaker_decorator(self, circuit_breaker):
         """Test circuit breaker as decorator"""
+
         @circuit_breaker
         async def decorated_function(value):
             if value == "fail":
@@ -192,9 +197,16 @@ class TestK8sCircuitBreaker:
         stats = circuit_breaker.get_stats()
 
         required_fields = [
-            "name", "state", "total_calls", "total_successes", "total_failures",
-            "current_failure_count", "current_success_count", "failure_rate",
-            "success_rate", "config"
+            "name",
+            "state",
+            "total_calls",
+            "total_successes",
+            "total_failures",
+            "current_failure_count",
+            "current_success_count",
+            "failure_rate",
+            "success_rate",
+            "config",
         ]
 
         for field in required_fields:

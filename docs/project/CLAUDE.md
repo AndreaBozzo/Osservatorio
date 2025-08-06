@@ -13,9 +13,10 @@ A few rules for Claude:
 Osservatorio is an Italian statistical data processing and visualization
 platform. It processes public open datas into insightful resources, while unifying the sources.
 
-**Status**: In development, phase 1
-**Architecture**: FastAPI + Basic Auth + DuckDB/SQLite + Modern DevOps (Docker, CI/CD), Kubernetes
-**Missing**: Friendly interface, full ISTAT integration, more datas, clean orchestration
+**Status**: Development Phase 1 + Kubernetes Foundation Complete (Aug 2025)
+**Architecture**: FastAPI + JWT Auth + DuckDB/SQLite + Docker + Kubernetes Infrastructure (untested)
+**Functional**: API server, database layer, authentication, core data processing
+**Untested**: K8s deployment, production workloads, BI automation
 **Documentation**: [README.md](../../README.md) and [docs/](../)
 
 ## Essential Commands
@@ -39,11 +40,12 @@ platform. It processes public open datas into insightful resources, while unifyi
 - `curl http://localhost:8000/docs` - OpenAPI documentation
 - `pytest tests/unit/test_fastapi_integration.py -v` - API tests
 
-### Infrastructure (Day 1-7 Completed)
-- All utility files modernized (.pre-commit-config.yaml, pyproject.toml, Dockerfile, etc.)
-- GitHub Actions CI/CD pipeline configured
-- Multi-stage Docker builds ready
-- Security middleware and authentication system implemented
+### Infrastructure Status (August 2025)
+- ✅ Multi-stage Docker builds ready (tested: app loads)
+- ✅ Security middleware and authentication system (JWT + rate limiting functional)
+- ✅ Kubernetes manifests complete (deployment.yaml, services, storage, networking)
+- ⚠️ K8s deployment untested (requires cluster + image builds)
+- ⚠️ CI/CD pipeline basic (unit tests only)
 
 ### Makefile Commands (Recommended)
 - `make help` - Show all commands
@@ -67,11 +69,11 @@ and automation, work in progress.
 - `python -m scripts.organize_data_files` - Organize data files (Issue #84: modernized)
 - `python -m scripts.cleanup_temp_files` - Clean temporary files (Issue #84: modernized)
 
-### PowerBI Integration
-- `python -m examples.powerbi_integration_demo` - PowerBI demo (Issue #84: modernized)
-- `python -m scripts.validate_powerbi_offline` - Offline validation (Issue #84: modernized)
-- `pytest tests/unit/test_powerbi_api.py -v` - PowerBI tests
-- `pytest tests/integration/test_powerbi_integration.py -v` - Integration tests
+### PowerBI Integration (NEEDS REWORK)
+- `python -m examples.powerbi_integration_demo` - PowerBI demo (structure present)
+- `python -m scripts.validate_powerbi_offline` - Offline validation (templates don't work)
+- `pytest tests/unit/test_powerbi_api.py -v` - PowerBI tests (API structure only)
+- **⚠️ STATUS**: Templates fail in PowerBI Desktop, integration needs complete rework
 
 ### CI/CD & Dashboard
 - `python -m scripts.test_ci --strategy auto` - CI tests with fallback (Issue #84: modernized)
@@ -172,13 +174,12 @@ and automation, work in progress.
 - `python -c "from src.database.duckdb.manager import DuckDBManager; m = DuckDBManager(); print('✅ SQL injection protection active')"` - Verify security features
 - **Security Status**: ✅ 0 HIGH severity issues, all MEDIUM warnings are false positives, enterprise-grade SQL injection protection
 
-### Testing (UPDATED 23/07/2025 - Day 4 SQLite Complete)
-- `pytest` - Run all tests (491 tests total, 100% passing as of 25/07/2025)
-- `pytest --cov=src tests/` - Run tests with coverage (70.34% total coverage achieved)
-- `pytest tests/unit/` - Run unit tests only (includes 22 SQLite metadata tests)
-- `pytest tests/integration/` - Run integration tests only (includes 18 unified repository tests)
-- `pytest tests/performance/` - Run performance tests only (DuckDB performance suite)
-- `pytest --cov=src --cov-report=html tests/` - Generate HTML coverage report
+### Testing Status (August 2025)
+- `pytest` - Run all tests (core functionality tested)
+- `pytest --cov=src tests/` - Run tests with coverage
+- `pytest tests/unit/` - Unit tests (database, auth, core APIs)
+- `pytest tests/integration/` - Integration tests (repository, client)
+- **Note**: Test numbers/coverage in old docs were inflated - focus on functionality verification
 - `pytest tests/unit/test_tableau_api.py -v` - Run specific tableau API tests (20 tests)
 - `pytest tests/unit/test_temp_file_manager.py -v` - Run temp file manager tests (26 tests)
 - `pytest tests/unit/test_istat_api.py -v` - Run expanded ISTAT API tests (25 tests)
@@ -195,6 +196,21 @@ and automation, work in progress.
 - `pytest tests/performance/test_duckdb_performance.py -k "concurrent" -v` - Run only concurrent query tests
 - `pytest tests/performance/test_duckdb_performance.py -k "memory" -v` - Run only memory usage pattern tests
 - `pytest tests/performance/ -m benchmark` - Run benchmark-specific performance tests
+
+### Kubernetes Infrastructure (ADDED August 2025)
+#### Kubernetes Commands (UNTESTED)
+- `kubectl apply -k k8s/environments/dev/` - Deploy development environment
+- `kubectl apply -k k8s/environments/prod/` - Deploy production environment
+- `helm install osservatorio k8s/helm-chart/` - Deploy via Helm
+- `kubectl get pods -n osservatorio-dev` - Check pod status
+- **⚠️ WARNING**: All K8s commands require testing with actual cluster
+
+#### Kubernetes Components Created
+- Multi-environment support (dev/staging/prod namespaces)
+- Persistent storage with performance tiers (SSD/standard/backup)
+- Network policies for security isolation
+- Automated backup CronJobs (scripts need testing)
+- Health check integrations (endpoints exist, monitoring untested)
 
 ### Code Quality
 - `black .` - Format code with Black
@@ -346,5 +362,25 @@ Key environment variables (all optional, defaults provided):
 
 ---
 
-**Version**: 11.0.0 | **Status**: Development | **Quality**: 83.3% EXCELLENT
-**Last Updated**: July 31, 2025
+## 🚨 Known Limitations & Testing Status
+
+### Infrastructure
+- **Kubernetes**: All manifests created but NEVER deployed/tested on real cluster
+- **Docker Images**: No production images built/pushed to registry
+- **CI/CD**: Basic unit tests only, no integration/deployment testing
+
+### Business Logic
+- **PowerBI Integration**: Structure present but templates FAIL in PowerBI Desktop
+- **Tableau Integration**: Basic client only, extract generation incomplete
+- **Analytics Dashboard**: Mock data only, no real ISTAT integration
+- **Monitoring**: Health endpoints exist, metrics collection untested
+
+### Priority Rework Needed
+1. **PowerBI Integration** - Complete redesign required (templates don't work)
+2. **Kubernetes Testing** - Need cluster validation before production claims
+3. **End-to-End Workflows** - Core works, user workflows need completion
+
+---
+
+**Version**: 12.0.0-dev | **Status**: Core Functional, Infrastructure Untested
+**Last Updated**: August 6, 2025
