@@ -1,11 +1,19 @@
 """
 SQLite Metadata Manager for Osservatorio ISTAT Data Platform
 
-Core SQLite operations manager implementing the metadata layer of the hybrid
-SQLite + DuckDB architecture. Handles dataset registry, user preferences,
-API credentials, audit logging, and system configuration.
+⚠️ LEGACY CODE - DEPRECATED ⚠️
 
-Features:
+This monolithic manager has been deprecated in favor of specialized managers:
+- DatasetManager: Dataset operations
+- ConfigurationManager: System configuration
+- UserManager: User preferences
+- AuditManager: Audit logging
+
+Use the manager_factory module to get specialized managers instead.
+
+This class is kept for backward compatibility and will be removed in a future version.
+
+Original features:
 - Thread-safe connection management
 - CRUD operations for all metadata tables
 - Security-enhanced credential storage
@@ -60,15 +68,50 @@ security = SecurityManager()
 
 
 class SQLiteMetadataManager:
+    """
+    ⚠️ DEPRECATED: Use specialized managers from manager_factory instead ⚠️
+
+    This monolithic class has been replaced by:
+    - get_dataset_manager() for dataset operations
+    - get_configuration_manager() for system configuration
+    - get_user_manager() for user preferences
+    - get_audit_manager() for audit logging
+
+    Example migration:
+        # Old (deprecated):
+        manager = SQLiteMetadataManager()
+        manager.register_dataset(...)
+
+        # New (recommended):
+        from src.database.sqlite.manager_factory import get_dataset_manager
+        dataset_manager = get_dataset_manager()
+        dataset_manager.register_dataset(...)
+    """
+
     """Thread-safe SQLite metadata manager for the hybrid architecture."""
 
     def __init__(self, db_path: Optional[str] = None, auto_create_schema: bool = True):
         """Initialize the SQLite metadata manager.
 
+        ⚠️ DEPRECATED: This class is deprecated. Use specialized managers instead:
+
+        from src.database.sqlite.manager_factory import (
+            get_dataset_manager, get_configuration_manager,
+            get_user_manager, get_audit_manager
+        )
+
         Args:
             db_path: Path to SQLite database file. If None, uses default.
             auto_create_schema: Whether to automatically create schema if it doesn't exist.
         """
+        import warnings
+
+        warnings.warn(
+            "SQLiteMetadataManager is deprecated. Use specialized managers from "
+            "manager_factory instead. See class docstring for migration examples.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         self.db_path = db_path or "data/databases/osservatorio_metadata.db"
         self._lock = threading.RLock()
         self._connection_pool = {}

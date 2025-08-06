@@ -1,0 +1,34 @@
+# Production Network Policy - Allow dataflow analyzer ingress
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: dataflow-analyzer-ingress
+  namespace: osservatorio-prod
+  labels:
+    app.kubernetes.io/name: dataflow-analyzer
+    app.kubernetes.io/part-of: osservatorio-platform
+    security-policy: production-strict
+    environment: production
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: dataflow-analyzer
+  policyTypes:
+  - Ingress
+  ingress:
+  # Allow traffic from ingress controllers
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: ingress-nginx
+    ports:
+    - protocol: TCP
+      port: 8000
+  # Allow traffic from monitoring systems
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: monitoring
+    ports:
+    - protocol: TCP
+      port: 8001

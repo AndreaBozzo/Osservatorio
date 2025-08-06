@@ -43,11 +43,13 @@ def get_jwt_manager() -> JWTManager:
     """Get JWT manager instance (singleton)"""
     global _jwt_manager
     if _jwt_manager is None:
-        # Issue #84: Use UnifiedDataRepository instead of direct manager access
+        # Issue #84: Use database path instead of manager object
         repository = get_unified_repository()
         config = get_config()
         jwt_secret = config.get("jwt_secret_key")
-        _jwt_manager = JWTManager(repository.metadata_manager, secret_key=jwt_secret)
+        _jwt_manager = JWTManager(
+            repository.dataset_manager.db_path, secret_key=jwt_secret
+        )
     return _jwt_manager
 
 
@@ -55,9 +57,9 @@ def get_auth_manager() -> SQLiteAuthManager:
     """Get authentication manager instance (singleton)"""
     global _auth_manager
     if _auth_manager is None:
-        # Issue #84: Use UnifiedDataRepository instead of direct manager access
+        # Issue #84: Use database path instead of manager object
         repository = get_unified_repository()
-        _auth_manager = SQLiteAuthManager(repository.metadata_manager)
+        _auth_manager = SQLiteAuthManager(repository.dataset_manager.db_path)
     return _auth_manager
 
 
@@ -65,9 +67,9 @@ def get_rate_limiter() -> SQLiteRateLimiter:
     """Get rate limiter instance (singleton)"""
     global _rate_limiter
     if _rate_limiter is None:
-        # Issue #84: Use UnifiedDataRepository instead of direct manager access
+        # Issue #84: Use database path instead of manager object
         repository = get_unified_repository()
-        _rate_limiter = SQLiteRateLimiter(repository.metadata_manager)
+        _rate_limiter = SQLiteRateLimiter(repository.dataset_manager.db_path)
     return _rate_limiter
 
 
@@ -379,6 +381,44 @@ def get_dataflow_service():
     from src.services.service_factory import get_dataflow_analysis_service
 
     return get_dataflow_analysis_service()
+
+
+def reset_dependency_singletons():
+    """Reset all singleton dependency instances (for testing)."""
+    global _jwt_manager, _auth_manager, _rate_limiter, _istat_client
+
+    # Close connections if they have cleanup methods
+    if _jwt_manager and hasattr(_jwt_manager, "close"):
+        try:
+            _jwt_manager.close()
+        except Exception:
+            pass
+
+    if _auth_manager and hasattr(_auth_manager, "close_connections"):
+        try:
+            _auth_manager.close_connections()
+        except Exception:
+            pass
+
+    if _rate_limiter and hasattr(_rate_limiter, "close_connections"):
+        try:
+            _rate_limiter.close_connections()
+        except Exception:
+            pass
+
+    if _istat_client and hasattr(_istat_client, "close"):
+        try:
+            _istat_client.close()
+        except Exception:
+            pass
+
+    # Reset to None
+    _jwt_manager = None
+    _auth_manager = None
+    _rate_limiter = None
+    _istat_client = None
+
+    logger.debug("Dependency singletons reset")
 
 
 # Note: Dependencies are now used individually in endpoints

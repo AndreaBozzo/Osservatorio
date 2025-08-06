@@ -1,0 +1,37 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: osservatorio-dev
+
+namespace: osservatorio-dev
+
+resources:
+- ../../manifests/namespaces.yaml
+- ../../manifests/configmap.yaml
+- ../../manifests/secret.yaml
+- ../../manifests/storageclass.yaml
+- ../../manifests/pv-pvc.yaml
+- ../../manifests/rbac.yaml
+- ../../manifests/deployment.yaml
+- ../../manifests/service.yaml
+
+# Development-specific configurations
+patchesStrategicMerge:
+- deployment-patch.yaml
+- configmap-patch.yaml
+
+# Development-specific labels
+commonLabels:
+  environment: development
+  tier: dev
+
+# Resource limits for development
+replicas:
+- name: dataflow-analyzer
+  count: 1
+
+# Development-specific images
+images:
+- name: osservatorio/dataflow-analyzer
+  newTag: dev-latest

@@ -23,7 +23,7 @@ except ImportError:
         "JWT dependencies not installed. Run: pip install PyJWT cryptography"
     )
 
-from src.database.sqlite.manager import SQLiteMetadataManager
+from src.database.sqlite.manager_factory import get_audit_manager
 from src.utils.config import get_config
 from src.utils.logger import get_logger
 from src.utils.security_enhanced import SecurityManager
@@ -47,18 +47,19 @@ class JWTManager:
 
     def __init__(
         self,
-        sqlite_manager: SQLiteMetadataManager,
+        db_path: Optional[str] = None,
         secret_key: Optional[str] = None,
         algorithm: str = ALGORITHM_HS256,
     ):
         """Initialize JWT manager
 
         Args:
-            sqlite_manager: SQLite metadata manager for refresh token storage
+            db_path: SQLite database path for refresh token storage
             secret_key: JWT signing secret (if None, will generate or load from config)
             algorithm: JWT algorithm (HS256 or RS256)
         """
-        self.db = sqlite_manager
+        # Initialize specialized manager for audit and token operations
+        self.audit_manager = get_audit_manager(db_path)
         self.algorithm = algorithm
         self.logger = logger
 
@@ -122,7 +123,7 @@ class JWTManager:
     def _ensure_jwt_schema(self):
         """Ensure JWT schema exists in SQLite database"""
         try:
-            with self.db.transaction() as conn:
+            with self.audit_manager.transaction() as conn:
                 cursor = conn.cursor()
 
                 # Ensure api_credentials table exists first
@@ -374,7 +375,7 @@ class JWTManager:
                 return False
 
             # Add to blacklist table
-            with self.db.transaction() as conn:
+            with self.audit_manager.transaction() as conn:
                 cursor = conn.cursor()
 
                 # Create blacklist table if not exists (ensure consistent schema)
@@ -423,7 +424,7 @@ class JWTManager:
             )
 
             # Store in database
-            with self.db.transaction() as conn:
+            with self.audit_manager.transaction() as conn:
                 cursor = conn.cursor()
 
                 # Ensure the api_key_id exists in api_credentials table
@@ -472,7 +473,7 @@ class JWTManager:
         try:
             token_hash = hashlib.sha256(refresh_token.encode()).hexdigest()
 
-            with self.db.transaction() as conn:
+            with self.audit_manager.transaction() as conn:
                 cursor = conn.cursor()
 
                 cursor.execute(
@@ -497,7 +498,7 @@ class JWTManager:
         try:
             token_hash = hashlib.sha256(token.encode()).hexdigest()
 
-            with self.db.transaction() as conn:
+            with self.audit_manager.transaction() as conn:
                 cursor = conn.cursor()
 
                 cursor.execute(
@@ -524,7 +525,7 @@ class JWTManager:
             cleaned = 0
             now = datetime.utcnow()
 
-            with self.db.transaction() as conn:
+            with self.audit_manager.transaction() as conn:
                 cursor = conn.cursor()
 
                 # Clean expired refresh tokens

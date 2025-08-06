@@ -14,17 +14,18 @@ Tables:
 
 import json
 import sqlite3
-from pathlib import Path
 from typing import Any, Optional
 
 from src.utils.logger import get_logger
 from src.utils.security_enhanced import SecurityManager
 
+from .base_manager import BaseSQLiteManager
+
 logger = get_logger(__name__)
 security = SecurityManager()
 
 
-class MetadataSchema:
+class MetadataSchema(BaseSQLiteManager):
     """SQLite metadata schema manager for the hybrid architecture."""
 
     # Schema version for migrations
@@ -163,8 +164,8 @@ class MetadataSchema:
         if db_path is None:
             db_path = self._get_default_db_path()
 
-        self.db_path = Path(db_path)
-        self.db_path.parent.mkdir(parents=True, exist_ok=True)
+        # Initialize parent BaseSQLiteManager with proper connection handling
+        super().__init__(str(db_path))
 
         logger.info(f"Initializing SQLite metadata schema: {self.db_path}")
 
@@ -179,12 +180,8 @@ class MetadataSchema:
             bool: True if schema created successfully, False otherwise.
         """
         try:
-            conn = sqlite3.connect(self.db_path)
-            try:
-                conn.execute("PRAGMA foreign_keys = ON")
-                conn.execute("PRAGMA journal_mode = WAL")
-                conn.execute("PRAGMA synchronous = NORMAL")
-
+            # Use BaseSQLiteManager's thread-safe connection with proper PRAGMA settings
+            with self.transaction() as conn:
                 # Create all tables
                 for table_name, sql in self.SCHEMA_SQL.items():
                     logger.debug(f"Creating table: {table_name}")
@@ -209,11 +206,9 @@ class MetadataSchema:
                 # Insert default categorization rules
                 self._insert_default_categorization_rules(conn)
 
-                conn.commit()
+                # Transaction is automatically committed by context manager
                 logger.info("SQLite metadata schema created successfully")
                 return True
-            finally:
-                conn.close()
 
         except Exception as e:
             logger.error(f"Failed to create metadata schema: {e}")
@@ -437,34 +432,32 @@ class MetadataSchema:
             bool: True if schema is valid, False otherwise.
         """
         try:
-            conn = sqlite3.connect(self.db_path)
-            try:
-                # Check that all required tables exist
-                cursor = conn.execute(
-                    "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'"
+            # Use BaseSQLiteManager's connection for consistency
+            conn = self._get_connection()
+            # Check that all required tables exist
+            cursor = conn.execute(
+                "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'"
+            )
+            existing_tables = {row[0] for row in cursor.fetchall()}
+            required_tables = set(self.SCHEMA_SQL.keys())
+
+            missing_tables = required_tables - existing_tables
+            if missing_tables:
+                logger.error(f"Missing required tables: {missing_tables}")
+                return False
+
+            # Check schema version
+            cursor = conn.execute(
+                "SELECT version FROM schema_migrations ORDER BY applied_at DESC LIMIT 1"
+            )
+            result = cursor.fetchone()
+            if not result or result[0] != self.SCHEMA_VERSION:
+                logger.warning(
+                    f"Schema version mismatch. Expected: {self.SCHEMA_VERSION}, Found: {result[0] if result else 'None'}"
                 )
-                existing_tables = {row[0] for row in cursor.fetchall()}
-                required_tables = set(self.SCHEMA_SQL.keys())
 
-                missing_tables = required_tables - existing_tables
-                if missing_tables:
-                    logger.error(f"Missing required tables: {missing_tables}")
-                    return False
-
-                # Check schema version
-                cursor = conn.execute(
-                    "SELECT version FROM schema_migrations ORDER BY applied_at DESC LIMIT 1"
-                )
-                result = cursor.fetchone()
-                if not result or result[0] != self.SCHEMA_VERSION:
-                    logger.warning(
-                        f"Schema version mismatch. Expected: {self.SCHEMA_VERSION}, Found: {result[0] if result else 'None'}"
-                    )
-
-                logger.info("SQLite metadata schema verification successful")
-                return True
-            finally:
-                conn.close()
+            logger.info("SQLite metadata schema verification successful")
+            return True
 
         except Exception as e:
             logger.error(f"Schema verification failed: {e}")
@@ -480,24 +473,22 @@ class MetadataSchema:
             List of column information dictionaries.
         """
         try:
-            conn = sqlite3.connect(self.db_path)
-            try:
-                cursor = conn.execute(f"PRAGMA table_info({table_name})")
-                columns = cursor.fetchall()
+            # Use BaseSQLiteManager's connection for consistency
+            conn = self._get_connection()
+            cursor = conn.execute(f"PRAGMA table_info({table_name})")
+            columns = cursor.fetchall()
 
-                return [
-                    {
-                        "cid": col[0],
-                        "name": col[1],
-                        "type": col[2],
-                        "notnull": bool(col[3]),
-                        "default_value": col[4],
-                        "pk": bool(col[5]),
-                    }
-                    for col in columns
-                ]
-            finally:
-                conn.close()
+            return [
+                {
+                    "cid": col[0],
+                    "name": col[1],
+                    "type": col[2],
+                    "notnull": bool(col[3]),
+                    "default_value": col[4],
+                    "pk": bool(col[5]),
+                }
+                for col in columns
+            ]
         except Exception as e:
             logger.error(f"Failed to get table info for {table_name}: {e}")
             return []
@@ -509,29 +500,35 @@ class MetadataSchema:
             bool: True if schema dropped successfully, False otherwise.
         """
         try:
-            if self.db_path.exists():
+            from pathlib import Path
+
+            db_path_obj = Path(self.db_path)
+            if db_path_obj.exists():
                 # Force close any connections and clear WAL files on Windows
                 import gc
-                import sqlite3
                 import time
+
+                # First, close all existing connections to avoid locks
+                self.close_connections()
 
                 # First, drop all tables to clear the schema content
                 try:
-                    with sqlite3.connect(self.db_path) as conn:
-                        # Get all tables
-                        cursor = conn.execute(
-                            "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'"
-                        )
-                        tables = [row[0] for row in cursor.fetchall()]
+                    # Get a fresh connection for drop operations
+                    conn = self._get_connection()
+                    # Get all tables
+                    cursor = conn.execute(
+                        "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'"
+                    )
+                    tables = [row[0] for row in cursor.fetchall()]
 
-                        # Drop all tables
-                        for table in tables:
-                            conn.execute(f"DROP TABLE IF EXISTS {table}")
+                    # Drop all tables
+                    for table in tables:
+                        conn.execute(f"DROP TABLE IF EXISTS {table}")
 
-                        # Checkpoint and close
-                        conn.execute("PRAGMA wal_checkpoint(TRUNCATE)")
-                        conn.commit()
-                        logger.debug("All tables dropped from database")
+                    # Checkpoint and commit
+                    conn.execute("PRAGMA wal_checkpoint(TRUNCATE)")
+                    conn.commit()
+                    logger.debug("All tables dropped from database")
                 except Exception as e:
                     logger.debug(f"Error dropping tables (continuing): {e}")
 
@@ -542,7 +539,7 @@ class MetadataSchema:
                 max_attempts = 3
                 for attempt in range(max_attempts):
                     try:
-                        self.db_path.unlink()
+                        db_path_obj.unlink()
                         logger.info("SQLite metadata database dropped successfully")
                         return True
                     except PermissionError:

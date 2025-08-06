@@ -385,10 +385,10 @@ class MetadataBridge:
                 for ds in all_datasets:
                     ds_id = ds["dataset_id"]
                     # Check if dataset has PowerBI template or lineage
-                    template_config = self.repository.metadata_manager.get_config(
+                    template_config = self.repository.config_manager.get_config(
                         f"dataset.{ds_id}.powerbi_template"
                     )
-                    lineage_config = self.repository.metadata_manager.get_config(
+                    lineage_config = self.repository.config_manager.get_config(
                         f"dataset.{ds_id}.powerbi_lineage"
                     )
                     if template_config or lineage_config:
@@ -473,7 +473,7 @@ class MetadataBridge:
         """Store dataset lineage in SQLite."""
         try:
             lineage_json = json.dumps(lineage.to_dict())
-            self.repository.metadata_manager.set_config(
+            self.repository.config_manager.set_config(
                 f"dataset.{lineage.dataset_id}.powerbi_lineage", lineage_json
             )
         except Exception as e:
@@ -483,7 +483,7 @@ class MetadataBridge:
         """Store usage metrics in SQLite."""
         try:
             metrics_json = json.dumps(metrics.to_dict())
-            self.repository.metadata_manager.set_config(
+            self.repository.config_manager.set_config(
                 f"dataset.{metrics.dataset_id}.powerbi_usage_metrics", metrics_json
             )
         except Exception as e:
@@ -503,7 +503,7 @@ class MetadataBridge:
                 "updated_at": datetime.now().isoformat(),
             }
 
-            self.repository.metadata_manager.set_config(
+            self.repository.config_manager.set_config(
                 f"dataset.{dataset_id}.powerbi_quality_metadata",
                 json.dumps(quality_data),
             )
@@ -513,7 +513,7 @@ class MetadataBridge:
     def _get_stored_lineage(self, dataset_id: str) -> Optional[DatasetLineage]:
         """Get stored lineage from SQLite."""
         try:
-            lineage_data = self.repository.metadata_manager.get_config(
+            lineage_data = self.repository.config_manager.get_config(
                 f"dataset.{dataset_id}.powerbi_lineage"
             )
 
@@ -540,7 +540,7 @@ class MetadataBridge:
     def _get_stored_usage_metrics(self, dataset_id: str) -> Optional[UsageMetrics]:
         """Get stored usage metrics from SQLite."""
         try:
-            metrics_data = self.repository.metadata_manager.get_config(
+            metrics_data = self.repository.config_manager.get_config(
                 f"dataset.{dataset_id}.powerbi_usage_metrics"
             )
 
@@ -601,12 +601,12 @@ class MetadataBridge:
         """Check if dataset has PowerBI integration configured."""
         try:
             # Check for PowerBI template
-            template = self.repository.metadata_manager.get_config(
+            template = self.repository.config_manager.get_config(
                 f"dataset.{dataset_id}.powerbi_template"
             )
 
             # Check for lineage
-            lineage = self.repository.metadata_manager.get_config(
+            lineage = self.repository.config_manager.get_config(
                 f"dataset.{dataset_id}.powerbi_lineage"
             )
 

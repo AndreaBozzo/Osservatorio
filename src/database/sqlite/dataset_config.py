@@ -68,9 +68,9 @@ class DatasetConfigManager:
             List of dataset dictionaries.
         """
         try:
-            # Issue #84: Use UnifiedDataRepository with proper method calls
-            # Use the list_datasets method which is available in the metadata manager
-            datasets_raw = self.repository.metadata_manager.list_datasets(
+            # Issue #84: Use UnifiedDataRepository with specialized managers
+            # Use the list_datasets method which is available in the dataset manager
+            datasets_raw = self.repository.dataset_manager.list_datasets(
                 active_only=True
             )
 
@@ -234,7 +234,7 @@ class DatasetConfigManager:
         """
         try:
             # Issue #84: Use UnifiedDataRepository register_dataset method
-            success = self.repository.metadata_manager.register_dataset(
+            success = self.repository.dataset_manager.register_dataset(
                 dataset_id=dataset_config.get("dataflow_id"),
                 name=dataset_config.get("name", ""),
                 category=dataset_config.get("category", ""),
@@ -269,12 +269,9 @@ class DatasetConfigManager:
             True if updated successfully, False otherwise.
         """
         try:
-            # Issue #84: Use direct database connection for complex updates
-            # This is acceptable since it's a complex update operation not covered by the repository interface
-            import sqlite3
-
-            conn = sqlite3.connect(self.schema.db_path)
-            try:
+            # Issue #84: Use schema's BaseSQLiteManager connection for complex updates
+            # This ensures consistent connection configuration and thread safety
+            with self.schema.transaction() as conn:
                 # Build dynamic update query
                 update_fields = []
                 update_values = []
@@ -325,9 +322,6 @@ class DatasetConfigManager:
                     logger.warning(f"Dataset not found for update: {dataset_id}")
                     return False
 
-            finally:
-                conn.close()
-
         except Exception as e:
             logger.error(f"Failed to update dataset {dataset_id}: {e}")
             return False
@@ -342,12 +336,9 @@ class DatasetConfigManager:
             True if deactivated successfully, False otherwise.
         """
         try:
-            # Issue #84: Use direct database connection for deactivation
-            # This is acceptable since deactivation is not a standard repository operation
-            import sqlite3
-
-            conn = sqlite3.connect(self.schema.db_path)
-            try:
+            # Issue #84: Use schema's BaseSQLiteManager connection for deactivation
+            # This ensures consistent connection configuration and thread safety
+            with self.schema.transaction() as conn:
                 cursor = conn.execute(
                     "UPDATE dataset_registry SET is_active = 0, updated_at = CURRENT_TIMESTAMP WHERE dataset_id = ?",
                     (dataset_id,),
@@ -364,9 +355,6 @@ class DatasetConfigManager:
                 else:
                     logger.warning(f"Dataset not found for deactivation: {dataset_id}")
                     return False
-
-            finally:
-                conn.close()
 
         except Exception as e:
             logger.error(f"Failed to deactivate dataset {dataset_id}: {e}")
