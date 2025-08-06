@@ -214,9 +214,11 @@ class K8sDataflowAnalysisService:
                 healthy = await self.istat_client.health_check()
                 return (
                     HealthStatus.HEALTHY if healthy else HealthStatus.DEGRADED,
-                    "ISTAT API accessible"
-                    if healthy
-                    else "ISTAT API connectivity issues",
+                    (
+                        "ISTAT API accessible"
+                        if healthy
+                        else "ISTAT API connectivity issues"
+                    ),
                 )
             else:
                 # Fallback: assume healthy if circuit breaker is closed
@@ -333,7 +335,9 @@ class K8sDataflowAnalysisService:
 
             # If no valid rules found, use fallback rules
             if not rules:
-                self.logger.warning("No valid rules from database, using fallback rules")
+                self.logger.warning(
+                    "No valid rules from database, using fallback rules"
+                )
                 return self._get_fallback_rules()
 
             # Cache the rules (serialize as dict)

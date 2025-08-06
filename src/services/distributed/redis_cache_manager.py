@@ -125,10 +125,23 @@ class RedisCacheManager:
 
     async def close(self) -> None:
         """Close Redis connections."""
-        if self._client:
-            await self._client.close()
-        if self._pool:
-            await self._pool.disconnect()
+        try:
+            if self._client and hasattr(self._client, "close"):
+                if callable(self._client.close):
+                    close_result = self._client.close()
+                    if hasattr(close_result, "__await__"):
+                        await close_result
+        except Exception as e:
+            self.logger.warning(f"Error closing Redis client: {e}")
+
+        try:
+            if self._pool and hasattr(self._pool, "disconnect"):
+                if callable(self._pool.disconnect):
+                    disconnect_result = self._pool.disconnect()
+                    if hasattr(disconnect_result, "__await__"):
+                        await disconnect_result
+        except Exception as e:
+            self.logger.warning(f"Error disconnecting Redis pool: {e}")
 
         self.logger.info("Redis cache connections closed")
 
@@ -173,6 +186,9 @@ class RedisCacheManager:
         start_time = datetime.now()
 
         try:
+            # Check if _client is still None after initialization
+            if self._client is None:
+                return None
             result = await operation(*args, **kwargs)
 
             # Reset failure count on success
@@ -207,7 +223,10 @@ class RedisCacheManager:
         """
         full_key = self._build_key(key)
 
-        result = await self._execute_with_fallback(self._client.get, full_key)
+        async def get_operation(full_key):
+            return await self._client.get(full_key)
+
+        result = await self._execute_with_fallback(get_operation, full_key)
 
         if result is not None:
             try:
@@ -266,8 +285,11 @@ class RedisCacheManager:
                 serialized = pickle.dumps(value)
 
             # Set value with TTL
+            async def set_operation(full_key, serialized, ex=None):
+                return await self._client.set(full_key, serialized, ex=ex)
+
             result = await self._execute_with_fallback(
-                self._client.set, full_key, serialized, ex=ttl
+                set_operation, full_key, serialized, ex=ttl
             )
 
             if result:
@@ -275,13 +297,21 @@ class RedisCacheManager:
                 if tags:
                     for tag in tags:
                         tag_key = self._build_key(f"tag:{tag}")
+
+                        async def sadd_operation(tag_key, full_key):
+                            return await self._client.sadd(tag_key, full_key)
+
                         await self._execute_with_fallback(
-                            self._client.sadd, tag_key, full_key
+                            sadd_operation, tag_key, full_key
                         )
                         # Set TTL for tag key as well
                         if ttl:
+
+                            async def expire_operation(tag_key, ttl):
+                                return await self._client.expire(tag_key, ttl)
+
                             await self._execute_with_fallback(
-                                self._client.expire, tag_key, ttl
+                                expire_operation, tag_key, ttl
                             )
 
                 self.logger.debug(f"Cache set for key: {key} (TTL: {ttl})")
@@ -304,7 +334,10 @@ class RedisCacheManager:
         """
         full_key = self._build_key(key)
 
-        result = await self._execute_with_fallback(self._client.delete, full_key)
+        async def delete_operation(full_key):
+            return await self._client.delete(full_key)
+
+        result = await self._execute_with_fallback(delete_operation, full_key)
 
         if result:
             self.logger.debug(f"Cache delete for key: {key}")
@@ -380,7 +413,10 @@ class RedisCacheManager:
         """
         full_key = self._build_key(key)
 
-        result = await self._execute_with_fallback(self._client.exists, full_key)
+        async def exists_operation(full_key):
+            return await self._client.exists(full_key)
+
+        result = await self._execute_with_fallback(exists_operation, full_key)
 
         return bool(result)
 
@@ -441,22 +477,23 @@ class RedisCacheManager:
 
             self._stats = CacheStats(
                 total_keys=await self._execute_with_fallback(self._client.dbsize) or 0,
-                hit_rate=self._hit_count / total_operations
-                if total_operations > 0
-                else 0,
-                miss_rate=self._miss_count / total_operations
-                if total_operations > 0
-                else 0,
-                memory_usage_mb=(info.get("used_memory", 0) / 1024 / 1024)
-                if info
-                else 0,
-                avg_response_time_ms=sum(self._operation_times)
-                / len(self._operation_times)
-                if self._operation_times
-                else 0,
-                operations_per_second=len(self._operation_times) / 60
-                if self._operation_times
-                else 0,  # rough estimate
+                hit_rate=(
+                    self._hit_count / total_operations if total_operations > 0 else 0
+                ),
+                miss_rate=(
+                    self._miss_count / total_operations if total_operations > 0 else 0
+                ),
+                memory_usage_mb=(
+                    (info.get("used_memory", 0) / 1024 / 1024) if info else 0
+                ),
+                avg_response_time_ms=(
+                    sum(self._operation_times) / len(self._operation_times)
+                    if self._operation_times
+                    else 0
+                ),
+                operations_per_second=(
+                    len(self._operation_times) / 60 if self._operation_times else 0
+                ),  # rough estimate
             )
 
         except Exception as e:
@@ -476,9 +513,9 @@ class RedisCacheManager:
             "available": self._is_available,
             "circuit_breaker_open": not self._is_available,
             "failure_count": self._failure_count,
-            "last_failure": self._last_failure_time.isoformat()
-            if self._last_failure_time
-            else None,
+            "last_failure": (
+                self._last_failure_time.isoformat() if self._last_failure_time else None
+            ),
         }
 
         try:
@@ -492,9 +529,9 @@ class RedisCacheManager:
                     {
                         "status": "healthy",
                         "latency_ms": round(latency, 2),
-                        "connection_pool_size": self._pool.connection_kwargs
-                        if self._pool
-                        else None,
+                        "connection_pool_size": (
+                            self._pool.connection_kwargs if self._pool else None
+                        ),
                     }
                 )
             else:
@@ -517,7 +554,11 @@ class RedisCacheManager:
         Returns:
             True if successful, False otherwise
         """
-        result = await self._execute_with_fallback(self._client.flushdb)
+
+        async def flushdb_operation():
+            return await self._client.flushdb()
+
+        result = await self._execute_with_fallback(flushdb_operation)
 
         if result:
             self.logger.warning("All cache entries flushed")

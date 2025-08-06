@@ -145,8 +145,20 @@ class EnvironmentConfig(BaseModel):
                 # Remove prefix and convert to lowercase
                 config_key = key[9:].lower()  # Remove 'DATAFLOW_'
 
+                # Check if it's a top-level field that contains underscores
+                top_level_fields_with_underscores = [
+                    "service_name",
+                    "service_version",
+                    "enable_distributed_caching",
+                    "enable_tracing",
+                    "enable_metrics",
+                    "enable_circuit_breaker",
+                ]
+
+                if config_key in top_level_fields_with_underscores:
+                    config_dict[config_key] = cls._convert_env_value(value)
                 # Handle nested configuration
-                if "_" in config_key:
+                elif "_" in config_key:
                     parts = config_key.split("_", 1)
                     section, field = parts[0], parts[1]
 
