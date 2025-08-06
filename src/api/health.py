@@ -1,8 +1,9 @@
-from fastapi import APIRouter
 from datetime import datetime
-import os
+
+from fastapi import APIRouter
 
 health_router = APIRouter(prefix="/health", tags=["health"])
+
 
 @health_router.get("/live")
 async def liveness_check():
@@ -10,13 +11,11 @@ async def liveness_check():
     return {
         "status": "healthy",
         "timestamp": datetime.utcnow().isoformat(),
-        "service": "osservatorio-api"
+        "service": "osservatorio-api",
     }
 
-@health_router.get("/ready") 
+
+@health_router.get("/ready")
 async def readiness_check():
     """Basic readiness check"""
-    return {
-        "status": "ready",
-        "timestamp": datetime.utcnow().isoformat()
-    }
+    return {"status": "ready", "timestamp": datetime.utcnow().isoformat()}
