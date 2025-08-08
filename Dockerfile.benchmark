@@ -1,0 +1,18 @@
+FROM docker:24-dind
+
+# Install necessary tools for benchmarking
+RUN apk add --no-cache \
+    curl \
+    jq \
+    bc \
+    git \
+    bash \
+    coreutils
+
+WORKDIR /benchmark
+
+# Create benchmark results directory
+RUN mkdir -p /benchmark/results
+
+# Set up Docker daemon for benchmarking
+ENV DOCKER_TLS_CERTDIR=/certs

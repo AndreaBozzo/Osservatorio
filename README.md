@@ -138,6 +138,7 @@ dataset = client.fetch_dataset("DCIS_POPRES1")  # Population data
 - **[Production Client API](docs/api/PRODUCTION_ISTAT_CLIENT.md)** - Complete API reference
 - **[Project Status](docs/project/PROJECT_STATE.md)** - Current development state
 - **[Developer Guide](docs/project/CLAUDE.md)** - Commands and development context
+- **[DevOps Guide](docs/core/DEPLOYMENT.md)** - Deployment with Docker Compose
 
 ## 🤝 Contributing
 
