@@ -33,7 +33,7 @@ async def db_health_check():
             port=5432,
             user="osservatorio",
             password="osservatorio_dev_password",
-            database="osservatorio"
+            database="osservatorio",
         )
 
         # Execute a simple query to verify the database's status
@@ -73,12 +73,18 @@ async def external_health_check():
             async with session.get("https://sdmx.istat.it/SDMXWS/rest") as response:
                 # Verify that the response status code is 200 (OK)
                 if response.status != 200:
-                    return {"status": "unhealthy", "error": f"Invalid status code: {response.status}"}
+                    return {
+                        "status": "unhealthy",
+                        "error": f"Invalid status code: {response.status}",
+                    }
 
                 # Verify that the response body contains the expected data
                 health_check_data = await response.json()
                 if health_check_data.get("status") != "healthy":
-                    return {"status": "unhealthy", "error": f"Invalid health check data: {health_check_data}"}
+                    return {
+                        "status": "unhealthy",
+                        "error": f"Invalid health check data: {health_check_data}",
+                    }
 
         return {"status": "healthy", "timestamp": datetime.utcnow().isoformat()}
     except aiohttp.ClientError as e:
@@ -93,12 +99,18 @@ async def metrics_health_check():
             async with session.get("http://prometheus:9090/-/healthy") as response:
                 # Verify that the response status code is 200 (OK)
                 if response.status != 200:
-                    return {"status": "unhealthy", "error": f"Invalid status code: {response.status}"}
+                    return {
+                        "status": "unhealthy",
+                        "error": f"Invalid status code: {response.status}",
+                    }
 
                 # Verify that the response body contains the expected health check data
                 health_check_data = await response.text()
                 if health_check_data != "Healthy":
-                    return {"status": "unhealthy", "error": f"Invalid health check data: {health_check_data}"}
+                    return {
+                        "status": "unhealthy",
+                        "error": f"Invalid health check data: {health_check_data}",
+                    }
 
         return {"status": "healthy", "timestamp": datetime.utcnow().isoformat()}
     except aiohttp.ClientError as e:
