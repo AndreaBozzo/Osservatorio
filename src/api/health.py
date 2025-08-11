@@ -67,24 +67,22 @@ async def cache_health_check():
 
 @health_router.get("/external")
 async def external_health_check():
-    # try:
-    #     # Send an HTTP request to the REST endpoint
-    #     async with aiohttp.ClientSession() as session:
-    #         async with session.get("https://sdmx.istat.it/SDMXWS/rest") as response:
-    #             # Verify that the response status code is 200 (OK)
-    #             if response.status != 200:
-    #                 return {"status": "unhealthy", "error": f"Invalid status code: {response.status}"}
+    try:
+        # Send an HTTP request to the REST endpoint
+        async with aiohttp.ClientSession() as session:
+            async with session.get("https://sdmx.istat.it/SDMXWS/rest") as response:
+                # Verify that the response status code is 200 (OK)
+                if response.status != 200:
+                    return {"status": "unhealthy", "error": f"Invalid status code: {response.status}"}
 
-    #             # Verify that the response body contains the expected data
-    #             health_check_data = await response.json()
-    #             if health_check_data.get("status") != "healthy":
-    #                 return {"status": "unhealthy", "error": f"Invalid health check data: {health_check_data}"}
+                # Verify that the response body contains the expected data
+                health_check_data = await response.json()
+                if health_check_data.get("status") != "healthy":
+                    return {"status": "unhealthy", "error": f"Invalid health check data: {health_check_data}"}
 
-    #     return {"status": "healthy", "timestamp": datetime.utcnow().isoformat()}
-    # except aiohttp.ClientError as e:
-    #     return {"status": "unhealthy", "error": str(e)}
-    # TODO: find a way to test helth of REST ISTAT service
-    return {"status": "healthy", "timestamp": datetime.utcnow().isoformat()}
+        return {"status": "healthy", "timestamp": datetime.utcnow().isoformat()}
+    except aiohttp.ClientError as e:
+        return {"status": "unhealthy", "error": str(e)}
 
 
 @health_router.get("/metrics")
