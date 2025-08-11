@@ -1,0 +1,31 @@
+# Folders
+tests/
+docs/
+htmlcov/
+logs/
+data/cache/
+
+# Temp files
+*.pyc
+__pycache__/
+.pytest_cache/
+
+# Development files
+.git/
+.vscode/
+!README.md
+*.md
+
+.env
+.tox/
+.venv/
+.eggs/
+.cache/
+nosetests.xml
+coverage.xml
+*.egg-info/
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+.gitignore
+.idea/

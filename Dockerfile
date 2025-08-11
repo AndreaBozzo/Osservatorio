@@ -29,21 +29,26 @@ RUN apt-get update && apt-get install -y \
 # Set working directory
 WORKDIR /app
 
-# Copy dependency files
-COPY requirements.txt requirements-dev.txt pyproject.toml ./
-
-# Create virtual environment and install dependencies
+# Create virtual environment (separate layer for better caching)
 RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
-# Install Python dependencies
-RUN pip install --upgrade pip setuptools wheel && \
-    pip install --no-cache-dir -r requirements.txt
+# Upgrade pip in separate layer (caches better)
+RUN pip install --upgrade pip setuptools wheel
+
+# Copy only requirements files first (most stable layer)
+COPY requirements.txt requirements-dev.txt ./
+
+# Install Python dependencies (separate from pip upgrade for better caching)
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy pyproject.toml separately (less likely to change than app code)
+COPY pyproject.toml ./
 
 # Production stage
 FROM python:3.11-slim as production
 
-# Install runtime system dependencies
+# Install runtime system dependencies and create user in one layer
 RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/* \
@@ -57,12 +62,23 @@ ENV PATH="/opt/venv/bin:$PATH"
 # Set working directory
 WORKDIR /app
 
-# Copy application code
-COPY --chown=osservatorio:osservatorio . .
+# Copy requirements files (needed for development stage)
+COPY requirements.txt requirements-dev.txt ./
 
-# Create necessary directories
-RUN mkdir -p data/databases data/cache data/logs logs \
-    && chown -R osservatorio:osservatorio data logs
+# Copy pyproject.toml
+COPY pyproject.toml ./
+
+# Create directories before copying code (static operation, caches well)
+RUN mkdir -p data/databases data/cache data/logs logs
+
+# Copy application code excluding frequently changing files
+COPY --chown=osservatorio:osservatorio src/ ./src/
+
+# Copy configuration files (less frequently changed)
+COPY --chown=osservatorio:osservatorio *.py *.toml *.cfg *.ini ./
+
+# Set ownership in final step
+RUN chown -R osservatorio:osservatorio data logs
 
 # Switch to non-root user
 USER osservatorio
@@ -89,7 +105,7 @@ FROM production as development
 
 USER root
 
-# Install development dependencies
+# Install development dependencies (requirements files already copied from production stage)
 RUN pip install --no-cache-dir -r requirements-dev.txt
 
 # Install additional development tools
