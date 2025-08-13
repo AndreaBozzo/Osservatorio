@@ -29,10 +29,14 @@ def cleanup_resources():
 
     # Cleanup after test
     try:
+        from src.api.dependencies import reset_dependency_singletons
         from src.database.sqlite.repository import get_unified_repository
 
         repository = get_unified_repository()
         repository.close()
+
+        # Also reset dependency singletons
+        reset_dependency_singletons()
     except Exception:
         pass  # Ignore cleanup errors
 

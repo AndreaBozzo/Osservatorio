@@ -12,15 +12,15 @@
 
 ## 🎯 What is Osservatorio?
 
-**Osservatorio** makes Italian statistical data accessible to everyone. Whether you're a researcher, analyst, or decision-maker, our platform provides reliable access to ISTAT's 509+ datasets with in-development enterprise-grade processing and visualization capabilities.
+**Osservatorio** is developing a modern platform for Italian statistical data access. The core REST API and database layer are functional, with ISTAT data integration and Kubernetes infrastructure in development.
 
-### ✨ Key Benefits
-- **🚀 Production Ready**: FastAPI backend with comprehensive testing and basic CI
-- **⚡ High Performance**: DuckDB analytics engine with optimized query processing
-- **🛡️ Enterprise Security**: JWT authentication, OWASP compliance, security middleware
-- **🐳 Container Ready**: Multi-stage Docker builds with development environments
-- **🔄 Modern Architecture**: Async processing, circuit breakers, rate limiting
-- **📊 API-First**: RESTful endpoints with comprehensive data analysis capabilities
+### ✨ Current Status
+- **🚀 Core API**: FastAPI backend functional with JWT authentication
+- **⚡ Database**: DuckDB analytics + SQLite metadata hybrid working
+- **🛡️ Security**: JWT auth, rate limiting, security middleware implemented
+- **🐳 Docker**: Multi-stage builds ready (image deployment untested)
+- **☸️ Kubernetes**: Infrastructure manifests complete (cluster deployment untested)
+- **⚠️ BI Integration**: PowerBI/Tableau structure present but needs rework
 
 ## 🚀 Quick Start
 
@@ -165,16 +165,17 @@ We welcome contributions! Here's how to get started:
 
 ## 🏆 Development Metrics
 
-**Modern Development Standards Achieved:**
+**Development Status Achieved:**
 
-- ✅ **Basic CI Pipeline**: GitHub Actions with unit testing and code quality
-- ✅ **Container Ready**: Multi-stage Docker builds with development environment
-- ✅ **Security Scanning**: Bandit, Safety, and OWASP compliance
-- ✅ **Code Quality**: ruff, black, mypy, and pre-commit hooks
-- ✅ **FastAPI Backend**: Modern async web framework with OpenAPI docs
-- ✅ **Production Ready**: JWT auth, rate limiting, monitoring, and health checks
+- ✅ **FastAPI Backend**: Modern async API with OpenAPI docs functional
+- ✅ **Database Layer**: DuckDB + SQLite hybrid working
+- ✅ **Authentication**: JWT auth, rate limiting, security middleware
+- ✅ **Code Quality**: ruff, black, pre-commit hooks, security scanning
+- ✅ **Docker Build**: Multi-stage Dockerfile (container deployment untested)
+- ⚠️ **Kubernetes**: Complete manifests created (cluster deployment untested)
+- ⚠️ **CI Pipeline**: Basic unit tests (integration/deployment testing limited)
 
-*All tests passing with comprehensive coverage across unit, integration, and performance testing.*
+*Core functionality working, infrastructure and BI integrations need validation.*
 
 ## 📞 Support
 

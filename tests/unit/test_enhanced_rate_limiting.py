@@ -26,6 +26,27 @@ from src.auth.security_config import SecurityConfig, SecurityManager
 from src.database.sqlite.manager import SQLiteMetadataManager
 
 
+@pytest.fixture(autouse=True)
+def cleanup_enhanced_rate_limiter_resources():
+    """Cleanup database resources before and after each test to prevent ResourceWarnings."""
+    # Store references to managers created during tests
+    _created_managers = []
+
+    yield
+
+    # Cleanup after test
+    try:
+        # Clean up any global database connections
+        from src.database.sqlite.manager_factory import reset_all_managers
+
+        reset_all_managers()
+    except ImportError:
+        # Factory reset not available, try individual cleanup
+        pass
+    except Exception:
+        pass  # Ignore cleanup errors
+
+
 class TestEnhancedRateLimiterFixed:
     """Test enhanced rate limiting with proper mocking"""
 
@@ -74,7 +95,7 @@ class TestEnhancedRateLimiterFixed:
         # Mock the schema creation to avoid database calls
         with patch.object(EnhancedRateLimiter, "_ensure_enhanced_schema"):
             limiter = EnhancedRateLimiter(
-                sqlite_manager=mock_db, redis_url=None, adaptive_config=adaptive_config
+                db_path="test.db", redis_url=None, adaptive_config=adaptive_config
             )
 
         assert limiter.adaptive_config == adaptive_config
@@ -90,7 +111,7 @@ class TestEnhancedRateLimiterFixed:
         # Redis is not available in this test environment, test fallback
         with patch.object(EnhancedRateLimiter, "_ensure_enhanced_schema"):
             limiter = EnhancedRateLimiter(
-                sqlite_manager=mock_db,
+                db_path="test.db",
                 redis_url="redis://localhost:6379/0",  # This should be ignored
                 adaptive_config=adaptive_config,
             )
@@ -117,7 +138,7 @@ class TestEnhancedRateLimiterFixed:
 
                 with patch.object(EnhancedRateLimiter, "_ensure_enhanced_schema"):
                     limiter = EnhancedRateLimiter(
-                        sqlite_manager=mock_db,
+                        db_path="test.db",
                         redis_url="redis://localhost:6379/0",
                         adaptive_config=adaptive_config,
                     )
@@ -132,9 +153,25 @@ class TestEnhancedRateLimiterFixed:
         """Test API response time recording"""
         mock_db, mock_conn, mock_cursor = mock_db_manager
 
-        with patch.object(EnhancedRateLimiter, "_ensure_enhanced_schema"):
+        with (
+            patch.object(EnhancedRateLimiter, "_ensure_enhanced_schema"),
+            patch(
+                "src.auth.enhanced_rate_limiter.get_audit_manager", return_value=mock_db
+            ),
+            patch(
+                "src.auth.enhanced_rate_limiter.get_configuration_manager",
+                return_value=mock_db,
+            ),
+            patch(
+                "src.auth.enhanced_rate_limiter.get_dataset_manager",
+                return_value=mock_db,
+            ),
+            patch(
+                "src.auth.enhanced_rate_limiter.get_user_manager", return_value=mock_db
+            ),
+        ):
             limiter = EnhancedRateLimiter(
-                sqlite_manager=mock_db, adaptive_config=adaptive_config
+                db_path="test.db", adaptive_config=adaptive_config
             )
 
         limiter.record_response_time(
@@ -167,7 +204,7 @@ class TestEnhancedRateLimiterFixed:
 
         with patch.object(EnhancedRateLimiter, "_ensure_enhanced_schema"):
             limiter = EnhancedRateLimiter(
-                sqlite_manager=mock_db, adaptive_config=adaptive_config
+                db_path="test.db", adaptive_config=adaptive_config
             )
 
         # Mock the helper methods to simulate suspicious activity
@@ -190,9 +227,25 @@ class TestEnhancedRateLimiterFixed:
         """Test IP address blocking functionality"""
         mock_db, mock_conn, mock_cursor = mock_db_manager
 
-        with patch.object(EnhancedRateLimiter, "_ensure_enhanced_schema"):
+        with (
+            patch.object(EnhancedRateLimiter, "_ensure_enhanced_schema"),
+            patch(
+                "src.auth.enhanced_rate_limiter.get_audit_manager", return_value=mock_db
+            ),
+            patch(
+                "src.auth.enhanced_rate_limiter.get_configuration_manager",
+                return_value=mock_db,
+            ),
+            patch(
+                "src.auth.enhanced_rate_limiter.get_dataset_manager",
+                return_value=mock_db,
+            ),
+            patch(
+                "src.auth.enhanced_rate_limiter.get_user_manager", return_value=mock_db
+            ),
+        ):
             limiter = EnhancedRateLimiter(
-                sqlite_manager=mock_db, adaptive_config=adaptive_config
+                db_path="test.db", adaptive_config=adaptive_config
             )
 
         ip_address = "192.168.1.100"
@@ -224,7 +277,7 @@ class TestEnhancedRateLimiterFixed:
 
         with patch.object(EnhancedRateLimiter, "_ensure_enhanced_schema"):
             limiter = EnhancedRateLimiter(
-                sqlite_manager=mock_db, adaptive_config=adaptive_config
+                db_path="test.db", adaptive_config=adaptive_config
             )
 
         # Mock slow average response time
@@ -242,9 +295,25 @@ class TestEnhancedRateLimiterFixed:
         """Test security metrics collection"""
         mock_db, mock_conn, mock_cursor = mock_db_manager
 
-        with patch.object(EnhancedRateLimiter, "_ensure_enhanced_schema"):
+        with (
+            patch.object(EnhancedRateLimiter, "_ensure_enhanced_schema"),
+            patch(
+                "src.auth.enhanced_rate_limiter.get_audit_manager", return_value=mock_db
+            ),
+            patch(
+                "src.auth.enhanced_rate_limiter.get_configuration_manager",
+                return_value=mock_db,
+            ),
+            patch(
+                "src.auth.enhanced_rate_limiter.get_dataset_manager",
+                return_value=mock_db,
+            ),
+            patch(
+                "src.auth.enhanced_rate_limiter.get_user_manager", return_value=mock_db
+            ),
+        ):
             limiter = EnhancedRateLimiter(
-                sqlite_manager=mock_db, adaptive_config=adaptive_config
+                db_path="test.db", adaptive_config=adaptive_config
             )
 
         # Mock database responses for metrics queries in the correct order
@@ -276,7 +345,7 @@ class TestEnhancedRateLimiterFixed:
 
         with patch.object(EnhancedRateLimiter, "_ensure_enhanced_schema"):
             limiter = EnhancedRateLimiter(
-                sqlite_manager=mock_db, adaptive_config=adaptive_config
+                db_path="test.db", adaptive_config=adaptive_config
             )
 
         # Mock Redis client and pipeline
@@ -406,7 +475,12 @@ class TestSecurityDashboardFixed:
         mock_enhanced_limiter = Mock()
         mock_auth_middleware = Mock()
 
-        return SecurityDashboard(mock_enhanced_limiter, mock_auth_middleware, mock_db)
+        with patch(
+            "src.api.security_dashboard.get_audit_manager", return_value=mock_db
+        ):
+            return SecurityDashboard(
+                mock_enhanced_limiter, mock_auth_middleware, "test.db"
+            )
 
     def test_real_time_metrics_retrieval(self, security_dashboard, mock_db_manager):
         """Test real-time security metrics retrieval"""

@@ -118,7 +118,7 @@ class SecurityManager:
 
             # Create enhanced rate limiter
             return EnhancedRateLimiter(
-                sqlite_manager=self.db_manager,
+                db_path=None,  # Will use default path through managers
                 redis_url=self.config.redis_url,
                 adaptive_config=adaptive_config,
             )
@@ -153,7 +153,7 @@ class SecurityManager:
         return SecurityDashboard(
             enhanced_limiter=self.rate_limiter,
             auth_middleware=self.auth_middleware,
-            db_manager=self.db_manager,
+            db_path=self.db_path,
         )
 
     def create_security_router(self):
@@ -166,7 +166,7 @@ class SecurityManager:
         return create_security_router(
             enhanced_limiter=self.rate_limiter,
             auth_middleware=self.auth_middleware,
-            db_manager=self.db_manager,
+            db_path=self.db_path,
         )
 
     def run_security_maintenance(self):

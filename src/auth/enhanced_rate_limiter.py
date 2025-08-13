@@ -18,7 +18,12 @@ from datetime import datetime, timedelta
 from enum import Enum
 from typing import Any, Optional
 
-from src.database.sqlite.manager import SQLiteMetadataManager
+from src.database.sqlite.manager_factory import (
+    get_audit_manager,
+    get_configuration_manager,
+    get_dataset_manager,
+    get_user_manager,
+)
 from src.utils.logger import get_logger
 
 from .models import APIKey
@@ -73,18 +78,22 @@ class EnhancedRateLimiter:
 
     def __init__(
         self,
-        sqlite_manager: SQLiteMetadataManager,
+        db_path: Optional[str] = None,
         redis_url: Optional[str] = None,
         adaptive_config: Optional[AdaptiveConfig] = None,
     ):
         """Initialize enhanced rate limiter
 
         Args:
-            sqlite_manager: SQLite database manager
+            db_path: SQLite database path
             redis_url: Redis connection URL for distributed limiting
             adaptive_config: Adaptive rate limiting configuration
         """
-        self.db = sqlite_manager
+        # Initialize specialized managers
+        self.audit_manager = get_audit_manager(db_path)
+        self.config_manager = get_configuration_manager(db_path)
+        self.dataset_manager = get_dataset_manager(db_path)
+        self.user_manager = get_user_manager(db_path)
         self.adaptive_config = adaptive_config or AdaptiveConfig()
         self.logger = logger
 
@@ -112,7 +121,7 @@ class EnhancedRateLimiter:
     def _ensure_enhanced_schema(self):
         """Ensure enhanced rate limiting tables exist"""
         try:
-            with self.db.transaction() as conn:
+            with self.audit_manager.transaction() as conn:
                 cursor = conn.cursor()
 
                 # Enhanced rate limits with adaptive features
@@ -326,7 +335,7 @@ class EnhancedRateLimiter:
                 ][-self.adaptive_config.window_size :]
 
             # Store in database for long-term analysis
-            with self.db.transaction() as conn:
+            with self.audit_manager.transaction() as conn:
                 cursor = conn.cursor()
                 cursor.execute(
                     """
@@ -373,7 +382,7 @@ class EnhancedRateLimiter:
             if duration_hours:
                 expires_at = datetime.utcnow() + timedelta(hours=duration_hours)
 
-            with self.db.transaction() as conn:
+            with self.audit_manager.transaction() as conn:
                 cursor = conn.cursor()
                 cursor.execute(
                     """
@@ -414,7 +423,7 @@ class EnhancedRateLimiter:
                 return True
 
             # Check database
-            with self.db.transaction() as conn:
+            with self.audit_manager.transaction() as conn:
                 cursor = conn.cursor()
                 cursor.execute(
                     """
@@ -510,7 +519,7 @@ class EnhancedRateLimiter:
         # Start with base configuration
         from .rate_limiter import SQLiteRateLimiter
 
-        base_limiter = SQLiteRateLimiter(self.db)
+        base_limiter = SQLiteRateLimiter(self.audit_manager.db_path)
         config = base_limiter._get_rate_limit_config(api_key)
 
         if not self.adaptive_config.enable_adaptive:
@@ -631,7 +640,7 @@ class EnhancedRateLimiter:
             # Fall back to local rate limiting
             from .rate_limiter import SQLiteRateLimiter
 
-            local_limiter = SQLiteRateLimiter(self.db)
+            local_limiter = SQLiteRateLimiter(self.audit_manager.db_path)
             return local_limiter.check_rate_limit(api_key, ip_address, endpoint)
 
     def _check_local_rate_limit(
@@ -644,7 +653,7 @@ class EnhancedRateLimiter:
         """Check rate limit using local SQLite (fallback)"""
         from .rate_limiter import SQLiteRateLimiter
 
-        local_limiter = SQLiteRateLimiter(self.db)
+        local_limiter = SQLiteRateLimiter(self.audit_manager.db_path)
         return local_limiter.check_rate_limit(api_key, ip_address, endpoint)
 
     def _get_average_response_time(self, endpoint: str, hours: int = 1) -> float:
@@ -658,7 +667,7 @@ class EnhancedRateLimiter:
 
             # Query database
             since = datetime.utcnow() - timedelta(hours=hours)
-            with self.db.transaction() as conn:
+            with self.audit_manager.transaction() as conn:
                 cursor = conn.cursor()
                 cursor.execute(
                     """
@@ -681,7 +690,7 @@ class EnhancedRateLimiter:
         """Get recent request count for identifier"""
         try:
             since = datetime.utcnow() - timedelta(minutes=minutes)
-            with self.db.transaction() as conn:
+            with self.audit_manager.transaction() as conn:
                 cursor = conn.cursor()
                 cursor.execute(
                     """
@@ -702,7 +711,7 @@ class EnhancedRateLimiter:
         """Get count of unique endpoints accessed recently"""
         try:
             since = datetime.utcnow() - timedelta(minutes=minutes)
-            with self.db.transaction() as conn:
+            with self.audit_manager.transaction() as conn:
                 cursor = conn.cursor()
                 cursor.execute(
                     """
@@ -770,7 +779,7 @@ class EnhancedRateLimiter:
             )
 
             # Store in database
-            with self.db.transaction() as conn:
+            with self.audit_manager.transaction() as conn:
                 cursor = conn.cursor()
                 cursor.execute(
                     """
@@ -811,7 +820,7 @@ class EnhancedRateLimiter:
         try:
             metrics = {}
 
-            with self.db.transaction() as conn:
+            with self.audit_manager.transaction() as conn:
                 cursor = conn.cursor()
 
                 # Rate limit violations by threat level
@@ -871,7 +880,7 @@ class EnhancedRateLimiter:
             cutoff = datetime.utcnow() - timedelta(days=days)
             cleanup_counts = {}
 
-            with self.db.transaction() as conn:
+            with self.audit_manager.transaction() as conn:
                 cursor = conn.cursor()
 
                 # Clean old response times

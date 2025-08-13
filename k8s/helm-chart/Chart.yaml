@@ -1,0 +1,59 @@
+apiVersion: v2
+name: osservatorio-dataflow-analyzer
+description: Kubernetes-ready ISTAT Dataflow Analysis Service for enterprise deployment
+icon: https://raw.githubusercontent.com/AndreaBozzo/osservatorio/main/docs/assets/logo.png
+
+# Chart version (semantic versioning)
+version: 2.0.0
+
+# Application version
+appVersion: "2.0.0"
+
+# Chart type
+type: application
+
+# Keywords for discoverability
+keywords:
+  - istat
+  - dataflow
+  - analysis
+  - data-platform
+  - kubernetes
+  - microservice
+
+# Home and source URLs
+home: https://github.com/AndreaBozzo/osservatorio
+sources:
+  - https://github.com/AndreaBozzo/osservatorio
+
+# Maintainers
+maintainers:
+  - name: Andrea Bozzo
+    email: andreabozzo92@gmail.com
+    url: https://github.com/AndreaBozzo
+
+# Annotations for additional metadata
+annotations:
+  category: Analytics
+  licenses: MIT
+  # Artifact Hub specific annotations
+  artifacthub.io/license: MIT
+  artifacthub.io/prerelease: "false"
+  artifacthub.io/containsSecurityUpdates: "false"
+  artifacthub.io/changes: |
+    - Added Kubernetes-ready architecture
+    - Implemented distributed caching with Redis
+    - Added circuit breaker patterns for resilience
+    - Integrated comprehensive health checks
+    - Added multi-environment support
+  artifacthub.io/links: |
+    - name: Documentation
+      url: https://github.com/AndreaBozzo/osservatorio/blob/main/README.md
+    - name: Chart Source
+      url: https://github.com/AndreaBozzo/osservatorio/tree/main/k8s/helm-chart
+
+# Kubernetes version constraints
+kubeVersion: ">=1.21.0-0"
+
+# Dependencies (if any)
+dependencies: []

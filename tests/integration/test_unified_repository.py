@@ -12,6 +12,7 @@ from datetime import datetime
 import pytest
 
 from src.database.sqlite.repository import UnifiedDataRepository
+from src.database.sqlite.schema import MetadataSchema
 from tests.utils.database_cleanup import safe_database_cleanup
 
 
@@ -39,6 +40,11 @@ class TestUnifiedDataRepository:
     def repository(self, temp_paths):
         """Create unified data repository."""
         sqlite_path, duckdb_path = temp_paths
+
+        # Initialize SQLite schema before creating repository
+        schema = MetadataSchema(sqlite_path)
+        schema.create_schema()
+
         repo = UnifiedDataRepository(sqlite_path, duckdb_path)
         yield repo
         repo.close()
@@ -185,7 +191,7 @@ class TestUnifiedDataRepository:
         assert results[0][0] == 1
 
         # Verify audit log was created
-        audit_logs = repository.metadata_manager.get_audit_logs(
+        audit_logs = repository.audit_manager.get_audit_logs(
             user_id="analyst1", action="analytics_query"
         )
         assert len(audit_logs) >= 1
@@ -206,7 +212,7 @@ class TestUnifiedDataRepository:
             repository.execute_analytics_query(invalid_query, user_id="analyst1")
 
         # Verify error was logged
-        audit_logs = repository.metadata_manager.get_audit_logs(
+        audit_logs = repository.audit_manager.get_audit_logs(
             user_id="analyst1", action="analytics_query"
         )
 
@@ -464,13 +470,13 @@ class TestUnifiedDataRepository:
         assert len(workflow_datasets) == 3
 
         # Check preferences
-        analyst1_prefs = repository.metadata_manager.get_user_preferences("analyst1")
+        analyst1_prefs = repository.user_manager.get_user_preferences("analyst1")
         assert analyst1_prefs["favorite_category"] == "popolazione"
         assert analyst1_prefs["refresh_interval"] == 300
         assert analyst1_prefs["notifications"] is True
 
         # Check audit logs
-        audit_logs = repository.metadata_manager.get_audit_logs(limit=50)
+        audit_logs = repository.audit_manager.get_audit_logs(limit=50)
         assert len(audit_logs) >= 6  # 3 dataset registrations + 3 queries
 
         # Check system status

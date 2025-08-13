@@ -25,50 +25,56 @@ from src.database.sqlite.repository import get_unified_repository
 class TestFastAPIIntegration:
     """Integration tests for FastAPI REST API"""
 
-    @pytest.fixture(scope="class")
+    @pytest.fixture
     def client(self, test_db_setup):
         """Test client for FastAPI app with test database dependencies"""
-        # Override FastAPI dependencies to use test database
-        app.dependency_overrides[get_auth_manager] = lambda: test_db_setup[
-            "auth_manager"
-        ]
-        app.dependency_overrides[get_jwt_manager] = lambda: test_db_setup["jwt_manager"]
-        app.dependency_overrides[get_rate_limiter] = lambda: SQLiteRateLimiter(
-            test_db_setup["auth_manager"].db
-        )
-        app.dependency_overrides[get_repository] = lambda: test_db_setup["repository"]
-
-        test_client = TestClient(app)
-
-        yield test_client
-
-        # Clean up dependency overrides and ensure connections are closed
-        app.dependency_overrides.clear()
-        # Force garbage collection to clean up any remaining connections
-        import gc
-
-        gc.collect()
-
-    @pytest.fixture(scope="class")
-    def test_db_setup(self):
-        """Setup test database with sample data"""
-        import os
-        import tempfile
+        # Store original dependencies to restore later
+        original_overrides = app.dependency_overrides.copy()
 
         try:
-            # Create a temporary database file for this test
-            temp_db_fd, temp_db_path = tempfile.mkstemp(suffix=".db")
-            os.close(temp_db_fd)  # Close file descriptor, we only need the path
+            # Override FastAPI dependencies to use test database
+            app.dependency_overrides[get_auth_manager] = lambda: test_db_setup[
+                "auth_manager"
+            ]
+            app.dependency_overrides[get_jwt_manager] = lambda: test_db_setup[
+                "jwt_manager"
+            ]
+            app.dependency_overrides[get_rate_limiter] = lambda: SQLiteRateLimiter(
+                test_db_setup["temp_db_path"]
+            )
+            app.dependency_overrides[get_repository] = lambda: test_db_setup[
+                "repository"
+            ]
 
-            # Initialize test database with schema creation
-            sqlite_manager = SQLiteMetadataManager(temp_db_path)
+            test_client = TestClient(app)
 
-            # Explicitly ensure the metadata schema is created
-            sqlite_manager.schema.create_schema()
+            yield test_client
+
+        finally:
+            # Restore original dependency overrides
+            app.dependency_overrides.clear()
+            app.dependency_overrides.update(original_overrides)
+
+            # Force garbage collection to clean up any remaining connections
+            import gc
+
+            gc.collect()
+
+    @pytest.fixture
+    def test_db_setup(self, temp_db):
+        """Setup test database with sample data"""
+        # Reset any global singletons to ensure clean state
+        from src.database.sqlite.repository import reset_unified_repository
+
+        reset_unified_repository()
+
+        try:
+            # Initialize managers with the clean temp database
+            sqlite_manager = SQLiteMetadataManager(temp_db)
 
             # Initialize auth manager which will extend the schema with auth columns
-            auth_manager = SQLiteAuthManager(sqlite_manager)
-            jwt_manager = JWTManager(sqlite_manager)
+            auth_manager = SQLiteAuthManager(temp_db)
+            jwt_manager = JWTManager(temp_db)
 
             # Create test API key
             api_key = auth_manager.generate_api_key(
@@ -78,8 +84,8 @@ class TestFastAPIIntegration:
             # Generate JWT token
             auth_token = jwt_manager.create_access_token(api_key)
 
-            # Setup test data in unified repository
-            repository = get_unified_repository(temp_db_path, ":memory:")
+            # Setup test data in unified repository (use temp db for sqlite, memory for duckdb in tests)
+            repository = get_unified_repository(temp_db, ":memory:")
 
             # Register test datasets
             repository.register_dataset_complete(
@@ -108,7 +114,7 @@ class TestFastAPIIntegration:
                 "repository": repository,
                 "auth_manager": auth_manager,
                 "jwt_manager": jwt_manager,
-                "temp_db_path": temp_db_path,
+                "temp_db_path": temp_db,
             }
 
             yield test_data
@@ -125,9 +131,8 @@ class TestFastAPIIntegration:
 
                 gc.collect()
 
-                # Now remove temporary database file
-                if os.path.exists(temp_db_path):
-                    os.unlink(temp_db_path)
+                # Database cleanup is handled by the temp_db fixture
+                pass
             except Exception:
                 pass  # Ignore cleanup errors
 
@@ -145,8 +150,8 @@ class TestFastAPIIntegration:
 
                 gc.collect()
 
-                if "temp_db_path" in locals() and os.path.exists(temp_db_path):
-                    os.unlink(temp_db_path)
+                # Database cleanup is handled by the temp_db fixture
+                pass
             except Exception:
                 pass
             pytest.skip(f"Could not setup test database: {e}")
