@@ -4,13 +4,15 @@ Tests partitioning strategies DuckDB functionality without the complex manager w
 """
 
 import pytest
+
 from src.database.duckdb.partitioning import (
-    PartitionStrategy,
-    YearPartitionStrategy,
-    TerritoryPartitionStrategy,
     HybridPartitionStrategy,
     # PartitionManager,
+    PartitionStrategy,
+    TerritoryPartitionStrategy,
+    YearPartitionStrategy,
 )
+
 
 class TestPartitionStrategy:
     def test_get_partition_key(self):
