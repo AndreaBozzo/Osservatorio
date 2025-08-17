@@ -42,7 +42,12 @@ class PartitionStrategy:
         Returns:
             Partition key string
         """
-        raise NotImplementedError
+        partition_key = ""
+        for column in self.columns:
+            value = row.get(column)
+            if value is not None:
+                partition_key += f"{column}_{value}_"
+        return partition_key.strip("_")
 
     def get_partition_filter(self, **kwargs) -> str:
         """Generate SQL filter for partition pruning.
@@ -50,7 +55,15 @@ class PartitionStrategy:
         Returns:
             SQL WHERE clause for partition pruning
         """
-        raise NotImplementedError
+        filters = []
+        for column in self.columns:
+            value = kwargs.get(column)
+            if value is not None:
+                if isinstance(value, list):
+                    filters.append(f"{column} IN ({', '.join(map(repr, value))})")
+                else:
+                    filters.append(f"{column} = {repr(value)}")
+        return " AND ".join(filters) if filters else ""
 
 
 class YearPartitionStrategy(PartitionStrategy):
@@ -97,8 +110,7 @@ class TerritoryPartitionStrategy(PartitionStrategy):
         territories = kwargs.get("territories")
         if territories:
             territory_list = "', '".join(territories)
-            return f"territory_code IN ('{territory_list}')"
-        return ""
+        return f"territory_code IN ('{territory_list}')" if territory_list else ""
 
 
 class HybridPartitionStrategy(PartitionStrategy):
@@ -137,7 +149,7 @@ class HybridPartitionStrategy(PartitionStrategy):
             territory_list = "', '".join(territories)
             filters.append(f"territory_code IN ('{territory_list}')")
 
-        return " AND ".join(filters)
+        return " AND ".join(filters) if filters else ""
 
 
 class PartitionManager:
