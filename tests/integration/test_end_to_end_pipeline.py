@@ -91,8 +91,12 @@ class TestEndToEndPipeline:
                     # Create export-ready datasets for MVP
                     export_ready = [
                         {
-                            "dataflow_id": item["dataflow_id"],
-                            "name": item["name"],
+                            "dataflow_id": item.get(
+                                "id", item.get("dataflow_id", "unknown")
+                            ),
+                            "name": item.get(
+                                "name", item.get("display_name", "Unknown")
+                            ),
                             "category": item.get("category", "general"),
                         }
                         for item in tested
