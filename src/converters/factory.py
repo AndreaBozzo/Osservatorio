@@ -40,16 +40,9 @@ class ConverterFactory:
     @classmethod
     def _register_default_converters(cls):
         """Register default converters on first use."""
-        try:
-            # Import converters here to avoid circular imports
-            from .powerbi_converter import IstatXMLToPowerBIConverter
-            from .tableau_converter import IstatXMLtoTableauConverter
-
-            cls.register_converter("powerbi", IstatXMLToPowerBIConverter)
-            cls.register_converter("tableau", IstatXMLtoTableauConverter)
-
-        except ImportError as e:
-            logger.error(f"Failed to register default converters: {e}")
+        logger.info(
+            "No default converters configured for MVP - use universal export formats"
+        )
 
     @classmethod
     def get_available_targets(cls) -> list[str]:
@@ -68,16 +61,6 @@ class ConverterFactory:
 
 
 # Convenience functions for common usage patterns
-def create_powerbi_converter() -> BaseIstatConverter:
-    """Create a PowerBI converter instance."""
-    return ConverterFactory.create_converter("powerbi")
-
-
-def create_tableau_converter() -> BaseIstatConverter:
-    """Create a Tableau converter instance."""
-    return ConverterFactory.create_converter("tableau")
-
-
 def get_converter_for_target(target: str) -> BaseIstatConverter:
     """Get converter instance for specified target."""
     return ConverterFactory.create_converter(target)

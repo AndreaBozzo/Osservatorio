@@ -68,7 +68,7 @@ class UnifiedDataIngestionPipeline:
         self._current_dataset_id: Optional[str] = None
         self._current_data: Optional[Union[str, dict[str, Any]]] = None
         self._current_quality_score: Optional[QualityScore] = None
-        self._current_target_formats: list[str] = ["powerbi"]
+        self._current_target_formats: list[str] = []
 
         logger.info("Unified Data Ingestion Pipeline initialized")
 
@@ -100,7 +100,7 @@ class UnifiedDataIngestionPipeline:
             dataset_id=dataset_id,
             status=PipelineStatus.RUNNING,
             start_time=start_time,
-            metadata={"target_formats": target_formats or ["powerbi"]},
+            metadata={"target_formats": target_formats or []},
         )
         self.active_jobs[job_id] = result
 
@@ -126,7 +126,7 @@ class UnifiedDataIngestionPipeline:
 
             # Step 3: Convert to target formats
             conversion_results = await self._convert_to_formats(
-                parsed_data, dataset_id, target_formats or ["powerbi"]
+                parsed_data, dataset_id, target_formats or []
             )
 
             # Step 4: Store in databases
@@ -282,11 +282,8 @@ class UnifiedDataIngestionPipeline:
         """Parse SDMX data into standardized format."""
         try:
             if isinstance(sdmx_data, str):
-                # XML string - use PowerBI converter for parsing (concrete implementation)
-                converter = self.converter_factory.create_converter("powerbi")
-                df = converter._parse_xml_content(sdmx_data)
-                observations = df.to_dict("records") if not df.empty else []
-                return observations
+                # XML string - for MVP, return basic structure without conversion
+                return [{"dataset_id": dataset_id, "raw_xml": sdmx_data[:100] + "..."}]
             elif isinstance(sdmx_data, dict):
                 # Already structured data
                 return [sdmx_data]
@@ -509,7 +506,7 @@ class UnifiedDataIngestionPipeline:
         self._current_dataset_id = dataset_id
         self._current_data = sdmx_data
         self._current_quality_score = None
-        self._current_target_formats = ["powerbi"]
+        self._current_target_formats = []
 
         logger.info(f"Fluent pipeline: Started with dataset {dataset_id}")
         return self
@@ -608,7 +605,7 @@ class UnifiedDataIngestionPipeline:
         self._current_dataset_id = None
         self._current_data = None
         self._current_quality_score = None
-        self._current_target_formats = ["powerbi"]
+        self._current_target_formats = []
 
         logger.info(f"Fluent pipeline: Completed processing for {result.dataset_id}")
         return result

@@ -212,17 +212,15 @@ class TestBaseIstatConverter(unittest.TestCase):
 class TestConverterFactory(unittest.TestCase):
     """Test cases for ConverterFactory."""
 
-    def test_create_powerbi_converter(self):
-        """Test PowerBI converter creation through factory."""
-        converter = ConverterFactory.create_converter("powerbi")
-        self.assertIsNotNone(converter)
-        self.assertEqual(converter.__class__.__name__, "IstatXMLToPowerBIConverter")
+    def test_create_unsupported_converter(self):
+        """Test that creating unsupported converter raises error."""
+        with self.assertRaises(ValueError):
+            ConverterFactory.create_converter("csv")
 
-    def test_create_tableau_converter(self):
-        """Test Tableau converter creation through factory."""
-        converter = ConverterFactory.create_converter("tableau")
-        self.assertIsNotNone(converter)
-        self.assertEqual(converter.__class__.__name__, "IstatXMLtoTableauConverter")
+    def test_create_another_unsupported_converter(self):
+        """Test that creating another unsupported converter raises error."""
+        with self.assertRaises(ValueError):
+            ConverterFactory.create_converter("json")
 
     def test_unsupported_target(self):
         """Test error handling for unsupported target."""
@@ -232,13 +230,13 @@ class TestConverterFactory(unittest.TestCase):
     def test_get_available_targets(self):
         """Test getting list of available targets."""
         targets = ConverterFactory.get_available_targets()
-        self.assertIn("powerbi", targets)
-        self.assertIn("tableau", targets)
+        self.assertEqual(len(targets), 0)  # No converters registered in MVP
 
     def test_is_target_supported(self):
         """Test checking if target is supported."""
-        self.assertTrue(ConverterFactory.is_target_supported("powerbi"))
-        self.assertTrue(ConverterFactory.is_target_supported("tableau"))
+        targets = ConverterFactory.get_available_targets()
+        if targets:
+            self.assertTrue(ConverterFactory.is_target_supported(targets[0]))
         self.assertFalse(ConverterFactory.is_target_supported("unsupported"))
 
 

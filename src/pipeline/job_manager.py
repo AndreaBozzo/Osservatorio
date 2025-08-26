@@ -83,7 +83,7 @@ class IngestionJobManager:
         job_info = {
             "batch_id": batch_id,
             "datasets": datasets,
-            "target_formats": target_formats or ["powerbi"],
+            "target_formats": target_formats or [],
             "priority": priority,
             "submitted_at": datetime.now(),
         }

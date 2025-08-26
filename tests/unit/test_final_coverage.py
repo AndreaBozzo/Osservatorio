@@ -3,8 +3,6 @@ Final coverage push to reach 60% target.
 Simple working tests for missing coverage.
 """
 
-from unittest.mock import Mock, patch
-
 from src.utils.circuit_breaker import CircuitState
 
 
@@ -54,19 +52,12 @@ class TestFinalCoveragePush:
         assert "failure_count" in stats
 
     def test_converter_initialization_coverage(self):
-        """Test converter initialization edge cases."""
-        from src.converters.powerbi_converter import IstatXMLToPowerBIConverter
-        from src.converters.tableau_converter import IstatXMLtoTableauConverter
+        """Test converter factory basic functionality."""
+        from src.converters.factory import ConverterFactory
 
-        # Test PowerBI converter
-        powerbi_conv = IstatXMLToPowerBIConverter()
-        assert hasattr(powerbi_conv, "path_validator")
-        assert hasattr(powerbi_conv, "datasets_config")
-
-        # Test Tableau converter
-        tableau_conv = IstatXMLtoTableauConverter()
-        assert hasattr(tableau_conv, "path_validator")
-        assert hasattr(tableau_conv, "datasets_config")
+        # Test factory basic functionality
+        targets = ConverterFactory.get_available_targets()
+        assert isinstance(targets, list)
 
     def test_secure_path_basic_operations(self):
         """Test secure path basic operations."""
@@ -107,21 +98,13 @@ class TestFinalCoveragePush:
         logger2 = get_logger("different_module")
         assert logger2 is not None
 
-    @patch("requests.Session")
-    def test_powerbi_api_basic_operations(self, mock_session_class):
-        """Test PowerBI API basic functionality."""
-        mock_session = Mock()
-        mock_session_class.return_value = mock_session
+    def test_api_basic_operations(self):
+        """Test basic API operations (MVP focused)."""
+        # Test basic API client functionality
+        from src.api.production_istat_client import ProductionIstatClient
 
-        # Import and test basic initialization
-        try:
-            from src.api.powerbi_api import PowerBIAPITester
-
-            tester = PowerBIAPITester()
-            assert hasattr(tester, "base_url")
-        except ImportError:
-            # If class doesn't exist, test passes anyway
-            pass
+        client = ProductionIstatClient()
+        assert hasattr(client, "base_url")
 
     def test_additional_import_coverage(self):
         """Test additional imports for coverage."""
@@ -143,39 +126,25 @@ class TestFinalCoveragePush:
                 pass  # Module doesn't exist, skip
 
     def test_converter_category_edge_cases(self):
-        """Test converter categorization edge cases."""
-        from src.converters.powerbi_converter import IstatXMLToPowerBIConverter
+        """Test converter factory edge cases."""
+        from src.converters.factory import ConverterFactory
 
-        converter = IstatXMLToPowerBIConverter()
-
-        # Test various dataset IDs
-        test_cases = [
-            ("DCIS_POPRES1", "Test Population"),
-            ("DCCN_PIL", "Test Economy"),
-            ("RANDOM_ID", "Random Dataset"),
-        ]
-
-        for dataset_id, dataset_name in test_cases:
-            category, priority = converter._categorize_dataset(dataset_id, dataset_name)
-            assert isinstance(category, str)
-            assert isinstance(priority, int)
-            assert priority >= 1
+        # Test unsupported target handling
+        try:
+            ConverterFactory.create_converter("nonexistent_target")
+            assert False, "Should have raised ValueError"
+        except ValueError:
+            # Expected behavior
+            pass
 
     def test_error_handling_coverage(self):
         """Test error handling in various modules."""
-        from src.converters.tableau_converter import IstatXMLtoTableauConverter
+        from src.converters.factory import ConverterFactory
 
-        converter = IstatXMLtoTableauConverter()
-
-        # Test with minimal valid XML that should not crash
-        minimal_xml = '<?xml version="1.0"?><root></root>'
-
-        try:
-            result = converter._parse_xml_content(minimal_xml)
-            assert result is not None
-        except Exception:
-            # If it raises an exception, that's also fine for coverage
-            pass
+        # Test if factory handles empty target list gracefully
+        is_supported = ConverterFactory.is_target_supported("invalid_target")
+        assert isinstance(is_supported, bool)
+        assert not is_supported
 
     def test_path_validation_edge_cases(self):
         """Test path validation additional cases."""

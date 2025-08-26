@@ -107,7 +107,7 @@ class PipelineService:
             result = await self.pipeline.ingest_dataset(
                 dataset_id=dataset_id,
                 sdmx_data=sdmx_data,
-                target_formats=target_formats or ["powerbi"],
+                target_formats=target_formats or [],
             )
 
             logger.info(f"Dataset processed successfully: {dataset_id}")
@@ -180,7 +180,7 @@ class PipelineService:
         # Submit batch job
         batch_id = await self.job_manager.submit_batch_job(
             datasets=datasets,
-            target_formats=target_formats or ["powerbi"],
+            target_formats=target_formats or [],
         )
 
         logger.info(f"Batch job submitted: {batch_id}")

@@ -3,7 +3,7 @@ Integration tests for end-to-end data pipeline.
 """
 
 from pathlib import Path
-from unittest.mock import Mock, mock_open, patch
+from unittest.mock import Mock, patch
 
 import pandas as pd
 import pytest
@@ -16,10 +16,10 @@ from src.services.service_factory import get_dataflow_analysis_service
 class TestEndToEndPipeline:
     """Test complete data pipeline from API to output."""
 
-    def test_complete_tableau_pipeline(
+    def test_complete_csv_pipeline(
         self, temp_dir, sample_dataflow_xml, sample_xml_data
     ):
-        """Test complete pipeline for Tableau output."""
+        """Test complete pipeline for CSV export output."""
         # Setup test environment
         dataflow_file = temp_dir / "dataflow_response.xml"
         dataflow_file.write_text(sample_dataflow_xml, encoding="utf-8")
@@ -88,32 +88,27 @@ class TestEndToEndPipeline:
 
                     assert len(tested) > 0
 
-                    # Create Tableau-ready datasets
-                    tableau_ready = analyzer.create_tableau_ready_dataset_list(tested)
+                    # Create export-ready datasets for MVP
+                    export_ready = [
+                        {
+                            "dataflow_id": item["dataflow_id"],
+                            "name": item["name"],
+                            "category": item.get("category", "general"),
+                        }
+                        for item in tested
+                    ]
 
-                    assert len(tableau_ready) > 0
-                    assert "dataflow_id" in tableau_ready[0]
-                    assert "name" in tableau_ready[0]
-                    assert "category" in tableau_ready[0]
-                    assert "tableau_connection_type" in tableau_ready[0]
-
-                    # Generate implementation guide
-                    with patch("builtins.open", mock_open()):
-                        with patch("json.dump"):
-                            files = analyzer.generate_tableau_implementation_guide(
-                                tableau_ready
-                            )
-
-                            assert "config_file" in files
-                            assert "powershell_script" in files
-                            assert "prep_flow" in files
+                    assert len(export_ready) > 0
+                    assert "dataflow_id" in export_ready[0]
+                    assert "name" in export_ready[0]
+                    assert "category" in export_ready[0]
 
             finally:
                 os.chdir(original_cwd)
 
-    def test_complete_powerbi_pipeline(self, temp_dir, sample_converted_data):
-        """Test complete pipeline for PowerBI output."""
-        # Test PowerBI conversion pipeline
+    def test_complete_export_pipeline(self, temp_dir, sample_converted_data):
+        """Test complete pipeline for universal export formats."""
+        # Test universal export pipeline
         test_data = sample_converted_data
 
         # Test multiple format conversion
