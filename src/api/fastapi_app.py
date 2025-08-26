@@ -218,6 +218,169 @@ async def health_check(repository=Depends(get_repository)):
         )
 
 
+# Additional Health Check Endpoints (Issue #134)
+@app.get("/health/live", tags=["System"])
+async def liveness_probe():
+    """
+    Kubernetes liveness probe - basic service availability.
+    Returns 200 if service is running.
+    """
+    return {
+        "status": "healthy",
+        "timestamp": datetime.now().isoformat(),
+        "service": "osservatorio-api",
+    }
+
+
+@app.get("/health/ready", tags=["System"])
+async def readiness_probe(repository=Depends(get_repository)):
+    """
+    Kubernetes readiness probe - service ready to serve traffic.
+    Checks database connectivity and core dependencies.
+    """
+    try:
+        # Basic database connectivity check
+        system_status = repository.get_system_status()
+
+        # Check if databases are accessible
+        metadata_ok = (
+            system_status.get("metadata_database", {}).get("status") == "connected"
+        )
+        analytics_ok = (
+            system_status.get("analytics_database", {}).get("status") == "connected"
+        )
+
+        if metadata_ok and analytics_ok:
+            return {
+                "status": "ready",
+                "timestamp": datetime.now().isoformat(),
+                "checks": {
+                    "database": "healthy",
+                    "metadata_db": "connected",
+                    "analytics_db": "connected",
+                },
+            }
+        else:
+            return JSONResponse(
+                status_code=503,
+                content={
+                    "status": "not_ready",
+                    "timestamp": datetime.now().isoformat(),
+                    "checks": {
+                        "metadata_db": "connected" if metadata_ok else "disconnected",
+                        "analytics_db": "connected" if analytics_ok else "disconnected",
+                    },
+                },
+            )
+    except Exception as e:
+        logger.error(f"Readiness check failed: {e}")
+        return JSONResponse(
+            status_code=503,
+            content={
+                "status": "not_ready",
+                "timestamp": datetime.now().isoformat(),
+                "error": str(e),
+            },
+        )
+
+
+@app.get("/health/db", tags=["System"])
+async def database_health(repository=Depends(get_repository)):
+    """
+    Database connectivity health check.
+    """
+    try:
+        system_status = repository.get_system_status()
+
+        return {
+            "status": "healthy",
+            "timestamp": datetime.now().isoformat(),
+            "databases": {
+                "metadata": system_status.get("metadata_database", {}),
+                "analytics": system_status.get("analytics_database", {}),
+            },
+        }
+    except Exception as e:
+        logger.error(f"Database health check failed: {e}")
+        return JSONResponse(
+            status_code=503,
+            content={
+                "status": "unhealthy",
+                "timestamp": datetime.now().isoformat(),
+                "error": str(e),
+            },
+        )
+
+
+@app.get("/health/external", tags=["System"])
+async def external_dependencies_health(istat_client=Depends(get_istat_client)):
+    """
+    External dependencies health check (ISTAT APIs, etc.).
+    """
+    try:
+        # Check ISTAT API connectivity
+        istat_health = istat_client.health_check()
+
+        return {
+            "status": "healthy",
+            "timestamp": datetime.now().isoformat(),
+            "external_services": {"istat_api": istat_health},
+        }
+    except Exception as e:
+        logger.error(f"External dependencies health check failed: {e}")
+        return JSONResponse(
+            status_code=503,
+            content={
+                "status": "unhealthy",
+                "timestamp": datetime.now().isoformat(),
+                "error": str(e),
+                "external_services": {"istat_api": {"status": "unreachable"}},
+            },
+        )
+
+
+@app.get("/health/metrics", tags=["System"])
+async def metrics_health(repository=Depends(get_repository)):
+    """
+    Basic system metrics for monitoring.
+    """
+    try:
+        import psutil
+
+        # Get basic system metrics
+        memory = psutil.virtual_memory()
+        cpu_percent = psutil.cpu_percent(interval=1)
+
+        # Get database stats
+        system_status = repository.get_system_status()
+
+        return {
+            "status": "healthy",
+            "timestamp": datetime.now().isoformat(),
+            "system_metrics": {
+                "memory_usage_percent": memory.percent,
+                "cpu_usage_percent": cpu_percent,
+                "memory_available_mb": memory.available / 1024 / 1024,
+            },
+            "database_stats": {
+                "metadata": system_status.get("metadata_database", {}).get("stats", {}),
+                "analytics": system_status.get("analytics_database", {}).get(
+                    "stats", {}
+                ),
+            },
+        }
+    except Exception as e:
+        logger.error(f"Metrics health check failed: {e}")
+        return JSONResponse(
+            status_code=503,
+            content={
+                "status": "unhealthy",
+                "timestamp": datetime.now().isoformat(),
+                "error": str(e),
+            },
+        )
+
+
 # Dataset Endpoints
 @app.get("/datasets", response_model=DatasetListResponse, tags=["Datasets"])
 @handle_api_errors
