@@ -1,5 +1,5 @@
-# Osservatorio ISTAT Data Platform - Docker Compose Configuration
-# Development and testing environment
+# Osservatorio ISTAT Data Platform - Enhanced Docker Compose Configuration
+# Development and testing environment with advanced health monitoring and build optimization
 
 version: '3.8'
 
@@ -9,50 +9,205 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: development
+      target: ${BUILD_TARGET:-development}
+      args:
+        BUILD_DATE: ${BUILD_DATE:-$(date -u +'%Y-%m-%dT%H:%M:%SZ')}
+        VERSION: ${VERSION:-1.0.0-dev}
+        VCS_REF: ${VCS_REF:-$(git rev-parse --short HEAD)}
+      cache_from:
+        - osservatorio/api:cache
+        - python:3.11-slim
+      labels:
+        - "com.docker.compose.build.benchmark=true"
+        - "com.osservatorio.service=api"
+        - "com.osservatorio.version=${VERSION:-1.0.0-dev}"
+    image: osservatorio/api:${VERSION:-latest}
+    container_name: osservatorio-api
     ports:
-      - "8000:8000"
+      - "${API_PORT:-8000}:8000"
     volumes:
       - .:/app
       - osservatorio-data:/app/data
       - osservatorio-logs:/app/logs
     environment:
-      - OSSERVATORIO_ENV=development
-      - OSSERVATORIO_LOG_LEVEL=DEBUG
+      - OSSERVATORIO_ENV=${ENVIRONMENT:-development}
+      - OSSERVATORIO_LOG_LEVEL=${LOG_LEVEL:-DEBUG}
       - DATABASE_URL=sqlite:///data/databases/osservatorio_dev.db
+      - POSTGRES_URL=postgresql://osservatorio:${DB_PASSWORD:-osservatorio_dev_password}@postgres:5432/osservatorio
       - DUCKDB_URL=data/databases/osservatorio_dev.duckdb
       - REDIS_URL=redis://redis:6379/0
+      - CACHE_TTL=300
+      - HEALTH_CHECK_TIMEOUT=10
+    
+    # Enhanced health check with dependency validation
+    healthcheck:
+      test: |
+        curl -f http://localhost:8000/health/live || exit 1
+      interval: 30s
+      timeout: 15s
+      retries: 3
+      start_period: 45s
+    
     depends_on:
-      - redis
-      - postgres
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    
     networks:
       - osservatorio-network
+    
     restart: unless-stopped
+    
+    # Resource limits for development
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  # Advanced Health Monitor with Dependency Checks
+  health-monitor:
+    image: curlimages/curl:8.4.0
+    container_name: osservatorio-health-monitor
+    restart: unless-stopped
+    depends_on:
+      - osservatorio-api
+    
+    command: |
+      sh -c '
+        echo "=== Osservatorio Health Monitor Started ==="
+        
+        while true; do
+          TIMESTAMP=$$(date "+%Y-%m-%d %H:%M:%S")
+          echo "=== Health Check Report $$TIMESTAMP ==="
+          
+          # Liveness Check (Basic API Response)
+          if curl -s -f --max-time 10 http://osservatorio-api:8000/health/live > /dev/null 2>&1; then
+            echo "✅ LIVENESS: API responding ($$TIMESTAMP)"
+            LIVE_STATUS="healthy"
+          else
+            echo "❌ LIVENESS: API not responding ($$TIMESTAMP)"
+            LIVE_STATUS="unhealthy"
+          fi
+          
+          # Readiness Check (Dependencies + API Ready)
+          READY_RESPONSE=$$(curl -s --max-time 15 http://osservatorio-api:8000/health/ready 2>/dev/null || echo "failed")
+          if echo "$$READY_RESPONSE" | grep -q "ready\|healthy"; then
+            echo "✅ READINESS: API ready to serve traffic ($$TIMESTAMP)"
+            READY_STATUS="ready"
+          else
+            echo "❌ READINESS: API not ready - dependencies may be down ($$TIMESTAMP)"
+            READY_STATUS="not_ready"
+          fi
+          
+          # Individual Dependency Checks
+          echo "--- Dependency Status Check ($$TIMESTAMP) ---"
+          
+          # Database Health (SQLite + PostgreSQL)
+          DB_HEALTH=$$(curl -s --max-time 10 http://osservatorio-api:8000/health/db 2>/dev/null || echo "failed")
+          if echo "$$DB_HEALTH" | grep -q "healthy"; then
+            echo "✅ DATABASE: All database connections healthy"
+          else
+            echo "❌ DATABASE: Database connection issues detected"
+          fi
+          
+          # Redis Cache Health
+          CACHE_HEALTH=$$(curl -s --max-time 10 http://osservatorio-api:8000/health/cache 2>/dev/null || echo "failed")
+          if echo "$$CACHE_HEALTH" | grep -q "healthy"; then
+            echo "✅ REDIS CACHE: Connected and responsive"
+          else
+            echo "❌ REDIS CACHE: Connection issues detected"
+          fi
+          
+          # External Dependencies (ISTAT APIs, etc.)
+          EXT_HEALTH=$$(curl -s --max-time 15 http://osservatorio-api:8000/health/external 2>/dev/null || echo "failed")
+          if echo "$$EXT_HEALTH" | grep -q "healthy"; then
+            echo "✅ EXTERNAL APIS: All external services accessible"
+          else
+            echo "⚠️  EXTERNAL APIS: Some external services may be unavailable"
+          fi
+          
+          # System Resources Check
+          METRICS_HEALTH=$$(curl -s --max-time 10 http://osservatorio-api:8000/health/metrics 2>/dev/null || echo "failed")
+          if echo "$$METRICS_HEALTH" | grep -q "healthy"; then
+            echo "✅ SYSTEM METRICS: Resource usage within normal limits"
+          else
+            echo "⚠️  SYSTEM METRICS: High resource usage detected"
+          fi
+          
+          # Generate health summary
+          echo "--- Health Summary ($$TIMESTAMP) ---"
+          echo "Live Status: $$LIVE_STATUS"
+          echo "Ready Status: $$READY_STATUS"
+          
+          # Log to file for persistence
+          echo "$$TIMESTAMP,$$LIVE_STATUS,$$READY_STATUS" >> /tmp/health_logs/health_summary.csv
+          
+          echo "=== End Health Report ==="
+          echo ""
+          
+          sleep 60
+        done
+      '
+    
+    networks:
+      - osservatorio-network
+    
+    volumes:
+      - health_logs:/tmp/health_logs
+    
+    profiles:
+      - monitoring
 
   # Redis for caching and session storage
   redis:
     image: redis:7-alpine
+    container_name: osservatorio-redis
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT:-6379}:6379"
     volumes:
       - redis-data:/data
-    command: redis-server --appendonly yes
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+    
+    # Redis health check
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    
     networks:
       - osservatorio-network
     restart: unless-stopped
 
-  # PostgreSQL for production-ready metadata storage (optional)
+  # PostgreSQL for production-ready metadata storage
   postgres:
     image: postgres:15-alpine
+    container_name: osservatorio-postgres
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5432}:5432"
     environment:
       - POSTGRES_DB=osservatorio
       - POSTGRES_USER=osservatorio
-      - POSTGRES_PASSWORD=osservatorio_dev_password
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-osservatorio_dev_password}
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=C --lc-ctype=C
     volumes:
       - postgres-data:/var/lib/postgresql/data
       - ./scripts/sql:/docker-entrypoint-initdb.d
+    
+    # PostgreSQL health check
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U osservatorio -d osservatorio"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    
     networks:
       - osservatorio-network
     restart: unless-stopped
@@ -62,36 +217,211 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: development
+      target: ${BUILD_TARGET:-development}
+      args:
+        BUILD_DATE: ${BUILD_DATE:-$(date -u +'%Y-%m-%dT%H:%M:%SZ')}
+        VERSION: ${VERSION:-1.0.0-dev}
+        VCS_REF: ${VCS_REF:-$(git rev-parse --short HEAD)}
+    image: osservatorio/dashboard:${VERSION:-latest}
+    container_name: osservatorio-dashboard
     ports:
-      - "8501:8501"
+      - "${DASHBOARD_PORT:-8501}:8501"
     volumes:
       - .:/app
       - osservatorio-data:/app/data
     environment:
       - STREAMLIT_SERVER_PORT=8501
       - STREAMLIT_SERVER_ADDRESS=0.0.0.0
+      - STREAMLIT_SERVER_HEADLESS=true
+      - STREAMLIT_BROWSER_GATHER_USAGE_STATS=false
     command: streamlit run dashboard/app.py
+    
+    # Dashboard health check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8501/_stcore/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    
     depends_on:
-      - osservatorio-api
+      osservatorio-api:
+        condition: service_healthy
     networks:
       - osservatorio-network
     restart: unless-stopped
 
-  # Nginx reverse proxy (production-like setup)
+  # Nginx reverse proxy
   nginx:
     image: nginx:alpine
+    container_name: osservatorio-nginx
     ports:
-      - "80:80"
-      - "443:443"
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
     volumes:
-      - ./docker/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./docker/ssl:/etc/nginx/ssl:ro
+      - ./docker/nginx.conf:/etc/nginx/nginx.conf.d/:ro
+      - ./docker/ssl:/etc/nginx/ssl/:ro
+      - nginx_logs:/var/log/nginx
+    
+    # Nginx health check
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    
     depends_on:
-      - osservatorio-api
-      - osservatorio-dashboard
+      osservatorio-api:
+        condition: service_healthy
+      osservatorio-dashboard:
+        condition: service_healthy
     networks:
       - osservatorio-network
+    restart: unless-stopped
+
+  # Build Benchmarking Service
+  build-benchmark:
+    build:
+      context: .
+      dockerfile: Dockerfile.benchmark
+    image: osservatorio/benchmark:latest
+    container_name: osservatorio-build-benchmark
+    profiles:
+      - benchmark
+    
+    environment:
+      - BENCHMARK_OUTPUT=/benchmark/results
+      - DOCKER_BUILDKIT=1
+      - BUILD_TARGET=${BUILD_TARGET:-development}
+      - VERSION=${VERSION:-1.0.0-dev}
+    
+    volumes:
+      - .:/source:ro
+      - benchmark_results:/benchmark/results
+      - /var/run/docker.sock:/var/run/docker.sock
+    
+    command: |
+      sh -c '
+        echo "=== Osservatorio Docker Build Benchmark Starting ==="
+        echo "Timestamp: $$(date)"
+        echo "Build Target: $${BUILD_TARGET:-development}"
+        echo "Version: $${VERSION:-1.0.0-dev}"
+        
+        # Ensure benchmark results directory exists
+        mkdir -p /benchmark/results
+        
+        # Clean previous builds for accurate benchmarking
+        docker system prune -f --volumes=false
+        
+        # Benchmark 1: Cold Build (no cache)
+        echo ""
+        echo "--- Cold Build Benchmark (No Cache) ---"
+        START_TIME=$$(date +%s.%N)
+        docker build --no-cache \
+          --target $${BUILD_TARGET:-development} \
+          --build-arg BUILD_DATE="$$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+          --build-arg VERSION="$${VERSION:-1.0.0-dev}" \
+          --build-arg VCS_REF="$$(cd /source && git rev-parse --short HEAD 2>/dev/null || echo unknown)" \
+          -t osservatorio/api:benchmark-cold /source
+        COLD_END_TIME=$$(date +%s.%N)
+        COLD_BUILD_TIME=$$(echo "$$COLD_END_TIME - $$START_TIME" | bc -l)
+        
+        echo "Cold build completed in: $${COLD_BUILD_TIME} seconds"
+        
+        # Benchmark 2: Warm Build (with cache)
+        echo ""
+        echo "--- Warm Build Benchmark (With Cache) ---"
+        # Make a small change to trigger partial rebuild
+        echo "# Cache test $$(date)" > /tmp/cache_test
+        START_TIME=$$(date +%s.%N)
+        docker build \
+          --target $${BUILD_TARGET:-development} \
+          --build-arg BUILD_DATE="$$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+          --build-arg VERSION="$${VERSION:-1.0.0-dev}" \
+          --build-arg VCS_REF="$$(cd /source && git rev-parse --short HEAD 2>/dev/null || echo unknown)" \
+          -t osservatorio/api:benchmark-warm /source
+        WARM_END_TIME=$$(date +%s.%N)
+        WARM_BUILD_TIME=$$(echo "$$WARM_END_TIME - $$START_TIME" | bc -l)
+        
+        echo "Warm build completed in: $${WARM_BUILD_TIME} seconds"
+        
+        # Analyze image
+        IMAGE_SIZE=$$(docker image inspect osservatorio/api:benchmark-warm --format="{{.Size}}" | awk "{printf \"%.2f\", \$$1/1024/1024}")
+        LAYERS_COUNT=$$(docker history osservatorio/api:benchmark-warm --no-trunc --format "table {{.ID}}" | wc -l)
+        LAYERS_COUNT=$$((LAYERS_COUNT - 1)) # Remove header
+        
+        # Calculate cache efficiency
+        if [ "$$(echo "$$COLD_BUILD_TIME > 0" | bc -l)" -eq 1 ]; then
+          CACHE_EFFICIENCY=$$(echo "scale=2; ($$COLD_BUILD_TIME - $$WARM_BUILD_TIME) / $$COLD_BUILD_TIME * 100" | bc -l)
+        else
+          CACHE_EFFICIENCY=0
+        fi
+        
+        # Generate comprehensive benchmark report
+        REPORT_FILE="/benchmark/results/build_benchmark_$$(date +%Y%m%d_%H%M%S).json"
+        cat > "$$REPORT_FILE" << EOF
+        {
+          "metadata": {
+            "timestamp": "$$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "build_target": "$${BUILD_TARGET:-development}",
+            "version": "$${VERSION:-1.0.0-dev}",
+            "git_commit": "$$(cd /source && git rev-parse --short HEAD 2>/dev/null || echo unknown)",
+            "docker_version": "$$(docker --version)",
+            "buildkit_enabled": "$${DOCKER_BUILDKIT:-0}"
+          },
+          "build_performance": {
+            "cold_build_time_seconds": $$COLD_BUILD_TIME,
+            "warm_build_time_seconds": $$WARM_BUILD_TIME,
+            "cache_efficiency_percent": $$CACHE_EFFICIENCY,
+            "time_saved_seconds": $$(echo "$$COLD_BUILD_TIME - $$WARM_BUILD_TIME" | bc -l)
+          },
+          "image_analysis": {
+            "final_image_size_mb": $$IMAGE_SIZE,
+            "layers_count": $$LAYERS_COUNT,
+            "base_image": "python:3.11-slim"
+          },
+          "build_context": {
+            "dockerfile_path": "Dockerfile",
+            "context_size_estimate": "$$(du -sh /source 2>/dev/null | cut -f1 || echo unknown)"
+          }
+        }
+        EOF
+        
+        # Display results
+        echo ""
+        echo "=== Build Benchmark Results ==="
+        echo "Cold Build Time: $${COLD_BUILD_TIME}s"
+        echo "Warm Build Time: $${WARM_BUILD_TIME}s"
+        echo "Cache Efficiency: $${CACHE_EFFICIENCY}%"
+        echo "Final Image Size: $${IMAGE_SIZE}MB"
+        echo "Layer Count: $${LAYERS_COUNT}"
+        echo ""
+        echo "Full report saved to: $$REPORT_FILE"
+        echo "=== Benchmark Complete ==="
+        
+        # Keep container running for log inspection
+        tail -f /dev/null
+      '
+
+  # Performance monitoring (optional)
+  performance-monitor:
+    image: prom/node-exporter:latest
+    container_name: osservatorio-performance-monitor
+    ports:
+      - "${METRICS_PORT:-9100}:9100"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    networks:
+      - osservatorio-network
+    profiles:
+      - monitoring
     restart: unless-stopped
 
 volumes:
@@ -103,6 +433,12 @@ volumes:
     driver: local
   postgres-data:
     driver: local
+  nginx_logs:
+    driver: local
+  health_logs:
+    driver: local
+  benchmark_results:
+    driver: local
 
 networks:
   osservatorio-network:
@@ -110,3 +446,17 @@ networks:
     ipam:
       config:
         - subnet: 172.20.0.0/16
+
+# Environment-specific configurations
+x-environment-configs:
+  development: &dev-config
+    OSSERVATORIO_ENV: development
+    OSSERVATORIO_LOG_LEVEL: DEBUG
+    
+  staging: &staging-config
+    OSSERVATORIO_ENV: staging
+    OSSERVATORIO_LOG_LEVEL: INFO
+    
+  production: &prod-config
+    OSSERVATORIO_ENV: production
+    OSSERVATORIO_LOG_LEVEL: WARNING

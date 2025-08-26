@@ -45,6 +45,7 @@ from .dependencies import (
     require_write,
     validate_dataset_id,
 )
+from .health import health_router
 from .models import (  # Dataflow Analysis Models
     APIKeyCreate,
     APIKeyListResponse,
@@ -777,6 +778,9 @@ app.include_router(odata_router, prefix="/odata", tags=["OData"])
 from .dataflow_analysis_api import router as dataflow_router
 
 app.include_router(dataflow_router, prefix="/api", tags=["Dataflow Analysis"])
+
+# Include Health Check router
+app.include_router(health_router)
 
 
 # OpenAPI customization
