@@ -3,7 +3,7 @@
 > **Core architecture functional, infrastructure components untested**
 > **Version**: 12.0.0-dev
 > **Date**: August 6, 2025
-> **Status**: FastAPI + Database operational, K8s/BI integration needs validation
+> **Status**: FastAPI + Database operational, Docker deployment ready
 
 ---
 
@@ -13,7 +13,7 @@
 
 ### Architecture Status (August 2025)
 1. **✅ Core Functional**: FastAPI REST API, SQLite+DuckDB hybrid, JWT authentication working
-2. **🏗️ Infrastructure Present**: Kubernetes manifests, Docker builds, monitoring endpoints created
+2. **🏗️ Infrastructure Present**: Docker Compose setup, monitoring endpoints created
 3. **⚠️ Integration Incomplete**: PowerBI templates don't work, Tableau partial, monitoring untested
 4. **❌ Deployment Untested**: No real cluster deployment, production workload validation needed
 
