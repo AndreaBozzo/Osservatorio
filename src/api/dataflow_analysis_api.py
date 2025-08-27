@@ -5,7 +5,7 @@ Provides REST API endpoints for:
 - Dataflow XML analysis and categorization
 - Categorization rules management (CRUD operations)
 - Bulk dataflow analysis operations
-- Tableau-ready dataset generation
+- Export-ready dataset generation
 """
 
 from pathlib import Path
@@ -40,7 +40,7 @@ from .models import (
     DataflowAnalysisResponse,
     DataflowInfo,
     DataflowTestInfo,
-    TableauReadyDataflow,
+    ExportReadyDataflow,
 )
 
 logger = get_logger(__name__)
@@ -57,7 +57,7 @@ router = APIRouter(prefix="/analysis", tags=["Dataflow Analysis"])
     This endpoint processes ISTAT SDMX dataflow XML and:
     - Extracts all dataflow definitions
     - Categorizes them using machine learning rules
-    - Optionally tests data access and generates Tableau-ready datasets
+    - Optionally tests data access and generates export-ready datasets
     - Returns comprehensive analysis results with performance metrics
 
     **Input Options:**
@@ -147,7 +147,7 @@ async def analyze_dataflow(
         # Convert test results
         test_results = []
         for test_result in result.test_results:
-            api_test_result = TableauReadyDataflow(
+            api_test_result = ExportReadyDataflow(
                 dataflow=DataflowInfo(
                     id=test_result.dataflow.id,
                     name_it=test_result.dataflow.name_it,
@@ -302,7 +302,7 @@ async def upload_and_analyze_xml(
         # Convert test results
         test_results = []
         for test_result in result.test_results:
-            api_test_result = TableauReadyDataflow(
+            api_test_result = ExportReadyDataflow(
                 dataflow=DataflowInfo(
                     id=test_result.dataflow.id,
                     name_it=test_result.dataflow.name_it,
@@ -397,7 +397,7 @@ async def bulk_analyze_dataflows(
 
         for result in results:
             try:
-                api_result = TableauReadyDataflow(
+                api_result = ExportReadyDataflow(
                     dataflow=DataflowInfo(
                         id=result.dataflow.id,
                         name_it=result.dataflow.name_it,
