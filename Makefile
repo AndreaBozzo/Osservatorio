@@ -70,7 +70,7 @@ process-single:  ## Process single ISTAT dataset interactively
 		client = ProductionIstatClient(); \
 		try: \
 			xml_data = await client.get_dataset_data('$$dataset'); \
-			result = await (pipeline.from_istat('$$dataset', xml_data).validate().convert_to(['powerbi']).store()); \
+			result = await (pipeline.from_istat('$$dataset', xml_data).validate().convert_to(['csv', 'json']).store()); \
 			print(f'✅ Success: {result.records_processed} records, Quality: {result.quality_score.overall_score:.1f}%'); \
 		except Exception as e: \
 			print(f'❌ Error: {e}'); \
@@ -89,7 +89,7 @@ process-batch:  ## Process multiple ISTAT datasets in batch
 		for ds in datasets: \
 			try: \
 				xml_data = await client.get_dataset_data(ds); \
-				configs.append({'dataset_id': ds, 'sdmx_data': xml_data, 'target_formats': ['powerbi']}); \
+				configs.append({'dataset_id': ds, 'sdmx_data': xml_data, 'target_formats': ['csv', 'json']}); \
 			except Exception as e: \
 				print(f'⚠️  Skipping {ds}: {e}'); \
 		if configs: \
@@ -128,14 +128,14 @@ pipeline-examples:  ## Show pipeline usage examples
 	@echo "  result = await (pipeline"
 	@echo "      .from_istat('DCCN_PILN', xml_data)"
 	@echo "      .validate(min_quality=80.0)"
-	@echo "      .convert_to(['powerbi', 'tableau'])"
+	@echo "      .convert_to(['csv', 'json', 'parquet'])"
 	@echo "      .store()"
 	@echo "  )"
 	@echo ""
 	@echo "📦 Batch Processing:"
 	@echo "  configs = ["
-	@echo "      {'dataset_id': 'DS1', 'sdmx_data': data1, 'target_formats': ['powerbi']},"
-	@echo "      {'dataset_id': 'DS2', 'sdmx_data': data2, 'target_formats': ['tableau']}"
+	@echo "      {'dataset_id': 'DS1', 'sdmx_data': data1, 'target_formats': ['csv']},"
+	@echo "      {'dataset_id': 'DS2', 'sdmx_data': data2, 'target_formats': ['json']}"
 	@echo "  ]"
 	@echo "  results = await pipeline.process_batch(configs)"
 	@echo ""
@@ -184,18 +184,18 @@ test:  ## Run optimized development testing workflow (~30s)
 	@echo ""
 	@echo "✅ Development testing completed!"
 
-# PowerBI Integration Commands - Updated for Phase 1
-powerbi-validate:  ## Validate PowerBI integration offline
-	@echo "🔍 Validating PowerBI integration..."
-	@python -c "from src.integrations.powerbi.optimizer import PowerBIOptimizer; optimizer = PowerBIOptimizer(); print('✅ PowerBI optimizer initialized'); print('✅ Validation passed')"
+# Export Integration Commands - Updated for Phase 1
+export-validate:  ## Validate export functionality
+	@echo "🔍 Validating export functionality..."
+	@python -c "from src.converters.factory import ConverterFactory; factory = ConverterFactory(); print('✅ Converter factory initialized'); print('✅ Validation passed')"
 
-powerbi-demo:  ## Run PowerBI integration demo
-	@echo "📊 Running PowerBI integration demo..."
-	pytest tests/integration/test_powerbi_integration.py::TestPowerBIIntegration::test_end_to_end_powerbi_pipeline -v
+export-demo:  ## Run export integration demo
+	@echo "📊 Running export integration demo..."
+	pytest tests/integration/test_api_integration.py -k "export" -v
 
-powerbi-test:  ## Run PowerBI specific tests
-	@echo "🧪 Running PowerBI tests..."
-	pytest tests/unit/test_powerbi_converter.py tests/integration/test_powerbi_integration.py -v
+export-test:  ## Run export specific tests
+	@echo "🧪 Running export tests..."
+	pytest tests/unit/test_converters.py tests/unit/test_base_converter.py -v
 
 fastapi-test:  ## Run FastAPI integration tests
 	@echo "🌐 Running FastAPI integration tests..."
@@ -315,8 +315,8 @@ phase1-validate:  ## Validate Phase 1 Foundation Cleanup completion
 	@echo "Testing FastAPI integration..."
 	@$(MAKE) fastapi-test
 	@echo ""
-	@echo "Testing PowerBI integration..."
-	@$(MAKE) powerbi-test
+	@echo "Testing export functionality..."
+	@$(MAKE) export-test
 	@echo ""
 	@echo "Checking database status..."
 	@$(MAKE) db-status
@@ -355,7 +355,7 @@ examples:  ## Show common development workflow examples
 	@echo "💻 During development:"
 	@echo "  make test-fast           # Quick feedback (~30s)"
 	@echo "  make architecture-test   # Test Phase 1 components (~20s)"
-	@echo "  make powerbi-validate    # Test PowerBI integration"
+	@echo "  make export-validate     # Test export functionality"
 	@echo "  make fastapi-test        # Test REST API (~15s)"
 	@echo ""
 	@echo "📝 Before committing:"

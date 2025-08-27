@@ -5,7 +5,7 @@ Production-ready REST API providing:
 - Dataset management and querying
 - JWT-based authentication with API keys
 - Rate limiting and security middleware
-- OData v4 endpoint for PowerBI Direct Query
+- Export capabilities (CSV, JSON, Parquet)
 - Comprehensive audit logging
 - OpenAPI documentation with examples
 
@@ -71,7 +71,7 @@ app = FastAPI(
     ## Features
     - **Dataset Management**: Browse and access Italian statistical datasets
     - **Time Series Data**: Query time series with flexible filtering
-    - **PowerBI Integration**: OData v4 endpoint for Direct Query
+    - **Export Capabilities**: Universal export formats (CSV, JSON, Parquet)
     - **JWT Authentication**: Secure API key-based authentication
     - **Rate Limiting**: Configurable rate limits per API key
     - **Audit Logging**: Comprehensive request and usage tracking
@@ -797,7 +797,7 @@ async def get_usage_analytics(
         )
 
 
-# Include OData router for PowerBI integration
+# Include OData router for export capabilities
 odata_router = create_odata_router()
 app.include_router(odata_router, prefix="/odata", tags=["OData"])
 
