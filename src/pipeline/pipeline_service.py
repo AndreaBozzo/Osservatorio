@@ -82,7 +82,7 @@ class PipelineService:
 
         Args:
             dataset_id: ISTAT dataset identifier
-            target_formats: Output formats (powerbi, tableau, etc.)
+            target_formats: Output formats (csv, json, parquet, etc.)
             fetch_from_istat: Whether to fetch fresh data from ISTAT API
 
         Returns:
@@ -197,7 +197,7 @@ class PipelineService:
 
         Args:
             dataset_id: Dataset identifier
-            source_format: Current format (powerbi, tableau, raw)
+            source_format: Current format (csv, json, raw)
             target_formats: Target formats to convert to
 
         Returns:

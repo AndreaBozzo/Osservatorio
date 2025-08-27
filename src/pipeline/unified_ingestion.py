@@ -31,7 +31,7 @@ class UnifiedDataIngestionPipeline:
     Consolidates all data processing workflows under a single architecture:
     - SDMX data ingestion from ISTAT API
     - Quality validation (placeholder hooks for Issue #3)
-    - Multi-format conversion (PowerBI, Tableau)
+    - Multi-format conversion (CSV, JSON, Parquet)
     - Metadata management (SQLite)
     - Analytics storage (DuckDB)
     - Performance monitoring
@@ -85,7 +85,7 @@ class UnifiedDataIngestionPipeline:
         Args:
             dataset_id: ISTAT dataset identifier
             sdmx_data: SDMX XML data or structured data dict
-            target_formats: Output formats (powerbi, tableau, etc.)
+            target_formats: Output formats (csv, json, parquet, etc.)
             job_id: Optional job ID (generated if None)
 
         Returns:
@@ -494,7 +494,7 @@ class UnifiedDataIngestionPipeline:
         """
         Start fluent pipeline chain with ISTAT data source.
 
-        Usage: pipeline.from_istat(dataset_id, data).validate().convert_to(['powerbi']).store()
+        Usage: pipeline.from_istat(dataset_id, data).validate().convert_to(['csv', 'json']).store()
 
         Args:
             dataset_id: ISTAT dataset identifier
@@ -565,7 +565,7 @@ class UnifiedDataIngestionPipeline:
         Specify target conversion formats for fluent pipeline.
 
         Args:
-            target_formats: List of formats (powerbi, tableau, etc.)
+            target_formats: List of formats (csv, json, parquet, etc.)
 
         Returns:
             Self for method chaining
@@ -681,7 +681,7 @@ class UnifiedDataIngestionPipeline:
                     result = await self.ingest_dataset(
                         dataset_id=dataset_id,
                         sdmx_data=config["sdmx_data"],
-                        target_formats=config.get("target_formats", ["powerbi"]),
+                        target_formats=config.get("target_formats", ["csv", "json"]),
                     )
                     return dataset_id, result
                 except Exception as e:

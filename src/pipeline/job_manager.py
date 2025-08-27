@@ -60,7 +60,7 @@ class IngestionJobManager:
 
         Args:
             datasets: List of datasets to process
-            target_formats: Output formats (powerbi, tableau, etc.)
+            target_formats: Output formats (csv, json, parquet, etc.)
             batch_id: Optional batch identifier
             priority: Job priority (1=highest, 10=lowest)
 
