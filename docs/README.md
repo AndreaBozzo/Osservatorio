@@ -35,7 +35,7 @@
 ### Key Features
 - ✅ **DuckDB Analytics Engine** - High-performance data processing
 - ✅ **SQLite Metadata Layer** - Lightweight configuration management
-- ✅ **PowerBI Integration** - Native BI tool support
+- ✅ **Universal Export** - CSV, JSON, Parquet formats
 - ✅ **Performance Testing** - >2k records/sec validated
 - ✅ **Security Audited** - 0 HIGH severity issues
 

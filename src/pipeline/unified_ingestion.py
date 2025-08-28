@@ -31,7 +31,7 @@ class UnifiedDataIngestionPipeline:
     Consolidates all data processing workflows under a single architecture:
     - SDMX data ingestion from ISTAT API
     - Quality validation (placeholder hooks for Issue #3)
-    - Multi-format conversion (PowerBI, Tableau)
+    - Multi-format conversion (CSV, JSON, Parquet)
     - Metadata management (SQLite)
     - Analytics storage (DuckDB)
     - Performance monitoring
@@ -68,7 +68,7 @@ class UnifiedDataIngestionPipeline:
         self._current_dataset_id: Optional[str] = None
         self._current_data: Optional[Union[str, dict[str, Any]]] = None
         self._current_quality_score: Optional[QualityScore] = None
-        self._current_target_formats: list[str] = ["powerbi"]
+        self._current_target_formats: list[str] = []
 
         logger.info("Unified Data Ingestion Pipeline initialized")
 
@@ -85,7 +85,7 @@ class UnifiedDataIngestionPipeline:
         Args:
             dataset_id: ISTAT dataset identifier
             sdmx_data: SDMX XML data or structured data dict
-            target_formats: Output formats (powerbi, tableau, etc.)
+            target_formats: Output formats (csv, json, parquet, etc.)
             job_id: Optional job ID (generated if None)
 
         Returns:
@@ -100,7 +100,7 @@ class UnifiedDataIngestionPipeline:
             dataset_id=dataset_id,
             status=PipelineStatus.RUNNING,
             start_time=start_time,
-            metadata={"target_formats": target_formats or ["powerbi"]},
+            metadata={"target_formats": target_formats or []},
         )
         self.active_jobs[job_id] = result
 
@@ -126,7 +126,7 @@ class UnifiedDataIngestionPipeline:
 
             # Step 3: Convert to target formats
             conversion_results = await self._convert_to_formats(
-                parsed_data, dataset_id, target_formats or ["powerbi"]
+                parsed_data, dataset_id, target_formats or []
             )
 
             # Step 4: Store in databases
@@ -282,11 +282,8 @@ class UnifiedDataIngestionPipeline:
         """Parse SDMX data into standardized format."""
         try:
             if isinstance(sdmx_data, str):
-                # XML string - use PowerBI converter for parsing (concrete implementation)
-                converter = self.converter_factory.create_converter("powerbi")
-                df = converter._parse_xml_content(sdmx_data)
-                observations = df.to_dict("records") if not df.empty else []
-                return observations
+                # XML string - for MVP, return basic structure without conversion
+                return [{"dataset_id": dataset_id, "raw_xml": sdmx_data[:100] + "..."}]
             elif isinstance(sdmx_data, dict):
                 # Already structured data
                 return [sdmx_data]
@@ -497,7 +494,7 @@ class UnifiedDataIngestionPipeline:
         """
         Start fluent pipeline chain with ISTAT data source.
 
-        Usage: pipeline.from_istat(dataset_id, data).validate().convert_to(['powerbi']).store()
+        Usage: pipeline.from_istat(dataset_id, data).validate().convert_to(['csv', 'json']).store()
 
         Args:
             dataset_id: ISTAT dataset identifier
@@ -509,7 +506,7 @@ class UnifiedDataIngestionPipeline:
         self._current_dataset_id = dataset_id
         self._current_data = sdmx_data
         self._current_quality_score = None
-        self._current_target_formats = ["powerbi"]
+        self._current_target_formats = []
 
         logger.info(f"Fluent pipeline: Started with dataset {dataset_id}")
         return self
@@ -568,7 +565,7 @@ class UnifiedDataIngestionPipeline:
         Specify target conversion formats for fluent pipeline.
 
         Args:
-            target_formats: List of formats (powerbi, tableau, etc.)
+            target_formats: List of formats (csv, json, parquet, etc.)
 
         Returns:
             Self for method chaining
@@ -608,7 +605,7 @@ class UnifiedDataIngestionPipeline:
         self._current_dataset_id = None
         self._current_data = None
         self._current_quality_score = None
-        self._current_target_formats = ["powerbi"]
+        self._current_target_formats = []
 
         logger.info(f"Fluent pipeline: Completed processing for {result.dataset_id}")
         return result
@@ -684,7 +681,7 @@ class UnifiedDataIngestionPipeline:
                     result = await self.ingest_dataset(
                         dataset_id=dataset_id,
                         sdmx_data=config["sdmx_data"],
-                        target_formats=config.get("target_formats", ["powerbi"]),
+                        target_formats=config.get("target_formats", ["csv", "json"]),
                     )
                     return dataset_id, result
                 except Exception as e:

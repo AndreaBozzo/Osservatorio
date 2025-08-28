@@ -374,8 +374,8 @@ class DataflowTestInfo(BaseModel):
     )
 
 
-class TableauReadyDataflow(BaseModel):
-    """Tableau-ready dataflow model"""
+class ExportReadyDataflow(BaseModel):
+    """Export-ready dataflow model"""
 
     dataflow: DataflowInfo = Field(..., description="Dataflow information")
     test: DataflowTestInfo = Field(..., description="Test results")
@@ -394,10 +394,10 @@ class DataflowAnalysisResponse(APIResponse):
     categorized_dataflows: dict[str, list[DataflowInfo]] = Field(
         default_factory=dict, description="Dataflows grouped by category"
     )
-    test_results: list[TableauReadyDataflow] = Field(
+    test_results: list[ExportReadyDataflow] = Field(
         default_factory=list, description="Test results for analyzed dataflows"
     )
-    tableau_ready_count: int = Field(0, description="Number of Tableau-ready dataflows")
+    export_ready_count: int = Field(0, description="Number of export-ready dataflows")
     analysis_timestamp: datetime = Field(
         default_factory=datetime.now, description="When analysis was performed"
     )
@@ -491,7 +491,7 @@ class BulkAnalysisResponse(APIResponse):
     requested_count: int = Field(..., description="Number of dataflows requested")
     successful_count: int = Field(..., description="Number of successful analyses")
     failed_count: int = Field(..., description="Number of failed analyses")
-    results: list[TableauReadyDataflow] = Field(..., description="Analysis results")
+    results: list[ExportReadyDataflow] = Field(..., description="Analysis results")
     errors: list[str] = Field(
         default_factory=list, description="Error messages for failed analyses"
     )

@@ -134,8 +134,7 @@
   - Employment rate trends
   - Regional competitiveness indices
 - **Output Formats**:
-  - PowerBI: CSV, Excel, Parquet, JSON
-  - Tableau: CSV, Excel, JSON
+  - Universal Export: CSV, Excel, Parquet, JSON
   - Dashboard: JSON cache for Streamlit
 
 ---
@@ -149,8 +148,8 @@ data/
 │   ├── istat/     (~400MB - XML archives)
 │   └── xml/       (~100MB - samples)
 ├── processed/     (~200MB total)
-│   ├── powerbi/   (~100MB - multi-format)
-│   └── tableau/   (~100MB - multi-format)
+│   ├──    (~100MB - multi-format)
+│   └──    (~100MB - multi-format)
 └── cache/         (~50MB - temporary)
 ```
 

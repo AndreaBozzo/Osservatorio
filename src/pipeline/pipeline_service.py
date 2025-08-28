@@ -82,7 +82,7 @@ class PipelineService:
 
         Args:
             dataset_id: ISTAT dataset identifier
-            target_formats: Output formats (powerbi, tableau, etc.)
+            target_formats: Output formats (csv, json, parquet, etc.)
             fetch_from_istat: Whether to fetch fresh data from ISTAT API
 
         Returns:
@@ -107,7 +107,7 @@ class PipelineService:
             result = await self.pipeline.ingest_dataset(
                 dataset_id=dataset_id,
                 sdmx_data=sdmx_data,
-                target_formats=target_formats or ["powerbi"],
+                target_formats=target_formats or [],
             )
 
             logger.info(f"Dataset processed successfully: {dataset_id}")
@@ -180,7 +180,7 @@ class PipelineService:
         # Submit batch job
         batch_id = await self.job_manager.submit_batch_job(
             datasets=datasets,
-            target_formats=target_formats or ["powerbi"],
+            target_formats=target_formats or [],
         )
 
         logger.info(f"Batch job submitted: {batch_id}")
@@ -197,7 +197,7 @@ class PipelineService:
 
         Args:
             dataset_id: Dataset identifier
-            source_format: Current format (powerbi, tableau, raw)
+            source_format: Current format (csv, json, raw)
             target_formats: Target formats to convert to
 
         Returns:

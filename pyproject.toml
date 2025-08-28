@@ -35,7 +35,7 @@ classifiers = [
     "Environment :: Web Environment",
 ]
 keywords = [
-    "istat", "data-processing", "powerbi", "tableau", "fastapi", "analytics",
+    "istat", "data-processing", "fastapi", "analytics",
     "business-intelligence", "statistical-data", "rest-api", "duckdb", "sqlite"
 ]
 requires-python = ">=3.9"
@@ -75,7 +75,6 @@ dependencies = [
     "python-multipart>=0.0.6",
 
     # API clients
-    "tableauserverclient>=0.25",
     "msal>=1.24.0",
 
     # Authentication and security
@@ -222,7 +221,6 @@ module = [
     "plotly.*",
     "matplotlib.*",
     "seaborn.*",
-    "tableauserverclient.*",
     "msal.*",
     "lxml.*",
     "beautifulsoup4.*",

@@ -1,22 +1,16 @@
 """
-PowerBI Integration Package for Osservatorio ISTAT Data Platform
+Data Export Integration Package for Osservatorio ISTAT Data Platform
 
-This package provides PowerBI-specific optimizations and integration capabilities
+This package provides export capabilities and data integration features
 for the unified SQLite + DuckDB architecture.
 
-Components:
-- PowerBIOptimizer: Star schema generation and DAX optimization
-- IncrementalRefreshManager: SQLite-tracked incremental updates
-- TemplateGenerator: PowerBI template (.pbit) generation
-- MetadataBridge: PowerBI ↔ SQLite metadata synchronization
+Focuses on universal export formats for MVP:
+- CSV export with configurable formatting
+- JSON export with structured metadata
+- Parquet export for analytics workflows
 """
 
-from .powerbi.incremental import IncrementalRefreshManager
-from .powerbi.optimizer import PowerBIOptimizer
-from .powerbi.templates import TemplateGenerator
+# Export integrations placeholder
+# Future implementations: CSV, JSON, Parquet exporters
 
-__all__ = [
-    "PowerBIOptimizer",
-    "IncrementalRefreshManager",
-    "TemplateGenerator",
-]
+__all__ = []

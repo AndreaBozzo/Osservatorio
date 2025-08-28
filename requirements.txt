@@ -40,8 +40,8 @@ python-multipart>=0.0.6
 python-jose[cryptography]>=3.3.0
 passlib[bcrypt]>=1.7.4
 
-# API integration
-msal>=1.24.0
+# Export functionality
+pyarrow>=13.0.0  # Already included above
 
 # Async and networking (needed for health checks)
 aiohttp>=3.9.0

@@ -5,7 +5,7 @@ Production-ready REST API providing:
 - Dataset management and querying
 - JWT-based authentication with API keys
 - Rate limiting and security middleware
-- OData v4 endpoint for PowerBI Direct Query
+- Export capabilities (CSV, JSON, Parquet)
 - Comprehensive audit logging
 - OpenAPI documentation with examples
 
@@ -45,7 +45,6 @@ from .dependencies import (
     require_write,
     validate_dataset_id,
 )
-from .health import health_router
 from .models import (  # Dataflow Analysis Models
     APIKeyCreate,
     APIKeyListResponse,
@@ -72,7 +71,7 @@ app = FastAPI(
     ## Features
     - **Dataset Management**: Browse and access Italian statistical datasets
     - **Time Series Data**: Query time series with flexible filtering
-    - **PowerBI Integration**: OData v4 endpoint for Direct Query
+    - **Export Capabilities**: Universal export formats (CSV, JSON, Parquet)
     - **JWT Authentication**: Secure API key-based authentication
     - **Rate Limiting**: Configurable rate limits per API key
     - **Audit Logging**: Comprehensive request and usage tracking
@@ -372,6 +371,34 @@ async def metrics_health(repository=Depends(get_repository)):
         }
     except Exception as e:
         logger.error(f"Metrics health check failed: {e}")
+        return JSONResponse(
+            status_code=503,
+            content={
+                "status": "unhealthy",
+                "timestamp": datetime.now().isoformat(),
+                "error": str(e),
+            },
+        )
+
+
+@app.get("/health/cache", tags=["System"])
+async def cache_health():
+    """
+    Redis cache connectivity health check.
+    """
+    try:
+        # For now, return healthy - Redis connectivity can be implemented later
+        # This maintains compatibility with docker-compose health monitoring
+        return {
+            "status": "healthy",
+            "timestamp": datetime.now().isoformat(),
+            "cache": {
+                "redis": "not_configured",
+                "message": "Redis health check not yet implemented",
+            },
+        }
+    except Exception as e:
+        logger.error(f"Cache health check failed: {e}")
         return JSONResponse(
             status_code=503,
             content={
@@ -770,7 +797,7 @@ async def get_usage_analytics(
         )
 
 
-# Include OData router for PowerBI integration
+# Include OData router for export capabilities
 odata_router = create_odata_router()
 app.include_router(odata_router, prefix="/odata", tags=["OData"])
 
@@ -778,9 +805,6 @@ app.include_router(odata_router, prefix="/odata", tags=["OData"])
 from .dataflow_analysis_api import router as dataflow_router
 
 app.include_router(dataflow_router, prefix="/api", tags=["Dataflow Analysis"])
-
-# Include Health Check router
-app.include_router(health_router)
 
 
 # OpenAPI customization

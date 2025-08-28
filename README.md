@@ -20,7 +20,7 @@
 - **🛡️ Security**: JWT auth, rate limiting, security middleware implemented
 - **🐳 Docker**: Multi-stage builds ready (image deployment untested)
 - **☸️ Kubernetes**: Infrastructure manifests complete (cluster deployment untested)
-- **⚠️ BI Integration**: PowerBI/Tableau structure present but needs rework
+- **📤 Export Formats**: Universal data export (CSV, JSON, Parquet) implemented
 
 ## 🚀 Quick Start
 

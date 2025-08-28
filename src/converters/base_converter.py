@@ -1,6 +1,6 @@
 """
 Base converter class for ISTAT SDMX data processing.
-Eliminates code duplication between PowerBI and Tableau converters.
+Provides universal data conversion capabilities for export formats.
 """
 
 import os
@@ -360,7 +360,7 @@ class BaseIstatConverter(ABC):
     # Abstract methods that subclasses must implement
     @abstractmethod
     def _format_output(self, df: pd.DataFrame, dataset_info: dict) -> dict:
-        """Format output data for specific target (PowerBI, Tableau, etc.)."""
+        """Format output data for specific target (CSV, JSON, Parquet, etc.)."""
         pass
 
     @abstractmethod
