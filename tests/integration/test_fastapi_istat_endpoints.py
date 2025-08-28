@@ -159,8 +159,12 @@ class TestIstatStatusEndpoint:
 
 
 class TestIstatDataflowsEndpoint:
-    """Test /api/istat/dataflows endpoint."""
+    """Test /api/istat/dataflows endpoint.
 
+    Issue #153: Endpoint removed for MVP - disconnected from ingestion pipeline
+    """
+
+    @pytest.mark.skip(reason="Issue #153: Endpoint removed for MVP")
     @pytest.mark.integration
     def test_dataflows_endpoint_success(self, client, auth_headers):
         """Test dataflows endpoint returns dataset list."""
@@ -211,6 +215,7 @@ class TestIstatDataflowsEndpoint:
             # Clean up dependency overrides
             app.dependency_overrides.clear()
 
+    @pytest.mark.skip(reason="Issue #153: Endpoint removed for MVP")
     @pytest.mark.integration
     def test_dataflows_endpoint_unauthorized(self, client):
         """Test dataflows endpoint requires authentication."""
@@ -218,6 +223,7 @@ class TestIstatDataflowsEndpoint:
 
         assert response.status_code == 401
 
+    @pytest.mark.skip(reason="Issue #153: Endpoint removed for MVP")
     @pytest.mark.integration
     def test_dataflows_endpoint_with_cache_fallback(self, client, auth_headers):
         """Test dataflows endpoint with cache fallback."""
@@ -518,6 +524,7 @@ class TestIstatSyncEndpoint:
 class TestIstatEndpointsIntegration:
     """Integration tests across multiple ISTAT endpoints."""
 
+    @pytest.mark.skip(reason="Issue #153: Dataflows endpoint removed for MVP")
     @pytest.mark.integration
     def test_complete_istat_workflow(self, client, auth_headers):
         """Test complete workflow: status -> dataflows -> dataset -> sync."""

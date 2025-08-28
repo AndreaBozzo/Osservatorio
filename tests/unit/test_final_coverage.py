@@ -3,6 +3,8 @@ Final coverage push to reach 60% target.
 Simple working tests for missing coverage.
 """
 
+import pytest
+
 
 class TestFinalCoveragePush:
     """Simple tests that should pass and increase coverage."""
@@ -17,6 +19,7 @@ class TestFinalCoveragePush:
         # Should be same instance (singleton)
         assert manager1 is manager2
 
+    @pytest.mark.skip(reason="Issue #153: security_enhanced module removed for MVP")
     def test_security_manager_additional_methods(self):
         """Test additional security manager methods."""
         from src.utils.security_enhanced import security_manager
