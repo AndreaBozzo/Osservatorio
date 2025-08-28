@@ -126,10 +126,6 @@ class DataflowAnalysisService:
                     all_dataflows[: filters.max_results]
                 )
 
-                # Filter for Tableau-ready only if requested
-                if filters.only_tableau_ready:
-                    test_results = [tr for tr in test_results if tr.tableau_ready]
-
             # Calculate performance metrics
             end_time = datetime.now()
             performance_metrics = {

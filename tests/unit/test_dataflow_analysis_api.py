@@ -16,7 +16,6 @@ from src.api.fastapi_app import app
 from src.api.models import DataflowCategory
 from src.services.models import (
     AnalysisResult,
-    ConnectionType,
     DataflowTest,
     DataflowTestResult,
     IstatDataflow,
@@ -86,7 +85,6 @@ class TestDataflowAnalysisAPI:
             total_analyzed=1,
             categorized_dataflows={DataflowCategory.POPOLAZIONE: [dataflow]},
             test_results=[test_result],
-            tableau_ready_count=1,
             performance_metrics={"analysis_duration_seconds": 2.5},
         )
 
@@ -130,7 +128,6 @@ class TestDataflowAnalysisAPI:
             assert data["total_analyzed"] == 1
             assert "popolazione" in data["categorized_dataflows"]
             assert len(data["test_results"]) == 1
-            assert data["tableau_ready_count"] == 1
 
             # Verify service was called correctly
             mock_service.analyze_dataflows_from_xml.assert_called_once()
@@ -458,8 +455,6 @@ class TestDataflowAnalysisAPI:
         # Set up the test result with proper structure
         mock_test_result.dataflow = mock_dataflow
         mock_test_result.test = mock_test
-        mock_test_result.tableau_ready = True
-        mock_test_result.suggested_connection = ConnectionType.DIRECT_CONNECTION
         mock_test_result.suggested_refresh = RefreshFrequency.QUARTERLY
         mock_test_result.priority = 5
 

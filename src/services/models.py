@@ -24,14 +24,6 @@ class DataflowCategory(str, Enum):
     ALTRI = "altri"
 
 
-class ConnectionType(str, Enum):
-    """Suggested Tableau connection types based on data characteristics."""
-
-    DIRECT_CONNECTION = "direct_connection"
-    GOOGLE_SHEETS_IMPORT = "google_sheets_import"
-    BIGQUERY_EXTRACT = "bigquery_extract"
-
-
 class RefreshFrequency(str, Enum):
     """Suggested refresh frequencies by category."""
 
@@ -95,30 +87,12 @@ class DataflowTestResult(BaseModel):
 
     dataflow: IstatDataflow = Field(..., description="Dataflow information")
     test: DataflowTest = Field(..., description="Test results")
-    tableau_ready: bool = Field(
-        False, description="Whether ready for Tableau integration"
-    )
-    suggested_connection: ConnectionType = Field(ConnectionType.DIRECT_CONNECTION)
     suggested_refresh: RefreshFrequency = Field(RefreshFrequency.QUARTERLY)
     priority: float = Field(0.0, description="Calculated priority score")
 
     @model_validator(mode="after")
     def set_computed_fields(self):
         """Set computed fields based on dataflow and test results."""
-        # Set tableau_ready
-        if hasattr(self, "test") and self.test:
-            self.tableau_ready = self.test.is_successful
-        else:
-            self.tableau_ready = False
-
-        # Set suggested_connection
-        if hasattr(self, "test") and self.test and self.test.size_mb > 50:
-            self.suggested_connection = ConnectionType.BIGQUERY_EXTRACT
-        elif hasattr(self, "test") and self.test and self.test.size_mb > 5:
-            self.suggested_connection = ConnectionType.GOOGLE_SHEETS_IMPORT
-        else:
-            self.suggested_connection = ConnectionType.DIRECT_CONNECTION
-
         # Set suggested_refresh
         if hasattr(self, "dataflow") and self.dataflow:
             frequency_map = {
@@ -186,9 +160,6 @@ class AnalysisFilters(BaseModel):
     min_relevance_score: int = Field(0, description="Minimum relevance score")
     max_results: int = Field(100, description="Maximum number of results")
     include_tests: bool = Field(True, description="Whether to include test results")
-    only_tableau_ready: bool = Field(
-        False, description="Only return Tableau-ready dataflows"
-    )
 
     @field_validator("max_results")
     @classmethod
@@ -207,21 +178,12 @@ class AnalysisResult(BaseModel):
     test_results: list[DataflowTestResult] = Field(
         default_factory=list, description="Test results for analyzed dataflows"
     )
-    tableau_ready_count: int = Field(0, description="Number of Tableau-ready dataflows")
     analysis_timestamp: datetime = Field(
         default_factory=datetime.now, description="When analysis was performed"
     )
     performance_metrics: dict[str, Any] = Field(
         default_factory=dict, description="Performance metrics from analysis"
     )
-
-    @model_validator(mode="after")
-    def count_tableau_ready(self):
-        """Count Tableau-ready dataflows from test results."""
-        self.tableau_ready_count = sum(
-            1 for result in self.test_results if result.tableau_ready
-        )
-        return self
 
     def get_top_by_category(
         self, category: DataflowCategory, limit: int = 5
@@ -238,7 +200,6 @@ class AnalysisResult(BaseModel):
             count = len(self.categorized_dataflows.get(category, []))
             stats[f"{category.value}_count"] = count
 
-        stats["tableau_ready"] = self.tableau_ready_count
         return stats
 
 

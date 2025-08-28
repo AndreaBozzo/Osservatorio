@@ -263,7 +263,6 @@ class PipelineService:
                 filters = AnalysisFilters(
                     max_results=50,
                     include_tests=True,
-                    only_tableau_ready=False,
                 )
 
                 result = await self.dataflow_service.analyze_dataflows_from_xml(

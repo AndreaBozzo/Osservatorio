@@ -120,7 +120,6 @@ async def analyze_dataflow(
         min_relevance_score=request.min_relevance_score,
         max_results=request.max_results,
         include_tests=request.include_tests,
-        only_tableau_ready=request.only_tableau_ready,
     )
 
     try:
@@ -171,8 +170,6 @@ async def analyze_dataflow(
                     tested_at=test_result.test.tested_at,
                     is_successful=test_result.test.is_successful,
                 ),
-                tableau_ready=test_result.tableau_ready,
-                suggested_connection=test_result.suggested_connection,
                 suggested_refresh=test_result.suggested_refresh,
                 priority=test_result.priority,
             )
@@ -184,7 +181,6 @@ async def analyze_dataflow(
             total_analyzed=result.total_analyzed,
             categorized_dataflows=categorized_dataflows,
             test_results=test_results,
-            tableau_ready_count=result.tableau_ready_count,
             analysis_timestamp=result.analysis_timestamp,
             performance_metrics=result.performance_metrics,
         )
@@ -213,9 +209,6 @@ async def upload_and_analyze_xml(
     max_results: int = Query(100, description="Maximum number of results"),
     include_tests: bool = Query(
         True, description="Whether to include data access tests"
-    ),
-    only_tableau_ready: bool = Query(
-        False, description="Only return Tableau-ready dataflows"
     ),
     current_user=Depends(get_current_user),
     _rate_limit=Depends(check_rate_limit),
@@ -264,7 +257,6 @@ async def upload_and_analyze_xml(
             min_relevance_score=min_relevance_score,
             max_results=max_results,
             include_tests=include_tests,
-            only_tableau_ready=only_tableau_ready,
         )
 
         # Get service and call analyze_dataflow with all dependencies
@@ -276,7 +268,6 @@ async def upload_and_analyze_xml(
             min_relevance_score=request.min_relevance_score,
             max_results=request.max_results,
             include_tests=request.include_tests,
-            only_tableau_ready=request.only_tableau_ready,
         )
 
         # Perform analysis using service directly
@@ -326,8 +317,6 @@ async def upload_and_analyze_xml(
                     tested_at=test_result.test.tested_at,
                     is_successful=test_result.test.is_successful,
                 ),
-                tableau_ready=test_result.tableau_ready,
-                suggested_connection=test_result.suggested_connection,
                 suggested_refresh=test_result.suggested_refresh,
                 priority=test_result.priority,
             )
@@ -339,7 +328,6 @@ async def upload_and_analyze_xml(
             total_analyzed=result.total_analyzed,
             categorized_dataflows=categorized_dataflows,
             test_results=test_results,
-            tableau_ready_count=result.tableau_ready_count,
             analysis_timestamp=result.analysis_timestamp,
             performance_metrics=result.performance_metrics,
         )
@@ -421,8 +409,6 @@ async def bulk_analyze_dataflows(
                         tested_at=result.test.tested_at,
                         is_successful=result.test.is_successful,
                     ),
-                    tableau_ready=result.tableau_ready,
-                    suggested_connection=result.suggested_connection,
                     suggested_refresh=result.suggested_refresh,
                     priority=result.priority,
                 )
