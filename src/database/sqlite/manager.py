@@ -32,7 +32,7 @@ from pathlib import Path
 from typing import Any, Optional
 
 from src.utils.logger import get_logger
-from src.utils.security_enhanced import SecurityManager
+from src.utils.mvp_security import security
 
 from .schema import MetadataSchema, create_metadata_schema
 
@@ -64,7 +64,7 @@ sqlite3.register_adapter(datetime, adapt_datetime)
 sqlite3.register_converter("timestamp", convert_datetime)
 
 logger = get_logger(__name__)
-security = SecurityManager()
+# Security manager imported above
 
 
 class SQLiteMetadataManager:

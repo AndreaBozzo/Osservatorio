@@ -6,14 +6,12 @@ with proper dependency injection, following the dependency inversion principle.
 """
 
 from datetime import datetime
-from functools import lru_cache
 from typing import Any, Optional
 
 from ..api.production_istat_client import ProductionIstatClient
 from ..database.sqlite.repository import UnifiedDataRepository, get_unified_repository
 from ..utils.logger import get_logger
 from ..utils.temp_file_manager import TempFileManager, get_temp_manager
-from .dataflow_analysis_service import DataflowAnalysisService
 
 
 class ServiceContainer:
@@ -99,53 +97,6 @@ def get_service_container() -> ServiceContainer:
     return _service_container
 
 
-@lru_cache(maxsize=1)
-def create_dataflow_analysis_service(
-    istat_client: Optional[ProductionIstatClient] = None,
-    repository: Optional[UnifiedDataRepository] = None,
-    temp_file_manager: Optional[TempFileManager] = None,
-) -> DataflowAnalysisService:
-    """
-    Create DataflowAnalysisService with proper dependency injection.
-
-    This factory function creates the service with all required dependencies,
-    using default implementations where not provided.
-
-    Args:
-        istat_client: Optional ISTAT client (will create default if None)
-        repository: Optional repository (will create default if None)
-        temp_file_manager: Optional temp file manager (will create default if None)
-
-    Returns:
-        Configured DataflowAnalysisService instance
-    """
-    logger = get_logger(__name__)
-    logger.info("Creating DataflowAnalysisService with dependency injection")
-
-    # Create dependencies if not provided
-    if istat_client is None:
-        logger.debug("Creating default ProductionIstatClient")
-        istat_client = ProductionIstatClient()
-
-    if repository is None:
-        logger.debug("Creating default UnifiedDataRepository")
-        repository = get_unified_repository()
-
-    if temp_file_manager is None:
-        logger.debug("Creating default TempFileManager")
-        temp_file_manager = get_temp_manager()
-
-    # Create and configure the service
-    service = DataflowAnalysisService(
-        istat_client=istat_client,
-        repository=repository,
-        temp_file_manager=temp_file_manager,
-    )
-
-    logger.info("DataflowAnalysisService created successfully")
-    return service
-
-
 def initialize_services() -> ServiceContainer:
     """
     Initialize all services with proper dependency injection.
@@ -172,13 +123,7 @@ def initialize_services() -> ServiceContainer:
         container.register(UnifiedDataRepository, repository)
         container.register(TempFileManager, temp_file_manager)
 
-        # Create and register business services
-        dataflow_service = DataflowAnalysisService(
-            istat_client=istat_client,
-            repository=repository,
-            temp_file_manager=temp_file_manager,
-        )
-        container.register(DataflowAnalysisService, dataflow_service)
+        # Core services registered
 
         logger.info("Service container initialized successfully")
         return container
@@ -186,25 +131,6 @@ def initialize_services() -> ServiceContainer:
     except Exception as e:
         logger.error(f"Failed to initialize services: {e}", exc_info=True)
         raise
-
-
-def get_dataflow_analysis_service() -> DataflowAnalysisService:
-    """
-    Get or create DataflowAnalysisService instance.
-
-    This is the main entry point for getting the dataflow analysis service.
-    It will use the service container if available, or create a new instance.
-
-    Returns:
-        DataflowAnalysisService instance
-    """
-    container = get_service_container()
-
-    if container.has(DataflowAnalysisService):
-        return container.get(DataflowAnalysisService)
-
-    # If not in container, create with default dependencies
-    return create_dataflow_analysis_service()
 
 
 # Service health check utilities
@@ -261,13 +187,6 @@ async def check_service_health() -> dict:
                 }
                 health_status["overall"] = "degraded"
 
-        # Check DataflowAnalysisService health
-        if container.has(DataflowAnalysisService):
-            health_status["services"]["dataflow_analysis"] = {
-                "status": "healthy",
-                "details": "Service available",
-            }
-
         logger.info(
             f"Service health check completed - Overall status: {health_status['overall']}"
         )
@@ -316,23 +235,6 @@ class ServiceContext:
 
 
 # Convenience functions for FastAPI dependency injection
-
-
-def get_dataflow_service_dependency() -> DataflowAnalysisService:
-    """
-    FastAPI dependency function for DataflowAnalysisService.
-
-    Use this function as a FastAPI dependency to inject the service
-    into your endpoint handlers.
-
-    Example:
-        @app.get("/api/analysis/dataflows")
-        async def analyze_dataflows(
-            service: DataflowAnalysisService = Depends(get_dataflow_service_dependency)
-        ):
-            return await service.analyze_dataflows_from_xml(xml_content)
-    """
-    return get_dataflow_analysis_service()
 
 
 def get_repository_dependency() -> UnifiedDataRepository:

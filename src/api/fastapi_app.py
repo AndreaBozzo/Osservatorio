@@ -802,9 +802,6 @@ odata_router = create_odata_router()
 app.include_router(odata_router, prefix="/odata", tags=["OData"])
 
 # Include Dataflow Analysis router
-from .dataflow_analysis_api import router as dataflow_router
-
-app.include_router(dataflow_router, prefix="/api", tags=["Dataflow Analysis"])
 
 
 # OpenAPI customization

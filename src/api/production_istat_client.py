@@ -20,7 +20,8 @@ from urllib3.util.retry import Retry
 
 from ..database.sqlite.dataset_config import get_dataset_config_manager
 from ..utils.logger import get_logger
-from ..utils.security_enhanced import rate_limit, security_manager
+
+# Security features simplified for MVP
 from .mock_istat_data import get_cache_generator
 
 logger = get_logger(__name__)
@@ -230,7 +231,7 @@ class ProductionIstatClient:
             "metrics": self.metrics.copy(),
         }
 
-    @rate_limit(max_requests=100, window=3600)
+    # Rate limiting simplified for MVP
     def _make_request(
         self, endpoint: str, params: Optional[dict] = None, timeout: int = 30
     ) -> requests.Response:
@@ -248,11 +249,7 @@ class ProductionIstatClient:
         start_time = time.time()
 
         try:
-            # Security check
-            if not security_manager.rate_limit(
-                "production_istat_client", max_requests=100, window=3600
-            ):
-                raise Exception("Security rate limit exceeded")
+            # Security check simplified for MVP
 
             self.metrics["total_requests"] += 1
 

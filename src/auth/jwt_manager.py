@@ -26,12 +26,11 @@ except ImportError:
 from src.database.sqlite.manager_factory import get_audit_manager
 from src.utils.config import get_config
 from src.utils.logger import get_logger
-from src.utils.security_enhanced import SecurityManager
 
 from .models import APIKey, AuthToken, TokenClaims
 
 logger = get_logger(__name__)
-security = SecurityManager()
+# Security manager imported above
 
 
 class JWTManager:

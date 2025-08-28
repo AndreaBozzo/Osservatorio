@@ -376,13 +376,6 @@ def handle_api_errors(func):
     return wrapper
 
 
-def get_dataflow_service():
-    """Get DataflowAnalysisService instance as FastAPI dependency."""
-    from src.services.service_factory import get_dataflow_analysis_service
-
-    return get_dataflow_analysis_service()
-
-
 def reset_dependency_singletons():
     """Reset all singleton dependency instances (for testing)."""
     global _jwt_manager, _auth_manager, _rate_limiter, _istat_client
