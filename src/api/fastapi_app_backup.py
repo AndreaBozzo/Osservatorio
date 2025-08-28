@@ -45,7 +45,7 @@ from .dependencies import (
     require_write,
     validate_dataset_id,
 )
-from .models import (
+from .models import (  # Dataflow Analysis Models
     APIKeyCreate,
     APIKeyListResponse,
     APIKeyResponse,
@@ -801,7 +801,7 @@ async def get_usage_analytics(
 odata_router = create_odata_router()
 app.include_router(odata_router, prefix="/odata", tags=["OData"])
 
-# Issue #153: Dataflow Analysis router removed for MVP
+# Include Dataflow Analysis router
 
 
 # OpenAPI customization
@@ -876,7 +876,34 @@ async def get_istat_status(
         )
 
 
-# Issue #153: /api/istat/dataflows endpoint removed for MVP - disconnected from real ingestion pipeline
+@app.get(
+    "/api/istat/dataflows", tags=["ISTAT API"], summary="List available ISTAT dataflows"
+)
+@handle_api_errors
+async def list_istat_dataflows(
+    limit: Optional[int] = Query(
+        None, ge=1, le=100, description="Limit number of dataflows"
+    ),
+    current_user=Depends(get_current_user),
+    istat_client=Depends(get_istat_client),
+    _rate_limit=Depends(check_rate_limit),
+    _audit=Depends(log_api_request),
+):
+    """
+    List available ISTAT SDMX dataflows.
+
+    Fetches current list of available statistical dataflows from ISTAT API
+    with optional limit for pagination.
+    """
+    try:
+        result = istat_client.fetch_dataflows(limit=limit)
+        return result
+    except Exception as e:
+        logger.error(f"Failed to fetch ISTAT dataflows: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=f"ISTAT API error: {str(e)}",
+        )
 
 
 @app.get(
@@ -898,7 +925,7 @@ async def fetch_istat_dataset(
     Fetch specific dataset from ISTAT API.
 
     Retrieves dataset structure and optionally data from ISTAT SDMX API.
-    Includes basic data quality validation for MVP.
+    Can include data quality validation for comprehensive analysis.
     """
     try:
         if with_quality:
