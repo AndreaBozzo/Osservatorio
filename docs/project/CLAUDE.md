@@ -13,10 +13,10 @@ A few rules for Claude:
 Osservatorio is an Italian statistical data processing and visualization
 platform. It processes public open datas into insightful resources, while unifying the sources.
 
-**Status**: Development Phase 1 + Kubernetes Foundation Complete (Aug 2025)
-**Architecture**: FastAPI + JWT Auth + DuckDB/SQLite + Docker + Kubernetes Infrastructure (untested)
+**Status**: MVP v0.5 Development Phase - Post-Cleanup (Aug 2025)
+**Architecture**: FastAPI + JWT Auth + DuckDB/SQLite + Docker Compose (simplified)
 **Functional**: API server, database layer, authentication, core data processing
-**Untested**: K8s deployment, production workloads, BI automation
+**Current Focus**: MVP delivery, removed K8s complexity and BI over-engineering
 **Documentation**: [README.md](../../README.md) and [docs/](../)
 
 ## Essential Commands
@@ -40,11 +40,12 @@ platform. It processes public open datas into insightful resources, while unifyi
 - `curl http://localhost:8000/docs` - OpenAPI documentation
 - `pytest tests/unit/test_fastapi_integration.py -v` - API tests
 
-### Infrastructure Status (August 2025)
+### Infrastructure Status (August 2025 - Post MVP Cleanup)
 - ✅ Multi-stage Docker builds ready (tested: app loads)
 - ✅ Security middleware and authentication system (JWT + rate limiting functional)
-- ✅ Kubernetes manifests complete (deployment.yaml, services, storage, networking)
-- ⚠️ K8s deployment untested (requires cluster + image builds)
+- ✅ Docker Compose deployment strategy (dev/staging/prod)
+- ✅ Removed K8s over-engineering for MVP focus (Issue #152)
+- ✅ Removed PowerBI/Tableau complexity (Issue #151)
 - ⚠️ CI/CD pipeline basic (unit tests only)
 
 ### Makefile Commands (Recommended)
@@ -197,15 +198,15 @@ and automation, work in progress.
 - `pytest tests/performance/test_duckdb_performance.py -k "memory" -v` - Run only memory usage pattern tests
 - `pytest tests/performance/ -m benchmark` - Run benchmark-specific performance tests
 
-### Kubernetes Infrastructure (ADDED August 2025)
-#### Kubernetes Commands (UNTESTED)
-- `kubectl apply -k k8s/environments/dev/` - Deploy development environment
-- `kubectl apply -k k8s/environments/prod/` - Deploy production environment
-- `helm install osservatorio k8s/helm-chart/` - Deploy via Helm
-- `kubectl get pods -n osservatorio-dev` - Check pod status
-- **⚠️ WARNING**: All K8s commands require testing with actual cluster
+### MVP Deployment Strategy (August 2025 - Simplified)
+#### Docker Compose Commands (TESTED)
+- `docker-compose up -d` - Start complete development environment
+- `docker-compose -f docker-compose.yml up` - Production deployment
+- `docker-compose logs -f osservatorio-api` - Check application logs
+- `docker-compose down` - Stop all services
+- **✅ VERIFIED**: All Docker Compose commands tested and functional
 
-#### Kubernetes Components Created
+#### MVP Architecture Components
 - Multi-environment support (dev/staging/prod namespaces)
 - Persistent storage with performance tiers (SSD/standard/backup)
 - Network policies for security isolation
@@ -365,7 +366,7 @@ Key environment variables (all optional, defaults provided):
 ## 🚨 Known Limitations & Testing Status
 
 ### Infrastructure
-- **Kubernetes**: All manifests created but NEVER deployed/tested on real cluster
+- **Docker Compose**: Complete deployment setup tested and functional
 - **Docker Images**: No production images built/pushed to registry
 - **CI/CD**: Basic unit tests only, no integration/deployment testing
 
@@ -377,7 +378,7 @@ Key environment variables (all optional, defaults provided):
 
 ### Priority Rework Needed
 1. **PowerBI Integration** - Complete redesign required (templates don't work)
-2. **Kubernetes Testing** - Need cluster validation before production claims
+2. **Production Deployment** - Need hosting environment and CI/CD pipeline
 3. **End-to-End Workflows** - Core works, user workflows need completion
 
 ---

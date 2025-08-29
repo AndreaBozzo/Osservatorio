@@ -88,7 +88,7 @@ dependencies = [
     "loguru>=0.7.0",
     "psutil>=5.9.0",
 
-    # Redis for distributed caching (K8s services)
+    # Redis for caching and session management
     "redis>=5.0.0",
 ]
 

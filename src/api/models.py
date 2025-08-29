@@ -11,7 +11,7 @@ from typing import Any, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, validator
 
-from src.services.models import ConnectionType, DataflowCategory, RefreshFrequency
+from src.services.models import DataflowCategory, RefreshFrequency
 
 
 class APIScope(str, Enum):
@@ -332,9 +332,6 @@ class DataflowAnalysisRequest(BaseModel):
     include_tests: bool = Field(
         True, description="Whether to include data access tests"
     )
-    only_tableau_ready: bool = Field(
-        False, description="Only return Tableau-ready dataflows"
-    )
 
     @validator("max_results")
     def validate_max_results(cls, v):
@@ -379,10 +376,6 @@ class ExportReadyDataflow(BaseModel):
 
     dataflow: DataflowInfo = Field(..., description="Dataflow information")
     test: DataflowTestInfo = Field(..., description="Test results")
-    tableau_ready: bool = Field(
-        False, description="Whether ready for Tableau integration"
-    )
-    suggested_connection: ConnectionType = Field(ConnectionType.DIRECT_CONNECTION)
     suggested_refresh: RefreshFrequency = Field(RefreshFrequency.QUARTERLY)
     priority: float = Field(0.0, description="Calculated priority score")
 

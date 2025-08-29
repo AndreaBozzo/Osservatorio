@@ -1,14 +1,12 @@
 """
-Configuration management package for Kubernetes-ready services.
+Configuration management package for Docker-ready services.
 
-This package provides cloud-native configuration management with support for:
+This package provides simple configuration management with support for:
 - Environment variables
-- Kubernetes ConfigMaps and Secrets
-- Hot reload capabilities
+- Docker environment files
 - Configuration validation
 """
 
 from .environment_config import EnvironmentConfig
-from .k8s_config_manager import K8sConfigManager
 
-__all__ = ["EnvironmentConfig", "K8sConfigManager"]
+__all__ = ["EnvironmentConfig"]

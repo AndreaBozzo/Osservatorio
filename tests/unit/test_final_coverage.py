@@ -3,8 +3,6 @@ Final coverage push to reach 60% target.
 Simple working tests for missing coverage.
 """
 
-from src.utils.circuit_breaker import CircuitState
-
 
 class TestFinalCoveragePush:
     """Simple tests that should pass and increase coverage."""
@@ -37,19 +35,18 @@ class TestFinalCoveragePush:
 
     def test_circuit_breaker_basic_functionality(self):
         """Test circuit breaker basic operations."""
-        from src.utils.circuit_breaker import CircuitBreaker
+        from src.api.production_istat_client import CircuitBreaker
 
         # Test basic initialization and state
         cb = CircuitBreaker(failure_threshold=3)
 
         # Initial state
-        assert cb.state == CircuitState.CLOSED
+        assert cb.state == "closed"
 
-        # Test stats retrieval
-        stats = cb.get_stats()
-        assert isinstance(stats, dict)
-        assert "state" in stats
-        assert "failure_count" in stats
+        # Test basic operations
+        assert cb.can_proceed()
+        cb.record_failure()
+        assert cb.failure_count == 1
 
     def test_converter_initialization_coverage(self):
         """Test converter factory basic functionality."""
