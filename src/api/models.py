@@ -11,7 +11,28 @@ from typing import Any, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, validator
 
+
 # Core enums for MVP API
+class DataflowCategory(str, Enum):
+    """Dataflow categories for ISTAT data organization"""
+
+    POPOLAZIONE = "popolazione"
+    ECONOMIA = "economia"
+    LAVORO = "lavoro"
+    TERRITORIO = "territorio"
+    ISTRUZIONE = "istruzione"
+    SALUTE = "salute"
+    ALTRO = "altro"
+
+
+class RefreshFrequency(str, Enum):
+    """Data refresh frequency options"""
+
+    DAILY = "daily"
+    WEEKLY = "weekly"
+    MONTHLY = "monthly"
+    QUARTERLY = "quarterly"
+    YEARLY = "yearly"
 
 
 class APIScope(str, Enum):
