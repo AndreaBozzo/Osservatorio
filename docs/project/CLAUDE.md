@@ -3,9 +3,11 @@
 This file provides essential guidance to Claude Code when working with this repository.
 ***DO NOT MODIFY BELOW***
 A few rules for Claude:
-1- Use tokens efficiently
+1-Use tokens efficiently
 2-Refer to PROJECT_STATE.md to track progresses.
 3-Best practices, always.
+4-As this is an early-stage startup, YOU MUST prioritize simple, readable code with minimal abstraction—avoid premature optimization. 5-Strive for elegant, minimal solutions that reduce complexity.Focus on clear implementation that’s easy to understand and iterate on as the product evolves.
+6-DO NOT use preserve backward compatibility unless the user specifically requests it
 ***DO NOT MODIFY ABOVE***
 
 ## Project Overview

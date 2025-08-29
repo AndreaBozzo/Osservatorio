@@ -23,12 +23,12 @@ from src.database.sqlite.manager_factory import (
     get_user_manager,
 )
 from src.utils.logger import get_logger
-from src.utils.security_enhanced import SecurityManager
+from src.utils.mvp_security import security
 
 from .models import APIKey
 
 logger = get_logger(__name__)
-security = SecurityManager()
+# Security manager imported above
 
 
 class SQLiteAuthManager:

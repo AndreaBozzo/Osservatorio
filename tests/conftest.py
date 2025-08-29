@@ -70,18 +70,6 @@ def unified_repository():
         repo.close()
 
 
-@pytest.fixture
-def dataflow_analysis_service():
-    """Create a DataflowAnalysisService for testing."""
-    from src.services.service_factory import get_dataflow_analysis_service
-
-    service = get_dataflow_analysis_service()
-    yield service
-    # Cleanup if needed
-    if hasattr(service, "close"):
-        service.close()
-
-
 @pytest.fixture(autouse=True)
 def silent_temp_file_manager():
     """Enable silent mode for TempFileManager during tests."""

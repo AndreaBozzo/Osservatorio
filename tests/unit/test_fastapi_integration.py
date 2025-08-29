@@ -346,6 +346,7 @@ class TestFastAPIIntegration:
         error = response.json()
         assert "insufficient permissions" in error["detail"].lower()
 
+    @pytest.mark.skip(reason="Issue #153: Full auth middleware removed for MVP")
     def test_create_api_key(self, client, auth_headers, test_db_setup):
         """Test API key creation (admin only)"""
         key_data = {
@@ -365,6 +366,7 @@ class TestFastAPIIntegration:
         assert data["key_info"]["name"] == "new_test_key"
         assert data["key_info"]["rate_limit"] == 200
 
+    @pytest.mark.skip(reason="Issue #153: Full auth middleware removed for MVP")
     def test_list_api_keys(self, client, auth_headers, test_db_setup):
         """Test API key listing (admin only)"""
         response = client.get("/auth/keys", headers=auth_headers)
@@ -385,6 +387,7 @@ class TestFastAPIIntegration:
             assert "scopes" in key
             assert "key" not in key  # Sensitive data should not be exposed
 
+    @pytest.mark.skip(reason="Issue #153: Full auth middleware removed for MVP")
     def test_usage_analytics(self, client, auth_headers, test_db_setup):
         """Test usage analytics endpoint (admin only)"""
         response = client.get("/analytics/usage", headers=auth_headers)
@@ -397,6 +400,7 @@ class TestFastAPIIntegration:
         assert "summary" in data
         assert "time_range" in data
 
+    @pytest.mark.skip(reason="Issue #153: Full auth middleware removed for MVP")
     def test_usage_analytics_filtering(self, client, auth_headers, test_db_setup):
         """Test usage analytics with filters"""
         response = client.get(

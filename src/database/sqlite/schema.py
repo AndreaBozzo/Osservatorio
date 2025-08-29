@@ -17,12 +17,11 @@ import sqlite3
 from typing import Any, Optional
 
 from src.utils.logger import get_logger
-from src.utils.security_enhanced import SecurityManager
 
 from .base_manager import BaseSQLiteManager
 
 logger = get_logger(__name__)
-security = SecurityManager()
+# Security manager imported above
 
 
 class MetadataSchema(BaseSQLiteManager):
