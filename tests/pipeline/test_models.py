@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from src.pipeline.models import (
+from src.pipeline_old.models import (
     BatchResult,
     PipelineConfig,
     PipelineResult,

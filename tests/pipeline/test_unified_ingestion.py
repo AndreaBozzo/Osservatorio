@@ -10,13 +10,13 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from src.pipeline import (
+from src.pipeline_old import (
     PipelineConfig,
     PipelineService,
     PipelineStatus,
     UnifiedDataIngestionPipeline,
 )
-from src.pipeline.models import QualityScore
+from src.pipeline_old.models import QualityScore
 
 
 class TestUnifiedDataIngestionPipeline:
@@ -363,7 +363,7 @@ class TestPipelineIntegration:
     @pytest.mark.asyncio
     async def test_performance_monitoring_integration(self):
         """Test integration with performance monitoring."""
-        from src.pipeline.performance_monitor import PerformanceMonitor
+        from src.pipeline_old.performance_monitor import PerformanceMonitor
 
         monitor = PerformanceMonitor()
 
