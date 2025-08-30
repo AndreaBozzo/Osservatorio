@@ -16,7 +16,7 @@ from datetime import datetime
 from typing import Any, Optional
 
 from ..api.production_istat_client import ProductionIstatClient
-from ..database.duckdb.manager import DuckDBManager
+from ..database.duckdb.manager import get_manager
 from ..database.sqlite.repository import UnifiedDataRepository
 from ..utils.logger import get_logger
 
@@ -48,7 +48,7 @@ class SimpleIngestionPipeline:
     def __init__(self, istat_client: Optional[ProductionIstatClient] = None):
         """Initialize with minimal dependencies."""
         self.istat_client = istat_client or ProductionIstatClient()
-        self.duckdb_manager = DuckDBManager()
+        self.duckdb_manager = get_manager()  # Use singleton
         self.repository = UnifiedDataRepository()
         self.ingestion_status = {
             "last_run": None,
@@ -386,15 +386,10 @@ class SimpleIngestionPipeline:
                     )
                     break
 
-                record = {
-                    "dataset_id": dataset_id,
-                    "record_id": i,
-                    "ingestion_timestamp": datetime.utcnow().isoformat(),
-                }
-
                 # Extract values from SDMX Generic format
                 obs_value = None
                 time_period = None
+                additional_attributes = {}
 
                 # For SDMX Generic format, values are in child element attributes
                 for child in obs:
@@ -412,9 +407,11 @@ class SimpleIngestionPipeline:
                         if child_attrs.get("id") == "TIME_PERIOD":
                             time_period = child_attrs.get("value")
 
-                    # Store all child attributes for debugging
+                    # Store all child attributes in additional_attributes
                     for attr_key, attr_value in child_attrs.items():
-                        record[f"{child_tag.lower()}_{attr_key.lower()}"] = attr_value
+                        additional_attributes[
+                            f"{child_tag.lower()}_{attr_key.lower()}"
+                        ] = attr_value
 
                 # Also check direct attributes of Obs element (fallback)
                 for key, value in obs.attrib.items():
@@ -422,14 +419,23 @@ class SimpleIngestionPipeline:
                         obs_value = obs_value or value
                     if "time" in key.lower() or "period" in key.lower():
                         time_period = time_period or value
+                    additional_attributes[f"obs_{key.lower()}"] = value
 
-                # Set primary fields - these are the main fields we'll query
-                record["obs_value"] = obs_value or ""
-                record["time_period"] = time_period or ""
-
-                # Add element text if no specific value found
+                # Add element text if available
                 if obs.text and not obs_value:
-                    record["raw_text"] = obs.text
+                    additional_attributes["raw_text"] = obs.text
+
+                # Create record with fixed structure + JSON for additional data
+                record = {
+                    "dataset_id": dataset_id,
+                    "record_id": i,
+                    "ingestion_timestamp": datetime.utcnow().isoformat(),
+                    "obs_value": obs_value or "",
+                    "time_period": time_period or "",
+                    "additional_attributes": additional_attributes
+                    if additional_attributes
+                    else None,
+                }
 
                 records.append(record)
 
@@ -463,14 +469,15 @@ class SimpleIngestionPipeline:
                 # Create main schema
                 conn.execute("CREATE SCHEMA IF NOT EXISTS main;")
 
-                # Create observations table matching parsed record structure
+                # Create flexible observations table with JSON for additional attributes
                 create_observations_sql = """
                 CREATE TABLE IF NOT EXISTS main.istat_observations (
                     dataset_id VARCHAR,
                     record_id INTEGER,
                     ingestion_timestamp VARCHAR,
                     obs_value VARCHAR,
-                    time_period VARCHAR
+                    time_period VARCHAR,
+                    additional_attributes JSON
                 );
                 """
 

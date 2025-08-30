@@ -23,7 +23,7 @@ from contextlib import contextmanager
 from datetime import datetime
 from typing import Any, Optional
 
-from src.database.duckdb import DuckDBManager
+from src.database.duckdb.manager import get_manager
 from src.utils.logger import get_logger
 
 from .manager import get_metadata_manager
@@ -60,7 +60,7 @@ class UnifiedDataRepository:
         self.user_manager = get_user_manager(sqlite_db_path)
         self.audit_manager = get_audit_manager(sqlite_db_path)
         self.metadata_manager = get_metadata_manager(sqlite_db_path)
-        self.analytics_manager = DuckDBManager(duckdb_db_path)
+        self.analytics_manager = get_manager()  # Use singleton
 
         # Cache for frequently accessed data
         self._cache = {}
