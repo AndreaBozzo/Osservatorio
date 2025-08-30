@@ -392,41 +392,39 @@ class SimpleIngestionPipeline:
                     "ingestion_timestamp": datetime.utcnow().isoformat(),
                 }
 
-                # Extract values from different SDMX formats
-                # Generic format value extraction
+                # Extract values from SDMX Generic format
                 obs_value = None
                 time_period = None
 
-                # Check attributes first
-                attrs = obs.attrib
-                for key, value in attrs.items():
-                    clean_key = (
-                        key.lower()
-                        .replace("obsvalue", "obs_value")
-                        .replace("timeperiod", "time_period")
-                    )
-                    record[clean_key] = value
-
-                    if "value" in key.lower() or key == "obsValue":
-                        obs_value = value
-                    if "time" in key.lower() or "period" in key.lower():
-                        time_period = value
-
-                # Check child elements
+                # For SDMX Generic format, values are in child element attributes
                 for child in obs:
-                    tag_name = (
+                    child_tag = (
                         child.tag.split("}")[-1] if "}" in child.tag else child.tag
                     )
-                    if child.text:
-                        record[f"elem_{tag_name.lower()}"] = child.text
+                    child_attrs = child.attrib
 
-                        if "value" in tag_name.lower():
-                            obs_value = child.text
-                        if "time" in tag_name.lower() or "period" in tag_name.lower():
-                            time_period = child.text
+                    # ObsValue contains the observation value
+                    if child_tag == "ObsValue":
+                        obs_value = child_attrs.get("value")
 
-                # Set primary fields
-                record["obs_value"] = obs_value or obs.text or ""
+                    # ObsDimension with id="TIME_PERIOD" contains the time period
+                    elif child_tag == "ObsDimension":
+                        if child_attrs.get("id") == "TIME_PERIOD":
+                            time_period = child_attrs.get("value")
+
+                    # Store all child attributes for debugging
+                    for attr_key, attr_value in child_attrs.items():
+                        record[f"{child_tag.lower()}_{attr_key.lower()}"] = attr_value
+
+                # Also check direct attributes of Obs element (fallback)
+                for key, value in obs.attrib.items():
+                    if "value" in key.lower() or key == "obsValue":
+                        obs_value = obs_value or value
+                    if "time" in key.lower() or "period" in key.lower():
+                        time_period = time_period or value
+
+                # Set primary fields - these are the main fields we'll query
+                record["obs_value"] = obs_value or ""
                 record["time_period"] = time_period or ""
 
                 # Add element text if no specific value found
