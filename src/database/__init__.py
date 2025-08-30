@@ -24,7 +24,6 @@ from .duckdb import (
     create_file_adapter,
     get_duckdb_config,
     get_manager,
-    reset_manager,
 )
 from .sqlite import (
     MetadataSchema,

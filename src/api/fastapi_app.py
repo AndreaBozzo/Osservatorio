@@ -999,20 +999,20 @@ async def startup_event():
     logger.info("Starting Osservatorio ISTAT FastAPI application")
 
     try:
-        # Initialize repository to ensure connections
-        repository = get_unified_repository()
-        status = repository.get_system_status()
-        logger.info(f"System status: {status}")
+        # Initialize simple ingestion pipeline FIRST (creates schema)
+        ingestion_pipeline = create_simple_pipeline()
+        app.state.ingestion_pipeline = ingestion_pipeline
+        logger.info("Simple ingestion pipeline initialized")
 
         # Initialize ISTAT client
         istat_client = get_istat_client()
         istat_health = istat_client.health_check()
         logger.info(f"ISTAT API client status: {istat_health.get('status', 'unknown')}")
 
-        # Initialize simple ingestion pipeline
-        ingestion_pipeline = create_simple_pipeline()
-        app.state.ingestion_pipeline = ingestion_pipeline
-        logger.info("Simple ingestion pipeline initialized")
+        # Initialize repository AFTER schema is created
+        repository = get_unified_repository()
+        status = repository.get_system_status()
+        logger.info(f"System status: {status}")
 
         logger.info("FastAPI application started successfully")
     except Exception as e:

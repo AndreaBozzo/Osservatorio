@@ -8,6 +8,13 @@ build/
 develop-eggs/
 dist/
 downloads/
+
+# DuckDB CLI binary
+duckdb.exe
+duckdb_cli.zip
+
+# Test backups
+*.py.backup
 eggs/
 .eggs/
 lib/

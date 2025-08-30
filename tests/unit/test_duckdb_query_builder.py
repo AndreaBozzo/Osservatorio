@@ -534,33 +534,7 @@ class TestQueryBuilderIntegration:
         """Test query execution with real DuckDB (integration test)."""
         # This test requires actual DuckDB
         try:
-            import duckdb
-
-            # Create test data
-            conn = duckdb.connect(temp_db)
-            conn.execute(
-                """
-                CREATE TABLE test_users (
-                    id INTEGER,
-                    name VARCHAR,
-                    age INTEGER,
-                    city VARCHAR
-                )
-            """
-            )
-
-            conn.execute(
-                """
-                INSERT INTO test_users VALUES
-                (1, 'Alice', 25, 'New York'),
-                (2, 'Bob', 30, 'London'),
-                (3, 'Charlie', 35, 'Paris')
-            """
-            )
-
-            conn.close()
-
-            # Create manager and query builder
+            # Create manager and query builder first to avoid file conflicts
             from src.database.duckdb.config import get_duckdb_config
 
             config = get_duckdb_config()
@@ -568,6 +542,28 @@ class TestQueryBuilderIntegration:
 
             manager = DuckDBManager(config)
             builder = DuckDBQueryBuilder(manager)
+
+            # Create test data using the manager's connection to avoid corruption detection
+            with manager.get_connection() as conn:
+                conn.execute(
+                    """
+                    CREATE TABLE test_users (
+                        id INTEGER,
+                        name VARCHAR,
+                        age INTEGER,
+                        city VARCHAR
+                    )
+                """
+                )
+
+                conn.execute(
+                    """
+                    INSERT INTO test_users VALUES
+                    (1, 'Alice', 25, 'New York'),
+                    (2, 'Bob', 30, 'London'),
+                    (3, 'Charlie', 35, 'Paris')
+                """
+                )
 
             # Test basic query
             result = (

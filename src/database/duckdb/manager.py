@@ -87,26 +87,11 @@ class DuckDBManager:
             else:
                 db_path_str = db_path_str.replace("\\", "/")
 
-            # Handle database path - if it exists and is corrupted, remove it
+            # Handle database path
             db_path = Path(db_path_str)
             db_path.parent.mkdir(parents=True, exist_ok=True)
 
-            # Check for corrupted database file
-            if db_path.exists():
-                try:
-                    # Try to verify the file is a valid DuckDB file
-                    with open(db_path, "rb") as f:
-                        header = f.read(16)
-                        # DuckDB files should start with specific magic bytes
-                        if len(header) < 16 or not header.startswith(b"DUCK"):
-                            print(f"Removing corrupted database file: {db_path}")
-                            db_path.unlink()
-                except (OSError, PermissionError) as e:
-                    print(f"Cannot read database file, removing: {e}")
-                    try:
-                        db_path.unlink()
-                    except (OSError, PermissionError):
-                        pass
+            # Let DuckDB handle its own file validation - no manual corruption detection
 
             print(f"Connecting to database: {db_path_str}")
 
@@ -480,32 +465,10 @@ class DuckDBManager:
             print(f"Error during connection cleanup: {e}")
 
 
-# Global manager instance
-_manager_instance = None
-_manager_lock = Lock()
-
-
 def get_manager() -> DuckDBManager:
-    """Get global DuckDB manager instance (singleton pattern).
+    """Get new DuckDB manager instance (no singleton - always fresh).
 
     Returns:
-        Global DuckDBManager instance
+        New DuckDBManager instance
     """
-    global _manager_instance
-
-    if _manager_instance is None:
-        with _manager_lock:
-            if _manager_instance is None:
-                _manager_instance = DuckDBManager()
-
-    return _manager_instance
-
-
-def reset_manager() -> None:
-    """Reset global manager instance (mainly for testing)."""
-    global _manager_instance
-
-    with _manager_lock:
-        if _manager_instance:
-            _manager_instance.close()
-        _manager_instance = None
+    return DuckDBManager()

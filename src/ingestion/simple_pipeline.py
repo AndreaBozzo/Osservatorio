@@ -56,6 +56,9 @@ class SimpleIngestionPipeline:
             "errors": [],
             "total_records": 0,
         }
+
+        # Ensure schema exists on initialization
+        self._ensure_schema_tables_exist_sync()
         logger.info("SimpleIngestionPipeline initialized")
 
     async def ingest_all_priority_datasets(self) -> dict[str, Any]:
@@ -150,6 +153,37 @@ class SimpleIngestionPipeline:
             Ingestion result with success status and metrics
         """
         logger.info(f"Starting ingestion for dataset: {dataset_id}")
+
+        # Step 0: Check if dataset is already up-to-date (skip logic)
+        try:
+            existing_dataset = self.repository.dataset_manager.get_dataset(dataset_id)
+            if existing_dataset and existing_dataset.get("is_active") == 1:
+                # Check if data exists in DuckDB
+                duckdb_count = self.duckdb_adapter.execute_query(
+                    f"SELECT COUNT(*) as count FROM main.istat_observations WHERE dataset_id = '{dataset_id}'"
+                )
+                existing_count = (
+                    duckdb_count.iloc[0]["count"] if len(duckdb_count) > 0 else 0
+                )
+
+                if existing_count > 0:
+                    logger.info(
+                        f"⏭️ Skipping {dataset_id}: {existing_count:,} records already exist (last updated: {existing_dataset.get('last_updated', 'unknown')})"
+                    )
+                    return {
+                        "success": True,
+                        "dataset_id": dataset_id,
+                        "records_processed": 0,
+                        "skipped": True,
+                        "existing_records": existing_count,
+                        "reason": "Dataset already exists and is up-to-date",
+                        "timestamp": datetime.now().isoformat(),
+                        "data_source": "cached",
+                    }
+        except Exception as e:
+            logger.debug(
+                f"Skip check failed for {dataset_id}, proceeding with ingestion: {e}"
+            )
 
         for attempt in range(retries + 1):
             try:
@@ -489,6 +523,37 @@ class SimpleIngestionPipeline:
 
         except Exception as e:
             logger.error(f"Failed to ensure schema tables exist: {e}")
+            raise
+
+    def _ensure_schema_tables_exist_sync(self):
+        """Ensure DuckDB schema tables exist before insertion (sync version)."""
+        try:
+            # Create simple table structure for ingestion pipeline
+            # Use direct SQL to avoid potential schema manager issues
+            with self.duckdb_manager.get_connection() as conn:
+                # Create main schema
+                conn.execute("CREATE SCHEMA IF NOT EXISTS main;")
+
+                # Create flexible observations table with JSON for additional attributes
+                create_observations_sql = """
+                CREATE TABLE IF NOT EXISTS main.istat_observations (
+                    dataset_id VARCHAR,
+                    record_id INTEGER,
+                    ingestion_timestamp VARCHAR,
+                    obs_value VARCHAR,
+                    time_period VARCHAR,
+                    additional_attributes JSON
+                );
+                """
+
+                # Create sequence first
+                conn.execute("CREATE SEQUENCE IF NOT EXISTS obs_id_seq;")
+                conn.execute(create_observations_sql)
+
+                logger.debug("DuckDB observations table verified/created (sync)")
+
+        except Exception as e:
+            logger.error(f"Failed to ensure schema tables exist (sync): {e}")
             raise
 
     async def _update_dataset_metadata(self, dataset_id: str, records_count: int):

@@ -194,8 +194,8 @@ class UnifiedDataRepository:
                     MAX(o.year) as max_year,
                     COUNT(DISTINCT o.territory_code) as territory_count,
                     COUNT(DISTINCT o.value_type) as measure_count
-                FROM istat.istat_observations o
-                JOIN istat.istat_datasets d ON o.dataset_row_id = d.id
+                FROM main.istat_observations o
+                JOIN main.istat_datasets d ON o.dataset_row_id = d.id
                 WHERE d.dataset_id = ?
             """
 
@@ -641,7 +641,7 @@ class UnifiedDataRepository:
             try:
                 # Try to get analytics statistics
                 result = self.analytics_manager.execute_query(
-                    "SELECT COUNT(*) FROM istat.istat_observations"
+                    "SELECT COUNT(*) FROM main.istat_observations"
                 )
                 analytics_stats["total_observations"] = result[0][0] if result else 0
 

@@ -173,6 +173,9 @@ class ProductionIstatClient:
 
         # Initialize fault tolerance components
         self.circuit_breakers = {}  # Per-dataset circuit breakers
+        self._default_circuit_breaker = (
+            CircuitBreaker()
+        )  # Default circuit breaker for backward compatibility
         self.rate_limiter = RateLimiter(max_requests=100, window_seconds=3600)
 
         # Client status and metrics
@@ -221,10 +224,16 @@ class ProductionIstatClient:
 
         return session
 
+    @property
+    def circuit_breaker(self) -> CircuitBreaker:
+        """Get default circuit breaker for backward compatibility."""
+        return self._default_circuit_breaker
+
     def get_status(self) -> dict[str, Any]:
         """Get current client status and metrics."""
         return {
             "status": self.status.value,
+            "circuit_breaker_state": self._default_circuit_breaker.state,  # For backward compatibility
             "circuit_breakers": {k: v.state for k, v in self.circuit_breakers.items()},
             "rate_limit_remaining": self.rate_limiter.max_requests
             - len(self.rate_limiter.requests),
@@ -244,6 +253,12 @@ class ProductionIstatClient:
         self, endpoint: str, params: Optional[dict] = None, timeout: int = 30
     ) -> requests.Response:
         """Make API request with fault tolerance."""
+        # Check default circuit breaker first (for backward compatibility and general failures)
+        if not self._default_circuit_breaker.can_proceed():
+            raise Exception(
+                f"Circuit breaker is open. Status: {self._default_circuit_breaker.state}"
+            )
+
         # Extract dataset_id from endpoint for per-dataset circuit breaker
         dataset_id = endpoint.split("/")[1] if "/" in endpoint else "unknown"
         circuit_breaker = self._get_circuit_breaker(dataset_id)
@@ -404,11 +419,18 @@ class ProductionIstatClient:
                         # Parse observations count for smaller datasets
                         try:
                             root = ET.fromstring(data_response.content)
-                            observations = root.findall('.//*[local-name()="Obs"]')
+                            # Use simpler XPath - find all elements with 'Obs' in name
+                            observations = [
+                                elem
+                                for elem in root.iter()
+                                if "Obs" in elem.tag and elem.tag.endswith("Obs")
+                            ]
                             if not observations:
-                                observations = root.findall(
-                                    './/*[local-name()="Observation"]'
-                                )
+                                observations = [
+                                    elem
+                                    for elem in root.iter()
+                                    if "Observation" in elem.tag
+                                ]
                             observations_count = len(observations)
                         except ET.ParseError:
                             # If XML parsing fails, still mark as success if we got valid response

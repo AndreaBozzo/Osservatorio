@@ -28,13 +28,7 @@ class SimpleDuckDBAdapter:
             database_path: Path to database file or ':memory:' for in-memory
         """
         self.database_path = database_path
-        self.connection: Optional[duckdb.DuckDBPyConnection] = None
-        self._ensure_connection()
-
-    def _ensure_connection(self):
-        """Ensure database connection is established."""
-        if self.connection is None:
-            self.connection = duckdb.connect(self.database_path)
+        # Don't maintain persistent connection - create per operation for safety
 
     def execute_query(self, query: str) -> pd.DataFrame:
         """Execute query and return DataFrame.
@@ -45,10 +39,13 @@ class SimpleDuckDBAdapter:
         Returns:
             Query results as DataFrame
         """
-        self._ensure_connection()
-        if self.connection is None:
-            raise RuntimeError("Failed to establish database connection")
-        return self.connection.execute(query).df()
+        try:
+            with duckdb.connect(self.database_path) as conn:
+                result = conn.execute(query).df()
+                return result
+        except Exception as e:
+            logger.error(f"Query execution failed: {str(e)}")
+            raise
 
     def execute_statement(self, statement: str):
         """Execute SQL statement (no return).
@@ -56,10 +53,12 @@ class SimpleDuckDBAdapter:
         Args:
             statement: SQL statement to execute
         """
-        self._ensure_connection()
-        if self.connection is None:
-            raise RuntimeError("Failed to establish database connection")
-        self.connection.execute(statement)
+        try:
+            with duckdb.connect(self.database_path) as conn:
+                conn.execute(statement)
+        except Exception as e:
+            logger.error(f"Statement execution failed: {str(e)}")
+            raise
 
     def create_istat_schema(self):
         """Create basic ISTAT schema for data storage."""
@@ -146,25 +145,26 @@ class SimpleDuckDBAdapter:
         Args:
             df: DataFrame with observation data
         """
-        # Register DataFrame and insert
-        if self.connection is None:
-            raise RuntimeError("Failed to establish database connection")
-        self.connection.register("temp_observations", df)
-        self.execute_statement(
-            """
-            INSERT INTO istat_observations (dataset_id, year, territory_code, obs_value, obs_status)
-            SELECT
-                dataset_id,
-                year,
-                territory_code,
-                obs_value,
-                obs_status
-            FROM temp_observations;
-        """
-        )
-        if self.connection is None:
-            raise RuntimeError("Failed to establish database connection")
-        self.connection.unregister("temp_observations")
+        try:
+            with duckdb.connect(self.database_path) as conn:
+                # Register DataFrame and insert
+                conn.register("temp_observations", df)
+                conn.execute(
+                    """
+                    INSERT INTO istat_observations (dataset_id, year, territory_code, obs_value, obs_status)
+                    SELECT
+                        dataset_id,
+                        year,
+                        territory_code,
+                        obs_value,
+                        obs_status
+                    FROM temp_observations;
+                """
+                )
+                # DataFrame automatically unregistered when connection closes
+        except Exception as e:
+            logger.error(f"Insert observations failed: {str(e)}")
+            raise
 
     def get_dataset_summary(self) -> pd.DataFrame:
         """Get summary of all datasets.
@@ -204,8 +204,6 @@ class SimpleDuckDBAdapter:
             Time series data
         """
         # Use parameterized query to prevent SQL injection
-        if self.connection is None:
-            raise RuntimeError("Failed to establish database connection")
 
         if territory_code:
             query = """
@@ -221,7 +219,8 @@ class SimpleDuckDBAdapter:
                 WHERE dataset_id = ? AND territory_code = ?
                 ORDER BY year, territory_code, measure_code;
             """
-            return self.connection.execute(query, [dataset_id, territory_code]).df()
+            with duckdb.connect(self.database_path) as conn:
+                return conn.execute(query, [dataset_id, territory_code]).df()
         else:
             query = """
                 SELECT
@@ -236,7 +235,8 @@ class SimpleDuckDBAdapter:
                 WHERE dataset_id = ?
                 ORDER BY year, territory_code, measure_code;
             """
-            return self.connection.execute(query, [dataset_id]).df()
+            with duckdb.connect(self.database_path) as conn:
+                return conn.execute(query, [dataset_id]).df()
 
     def get_territory_comparison(self, dataset_id: str, year: int) -> pd.DataFrame:
         """Get territory comparison for a specific year.
@@ -249,8 +249,6 @@ class SimpleDuckDBAdapter:
             Territory comparison data
         """
         # Use parameterized query to prevent SQL injection
-        if self.connection is None:
-            raise RuntimeError("Failed to establish database connection")
         query = """
             SELECT
                 territory_code,
@@ -266,7 +264,8 @@ class SimpleDuckDBAdapter:
             GROUP BY territory_code, territory_name
             ORDER BY avg_value DESC;
         """
-        return self.connection.execute(query, [dataset_id, year]).df()
+        with duckdb.connect(self.database_path) as conn:
+            return conn.execute(query, [dataset_id, year]).df()
 
     def get_category_trends(
         self,
@@ -285,8 +284,6 @@ class SimpleDuckDBAdapter:
             Trend analysis data
         """
         # Use parameterized query to prevent SQL injection
-        if self.connection is None:
-            raise RuntimeError("Failed to establish database connection")
 
         if start_year and end_year:
             query = """
@@ -303,7 +300,8 @@ class SimpleDuckDBAdapter:
                 GROUP BY o.year
                 ORDER BY o.year;
             """
-            return self.connection.execute(query, [category, start_year, end_year]).df()
+            with duckdb.connect(self.database_path) as conn:
+                return conn.execute(query, [category, start_year, end_year]).df()
         elif start_year:
             query = """
                 SELECT
@@ -319,7 +317,8 @@ class SimpleDuckDBAdapter:
                 GROUP BY o.year
                 ORDER BY o.year;
             """
-            return self.connection.execute(query, [category, start_year]).df()
+            with duckdb.connect(self.database_path) as conn:
+                return conn.execute(query, [category, start_year]).df()
         elif end_year:
             query = """
                 SELECT
@@ -335,7 +334,8 @@ class SimpleDuckDBAdapter:
                 GROUP BY o.year
                 ORDER BY o.year;
             """
-            return self.connection.execute(query, [category, end_year]).df()
+            with duckdb.connect(self.database_path) as conn:
+                return conn.execute(query, [category, end_year]).df()
         else:
             query = """
                 SELECT
@@ -351,7 +351,8 @@ class SimpleDuckDBAdapter:
                 GROUP BY o.year
                 ORDER BY o.year;
             """
-            return self.connection.execute(query, [category]).df()
+            with duckdb.connect(self.database_path) as conn:
+                return conn.execute(query, [category]).df()
 
     def optimize_database(self):
         """Run database optimization."""
@@ -363,18 +364,16 @@ class SimpleDuckDBAdapter:
             print(f"Database optimization warning: {e}")
 
     def close(self):
-        """Close database connection."""
-        if self.connection:
-            self.connection.close()
-            self.connection = None
+        """Close database connection - no-op since we use per-operation connections."""
+        pass
 
     def __enter__(self):
         """Context manager entry."""
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        """Context manager exit."""
-        self.close()
+        """Context manager exit - no-op since we use per-operation connections."""
+        pass
 
 
 def create_adapter(database_path: str = ":memory:") -> SimpleDuckDBAdapter:
