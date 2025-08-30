@@ -72,7 +72,7 @@ class SyncResult:
 class CircuitBreaker:
     """Circuit breaker pattern for fault tolerance."""
 
-    def __init__(self, failure_threshold: int = 5, recovery_timeout: int = 60):
+    def __init__(self, failure_threshold: int = 10, recovery_timeout: int = 30):
         self.failure_threshold = failure_threshold
         self.recovery_timeout = recovery_timeout
         self.failure_count = 0
@@ -172,7 +172,7 @@ class ProductionIstatClient:
         self.session = self._create_session()
 
         # Initialize fault tolerance components
-        self.circuit_breaker = CircuitBreaker(failure_threshold=5, recovery_timeout=60)
+        self.circuit_breakers = {}  # Per-dataset circuit breakers
         self.rate_limiter = RateLimiter(max_requests=100, window_seconds=3600)
 
         # Client status and metrics
@@ -225,20 +225,32 @@ class ProductionIstatClient:
         """Get current client status and metrics."""
         return {
             "status": self.status.value,
-            "circuit_breaker_state": self.circuit_breaker.state,
+            "circuit_breakers": {k: v.state for k, v in self.circuit_breakers.items()},
             "rate_limit_remaining": self.rate_limiter.max_requests
             - len(self.rate_limiter.requests),
             "metrics": self.metrics.copy(),
         }
 
     # Rate limiting simplified for MVP
+    def _get_circuit_breaker(self, dataset_id: str) -> CircuitBreaker:
+        """Get or create circuit breaker for specific dataset."""
+        if dataset_id not in self.circuit_breakers:
+            self.circuit_breakers[dataset_id] = CircuitBreaker(
+                failure_threshold=10, recovery_timeout=30
+            )
+        return self.circuit_breakers[dataset_id]
+
     def _make_request(
         self, endpoint: str, params: Optional[dict] = None, timeout: int = 30
     ) -> requests.Response:
         """Make API request with fault tolerance."""
-        if not self.circuit_breaker.can_proceed():
+        # Extract dataset_id from endpoint for per-dataset circuit breaker
+        dataset_id = endpoint.split("/")[1] if "/" in endpoint else "unknown"
+        circuit_breaker = self._get_circuit_breaker(dataset_id)
+
+        if not circuit_breaker.can_proceed():
             raise Exception(
-                f"Circuit breaker is open. Status: {self.circuit_breaker.state}"
+                f"Circuit breaker is open for {dataset_id}. Status: {circuit_breaker.state}"
             )
 
         if not self.rate_limiter.can_proceed():
@@ -258,7 +270,7 @@ class ProductionIstatClient:
 
             # Record success
             response_time = time.time() - start_time
-            self.circuit_breaker.record_success()
+            circuit_breaker.record_success()
             self.metrics["successful_requests"] += 1
 
             # Update average response time
@@ -270,10 +282,10 @@ class ProductionIstatClient:
 
         except Exception as e:
             # Record failure
-            self.circuit_breaker.record_failure()
+            circuit_breaker.record_failure()
             self.metrics["failed_requests"] += 1
 
-            if self.circuit_breaker.state == "open":
+            if circuit_breaker.state == "open":
                 self.status = ClientStatus.CIRCUIT_OPEN
             else:
                 self.status = ClientStatus.DEGRADED
@@ -365,10 +377,11 @@ class ProductionIstatClient:
             # Fetch data if requested
             if include_data:
                 try:
+                    # Build SDMX URL with required parameters for specific datasets
+                    data_url = self._build_dataset_url(dataset_id)
+
                     # Use longer timeout for large datasets (ISTAT datasets can be 100MB+)
-                    data_response = self._make_request(
-                        f"data/{dataset_id}", timeout=120
-                    )
+                    data_response = self._make_request(data_url, timeout=120)
 
                     # For very large datasets, try to parse just the header first
                     data_size = len(data_response.content)
@@ -411,11 +424,15 @@ class ProductionIstatClient:
                         }
                     )
 
+                    # Include XML content for processing
+                    xml_content = data_response.text if include_data else None
+
                     result["data"] = {
                         "status": "success",
                         "content_type": data_response.headers.get("content-type"),
                         "size": data_size,
                         "observations_count": observations_count,
+                        "content": xml_content,  # Include the actual XML data
                     }
                 except Exception as e:
                     # Check if this is a 404 error that should trigger fallback
@@ -451,6 +468,26 @@ class ProductionIstatClient:
 
             # If no fallback or fallback failed, re-raise original error
             raise e
+
+    def _build_dataset_url(self, dataset_id: str) -> str:
+        """Build dataset URL with required SDMX parameters for specific datasets."""
+        # Dataset-specific parameter mappings
+        # For now, use basic URLs - will add SDMX parameters after testing circuit breaker fix
+        dataset_params = {
+            # All datasets use basic URL structure for now
+            "101_1015": "data/101_1015",  # Coltivazioni - known working
+            "144_107": "data/144_107",  # Foi weights
+            "115_333": "data/115_333",  # Industrial production index
+            "145_360": "data/145_360",  # Production prices
+            "144_222": "data/144_222",  # CPI base
+            "144_238": "data/144_238",  # HICP
+            "144_226": "data/144_226",  # CPI detailed
+            "120_337": "data/120_337",  # Retail sales
+            "143_222": "data/143_222",  # Import prices
+        }
+
+        # Return dataset-specific URL or default
+        return dataset_params.get(dataset_id, f"data/{dataset_id}")
 
     async def fetch_dataset_batch(self, dataset_ids: list[str]) -> BatchResult:
         """Fetch multiple datasets asynchronously."""

@@ -8,6 +8,7 @@ This module provides a high-level database manager that handles:
 """
 
 import atexit
+import os
 import time
 from contextlib import contextmanager
 from pathlib import Path
@@ -77,22 +78,41 @@ class DuckDBManager:
             return  # Already connected
 
         try:
-            # Ensure the database path is properly encoded as string
-            db_path_str = str(self.connection_string).replace("\\", "/")
+            # Ensure the database path is properly encoded for Windows
+            db_path_str = str(self.connection_string)
 
-            # Handle database path - if it exists and is invalid, remove it
+            # Handle Windows path properly - keep backslashes for Windows
+            if os.name == "nt":  # Windows
+                db_path_str = os.path.normpath(db_path_str)
+            else:
+                db_path_str = db_path_str.replace("\\", "/")
+
+            # Handle database path - if it exists and is corrupted, remove it
             db_path = Path(db_path_str)
             db_path.parent.mkdir(parents=True, exist_ok=True)
 
-            # If database file exists but is empty/invalid, remove it
-            if db_path.exists() and db_path.stat().st_size == 0:
-                db_path.unlink()
+            # Check for corrupted database file
+            if db_path.exists():
+                try:
+                    # Try to verify the file is a valid DuckDB file
+                    with open(db_path, "rb") as f:
+                        header = f.read(16)
+                        # DuckDB files should start with specific magic bytes
+                        if len(header) < 16 or not header.startswith(b"DUCK"):
+                            print(f"Removing corrupted database file: {db_path}")
+                            db_path.unlink()
+                except (OSError, PermissionError) as e:
+                    print(f"Cannot read database file, removing: {e}")
+                    try:
+                        db_path.unlink()
+                    except (OSError, PermissionError):
+                        pass
 
             print(f"Connecting to database: {db_path_str}")
 
-            # Create connection with minimal config for stability
+            # Create connection with proper encoding handling
             self._connection = duckdb.connect(
-                database=db_path_str,
+                database=str(db_path_str),  # Ensure string conversion
                 read_only=self.config.get("read_only", False),
                 config={"enable_object_cache": False},
             )

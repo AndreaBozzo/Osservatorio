@@ -35,4 +35,3 @@ curl http://localhost:8000/health/metrics
 
 ## View benchmark results
 `docker-compose exec build-benchmark cat /benchmark/results/build_benchmark_*.json`
-

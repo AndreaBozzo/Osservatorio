@@ -29,6 +29,7 @@ from fastapi.responses import JSONResponse
 
 from src.auth.security_middleware import SecurityHeadersMiddleware
 from src.database.sqlite.repository import get_unified_repository
+from src.ingestion.simple_pipeline import create_simple_pipeline
 from src.utils.config import get_config
 from src.utils.logger import get_logger
 
@@ -1008,10 +1009,163 @@ async def startup_event():
         istat_health = istat_client.health_check()
         logger.info(f"ISTAT API client status: {istat_health.get('status', 'unknown')}")
 
+        # Initialize simple ingestion pipeline
+        ingestion_pipeline = create_simple_pipeline()
+        app.state.ingestion_pipeline = ingestion_pipeline
+        logger.info("Simple ingestion pipeline initialized")
+
         logger.info("FastAPI application started successfully")
     except Exception as e:
         logger.error(f"Failed to start application: {e}")
         raise
+
+
+# Issue #149 - Simple Ingestion Pipeline Endpoints
+@app.post(
+    "/ingestion/run-all",
+    tags=["Ingestion"],
+    summary="Run ingestion for all 7 priority datasets",
+)
+async def run_ingestion_all(request: Request):
+    """
+    Trigger ingestion for all 7 priority ISTAT datasets.
+
+    Returns comprehensive results including success/failure status for each dataset.
+    """
+    pipeline = app.state.ingestion_pipeline
+
+    try:
+        results = await pipeline.ingest_all_priority_datasets()
+
+        # Simple logging without auth dependency
+        logger.info(
+            f"API request: POST /ingestion/run-all - 200 - {len(str(results))} bytes"
+        )
+
+        return JSONResponse(
+            status_code=200,
+            content={
+                "success": results["success"],
+                "message": f"Ingestion completed: {results['successful']}/{results['total_datasets']} datasets successful",
+                "details": results,
+            },
+        )
+
+    except Exception as e:
+        logger.error(f"Batch ingestion failed: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={
+                "success": False,
+                "error": str(e),
+                "message": "Batch ingestion failed",
+            },
+        )
+
+
+@app.post(
+    "/ingestion/run/{dataset_id}",
+    tags=["Ingestion"],
+    summary="Run ingestion for single dataset",
+)
+async def run_ingestion_single(
+    dataset_id: str = Path(..., description="ISTAT dataset ID"), request: Request = None
+):
+    """
+    Trigger ingestion for a single dataset.
+
+    Supports both priority datasets and custom dataset IDs.
+    """
+    pipeline = app.state.ingestion_pipeline
+
+    try:
+        result = await pipeline.ingest_single_dataset(dataset_id)
+
+        # Simple logging without auth dependency
+        if request:
+            status_code = 200 if result["success"] else 500
+            logger.info(
+                f"API request: POST /ingestion/run/{dataset_id} - {status_code} - {len(str(result))} bytes"
+            )
+
+        status_code = 200 if result["success"] else 500
+        return JSONResponse(status_code=status_code, content=result)
+
+    except Exception as e:
+        logger.error(f"Single dataset ingestion failed for {dataset_id}: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={
+                "success": False,
+                "dataset_id": dataset_id,
+                "error": str(e),
+                "message": f"Ingestion failed for {dataset_id}",
+            },
+        )
+
+
+@app.get(
+    "/ingestion/status", tags=["Ingestion"], summary="Get ingestion pipeline status"
+)
+async def get_ingestion_status(request: Request):
+    """
+    Get current status of the ingestion pipeline.
+
+    Returns information about last runs, dataset status, and system health.
+    """
+    pipeline = app.state.ingestion_pipeline
+
+    try:
+        status = pipeline.get_ingestion_status()
+
+        # Simple logging without auth dependency
+        logger.info(
+            f"API request: GET /ingestion/status - 200 - {len(str(status))} bytes"
+        )
+
+        return JSONResponse(status_code=200, content=status)
+
+    except Exception as e:
+        logger.error(f"Failed to get ingestion status: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"error": str(e), "message": "Failed to retrieve ingestion status"},
+        )
+
+
+@app.get(
+    "/ingestion/health",
+    tags=["Ingestion"],
+    summary="Health check for ingestion pipeline",
+)
+async def get_ingestion_health(request: Request):
+    """
+    Simple health check for the ingestion pipeline components.
+    """
+    pipeline = app.state.ingestion_pipeline
+
+    try:
+        health = await pipeline.health_check()
+
+        # Simple logging without auth dependency
+        status_code = 200 if health["healthy"] else 503
+        logger.info(
+            f"API request: GET /ingestion/health - {status_code} - {len(str(health))} bytes"
+        )
+
+        status_code = 200 if health["healthy"] else 503
+        return JSONResponse(status_code=status_code, content=health)
+
+    except Exception as e:
+        logger.error(f"Health check failed: {e}")
+        return JSONResponse(
+            status_code=503,
+            content={
+                "healthy": False,
+                "error": str(e),
+                "message": "Health check failed",
+            },
+        )
 
 
 @app.on_event("shutdown")
