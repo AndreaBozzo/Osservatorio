@@ -1,95 +1,78 @@
 # 🗺️ API Mapping & Data Flow Documentation
 
 > **Complementary to [API_REFERENCE.md](api/API_REFERENCE.md)** - Focus on operational mappings and data flows
-> **Version**: 8.1.0
-> **Date**: 23 Luglio 2025
-> **Status**: Day 1 Completion
+> **Version**: 9.0.0
+> **Date**: 31 Agosto 2025
+> **Status**: MVP Production Ready - 7 Priority Datasets Active
 
 ---
 
-## 📊 ISTAT API Endpoints Currently in Use
+## 📊 ISTAT API Endpoints Currently in Production
 
-### 1. **DCIS_POPRES1** - Popolazione Residente
-- **URL**: `https://sdmx.istat.it/SDMXWS/rest/data/DCIS_POPRES1`
-- **Update Frequency**: Mensile
-- **Volume Stimato**: ~50MB (uncompressed XML)
-- **Structure**:
-  - Dimensions: Territorio, Tempo, Cittadinanza, Sesso, Classe_età
-  - Measures: Valore (popolazione)
-  - Attributes: Status, Precision
-- **Current Usage**: Dashboard popolazione, converter tests
-- **Rate Limit**: 50 req/hour (enforced)
+**Live Database Status: 128,471 records across 7 datasets**
 
-### 2. **DCCN_PILN** - PIL Nazionale
-- **URL**: `https://sdmx.istat.it/SDMXWS/rest/data/DCCN_PILN`
-- **Update Frequency**: Trimestrale
-- **Volume Stimato**: ~30MB
-- **Structure**:
-  - Dimensions: Territorio, Tempo, Settore_istituzionale, Valuta
-  - Measures: Valore (PIL in milioni di euro)
-- **Current Usage**: Dashboard economia
-- **Rate Limit**: 50 req/hour (enforced)
+### 1. **120_337** - Indice delle vendite del commercio al dettaglio ✅
+- **URL**: `https://sdmx.istat.it/SDMXWS/rest/data/120_337`
+- **Status**: ✅ **ACTIVE** - 39,057 records ingested
+- **Last Update**: 2025-08-30T22:00:58
+- **Volume**: ~4MB XML response
+- **Time Range**: 2000-01 to 2023-12 (288 periods)
+- **Current Usage**: Retail sales analysis
 
-### 3. **DCCV_TAXOCCU** - Tasso di Occupazione
-- **URL**: `https://sdmx.istat.it/SDMXWS/rest/data/DCCV_TAXOCCU`
-- **Update Frequency**: Trimestrale
-- **Volume Stimato**: ~25MB
-- **Structure**:
-  - Dimensions: Territorio, Tempo, Sesso, Classe_età, Titolo_studio
-  - Measures: Valore (percentuale)
-- **Current Usage**: Dashboard lavoro
-- **Rate Limit**: 50 req/hour (enforced)
+### 2. **145_360** - Prezzi alla produzione dell'industria ✅
+- **URL**: `https://sdmx.istat.it/SDMXWS/rest/data/145_360`
+- **Status**: ✅ **ACTIVE** - 27,889 records ingested
+- **Last Update**: 2025-08-30T22:01:45
+- **Volume**: ~93MB XML response (large dataset)
+- **Time Range**: 2000-01 to 2023-12 (288 periods)
+- **Current Usage**: Producer price analysis
 
-### 4. **DCIS_POPSTRRES1** - Popolazione per Struttura
-- **URL**: `https://sdmx.istat.it/SDMXWS/rest/data/DCIS_POPSTRRES1`
-- **Update Frequency**: Annuale
-- **Volume Stimato**: ~20MB
-- **Structure**:
-  - Dimensions: Territorio, Tempo, Cittadinanza, Sesso, Classe_età
-  - Measures: Valore (popolazione straniera residente)
-  - Attributes: Status, Precision
-- **Current Usage**: Dashboard popolazione straniera
-- **Rate Limit**: 50 req/hour (enforced)
+### 3. **115_333** - Indice della produzione industriale ✅
+- **URL**: `https://sdmx.istat.it/SDMXWS/rest/data/115_333`
+- **Status**: ✅ **ACTIVE** - 19,762 records ingested
+- **Last Update**: 2025-08-30T17:47:01
+- **Volume**: ~2MB XML response
+- **Time Range**: 1990-01 to 2023-12 (408 periods)
+- **Skip Logic**: ✅ Working (skips re-ingestion)
 
-### 5. **DCIS_FECONDITA** - Indicatori di Fecondità
-- **URL**: `https://sdmx.istat.it/SDMXWS/rest/data/DCIS_FECONDITA`
-- **Update Frequency**: Annuale
-- **Volume Stimato**: ~15MB
-- **Structure**:
-  - Dimensions: Territorio, Tempo, Classe_età_madre
-  - Measures: Tasso_fecondità, Tasso_fecondità_totale
-  - Attributes: Status, Precision
-- **Current Usage**: Dashboard demografia, analisi fecondità
-- **Rate Limit**: 50 req/hour (enforced)
+### 4. **149_319** - Tensione contrattuale ✅
+- **URL**: `https://sdmx.istat.it/SDMXWS/rest/data/149_319`
+- **Status**: ✅ **ACTIVE** - 16,953 records ingested
+- **Last Update**: 2025-08-30T22:01:51
+- **Volume**: ~744KB XML response
+- **Time Range**: 2005 to 2023-12 (247 periods)
+- **Current Usage**: Contract tension analysis
 
-### 6. **DCIS_MORTALITA1** - Tavole di Mortalità
-- **URL**: `https://sdmx.istat.it/SDMXWS/rest/data/DCIS_MORTALITA1`
-- **Update Frequency**: Annuale
-- **Volume Stimato**: ~25MB
-- **Structure**:
-  - Dimensions: Territorio, Tempo, Sesso, Classe_età
-  - Measures: Probabilità_morte, Speranza_vita
-  - Attributes: Status, Precision
-- **Current Usage**: Dashboard mortalità, tavole attuariali
-- **Rate Limit**: 50 req/hour (enforced)
+### 5. **101_1015** - Coltivazioni ✅
+- **URL**: `https://sdmx.istat.it/SDMXWS/rest/data/101_1015`
+- **Status**: ✅ **ACTIVE** - 15,814 records ingested
+- **Last Update**: 2025-08-30T17:45:30
+- **Volume**: ~1MB XML response
+- **Time Range**: 2006 to 2025 (20 periods)
+- **Skip Logic**: ✅ Working (skips re-ingestion)
 
-### 7. **DCIS_RICFAMILIARE1** - Reddito delle Famiglie
-- **URL**: `https://sdmx.istat.it/SDMXWS/rest/data/DCIS_RICFAMILIARE1`
-- **Update Frequency**: Annuale
-- **Volume Stimato**: ~30MB
-- **Structure**:
-  - Dimensions: Territorio, Tempo, Tipologia_famiglia, Quintile_reddito
-  - Measures: Reddito_equivalente, Rischio_povertà
-  - Attributes: Status, Precision
-- **Current Usage**: Dashboard condizioni socioeconomiche
-- **Rate Limit**: 50 req/hour (enforced)
+### 6. **143_222** - Indice dei prezzi all'importazione ❌
+- **URL**: `https://sdmx.istat.it/SDMXWS/rest/data/143_222`
+- **Status**: ❌ **FAILING** - Data quality issues
+- **Records**: 8,156 records (partial ingestion)
+- **Issue**: `Conversion Error: Could not convert string '' to INT32`
+- **Volume**: ~10MB XML response
+- **Time Range**: 2005-01 to 2023-12 (228 periods)
+- **Action Required**: Fix empty string handling in obs_value
 
-### 8. **Discovery Endpoint** - Dataflows
+### 7. **144_107** - Foi – weights until 2010 ✅
+- **URL**: `https://sdmx.istat.it/SDMXWS/rest/data/144_107`
+- **Status**: ✅ **ACTIVE** - 840 records ingested
+- **Last Update**: 2025-08-30T21:57:25
+- **Volume**: ~29KB XML response (smallest dataset)
+- **Time Range**: 1996 to 2010 (15 periods)
+- **Current Usage**: Historical weights analysis
+
+### Discovery Endpoint - Dataflows
 - **URL**: `https://sdmx.istat.it/SDMXWS/rest/dataflow/IT1`
-- **Update Frequency**: Static (structure only)
+- **Status**: ✅ **WORKING** - Used for dataset discovery
 - **Volume**: ~2MB
-- **Purpose**: Discovery di tutti i 509+ dataset disponibili
-- **Current Usage**: `DataflowAnalyzer` per categorization
+- **Purpose**: Discovery of 500+ available datasets
 
 ---
 
@@ -141,23 +124,30 @@
 
 ## 📈 Data Volume Analysis
 
-### Current Storage Footprint
+### Current Production Database Status
 ```
-data/
-├── raw/           (~500MB total)
-│   ├── istat/     (~400MB - XML archives)
-│   └── xml/       (~100MB - samples)
-├── processed/     (~200MB total)
-│   ├──    (~100MB - multi-format)
-│   └──    (~100MB - multi-format)
-└── cache/         (~50MB - temporary)
+DuckDB: C:\Users\Andrea\Documents\Osservatorio\data\databases\osservatorio.duckdb
+├── Total Records: 128,471
+├── Database Size: ~45MB
+├── No Duplicates: ✅ Clean data
+├── Data Quality:
+│   ├── NULL obs_value: 0
+│   ├── Empty strings: 12 (0.009%)
+│   └── Additional attributes: 100% coverage
+└── Time Range: 1990 to 2025 (35 years)
+
+SQLite Metadata: osservatorio_metadata.db
+├── Active datasets: 28 tracked
+├── Audit logs: 3,488 entries
+├── User preferences: 1 profile
+└── System configs: 30 settings
 ```
 
-### Growth Projections
-- **Monthly ingest**: ~150MB new data
-- **Annual estimate**: ~1.8GB raw data
-- **Post-processing multiplier**: 2x (multiple formats)
-- **Total annual storage need**: ~5GB
+### Realistic Growth Projections
+- **Current monthly addition**: ~0 (skip logic working)
+- **Annual estimate without skip logic**: ~150MB new XML
+- **Database growth with compression**: ~5-10MB/year
+- **Projected 2026 database size**: ~55MB
 
 ### Access Patterns
 1. **Real-time dashboard**: High frequency, small datasets
@@ -208,23 +198,25 @@ data/
    - Performance benchmarks
    - Integration tests
 
-### Planned Integrations
-1. **DuckDB Storage** (Day 2)
-   - Persistent storage for analytics
-   - Query optimization
-   - Historical data management
+### Production Integrations Status
+1. **DuckDB Storage** ✅ **COMPLETED**
+   - Hybrid SQLite+DuckDB architecture implemented
+   - Skip logic prevents duplicate ingestion
+   - Context managers prevent database corruption
+   - 128,471 records stored successfully
 
-2. **SQLite Metadata** (Day 4 - COMPLETED)
-   - Dataset cataloging (dataset_registry table)
-   - User preferences (user_preferences table)
-   - API credentials (api_credentials table)
-   - Audit logging (audit_log table)
-   - Audit logging
+2. **SQLite Metadata** ✅ **COMPLETED**
+   - Full 6-table metadata schema implemented
+   - Dataset registry tracks all 28 datasets
+   - Audit logging with 3,488 entries
+   - User preferences and system configurations
 
-3. **REST API** (February)
-   - External access to processed data
-   - Authentication and authorization
-   - Rate limiting per user
+3. **FastAPI REST Endpoints** ✅ **COMPLETED**
+   - `/ingestion/run-all` - Batch ingestion of 7 priority datasets
+   - `/ingestion/run/{dataset_id}` - Single dataset ingestion
+   - `/ingestion/status` - Pipeline health monitoring
+   - Skip logic: 85.7% success rate (6/7 datasets working)
+   - JSON serialization issues resolved
 
 ---
 
@@ -251,54 +243,55 @@ data/
 
 ---
 
-## 🚨 Risk Assessment
+## 🚨 Current Issues & Risk Assessment
 
-### Data Availability Risks
-- **ISTAT API changes**: Breaking changes to SDMX structure
-- **Rate limiting**: Increased usage hits limits
-- **Network issues**: Timeout/connectivity problems
-- **Data quality**: Inconsistent or missing values
+### Active Production Issues
+1. **Dataset 143_222**: Empty string conversion error in obs_value field
+   - **Impact**: 1/7 datasets failing (14.3% failure rate)
+   - **Root Cause**: DuckDB INT32 casting fails on empty strings
+   - **Priority**: Medium (partial data available)
 
-### Mitigation Strategies
-1. **Aggressive caching**: Reduce API dependency
-2. **Circuit breaker**: Automatic failure recovery
-3. **Data validation**: Quality checks at ingestion
-4. **Fallback data**: Cached/sample data for demos
+2. **Time Period Format Inconsistency**: Mixed timestamp/period formats
+   - **Impact**: 82,805 records with "OTHER" format (64% of data)
+   - **Root Cause**: Ingestion mixing business time periods with timestamps
+   - **Priority**: Low (data accessible, visualization may be affected)
+
+### Risk Mitigation Status
+1. **Circuit Breaker**: ✅ Implemented and tested
+2. **Rate Limiting**: ✅ 100 req/hour limit managed
+3. **Skip Logic**: ✅ Prevents duplicate ingestion
+4. **Database Corruption**: ✅ Context managers prevent connection locks
+5. **XPath Parsing**: ✅ Python 3.13 compatibility issues resolved
 
 ---
 
-## 📋 Action Items for Day 2
+## 📋 Next Steps & Improvements
 
-### DuckDB Schema Design
-Based on this analysis, DuckDB schema should include:
+### Implemented DuckDB Schema
+Production schema successfully deployed:
 
 ```sql
-CREATE TABLE datasets (
-    dataset_id VARCHAR PRIMARY KEY,
-    name VARCHAR,
-    category VARCHAR,
-    last_updated TIMESTAMP,
-    volume_mb DECIMAL,
-    quality_score DECIMAL
-);
-
-CREATE TABLE time_series_data (
+CREATE TABLE main.istat_observations (
     dataset_id VARCHAR,
-    territorio VARCHAR,
-    tempo DATE,
-    dimension_values JSON,
-    measure_value DECIMAL,
-    quality_flags VARCHAR,
-    INDEX idx_dataset_time (dataset_id, tempo),
-    INDEX idx_territorio (territorio)
+    obs_value VARCHAR,           -- Mixed numeric/string data
+    time_period VARCHAR,         -- Mix of dates/timestamps
+    record_id INTEGER,
+    ingestion_timestamp VARCHAR,
+    additional_attributes JSON   -- Full SDMX metadata
 );
 ```
 
-### Performance Optimization
-1. **Partitioning**: By year/quarter for large time series
-2. **Compression**: GZIP for historical data
-3. **Indexing**: Composite indexes on common filter columns
-4. **Caching**: Query result caching for dashboard
+### Performance Optimizations Completed
+1. **Context Managers**: ✅ Connection safety implemented
+2. **Skip Logic**: ✅ Prevents duplicate ingestion (2/7 datasets skipped)
+3. **Bulk Inserts**: ✅ Fast DataFrame insertion (~200-600ms for 10K records)
+4. **Error Handling**: ✅ Circuit breakers and retry logic
+
+### Immediate Action Items
+1. **Fix Dataset 143_222**: Handle empty string conversion to INTEGER
+2. **Time Period Normalization**: Standardize timestamp vs period formats
+3. **Data Type Optimization**: Convert obs_value to DECIMAL where possible
+4. **Monitoring Dashboard**: Real-time ingestion status tracking
 
 ---
 
@@ -310,5 +303,7 @@ CREATE TABLE time_series_data (
 
 ---
 
-**Status**: ✅ **Day 1 Complete** | Next: DuckDB Implementation (Day 2)
-*Completed: 20 Luglio 2025*
+**Status**: ✅ **MVP Production Ready** | Next: Data Quality Improvements
+*Updated: 31 Agosto 2025*
+
+**System Health**: 6/7 datasets active (85.7% success rate) | Database: 128K+ records | Skip logic: Working

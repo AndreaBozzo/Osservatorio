@@ -159,10 +159,11 @@ class SimpleIngestionPipeline:
             existing_dataset = self.repository.dataset_manager.get_dataset(dataset_id)
             if existing_dataset and existing_dataset.get("is_active") == 1:
                 # Check if data exists in DuckDB
-                duckdb_count = self.duckdb_adapter.execute_query(
-                    f"SELECT COUNT(*) as count FROM main.istat_observations WHERE dataset_id = '{dataset_id}'"
-                )
-                existing_count = (
+                with self.duckdb_manager.get_connection() as conn:
+                    duckdb_count = conn.execute(
+                        f"SELECT COUNT(*) as count FROM main.istat_observations WHERE dataset_id = '{dataset_id}'"
+                    ).df()
+                existing_count = int(
                     duckdb_count.iloc[0]["count"] if len(duckdb_count) > 0 else 0
                 )
 
