@@ -18,11 +18,14 @@ from typing import Any, Optional, Union
 import duckdb
 import pandas as pd
 
-from src.utils.logger import get_logger
+try:
+    from utils.logger import get_logger
+except ImportError:
+    from src.utils.logger import get_logger
 
 from .config import get_connection_string, get_duckdb_config
 
-# from src.utils.security_enhanced import security_manager
+# from utils.security_enhanced import security_manager
 
 logger = get_logger(__name__)
 
@@ -125,22 +128,25 @@ class DuckDBManager:
     def get_connection(self):
         """Get database connection with automatic cleanup.
 
-        Yields:
-            DuckDB connection object
+        STABLE PATTERN: Always create fresh connection per context.
+        This prevents lock issues and ensures clean state.
         """
-        # Simplified connection management to avoid deadlocks
+        conn = None
         try:
-            if self._connection is None:
-                print("Initializing connection...")
-                self._initialize_connection()
-            print("Yielding connection...")
-            yield self._connection
-            print("Connection context exited successfully")
+            # Always create fresh connection - no shared state
+            db_path_str = self.config.get("database", ":memory:")
+            conn = duckdb.connect(database=str(db_path_str))
+            yield conn
         except Exception as e:
             print(f"Connection error: {e}")
-            # Reset connection on error
-            self._connection = None
             raise
+        finally:
+            # Always clean up connection
+            if conn:
+                try:
+                    conn.close()
+                except Exception:
+                    pass  # Ignore close errors
 
     def execute_query(
         self, query: str, parameters: Optional[dict[str, Any]] = None
@@ -248,11 +254,18 @@ class DuckDBManager:
                     if not part.replace("_", "").isalnum() or not part.islower():
                         raise ValueError(f"Invalid table name component: {part}")
 
-                conn.register("temp_df", data)
-                # Table name validated above - safe for f-string usage
-                insert_query = f"INSERT INTO {table_name} SELECT * FROM temp_df"  # nosec B608
-                conn.execute(insert_query)
-                conn.unregister("temp_df")
+                # Robust insert with cleanup
+                try:
+                    conn.register("temp_df", data)
+                    # Table name validated above - safe for f-string usage
+                    insert_query = f"INSERT INTO {table_name} SELECT * FROM temp_df"  # nosec B608
+                    conn.execute(insert_query)
+                finally:
+                    # Always cleanup temp registration
+                    try:
+                        conn.unregister("temp_df")
+                    except Exception:
+                        pass  # Ignore cleanup errors
 
                 execution_time = time.time() - start_time
                 self._update_query_stats(execution_time, success=True)

@@ -18,8 +18,12 @@ import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
-from ..database.sqlite.dataset_config import get_dataset_config_manager
-from ..utils.logger import get_logger
+from database.sqlite.dataset_config import get_dataset_config_manager
+
+try:
+    from utils.logger import get_logger
+except ImportError:
+    from src.utils.logger import get_logger
 
 # Security features simplified for MVP
 from .mock_istat_data import get_cache_generator
@@ -156,7 +160,7 @@ class ProductionIstatClient:
     def __init__(self, repository=None, enable_cache_fallback=True):
         """Initialize production client."""
         # Issue #84: Use centralized configuration
-        from ..utils.config import Config
+        from utils.config import Config
 
         self.base_url = Config.ISTAT_SDMX_BASE_URL
 

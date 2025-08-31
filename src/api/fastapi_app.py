@@ -31,7 +31,11 @@ from auth.security_middleware import SecurityHeadersMiddleware
 from database.sqlite.repository import get_unified_repository
 from ingestion.simple_pipeline import create_simple_pipeline
 from utils.config import get_config
-from utils.logger import get_logger
+
+try:
+    from utils.logger import get_logger
+except ImportError:
+    from src.utils.logger import get_logger
 
 from .dependencies import (
     check_rate_limit,

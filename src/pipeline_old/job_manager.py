@@ -10,7 +10,11 @@ import uuid
 from datetime import datetime, timedelta
 from typing import Any, Optional
 
-from ..utils.logger import get_logger
+try:
+    from utils.logger import get_logger
+except ImportError:
+    from src.utils.logger import get_logger
+
 from .models import BatchResult, PipelineStatus
 from .unified_ingestion import UnifiedDataIngestionPipeline
 

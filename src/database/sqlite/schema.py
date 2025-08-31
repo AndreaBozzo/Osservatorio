@@ -16,7 +16,10 @@ import json
 import sqlite3
 from typing import Any, Optional
 
-from src.utils.logger import get_logger
+try:
+    from utils.logger import get_logger
+except ImportError:
+    from src.utils.logger import get_logger
 
 from .base_manager import BaseSQLiteManager
 

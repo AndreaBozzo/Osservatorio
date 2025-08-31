@@ -15,10 +15,14 @@ import asyncio
 from datetime import datetime
 from typing import Any, Optional
 
-from ..api.production_istat_client import ProductionIstatClient
-from ..database.duckdb.manager import get_manager
-from ..database.sqlite.repository import UnifiedDataRepository
-from ..utils.logger import get_logger
+from api.production_istat_client import ProductionIstatClient
+from database.duckdb.manager import get_manager
+from database.sqlite.repository import UnifiedDataRepository
+
+try:
+    from utils.logger import get_logger
+except ImportError:
+    from src.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -154,37 +158,70 @@ class SimpleIngestionPipeline:
         """
         logger.info(f"Starting ingestion for dataset: {dataset_id}")
 
-        # Step 0: Check if dataset is already up-to-date (skip logic)
+        # Step 0: MVP Skip Logic - simple DuckDB check
         try:
-            existing_dataset = self.repository.dataset_manager.get_dataset(dataset_id)
-            if existing_dataset and existing_dataset.get("is_active") == 1:
-                # Check if data exists in DuckDB
-                with self.duckdb_manager.get_connection() as conn:
-                    duckdb_count = conn.execute(
-                        f"SELECT COUNT(*) as count FROM main.istat_observations WHERE dataset_id = '{dataset_id}'"
-                    ).df()
-                existing_count = int(
-                    duckdb_count.iloc[0]["count"] if len(duckdb_count) > 0 else 0
+            with self.duckdb_manager.get_connection() as conn:
+                existing_count = conn.execute(
+                    "SELECT COUNT(*) FROM main.istat_observations WHERE dataset_id = ?",
+                    [dataset_id],
+                ).fetchone()[0]
+
+            # Skip if dataset has any data (>0 records) - prevents duplicate ingestion
+            # MVP: Simple approach - any existing data means dataset was already processed
+            if existing_count > 0:
+                logger.info(
+                    f"⏭️ Skipping {dataset_id}: {existing_count:,} records already exist (substantial dataset)"
                 )
 
-                if existing_count > 0:
-                    logger.info(
-                        f"⏭️ Skipping {dataset_id}: {existing_count:,} records already exist (last updated: {existing_dataset.get('last_updated', 'unknown')})"
-                    )
-                    return {
-                        "success": True,
-                        "dataset_id": dataset_id,
-                        "records_processed": 0,
-                        "skipped": True,
-                        "existing_records": existing_count,
-                        "reason": "Dataset already exists and is up-to-date",
-                        "timestamp": datetime.now().isoformat(),
-                        "data_source": "cached",
+                # Register metadata even for skipped datasets to ensure completeness
+                try:
+                    # Get basic dataset info for metadata
+                    dataset_names = {
+                        "101_1015": "Coltivazioni",
+                        "115_333": "Indice della produzione industriale",
+                        "120_337": "Indice delle vendite del commercio al dettaglio",
+                        "143_222": "Indice dei prezzi all'importazione - dati mensili",
+                        "144_107": "Foi – weights until 2010",
+                        "145_360": "Prezzi alla produzione dell'industria",
+                        "149_319": "Tensione contrattuale",
                     }
+
+                    dataset_name = dataset_names.get(
+                        dataset_id, f"Dataset {dataset_id}"
+                    )
+
+                    self.repository.register_dataset_complete(
+                        dataset_id=dataset_id,
+                        name=dataset_name,
+                        category="economia",
+                        description=dataset_name,
+                        priority=5,
+                        metadata={
+                            "last_ingestion": datetime.now().isoformat(),
+                            "source": "cached_skip",
+                            "records_count": existing_count,
+                        },
+                    )
+                    logger.info(
+                        f"✅ Metadata registered for skipped dataset {dataset_id}"
+                    )
+                except Exception as e:
+                    logger.error(
+                        f"❌ Failed to register metadata for skipped {dataset_id}: {e}"
+                    )
+
+                return {
+                    "success": True,
+                    "dataset_id": dataset_id,
+                    "records_processed": 0,
+                    "skipped": True,
+                    "existing_records": existing_count,
+                    "reason": "Dataset already exists - preventing duplicate ingestion",
+                    "timestamp": datetime.now().isoformat(),
+                    "data_source": "cached",
+                }
         except Exception as e:
-            logger.debug(
-                f"Skip check failed for {dataset_id}, proceeding with ingestion: {e}"
-            )
+            logger.debug(f"Skip check failed for {dataset_id}, proceeding: {e}")
 
         for attempt in range(retries + 1):
             try:
@@ -328,24 +365,70 @@ class SimpleIngestionPipeline:
             # Ensure schema tables exist before insertion
             await self._ensure_schema_tables_exist()
 
-            # Direct DuckDB insertion - convert records to DataFrame
+            # Intelligent record-level skip logic - filter out existing records
             import pandas as pd
 
             if records:
-                df = pd.DataFrame(records)
-                # Use unified observations table instead of per-dataset tables
-                table_name = "main.istat_observations"
+                # Get existing records for this dataset to avoid duplicates
+                with self.duckdb_manager.get_connection() as conn:
+                    existing_records = conn.execute(f"""
+                        SELECT DISTINCT dataset_id, obs_value, time_period
+                        FROM main.istat_observations
+                        WHERE dataset_id = '{dataset_id}'
+                    """).df()
 
-                # Use DuckDBManager's bulk_insert method
-                self.duckdb_manager.bulk_insert(table_name, df)
-                logger.info(
-                    f"Successfully inserted {len(records)} records into {table_name}"
-                )
+                # Convert to set for fast lookup
+                existing_tuples = set()
+                if not existing_records.empty:
+                    for _, row in existing_records.iterrows():
+                        existing_tuples.add(
+                            (
+                                row["dataset_id"],
+                                str(row["obs_value"]),
+                                str(row["time_period"]),
+                            )
+                        )
+
+                # Filter out records that already exist
+                new_records = []
+                skipped_count = 0
+
+                for record in records:
+                    record_key = (
+                        record["dataset_id"],
+                        str(record["obs_value"]),
+                        str(record["time_period"]),
+                    )
+
+                    if record_key not in existing_tuples:
+                        new_records.append(record)
+                    else:
+                        skipped_count += 1
+
+                if skipped_count > 0:
+                    logger.info(
+                        f"Skipped {skipped_count:,} existing records for {dataset_id}"
+                    )
+
+                if new_records:
+                    df = pd.DataFrame(new_records)
+                    table_name = "main.istat_observations"
+
+                    self.duckdb_manager.bulk_insert(table_name, df)
+                    logger.info(
+                        f"Successfully inserted {len(new_records):,} new records into {table_name} (skipped {skipped_count:,} duplicates)"
+                    )
+
+                    self.ingestion_status["total_records"] += len(new_records)
+                    return len(new_records)
+                else:
+                    logger.info(
+                        f"All {len(records):,} records already exist for {dataset_id}, skipping insertion"
+                    )
+                    return 0
             else:
                 logger.warning(f"No records to insert for {dataset_id}")
-
-            self.ingestion_status["total_records"] += len(records)
-            return len(records)
+                return 0
 
         except Exception as e:
             logger.error(f"DuckDB storage failed for {dataset_id}: {e}")
@@ -414,13 +497,8 @@ class SimpleIngestionPipeline:
                 ]
                 logger.info(f"Fallback: found {len(observations)} numeric elements")
 
+            # Process all observations first, then select most recent
             for i, obs in enumerate(observations):
-                if i > 10000:  # Limit for performance
-                    logger.warning(
-                        f"Limiting to first 10000 observations from {dataset_id}"
-                    )
-                    break
-
                 # Extract values from SDMX Generic format
                 obs_value = None
                 time_period = None
@@ -461,11 +539,41 @@ class SimpleIngestionPipeline:
                     additional_attributes["raw_text"] = obs.text
 
                 # Create record with fixed structure + JSON for additional data
+                # Handle empty/missing obs_value properly for DuckDB type inference
+                processed_obs_value = obs_value
+                if processed_obs_value == "" or processed_obs_value is None:
+                    processed_obs_value = None  # Use NULL instead of empty string
+
+                # Data validation and correction
+                current_timestamp = datetime.utcnow().isoformat()
+
+                # Fix field assignment issues - ensure correct types
+                if processed_obs_value and isinstance(processed_obs_value, str):
+                    # If obs_value looks like a timestamp, it's been assigned incorrectly
+                    if len(processed_obs_value) > 15 and (
+                        "T" in processed_obs_value
+                        or processed_obs_value.count("-") >= 2
+                    ):
+                        logger.warning(
+                            f"Fixing corrupted obs_value (timestamp detected): {processed_obs_value[:30]}"
+                        )
+                        processed_obs_value = None
+
+                if time_period and isinstance(time_period, str):
+                    # If time_period looks like a timestamp, it's been assigned incorrectly
+                    if len(time_period) > 15 and (
+                        "T" in time_period or time_period.count("-") >= 2
+                    ):
+                        logger.warning(
+                            f"Fixing corrupted time_period (timestamp detected): {time_period[:30]}"
+                        )
+                        time_period = ""
+
                 record = {
                     "dataset_id": dataset_id,
                     "record_id": i,
-                    "ingestion_timestamp": datetime.utcnow().isoformat(),
-                    "obs_value": obs_value or "",
+                    "ingestion_timestamp": current_timestamp,
+                    "obs_value": processed_obs_value,
                     "time_period": time_period or "",
                     "additional_attributes": additional_attributes
                     if additional_attributes
@@ -473,6 +581,13 @@ class SimpleIngestionPipeline:
                 }
 
                 records.append(record)
+
+            # MVP: Process ALL records - no artificial limits
+            # Startup-first approach: collect complete data, optimize later if needed
+            if len(records) > 50000:  # Only warn for very large datasets
+                logger.info(
+                    f"Processing large dataset {dataset_id}: {len(records):,} observations"
+                )
 
             logger.info(
                 f"Successfully parsed {len(records)} observations from {dataset_id}"
@@ -571,11 +686,25 @@ class SimpleIngestionPipeline:
                 "data_source": "istat_api",
             }
 
-            # Simplified metadata logging for MVP - skip repository update for now
+            # Register dataset in metadata (optional for MVP)
+            try:
+                self.repository.register_dataset_complete(
+                    dataset_id=dataset_id,
+                    name=metadata["description"],
+                    category="economia",
+                    description=metadata["description"],
+                    priority=5,
+                    metadata={
+                        "last_ingestion": metadata["last_updated"],
+                        "source": "istat_api",
+                    },
+                )
+                logger.debug(f"Dataset {dataset_id} registered in metadata")
+            except Exception as e:
+                logger.debug(f"Metadata registration failed for {dataset_id}: {e}")
+                # Non-critical - skip logic now uses DuckDB directly
+
             logger.info(f"Dataset metadata for {dataset_id}: {metadata}")
-            logger.debug(
-                f"Metadata logged for {dataset_id} (repository update skipped for MVP)"
-            )
 
         except Exception as e:
             logger.warning(f"Metadata update failed for {dataset_id}: {e}")

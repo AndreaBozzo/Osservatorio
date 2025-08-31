@@ -13,11 +13,16 @@ import uuid
 from datetime import datetime
 from typing import Any, Optional, Union
 
-from ..converters.factory import ConverterFactory
-from ..database.duckdb.manager import DuckDBManager
-from ..database.sqlite.repository import UnifiedDataRepository
-from ..utils.logger import get_logger
-from ..utils.temp_file_manager import TempFileManager
+from converters.factory import ConverterFactory
+from database.duckdb.manager import DuckDBManager
+from database.sqlite.repository import UnifiedDataRepository
+
+try:
+    from utils.logger import get_logger
+except ImportError:
+    from src.utils.logger import get_logger
+from utils.temp_file_manager import TempFileManager
+
 from .exceptions import DataIngestionError, QualityThresholdError
 from .models import PipelineConfig, PipelineResult, PipelineStatus, QualityScore
 

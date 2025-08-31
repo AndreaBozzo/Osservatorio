@@ -18,8 +18,12 @@ try:
 except ImportError:
     raise ImportError("JWT dependencies not installed. Run: pip install PyJWT")
 
-from src.utils.config import get_config
-from src.utils.logger import get_logger
+from utils.config import get_config
+
+try:
+    from utils.logger import get_logger
+except ImportError:
+    from src.utils.logger import get_logger
 
 from .models import APIKey, AuthToken, TokenClaims
 

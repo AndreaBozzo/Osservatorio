@@ -12,7 +12,11 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Optional
 
-from ..utils.logger import get_logger
+try:
+    from utils.logger import get_logger
+except ImportError:
+    from src.utils.logger import get_logger
+
 from .models import PipelineResult
 
 logger = get_logger(__name__)

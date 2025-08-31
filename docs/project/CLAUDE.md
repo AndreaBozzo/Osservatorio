@@ -9,6 +9,7 @@ A few rules for Claude:
 4-As this is an early-stage startup, YOU MUST prioritize simple, readable code with minimal abstraction—avoid premature optimization. 5-Strive for elegant, minimal solutions that reduce complexity.Focus on clear implementation that’s easy to understand and iterate on as the product evolves.
 6-DO NOT use preserve backward compatibility unless the user specifically requests it
 7-The user expect maximum realism and can accept criticism
+8-NO SED COMMANDS.
 ***DO NOT MODIFY ABOVE***
 
 ## Project Overview

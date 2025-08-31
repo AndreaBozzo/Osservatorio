@@ -3,7 +3,10 @@ Factory pattern for creating ISTAT converters.
 Provides a centralized way to instantiate converters for different targets.
 """
 
-from src.utils.logger import get_logger
+try:
+    from utils.logger import get_logger
+except ImportError:
+    from src.utils.logger import get_logger
 
 from .base_converter import BaseIstatConverter
 

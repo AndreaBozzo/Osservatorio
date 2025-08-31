@@ -16,7 +16,10 @@ from typing import Optional, Union
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from src.utils.logger import get_logger
+try:
+    from utils.logger import get_logger
+except ImportError:
+    from src.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -71,7 +74,7 @@ class SecurityHeadersConfig:
         }
 
         # CORS settings - Issue #84: Use centralized configuration
-        from ..utils.config import Config
+        from utils.config import Config
 
         self.cors_enabled = True
         self.cors_allow_origins = Config.CORS_ALLOW_ORIGINS

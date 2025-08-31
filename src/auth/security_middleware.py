@@ -11,7 +11,10 @@ Basic security headers middleware for MVP:
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from src.utils.logger import get_logger
+try:
+    from utils.logger import get_logger
+except ImportError:
+    from src.utils.logger import get_logger
 
 logger = get_logger(__name__)
 

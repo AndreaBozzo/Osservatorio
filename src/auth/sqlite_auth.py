@@ -17,13 +17,17 @@ from typing import Optional
 
 import bcrypt
 
-from src.database.sqlite.manager_factory import (
+from database.sqlite.manager_factory import (
     get_audit_manager,
     get_configuration_manager,
     get_user_manager,
 )
-from src.utils.logger import get_logger
-from src.utils.mvp_security import security
+
+try:
+    from utils.logger import get_logger
+except ImportError:
+    from src.utils.logger import get_logger
+from utils.mvp_security import security
 
 from .models import APIKey
 

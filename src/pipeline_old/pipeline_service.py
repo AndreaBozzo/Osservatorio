@@ -7,14 +7,18 @@ Provides simplified API for common operations while maintaining full flexibility
 
 from typing import Any, Optional
 
-from ..api.production_istat_client import ProductionIstatClient
-from ..converters.factory import ConverterFactory
-from ..database.duckdb.manager import DuckDBManager
-from ..database.sqlite.repository import UnifiedDataRepository
+from api.production_istat_client import ProductionIstatClient
+from converters.factory import ConverterFactory
+from database.duckdb.manager import DuckDBManager
+from database.sqlite.repository import UnifiedDataRepository
 
 # DataflowAnalysisService removed for MVP simplification
-from ..utils.logger import get_logger
-from ..utils.temp_file_manager import TempFileManager
+try:
+    from utils.logger import get_logger
+except ImportError:
+    from src.utils.logger import get_logger
+from utils.temp_file_manager import TempFileManager
+
 from .job_manager import IngestionJobManager
 from .models import BatchResult, PipelineConfig, PipelineResult
 from .unified_ingestion import UnifiedDataIngestionPipeline
