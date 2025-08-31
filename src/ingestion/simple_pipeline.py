@@ -530,8 +530,11 @@ class SimpleIngestionPipeline:
                 for key, value in obs.attrib.items():
                     if "value" in key.lower() or key == "obsValue":
                         obs_value = obs_value or value
-                    if "time" in key.lower() or "period" in key.lower():
-                        time_period = time_period or value
+                    # More specific check for time_period - avoid assigning timestamps
+                    if ("time" in key.lower() or "period" in key.lower()) and value:
+                        # Only assign if value looks like a valid period, not a timestamp
+                        if not ("T" in value or value.count("-") >= 2):
+                            time_period = time_period or value
                     additional_attributes[f"obs_{key.lower()}"] = value
 
                 # Add element text if available

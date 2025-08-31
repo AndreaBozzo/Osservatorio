@@ -254,10 +254,25 @@ class DuckDBManager:
                     if not part.replace("_", "").isalnum() or not part.islower():
                         raise ValueError(f"Invalid table name component: {part}")
 
-                # Robust insert with cleanup
+                # Get table schema and reorder DataFrame to match
+                schema_query = f"DESCRIBE {table_name}"
+                table_columns = [
+                    row[0] for row in conn.execute(schema_query).fetchall()
+                ]
+                df_columns = list(data.columns)
+                available_columns = [col for col in table_columns if col in df_columns]
+
+                if not available_columns:
+                    raise ValueError(
+                        f"No matching columns found between DataFrame and table {table_name}"
+                    )
+
+                # Reorder DataFrame to match table schema order
+                data_reordered = data[available_columns]
+
+                # Insert with reordered data
                 try:
-                    conn.register("temp_df", data)
-                    # Table name validated above - safe for f-string usage
+                    conn.register("temp_df", data_reordered)
                     insert_query = f"INSERT INTO {table_name} SELECT * FROM temp_df"  # nosec B608
                     conn.execute(insert_query)
                 finally:
