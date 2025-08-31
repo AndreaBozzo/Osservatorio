@@ -61,6 +61,7 @@ logs/
 *.db
 *.duckdb
 data/databases/
+src/data/databases/
 
 # Claude agent specs
 .claude/
