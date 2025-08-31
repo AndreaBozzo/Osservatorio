@@ -12,13 +12,13 @@ from typing import Optional
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
-from src.auth.jwt_manager import JWTManager
-from src.auth.models import APIKey, TokenClaims
-from src.auth.rate_limiter import SQLiteRateLimiter
-from src.auth.sqlite_auth import SQLiteAuthManager
-from src.database.sqlite.repository import get_unified_repository
-from src.utils.config import get_config
-from src.utils.logger import get_logger
+from auth.jwt_manager import JWTManager
+from auth.models import APIKey, TokenClaims
+from auth.rate_limiter import SQLiteRateLimiter
+from auth.sqlite_auth import SQLiteAuthManager
+from database.sqlite.repository import get_unified_repository
+from utils.config import get_config
+from utils.logger import get_logger
 
 from .models import APIScope
 from .production_istat_client import ProductionIstatClient
