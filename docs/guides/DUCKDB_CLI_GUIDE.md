@@ -22,28 +22,28 @@ unzip duckdb_cli-windows-amd64.zip
 .tables
 
 -- Table schema
-DESCRIBE osservatorio.istat_observations;
+DESCRIBE istat_observations;
 
 -- Quick stats
-SELECT COUNT(*) as total_records FROM osservatorio.istat_observations;
+SELECT COUNT(*) as total_records FROM istat_observations;
 ```
 
 ### Data Exploration
 ```sql
 -- Records per dataset
 SELECT dataset_id, COUNT(*) as records
-FROM osservatorio.istat_observations
+FROM main.istat_observations
 GROUP BY dataset_id
 ORDER BY records DESC;
 
 -- Sample data
-SELECT * FROM osservatorio.istat_observations LIMIT 5;
+SELECT * FROM main.istat_observations LIMIT 5;
 
 -- Time range
 SELECT
     MIN(time_period) as earliest,
     MAX(time_period) as latest
-FROM osservatorio.istat_observations
+FROM main.istat_observations
 WHERE time_period NOT LIKE '%T%';
 ```
 
@@ -54,7 +54,7 @@ SELECT
     COUNT(*) as total,
     COUNT(CASE WHEN obs_value = '' THEN 1 END) as empty_values,
     COUNT(CASE WHEN obs_value IS NULL THEN 1 END) as null_values
-FROM osservatorio.istat_observations;
+FROM main.istat_observations;
 
 -- Dataset details
 SELECT
@@ -63,7 +63,7 @@ SELECT
     MIN(time_period) as first_period,
     MAX(time_period) as last_period,
     COUNT(DISTINCT time_period) as unique_periods
-FROM osservatorio.istat_observations
+FROM main.istat_observations
 GROUP BY dataset_id;
 
 -- Recent ingestions
@@ -71,7 +71,7 @@ SELECT
     dataset_id,
     MAX(ingestion_timestamp) as latest_ingestion,
     COUNT(*) as records
-FROM osservatorio.istat_observations
+FROM main.istat_observations
 GROUP BY dataset_id;
 ```
 
@@ -80,7 +80,7 @@ GROUP BY dataset_id;
 -- Check for exact duplicates
 SELECT
     COUNT(*) - COUNT(DISTINCT (dataset_id, obs_value, time_period, record_id)) as exact_duplicates
-FROM osservatorio.istat_observations;
+FROM main.istat_observations;
 
 -- Find business logic duplicates (same dataset + time period)
 SELECT
@@ -88,7 +88,7 @@ SELECT
     time_period,
     COUNT(*) as occurrences,
     STRING_AGG(DISTINCT obs_value, ', ') as different_values
-FROM osservatorio.istat_observations
+FROM main.istat_observations
 GROUP BY dataset_id, time_period
 HAVING COUNT(*) > 1
 ORDER BY occurrences DESC
@@ -100,7 +100,7 @@ SELECT
     COUNT(DISTINCT record_id) as unique_records,
     COUNT(*) as total_records,
     COUNT(*) - COUNT(DISTINCT record_id) as potential_duplicates
-FROM osservatorio.istat_observations
+FROM main.istat_observations
 GROUP BY dataset_id
 HAVING COUNT(*) > COUNT(DISTINCT record_id);
 

@@ -134,7 +134,7 @@ class DuckDBManager:
         conn = None
         try:
             # Always create fresh connection - no shared state
-            db_path_str = self.config.get("database", ":memory:")
+            db_path_str = self.connection_string
             conn = duckdb.connect(database=str(db_path_str))
             yield conn
         except Exception as e:
