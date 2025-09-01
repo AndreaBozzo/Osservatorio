@@ -23,8 +23,12 @@ from contextlib import contextmanager
 from datetime import datetime
 from typing import Any, Optional
 
-from src.database.duckdb import DuckDBManager
-from src.utils.logger import get_logger
+from src.database.duckdb.manager import get_manager
+
+try:
+    from utils.logger import get_logger
+except ImportError:
+    from src.utils.logger import get_logger
 
 from .manager import get_metadata_manager
 from .manager_factory import (
@@ -60,7 +64,7 @@ class UnifiedDataRepository:
         self.user_manager = get_user_manager(sqlite_db_path)
         self.audit_manager = get_audit_manager(sqlite_db_path)
         self.metadata_manager = get_metadata_manager(sqlite_db_path)
-        self.analytics_manager = DuckDBManager(duckdb_db_path)
+        self.analytics_manager = get_manager()  # Use singleton
 
         # Cache for frequently accessed data
         self._cache = {}
@@ -194,8 +198,8 @@ class UnifiedDataRepository:
                     MAX(o.year) as max_year,
                     COUNT(DISTINCT o.territory_code) as territory_count,
                     COUNT(DISTINCT o.value_type) as measure_count
-                FROM istat.istat_observations o
-                JOIN istat.istat_datasets d ON o.dataset_row_id = d.id
+                FROM main.istat_observations o
+                JOIN main.istat_datasets d ON o.dataset_row_id = d.id
                 WHERE d.dataset_id = ?
             """
 
@@ -641,7 +645,7 @@ class UnifiedDataRepository:
             try:
                 # Try to get analytics statistics
                 result = self.analytics_manager.execute_query(
-                    "SELECT COUNT(*) FROM istat.istat_observations"
+                    "SELECT COUNT(*) FROM main.istat_observations"
                 )
                 analytics_stats["total_observations"] = result[0][0] if result else 0
 

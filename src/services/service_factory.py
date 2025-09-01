@@ -8,10 +8,14 @@ with proper dependency injection, following the dependency inversion principle.
 from datetime import datetime
 from typing import Any, Optional
 
-from ..api.production_istat_client import ProductionIstatClient
-from ..database.sqlite.repository import UnifiedDataRepository, get_unified_repository
-from ..utils.logger import get_logger
-from ..utils.temp_file_manager import TempFileManager, get_temp_manager
+from api.production_istat_client import ProductionIstatClient
+from database.sqlite.repository import UnifiedDataRepository, get_unified_repository
+
+try:
+    from utils.logger import get_logger
+except ImportError:
+    from src.utils.logger import get_logger
+from utils.temp_file_manager import TempFileManager, get_temp_manager
 
 
 class ServiceContainer:

@@ -11,8 +11,12 @@ Basic security configuration for MVP:
 from dataclasses import dataclass
 from typing import Optional
 
-from src.utils.config import get_config
-from src.utils.logger import get_logger
+from utils.config import get_config
+
+try:
+    from utils.logger import get_logger
+except ImportError:
+    from src.utils.logger import get_logger
 
 from .rate_limiter import SQLiteRateLimiter
 

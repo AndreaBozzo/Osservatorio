@@ -11,7 +11,7 @@ Key Components:
 - PipelineConfig: Configurable processing parameters and quality thresholds
 
 Usage:
-    from src.pipeline import PipelineService, PipelineConfig
+    from pipeline import PipelineService, PipelineConfig
 
     config = PipelineConfig()
     service = PipelineService(config)

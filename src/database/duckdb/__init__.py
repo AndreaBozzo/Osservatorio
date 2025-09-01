@@ -14,7 +14,7 @@ from .config import (
     get_table_config,
     validate_config,
 )
-from .manager import DuckDBManager, get_manager, reset_manager
+from .manager import DuckDBManager, get_manager
 from .query_builder import (
     AggregateFunction,
     DuckDBQueryBuilder,
@@ -60,7 +60,6 @@ __all__ = [
     # Core components
     "DuckDBManager",
     "get_manager",
-    "reset_manager",
     "ISTATSchemaManager",
     "initialize_schema",
     # Query Builder

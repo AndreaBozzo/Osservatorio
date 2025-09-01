@@ -15,8 +15,12 @@ import json
 from datetime import datetime
 from typing import Any, Optional
 
-from src.database.sqlite.schema import MetadataSchema
-from src.utils.logger import get_logger
+from database.sqlite.schema import MetadataSchema
+
+try:
+    from utils.logger import get_logger
+except ImportError:
+    from src.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -40,7 +44,7 @@ class DatasetConfigManager:
         if repository:
             self.repository = repository
         else:
-            from src.database.sqlite.repository import get_unified_repository
+            from database.sqlite.repository import get_unified_repository
 
             self.repository = get_unified_repository()
 

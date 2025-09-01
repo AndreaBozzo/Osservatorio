@@ -17,7 +17,10 @@ from typing import Any, Optional, Union
 
 import pandas as pd
 
-from src.utils.logger import get_logger
+try:
+    from utils.logger import get_logger
+except ImportError:
+    from src.utils.logger import get_logger
 
 from .manager import DuckDBManager, get_manager
 from .schema import ISTATSchemaManager

@@ -582,6 +582,13 @@ def temp_db_class():
         yield db_path
 
 
+# Simple fixtures for simple_pipeline testing
+@pytest.fixture
+def simple_mock_sdmx():
+    """Simple SDMX data for testing."""
+    return "<GenericData><DataSet><Obs><ObsValue value='1000'/></Obs></DataSet></GenericData>"
+
+
 # Test markers for different test categories
 def pytest_configure(config):
     """Configure pytest markers."""
@@ -592,3 +599,6 @@ def pytest_configure(config):
     config.addinivalue_line("markers", "performance: Performance and scalability tests")
     config.addinivalue_line("markers", "slow: Slow running tests")
     config.addinivalue_line("markers", "api: Tests requiring API access")
+    config.addinivalue_line(
+        "markers", "simple_pipeline: Tests specific to SimpleIngestionPipeline"
+    )

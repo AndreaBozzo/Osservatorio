@@ -13,9 +13,13 @@ import os
 from dataclasses import dataclass
 from typing import Any, Optional
 
-from src.database.sqlite.manager import SQLiteMetadataManager
-from src.utils.config import get_config
-from src.utils.logger import get_logger
+from database.sqlite.manager import SQLiteMetadataManager
+from utils.config import get_config
+
+try:
+    from utils.logger import get_logger
+except ImportError:
+    from src.utils.logger import get_logger
 
 from .enhanced_rate_limiter import AdaptiveConfig, EnhancedRateLimiter
 from .rate_limiter import SQLiteRateLimiter
@@ -148,7 +152,7 @@ class SecurityManager:
             logger.info("Security monitoring disabled")
             return None
 
-        from src.api.security_dashboard import SecurityDashboard
+        from api.security_dashboard import SecurityDashboard
 
         return SecurityDashboard(
             enhanced_limiter=self.rate_limiter,
@@ -161,7 +165,7 @@ class SecurityManager:
         if not self.config.security_monitoring_enabled:
             return None
 
-        from src.api.security_dashboard import create_security_router
+        from api.security_dashboard import create_security_router
 
         return create_security_router(
             enhanced_limiter=self.rate_limiter,
