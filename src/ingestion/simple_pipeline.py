@@ -550,6 +550,21 @@ class SimpleIngestionPipeline:
                 # Data validation and correction
                 current_timestamp = datetime.utcnow().isoformat()
 
+                # Dataset-specific fix for 143_222: extract correct values from additional_attributes
+                if dataset_id == "143_222":
+                    # For dataset 143_222, the correct values are in additional_attributes
+                    correct_obs_value = additional_attributes.get("obsvalue_value")
+                    correct_time_period = additional_attributes.get(
+                        "obsdimension_value"
+                    )
+
+                    if correct_obs_value and correct_time_period:
+                        processed_obs_value = correct_obs_value
+                        time_period = correct_time_period
+                        logger.debug(
+                            f"Dataset {dataset_id}: Fixed values - obs_value: {correct_obs_value}, time_period: {correct_time_period}"
+                        )
+
                 # Fix field assignment issues - ensure correct types
                 if processed_obs_value and isinstance(processed_obs_value, str):
                     # If obs_value looks like a timestamp, it's been assigned incorrectly
