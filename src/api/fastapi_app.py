@@ -30,7 +30,7 @@ from fastapi.responses import JSONResponse
 from auth.security_middleware import SecurityHeadersMiddleware
 from database.sqlite.repository import get_unified_repository
 from ingestion.simple_pipeline import create_simple_pipeline
-from utils.config import get_config
+from src.utils.config import get_config
 
 try:
     from utils.logger import get_logger

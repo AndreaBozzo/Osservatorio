@@ -31,7 +31,17 @@ class SimpleDuckDBAdapter:
             database_path: Path to database file or ':memory:' for in-memory
         """
         self.database_path = database_path
-        # Don't maintain persistent connection - create per operation for safety
+        # For temporary files, maintain persistent connection to preserve schema
+        self._connection = None
+        import tempfile
+
+        temp_dir = tempfile.gettempdir()
+        if (
+            database_path != ":memory:"
+            and database_path.endswith(".duckdb")
+            and temp_dir in database_path
+        ):
+            self._connection = duckdb.connect(database_path)
 
     def execute_query(self, query: str) -> pd.DataFrame:
         """Execute query and return DataFrame.
@@ -43,9 +53,12 @@ class SimpleDuckDBAdapter:
             Query results as DataFrame
         """
         try:
-            with duckdb.connect(self.database_path) as conn:
-                result = conn.execute(query).df()
-                return result
+            if self._connection:
+                result = self._connection.execute(query).df()
+            else:
+                with duckdb.connect(self.database_path) as conn:
+                    result = conn.execute(query).df()
+            return result
         except Exception as e:
             logger.error(f"Query execution failed: {str(e)}")
             raise
@@ -57,18 +70,32 @@ class SimpleDuckDBAdapter:
             statement: SQL statement to execute
         """
         try:
-            with duckdb.connect(self.database_path) as conn:
-                conn.execute(statement)
+            if self._connection:
+                self._connection.execute(statement)
+            else:
+                with duckdb.connect(self.database_path) as conn:
+                    conn.execute(statement)
         except Exception as e:
             logger.error(f"Statement execution failed: {str(e)}")
             raise
 
     def create_istat_schema(self):
         """Create basic ISTAT schema for data storage."""
+        # Use persistent connection if available, otherwise create temporary one
+        if self._connection:
+            self._create_schema_on_connection(self._connection)
+        else:
+            with duckdb.connect(self.database_path) as conn:
+                self._create_schema_on_connection(conn)
+
+    def _create_schema_on_connection(self, conn):
+        """Create schema on given connection."""
+        # Create istat schema
+        conn.execute("CREATE SCHEMA IF NOT EXISTS istat;")
+
         # Create metadata table
-        self.execute_statement(
-            """
-            CREATE TABLE IF NOT EXISTS dataset_metadata (
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS istat.dataset_metadata (
                 dataset_id VARCHAR PRIMARY KEY,
                 dataset_name VARCHAR,
                 category VARCHAR,
@@ -79,16 +106,15 @@ class SimpleDuckDBAdapter:
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
-        """
-        )
+        """)
 
-        # Create observations table with sequence
-        self.execute_statement("CREATE SEQUENCE IF NOT EXISTS obs_id_seq;")
-        self.execute_statement(
-            """
-            CREATE TABLE IF NOT EXISTS istat_observations (
+        # Create sequence and observations table
+        conn.execute("CREATE SEQUENCE IF NOT EXISTS obs_id_seq;")
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS istat.istat_observations (
                 id INTEGER DEFAULT nextval('obs_id_seq'),
                 dataset_id VARCHAR,
+                dataset_row_id INTEGER DEFAULT 1,
                 year INTEGER,
                 territory_code VARCHAR,
                 territory_name VARCHAR,
@@ -97,24 +123,23 @@ class SimpleDuckDBAdapter:
                 obs_value DECIMAL,
                 obs_status VARCHAR,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (dataset_id) REFERENCES dataset_metadata(dataset_id)
+                FOREIGN KEY (dataset_id) REFERENCES istat.dataset_metadata(dataset_id)
             );
-        """
-        )
+        """)
 
         # Create indexes for performance
         try:
             self.execute_statement(
-                "CREATE INDEX IF NOT EXISTS idx_obs_dataset ON istat_observations(dataset_id);"
+                "CREATE INDEX IF NOT EXISTS idx_obs_dataset ON istat.istat_observations(dataset_id);"
             )
             self.execute_statement(
-                "CREATE INDEX IF NOT EXISTS idx_obs_year ON istat_observations(year);"
+                "CREATE INDEX IF NOT EXISTS idx_obs_year ON istat.istat_observations(year);"
             )
             self.execute_statement(
-                "CREATE INDEX IF NOT EXISTS idx_obs_territory ON istat_observations(territory_code);"
+                "CREATE INDEX IF NOT EXISTS idx_obs_territory ON istat.istat_observations(territory_code);"
             )
             self.execute_statement(
-                "CREATE INDEX IF NOT EXISTS idx_metadata_category ON dataset_metadata(category);"
+                "CREATE INDEX IF NOT EXISTS idx_metadata_category ON istat.dataset_metadata(category);"
             )
         except Exception as e:
             # Indexes might already exist or other harmless errors
@@ -137,7 +162,7 @@ class SimpleDuckDBAdapter:
         """
         self.execute_statement(
             f"""
-            INSERT OR REPLACE INTO dataset_metadata (dataset_id, dataset_name, category, priority)
+            INSERT OR REPLACE INTO istat.dataset_metadata (dataset_id, dataset_name, category, priority)
             VALUES ('{dataset_id}', '{dataset_name}', '{category}', {priority});
         """
         )
@@ -154,9 +179,10 @@ class SimpleDuckDBAdapter:
                 conn.register("temp_observations", df)
                 conn.execute(
                     """
-                    INSERT INTO istat_observations (dataset_id, year, territory_code, obs_value, obs_status)
+                    INSERT INTO istat.istat_observations (dataset_id, dataset_row_id, year, territory_code, obs_value, obs_status)
                     SELECT
                         dataset_id,
+                        1 as dataset_row_id,
                         year,
                         territory_code,
                         obs_value,
@@ -187,8 +213,8 @@ class SimpleDuckDBAdapter:
                 MAX(o.year) as end_year,
                 COUNT(DISTINCT o.territory_code) as territories,
                 AVG(o.obs_value) as avg_value
-            FROM dataset_metadata m
-            LEFT JOIN istat_observations o ON m.dataset_id = o.dataset_id
+            FROM istat.dataset_metadata m
+            LEFT JOIN istat.istat_observations o ON m.dataset_id = o.dataset_id
             GROUP BY m.dataset_id, m.dataset_name, m.category, m.priority
             ORDER BY m.priority DESC, m.category, m.dataset_name;
         """
@@ -218,7 +244,7 @@ class SimpleDuckDBAdapter:
                     measure_name,
                     obs_value,
                     obs_status
-                FROM istat_observations
+                FROM istat.istat_observations
                 WHERE dataset_id = ? AND territory_code = ?
                 ORDER BY year, territory_code, measure_code;
             """
@@ -234,7 +260,7 @@ class SimpleDuckDBAdapter:
                     measure_name,
                     obs_value,
                     obs_status
-                FROM istat_observations
+                FROM istat.istat_observations
                 WHERE dataset_id = ?
                 ORDER BY year, territory_code, measure_code;
             """
@@ -261,7 +287,7 @@ class SimpleDuckDBAdapter:
                 MIN(obs_value) as min_value,
                 MAX(obs_value) as max_value,
                 RANK() OVER (ORDER BY AVG(obs_value) DESC) as rank
-            FROM istat_observations
+            FROM istat.istat_observations
             WHERE dataset_id = ? AND year = ?
               AND obs_value IS NOT NULL
             GROUP BY territory_code, territory_name
@@ -296,8 +322,8 @@ class SimpleDuckDBAdapter:
                     COUNT(o.id) as total_observations,
                     AVG(o.obs_value) as avg_value,
                     MEDIAN(o.obs_value) as median_value
-                FROM dataset_metadata m
-                JOIN istat_observations o ON m.dataset_id = o.dataset_id
+                FROM istat.dataset_metadata m
+                JOIN istat.istat_observations o ON m.dataset_id = o.dataset_id
                 WHERE m.category = ? AND o.year BETWEEN ? AND ?
                   AND o.obs_value IS NOT NULL
                 GROUP BY o.year
@@ -313,8 +339,8 @@ class SimpleDuckDBAdapter:
                     COUNT(o.id) as total_observations,
                     AVG(o.obs_value) as avg_value,
                     MEDIAN(o.obs_value) as median_value
-                FROM dataset_metadata m
-                JOIN istat_observations o ON m.dataset_id = o.dataset_id
+                FROM istat.dataset_metadata m
+                JOIN istat.istat_observations o ON m.dataset_id = o.dataset_id
                 WHERE m.category = ? AND o.year >= ?
                   AND o.obs_value IS NOT NULL
                 GROUP BY o.year
@@ -330,8 +356,8 @@ class SimpleDuckDBAdapter:
                     COUNT(o.id) as total_observations,
                     AVG(o.obs_value) as avg_value,
                     MEDIAN(o.obs_value) as median_value
-                FROM dataset_metadata m
-                JOIN istat_observations o ON m.dataset_id = o.dataset_id
+                FROM istat.dataset_metadata m
+                JOIN istat.istat_observations o ON m.dataset_id = o.dataset_id
                 WHERE m.category = ? AND o.year <= ?
                   AND o.obs_value IS NOT NULL
                 GROUP BY o.year
@@ -347,8 +373,8 @@ class SimpleDuckDBAdapter:
                     COUNT(o.id) as total_observations,
                     AVG(o.obs_value) as avg_value,
                     MEDIAN(o.obs_value) as median_value
-                FROM dataset_metadata m
-                JOIN istat_observations o ON m.dataset_id = o.dataset_id
+                FROM istat.dataset_metadata m
+                JOIN istat.istat_observations o ON m.dataset_id = o.dataset_id
                 WHERE m.category = ?
                   AND o.obs_value IS NOT NULL
                 GROUP BY o.year
@@ -366,28 +392,41 @@ class SimpleDuckDBAdapter:
             # Optimization might fail in some versions - log but continue
             print(f"Database optimization warning: {e}")
 
+    @property
+    def connection(self):
+        """Get current connection (for compatibility with tests)."""
+        return self._connection
+
     def close(self):
         """Close database connection - no-op since we use per-operation connections."""
-        pass
+        if self._connection:
+            self._connection.close()
+            self._connection = None
 
     def __enter__(self):
         """Context manager entry."""
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        """Context manager exit - no-op since we use per-operation connections."""
-        pass
+        """Context manager exit - close connection if persistent."""
+        self.close()
 
 
-def create_adapter(database_path: str = ":memory:") -> SimpleDuckDBAdapter:
+def create_adapter(database_path: Optional[str] = None) -> SimpleDuckDBAdapter:
     """Create and initialize a DuckDB adapter.
 
     Args:
-        database_path: Database file path or ':memory:'
+        database_path: Database file path. If None, creates temporary file.
 
     Returns:
         Configured SimpleDuckDBAdapter
     """
+    if database_path is None:
+        # Use temporary file instead of :memory: for persistence
+        import tempfile
+
+        database_path = tempfile.mktemp(suffix=".duckdb")
+
     adapter = SimpleDuckDBAdapter(database_path)
     adapter.create_istat_schema()
     return adapter

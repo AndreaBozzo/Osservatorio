@@ -23,7 +23,7 @@ from contextlib import contextmanager
 from datetime import datetime
 from typing import Any, Optional
 
-from database.duckdb.manager import get_manager
+from src.database.duckdb.manager import get_manager
 
 try:
     from utils.logger import get_logger

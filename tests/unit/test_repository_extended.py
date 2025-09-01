@@ -34,7 +34,7 @@ class TestUnifiedDataRepositoryExtended:
             patch(
                 "src.database.sqlite.repository.get_metadata_manager"
             ) as mock_metadata,
-            patch("src.database.sqlite.repository.DuckDBManager") as mock_duckdb,
+            patch("src.database.sqlite.repository.get_manager") as mock_get_manager,
         ):
             # Setup mock managers
             mock_dataset.return_value = Mock()
@@ -42,7 +42,7 @@ class TestUnifiedDataRepositoryExtended:
             mock_user.return_value = Mock()
             mock_audit.return_value = Mock()
             mock_metadata.return_value = Mock()
-            mock_duckdb.return_value = Mock()
+            mock_get_manager.return_value = Mock()
 
             repo = UnifiedDataRepository(temp_db, ":memory:")
             yield repo

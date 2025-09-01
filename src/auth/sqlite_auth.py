@@ -27,7 +27,7 @@ try:
     from utils.logger import get_logger
 except ImportError:
     from src.utils.logger import get_logger
-from utils.mvp_security import security
+from src.utils.mvp_security import security
 
 from .models import APIKey
 

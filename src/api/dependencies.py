@@ -17,7 +17,7 @@ from auth.models import APIKey, TokenClaims
 from auth.rate_limiter import SQLiteRateLimiter
 from auth.sqlite_auth import SQLiteAuthManager
 from database.sqlite.repository import get_unified_repository
-from utils.config import get_config
+from src.utils.config import get_config
 
 try:
     from utils.logger import get_logger

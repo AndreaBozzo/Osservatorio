@@ -160,7 +160,7 @@ class ProductionIstatClient:
     def __init__(self, repository=None, enable_cache_fallback=True):
         """Initialize production client."""
         # Issue #84: Use centralized configuration
-        from utils.config import Config
+        from src.utils.config import Config
 
         self.base_url = Config.ISTAT_SDMX_BASE_URL
 

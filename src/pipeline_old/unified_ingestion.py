@@ -21,7 +21,7 @@ try:
     from utils.logger import get_logger
 except ImportError:
     from src.utils.logger import get_logger
-from utils.temp_file_manager import TempFileManager
+from src.utils.temp_file_manager import TempFileManager
 
 from .exceptions import DataIngestionError, QualityThresholdError
 from .models import PipelineConfig, PipelineResult, PipelineStatus, QualityScore

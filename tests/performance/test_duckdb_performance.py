@@ -61,11 +61,19 @@ class TestDuckDBPerformance:
         self.manager = DuckDBManager()
 
         # Initialize schema for performance tests
-        from database.duckdb.schema import ISTATSchemaManager
+        from src.database.duckdb.schema import ISTATSchemaManager
 
         schema_manager = ISTATSchemaManager(self.manager)
         schema_manager.create_all_schemas()
         schema_manager.create_all_tables()
+
+        # Create compatibility views for SimpleDuckDBAdapter
+        self.manager.execute_statement(
+            "CREATE VIEW IF NOT EXISTS dataset_metadata AS SELECT * FROM istat.dataset_metadata"
+        )
+        self.manager.execute_statement(
+            "CREATE VIEW IF NOT EXISTS istat_observations AS SELECT * FROM istat.istat_observations"
+        )
 
         self.optimizer = create_optimizer(self.manager)
 
@@ -94,22 +102,26 @@ class TestDuckDBPerformance:
                 }
             )
 
-            # Profile bulk insert using SimpleDuckDBAdapter for easier table handling
-            adapter = SimpleDuckDBAdapter()
-            adapter.create_istat_schema()
-
-            # Insert required dataset metadata first
+            # Insert required dataset metadata first using manager directly
             unique_datasets = test_data["dataset_id"].unique()
             for dataset_id in unique_datasets:
-                adapter.insert_metadata(
-                    dataset_id, f"Performance Test {dataset_id}", "performance", 5
+                self.manager.execute_statement(
+                    f"""INSERT OR REPLACE INTO istat.dataset_metadata
+                        (dataset_id, dataset_name, category, priority)
+                        VALUES ('{dataset_id}', 'Performance Test {dataset_id}', 'performance', 5)"""
                 )
 
             self.profiler.start_profiling()
-            adapter.insert_observations(test_data)
+            # Use manager directly with specific column insert
+            with self.manager.get_connection() as conn:
+                conn.register("test_df", test_data)
+                conn.execute("""
+                    INSERT INTO istat.istat_observations
+                    (dataset_id, dataset_row_id, year, territory_code, obs_value, obs_status)
+                    SELECT dataset_id, 1 as dataset_row_id, year, territory_code, obs_value, obs_status
+                    FROM test_df
+                """)
             metrics = self.profiler.end_profiling()
-
-            adapter.close()
 
             results[size] = metrics
             results[size]["records_per_second"] = (
@@ -134,9 +146,9 @@ class TestDuckDBPerformance:
 
     def test_query_optimization_performance(self):
         """Test query optimizer performance with complex queries."""
-        # Setup test data
-        adapter = SimpleDuckDBAdapter()
-        adapter.create_istat_schema()
+        # Setup test data - use same database as manager
+        adapter = SimpleDuckDBAdapter(self.manager.connection_string)
+        # Schema already created by setup_method, skip adapter.create_istat_schema()
 
         # Generate realistic ISTAT test data
         datasets = [
@@ -239,9 +251,9 @@ class TestDuckDBPerformance:
         """Test concurrent query execution performance."""
         import concurrent.futures
 
-        # Setup shared data
-        adapter = SimpleDuckDBAdapter()
-        adapter.create_istat_schema()
+        # Setup shared data - use same database as manager
+        adapter = SimpleDuckDBAdapter(self.manager.connection_string)
+        # Schema already created by setup_method, skip adapter.create_istat_schema()
 
         # Insert test data
         test_datasets = [f"CONCURRENT_TEST_{i}" for i in range(10)]
@@ -369,10 +381,10 @@ class TestDuckDBPerformance:
         )
 
         # Test bulk insert performance
-        from database.duckdb.simple_adapter import SimpleDuckDBAdapter
+        from src.database.duckdb.simple_adapter import SimpleDuckDBAdapter
 
-        large_adapter = SimpleDuckDBAdapter()
-        large_adapter.create_istat_schema()
+        large_adapter = SimpleDuckDBAdapter(self.manager.connection_string)
+        # Schema already created by setup_method, skip large_adapter.create_istat_schema()
 
         # Insert required dataset metadata first
         unique_datasets = large_data["dataset_id"].unique()
@@ -480,9 +492,9 @@ class TestDuckDBPerformance:
 
     def test_indexing_performance_impact(self):
         """Test performance impact of different indexing strategies."""
-        # Setup test data without indexes
-        adapter = SimpleDuckDBAdapter()
-        adapter.create_istat_schema()
+        # Setup test data without indexes - use same database as manager
+        adapter = SimpleDuckDBAdapter(self.manager.connection_string)
+        # Schema already created by setup_method, skip adapter.create_istat_schema()
 
         # Insert moderate amount of test data
         test_size = 10000
@@ -578,10 +590,10 @@ class TestDuckDBPerformance:
         baseline_memory = get_memory_usage()
 
         # Create adapter for data operations
-        from database.duckdb.simple_adapter import SimpleDuckDBAdapter
+        from src.database.duckdb.simple_adapter import SimpleDuckDBAdapter
 
-        adapter = SimpleDuckDBAdapter()
-        adapter.create_istat_schema()
+        adapter = SimpleDuckDBAdapter(self.manager.connection_string)
+        # Schema already created by setup_method, skip adapter.create_istat_schema()
 
         # Test memory usage for increasing dataset sizes
         memory_patterns = {}

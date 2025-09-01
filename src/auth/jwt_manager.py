@@ -18,7 +18,7 @@ try:
 except ImportError:
     raise ImportError("JWT dependencies not installed. Run: pip install PyJWT")
 
-from utils.config import get_config
+from src.utils.config import get_config
 
 try:
     from utils.logger import get_logger

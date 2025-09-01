@@ -11,13 +11,13 @@ from typing import Optional
 import pandas as pd
 
 from database.sqlite.dataset_config import get_dataset_config_manager
-from utils.config import Config
+from src.utils.config import Config
 
 try:
     from utils.logger import get_logger
 except ImportError:
     from src.utils.logger import get_logger
-from utils.secure_path import create_secure_validator
+from src.utils.secure_path import create_secure_validator
 
 logger = get_logger(__name__)
 
