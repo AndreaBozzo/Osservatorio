@@ -1,5 +1,5 @@
 # Osservatorio ISTAT Data Platform - Makefile
-# Development and Testing Commands - Updated Sept 2025
+# Development and Testing Commands
 
 .PHONY: help install test lint format clean dev-setup export-test api-test status docs
 
@@ -10,10 +10,15 @@ help:  ## Show available commands
 	@echo ""
 	@echo "🚀 QUICK START:"
 	@echo "  make dev-setup           # Complete development setup"
+	@echo "  make serve               # Start FastAPI development server"
 	@echo "  make test                # Run all tests"
-	@echo "  make export-test         # Test export functionality (Issue #150)"
-	@echo "  make api-test            # Test FastAPI endpoints"
-	@echo "  make status              # Check system status"
+	@echo "  make status              # Check complete system status"
+	@echo ""
+	@echo "📊 MAIN FEATURES:"
+	@echo "  make export-test         # Test export system"
+	@echo "  make api-test            # Test FastAPI ISTAT endpoints"
+	@echo "  make ingestion-test      # Test data ingestion pipeline"
+	@echo "  make auth-test           # Test authentication system"
 	@echo ""
 	@echo "🛠️  DEVELOPMENT:"
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
@@ -30,22 +35,47 @@ dev-setup: install  ## Complete development setup
 	@echo "✅ Pre-commit hooks installed"
 	@echo "Development environment ready!"
 
+# Server Commands
+serve:  ## Start FastAPI development server
+	@echo "🚀 Starting FastAPI server with ISTAT endpoints..."
+	uvicorn src.api.fastapi_app:app --reload --host 0.0.0.0 --port 8000
+
+serve-prod:  ## Start production server
+	@echo "🚀 Starting production FastAPI server..."
+	uvicorn src.api.fastapi_app:app --host 0.0.0.0 --port 8000 --workers 4
+
 # Testing Commands
 test:  ## Run all tests
-	@echo "🧪 Running all tests..."
-	pytest tests/ -v
+	@echo "🧪 Running complete test suite..."
+	pytest tests/ -v --tb=short
 
 test-fast:  ## Run unit tests only (fast)
 	@echo "⚡ Running unit tests..."
 	pytest tests/unit/ -v
 
-export-test:  ## Test export functionality (Issue #150)
-	@echo "📊 Testing export functionality..."
+test-integration:  ## Run integration tests
+	@echo "🔗 Running integration tests..."
+	pytest tests/integration/ -v
+
+export-test:  ## Test export functionality
+	@echo "📊 Testing export system..."
 	pytest tests/test_export_functionality.py -v
 
-api-test:  ## Test FastAPI endpoints
-	@echo "🌐 Testing API endpoints..."
-	pytest tests/integration/test_api_integration.py -v
+api-test:  ## Test FastAPI ISTAT endpoints
+	@echo "🌐 Testing ISTAT API endpoints..."
+	pytest tests/integration/test_fastapi_istat_endpoints.py -v
+
+ingestion-test:  ## Test data ingestion pipeline
+	@echo "📥 Testing ingestion pipeline..."
+	pytest tests/integration/test_simple_pipeline_real.py -v
+
+auth-test:  ## Test authentication system
+	@echo "🔐 Testing authentication system..."
+	pytest tests/unit/ -k "auth or jwt" -v
+
+db-test:  ## Test database systems
+	@echo "💾 Testing database systems..."
+	pytest tests/integration/test_unified_repository.py -v
 
 # Code Quality
 lint:  ## Run code linting
@@ -60,22 +90,53 @@ format:  ## Format code
 quality: lint format  ## Run all quality checks
 	@echo "✅ Code quality checks completed"
 
-# Database and Status
+# Database Commands
 db-status:  ## Check database status
-	@echo "💾 Checking database status..."
-	@python -c "from src.database.sqlite.repository import get_unified_repository; repo = get_unified_repository(); print('✅ Database connection OK')"
+	@echo "💾 Checking database systems..."
+	@python -c "from src.database.sqlite.repository import get_unified_repository; repo = get_unified_repository(); print('✅ SQLite + DuckDB unified repository OK')"
 
-status:  ## Check system status
-	@echo "📋 System Status Check"
-	@echo "====================="
-	@echo "Database:"
+db-init:  ## Initialize database schemas
+	@echo "💾 Initializing database schemas..."
+	@python -c "from src.database.sqlite.manager import get_metadata_manager; manager = get_metadata_manager(); print('✅ SQLite schema initialized')"
+	@python -c "from src.database.duckdb.manager import get_manager; manager = get_manager(); print('✅ DuckDB connection verified')"
+
+# System Status
+status:  ## Check complete system status
+	@echo "📋 Complete System Status Check"
+	@echo "==============================="
+	@echo ""
+	@echo "💾 Database Systems:"
 	@$(MAKE) db-status
 	@echo ""
-	@echo "Export System:"
+	@echo "📊 Export System:"
 	@python -c "from src.export import UniversalExporter; exporter = UniversalExporter(); print('✅ Export system OK')"
 	@echo ""
-	@echo "API Server:"
-	@python -c "from src.api.fastapi_app import app; print('✅ FastAPI app OK')"
+	@echo "🌐 API Server:"
+	@python -c "from src.api.fastapi_app import app; print('✅ FastAPI ISTAT endpoints OK')"
+	@echo ""
+	@echo "🔐 Authentication:"
+	@python -c "from src.auth.jwt_manager import JWTManager; jwt = JWTManager(); print('✅ JWT authentication OK')"
+	@echo ""
+	@echo "📥 Ingestion Pipeline:"
+	@python -c "from src.ingestion.simple_pipeline import SimpleIngestionPipeline; print('✅ Ingestion pipeline OK')"
+
+# Export System Commands
+export-validate:  ## Validate export system
+	@echo "🔍 Validating export functionality..."
+	@python -c "from src.export import UniversalExporter, StreamingExporter; print('✅ Export system validated')"
+
+export-demo:  ## Show export usage examples
+	@echo "📊 Export System Usage Examples"
+	@echo "==============================="
+	@echo "CSV Export:"
+	@echo "  curl -X GET 'http://localhost:8000/export/DATASET_ID/export?format=csv&limit=10' \\"
+	@echo "    -H 'Authorization: Bearer YOUR_TOKEN' \\"
+	@echo "    -H 'Accept: text/csv'"
+	@echo ""
+	@echo "JSON Export:"
+	@echo "  curl -X GET 'http://localhost:8000/export/DATASET_ID/export?format=json&limit=10' \\"
+	@echo "    -H 'Authorization: Bearer YOUR_TOKEN' \\"
+	@echo "    -H 'Accept: application/json'"
 
 # Development Utilities
 clean:  ## Clean temporary files and caches
@@ -87,45 +148,42 @@ clean:  ## Clean temporary files and caches
 	rm -rf htmlcov/
 	@echo "✅ Cleanup completed"
 
-# Server Commands
-serve:  ## Start FastAPI development server
-	@echo "🚀 Starting FastAPI server..."
-	uvicorn src.api.fastapi_app:app --reload --host 0.0.0.0 --port 8000
-
-# Export Commands
-export-csv:  ## Export sample dataset to CSV (requires running server)
-	@echo "📊 Testing CSV export..."
-	curl -X GET "http://localhost:8000/export/143_222/export?format=csv&limit=10" \
-		-H "Authorization: Bearer <your-token-here>" \
-		-H "Accept: text/csv"
-
-export-json:  ## Export sample dataset to JSON (requires running server)
-	@echo "📊 Testing JSON export..."
-	curl -X GET "http://localhost:8000/export/143_222/export?format=json&limit=10" \
-		-H "Authorization: Bearer <your-token-here>" \
-		-H "Accept: application/json"
-
 # Documentation
-docs:  ## Generate documentation
-	@echo "📚 Documentation available in docs/ directory"
-	@echo "Main documentation: README.md"
+docs:  ## Show documentation structure
+	@echo "📚 Documentation Structure"
+	@echo "=========================="
+	@echo "Main: README.md"
+	@echo "Developer Guide: docs/project/CLAUDE.md"
 	@echo "Architecture: docs/core/ARCHITECTURE.md"
 	@echo "API Reference: docs/core/API_REFERENCE.md"
 
-# CI/CD Helpers
-ci-test:  ## Run tests suitable for CI
-	pytest tests/ --cov=src --cov-report=html --cov-report=term-missing
-
-# Development Validation
-validate:  ## Validate complete system
-	@echo "🔍 Validating complete system..."
-	@echo "Testing export system..."
-	@python -c "from src.export import UniversalExporter, StreamingExporter; print('✅ Export system validated')"
-	@echo "Testing database..."
-	@python -c "from src.database.sqlite.repository import get_unified_repository; repo = get_unified_repository(); print('✅ Database validated')"
-	@echo "Testing API..."
-	@python -c "from src.api.fastapi_app import app; print('✅ API validated')"
-	@echo "Running quick tests..."
+# Validation
+validate:  ## Validate complete system functionality
+	@echo "🔍 Complete System Validation"
+	@echo "============================"
+	@echo ""
+	@echo "🧪 Testing core components..."
+	@python -c "from src.export import UniversalExporter, StreamingExporter; print('✅ Export system')"
+	@python -c "from src.database.sqlite.repository import get_unified_repository; repo = get_unified_repository(); print('✅ Database layer')"
+	@python -c "from src.api.fastapi_app import app; print('✅ FastAPI application')"
+	@python -c "from src.auth.jwt_manager import JWTManager; print('✅ Authentication')"
+	@python -c "from src.ingestion.simple_pipeline import SimpleIngestionPipeline; print('✅ Ingestion pipeline')"
+	@echo ""
+	@echo "🧪 Running critical path tests..."
 	@pytest tests/test_export_functionality.py::TestUniversalExporter::test_csv_export -v
 	@echo ""
 	@echo "✅ System validation completed successfully!"
+
+# Development Workflow
+dev-test:  ## Quick development testing workflow
+	@echo "🔄 Development Testing Workflow"
+	@echo "==============================="
+	@$(MAKE) clean
+	@$(MAKE) format
+	@$(MAKE) lint
+	@$(MAKE) test-fast
+	@echo ""
+	@echo "✅ Development workflow completed!"
+
+ci-test:  ## Run tests suitable for CI
+	pytest tests/ --cov=src --cov-report=html --cov-report=term-missing --maxfail=5
