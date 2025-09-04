@@ -46,7 +46,48 @@ class ExportDataAccess:
             DataFrame with requested data
         """
         try:
-            # Check if dataset exists
+            # Direct DuckDB query to get actual data from main schema
+            from database.duckdb.manager import DuckDBManager
+
+            duckdb = DuckDBManager()
+
+            # Build query for the actual schema
+            query = "SELECT * FROM main.istat_observations WHERE dataset_id = ?"
+            params = [dataset_id]
+
+            # Add time period filtering if needed
+            if start_date:
+                query += " AND time_period >= ?"
+                params.append(start_date)
+            if end_date:
+                query += " AND time_period <= ?"
+                params.append(end_date)
+
+            # Add limit
+            if limit:
+                query += f" LIMIT {limit}"
+
+            logger.info(f"Executing DuckDB query for dataset {dataset_id}: {query}")
+            result = duckdb.execute_query(query, params)
+
+            if result is not None and not result.empty:
+                # Filter columns if specified
+                if columns:
+                    available_columns = [
+                        col for col in columns if col in result.columns
+                    ]
+                    if available_columns:
+                        result = result[available_columns]
+
+                logger.info(
+                    f"Successfully fetched {len(result)} rows for dataset {dataset_id}"
+                )
+                return result
+            else:
+                logger.warning(f"No data found for dataset {dataset_id}")
+                return pd.DataFrame()
+
+            # Fallback to repository method (which currently doesn't work)
             dataset_info = self.repository.get_dataset_complete(dataset_id)
             if not dataset_info:
                 logger.error(f"Dataset {dataset_id} not found")

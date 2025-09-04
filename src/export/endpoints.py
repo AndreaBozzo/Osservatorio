@@ -83,7 +83,7 @@ async def export_dataset(
     """
 
     logger.info(
-        f"Export request - Dataset: {dataset_id}, Format: {format}, User: {current_user.get('username', 'unknown')}"
+        f"Export request - Dataset: {dataset_id}, Format: {format}, User: {getattr(current_user, 'user_id', 'unknown') if current_user else 'unknown'}"
     )
 
     try:
@@ -212,7 +212,7 @@ async def get_export_info(
     """
 
     logger.info(
-        f"Export info request - Dataset: {dataset_id}, User: {current_user.get('username', 'unknown')}"
+        f"Export info request - Dataset: {dataset_id}, User: {getattr(current_user, 'user_id', 'unknown') if current_user else 'unknown'}"
     )
 
     try:
@@ -314,3 +314,100 @@ async def get_supported_formats(
 
     logger.debug("Returned supported export formats information")
     return formats_info
+
+
+# TEMPORARY: Test endpoint without authentication for Issue #150 testing
+@export_router.get("/test/{dataset_id}/export")
+async def test_export_dataset(
+    dataset_id: str = Path(..., description="Dataset ID to export"),
+    format: str = Query(..., description="Export format", regex="^(csv|json|parquet)$"),
+    columns: Optional[str] = Query(
+        None,
+        description="Comma-separated list of columns to include (default: all columns)",
+    ),
+    limit: Optional[int] = Query(
+        None,
+        description="Maximum number of rows to export (default: no limit)",
+        gt=0,
+        le=1000000,
+    ),
+):
+    """
+    TEMPORARY: Test export endpoint without authentication for Issue #150 testing.
+    This will be removed once authentication is properly configured.
+    """
+
+    logger.info(f"TEST Export request - Dataset: {dataset_id}, Format: {format}")
+
+    try:
+        # Initialize data access and exporters
+        data_access = ExportDataAccess()
+        universal_exporter = UniversalExporter()
+
+        # Validate dataset exists
+        if not data_access.validate_dataset_exists(dataset_id):
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Dataset '{dataset_id}' not found",
+            )
+
+        # Parse columns filter
+        column_list = None
+        if columns:
+            column_list = [col.strip() for col in columns.split(",") if col.strip()]
+            logger.debug(f"Column filter applied: {column_list}")
+
+        # Fetch data
+        df = data_access.get_dataset_data(
+            dataset_id=dataset_id,
+            columns=column_list,
+            limit=limit,
+        )
+
+        if df.empty:
+            logger.warning(f"No data returned for dataset {dataset_id}")
+            # Return empty response
+            empty_export = universal_exporter.export_dataframe(df, format, dataset_id)
+            content_type = universal_exporter.get_content_type(format)
+            file_ext = universal_exporter.get_file_extension(format)
+            filename = f"{dataset_id}_export_{datetime.now().strftime('%Y%m%d_%H%M%S')}{file_ext}"
+
+            return StreamingResponse(
+                iter(
+                    [empty_export] if isinstance(empty_export, str) else [empty_export]
+                ),
+                media_type=content_type,
+                headers={"Content-Disposition": f"attachment; filename={filename}"},
+            )
+
+        logger.info(f"Exporting {len(df)} rows in {format} format")
+
+        # Use universal exporter
+        exported_data = universal_exporter.export_dataframe(
+            df=df,
+            format=format,
+            dataset_id=dataset_id,
+            columns=column_list,
+            limit=limit,
+        )
+
+        content_type = universal_exporter.get_content_type(format)
+        file_ext = universal_exporter.get_file_extension(format)
+        filename = f"{dataset_id}_test_export_{datetime.now().strftime('%Y%m%d_%H%M%S')}{file_ext}"
+
+        return StreamingResponse(
+            iter(
+                [exported_data] if isinstance(exported_data, str) else [exported_data]
+            ),
+            media_type=content_type,
+            headers={"Content-Disposition": f"attachment; filename={filename}"},
+        )
+
+    except HTTPException:
+        raise  # Re-raise HTTP exceptions as-is
+    except Exception as e:
+        logger.error(f"TEST Export error for dataset {dataset_id}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Export failed: {str(e)}",
+        )
