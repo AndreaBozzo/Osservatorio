@@ -37,6 +37,8 @@ try:
 except ImportError:
     from src.utils.logger import get_logger
 
+from src.export.endpoints import export_router
+
 from .dependencies import (
     check_rate_limit,
     get_auth_manager,
@@ -805,6 +807,9 @@ async def get_usage_analytics(
 # Include OData router for export capabilities
 odata_router = create_odata_router()
 app.include_router(odata_router, prefix="/odata", tags=["OData"])
+
+# Include Export router for Issue #150 - Universal data export
+app.include_router(export_router)
 
 # Issue #153: Dataflow Analysis router removed for MVP
 
