@@ -273,7 +273,9 @@ class TestExportDataAccess:
         """Test dataset data retrieval with proper mocking."""
         # Mock the repository methods properly
         with (
-            patch.object(self.data_access.repository, "get_dataset_info") as mock_info,
+            patch.object(
+                self.data_access.repository, "get_dataset_complete"
+            ) as mock_info,
             patch.object(
                 self.data_access.repository, "execute_analytics_query"
             ) as mock_query,
@@ -296,7 +298,7 @@ class TestExportDataAccess:
     def test_dataset_not_found(self, mock_get_repo):
         """Test handling of non-existent dataset."""
         mock_repo = Mock()
-        mock_repo.get_dataset_info.return_value = None
+        mock_repo.get_dataset_complete.return_value = None
         mock_get_repo.return_value = mock_repo
 
         df = self.data_access.get_dataset_data("nonexistent_dataset")
@@ -354,7 +356,7 @@ class TestExportIntegration:
         """Test complete export workflow from API to file."""
         # Mock repository with test data
         mock_repo = Mock()
-        mock_repo.get_dataset_info.return_value = {"name": "Test Dataset"}
+        mock_repo.get_dataset_complete.return_value = {"name": "Test Dataset"}
         mock_repo.execute_analytics_query.return_value = pd.DataFrame(
             {
                 "Time": ["2023-01-01", "2023-01-02", "2023-01-03"],

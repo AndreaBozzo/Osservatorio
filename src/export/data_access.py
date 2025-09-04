@@ -47,7 +47,7 @@ class ExportDataAccess:
         """
         try:
             # Check if dataset exists
-            dataset_info = self.repository.get_dataset_info(dataset_id)
+            dataset_info = self.repository.get_dataset_complete(dataset_id)
             if not dataset_info:
                 logger.error(f"Dataset {dataset_id} not found")
                 return pd.DataFrame()
@@ -133,7 +133,7 @@ class ExportDataAccess:
     def get_dataset_metadata(self, dataset_id: str) -> dict:
         """Get dataset metadata for export."""
         try:
-            dataset_info = self.repository.get_dataset_info(dataset_id)
+            dataset_info = self.repository.get_dataset_complete(dataset_id)
             if dataset_info:
                 return {
                     "dataset_id": dataset_id,
@@ -153,7 +153,7 @@ class ExportDataAccess:
     def validate_dataset_exists(self, dataset_id: str) -> bool:
         """Check if dataset exists and is accessible."""
         try:
-            dataset_info = self.repository.get_dataset_info(dataset_id)
+            dataset_info = self.repository.get_dataset_complete(dataset_id)
             return dataset_info is not None
         except Exception as e:
             logger.error(f"Error validating dataset {dataset_id}: {e}")
