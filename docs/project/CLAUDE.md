@@ -123,13 +123,19 @@ and automation, work in progress.
   - `python -c "from src.database.sqlite.dataset_config import get_dataset_config_manager; manager = get_dataset_config_manager(); print(f'Datasets: {manager.get_datasets_config()[\"total_datasets\"]}')"` - Test dataset config manager
   - `pytest tests/unit/test_json_sqlite_migration.py -v` - Run JSON migration tests (19 tests, comprehensive coverage)
 
-#### BaseConverter Architecture (NEW 28/07/2025 - Issue #62 Complete)
-- **NEW! Unified Converter Foundation (Issue #62)**:
-  - `pytest tests/unit/test_base_converter.py -v` - Run BaseConverter architecture tests (18 tests)
-  - `python -c "from src.converters.factory import create_powerbi_converter, create_tableau_converter; print('Factory pattern ready')"` - Test converter factory
-  - **Code Reduction**: ~500 lines eliminated (~23% reduction in converter modules)
-  - **Architecture**: Abstract BaseIstatConverter with PowerBI/Tableau specializations
-  - **Factory Pattern**: Centralized converter creation with `ConverterFactory.create_converter(target)`
+#### Universal Export System (Issue #150 - Sept 4, 2025 COMPLETED)
+- **NEW! Universal Data Export (Issue #150)**:
+  - `curl "http://localhost:8000/export/143_222/export?format=csv" -H "Authorization: Bearer <token>"` - Export dataset to CSV
+  - `curl "http://localhost:8000/export/143_222/export?format=json&limit=1000" -H "Authorization: Bearer <token>"` - Export with filtering
+  - `pytest tests/test_export_functionality.py -v` - Run export system tests (20 tests, all passing)
+- **Features**: CSV/JSON/Parquet export with streaming, filtering (columns, dates, limits), authentication, rate limiting
+- **Architecture**: FastAPI endpoints + UniversalExporter + StreamingExporter for large datasets (>50k records)
+- **Performance**: Streaming support for datasets like 143_222 (84,289 records) with memory-efficient chunked processing
+
+#### Legacy Cleanup (Sept 4, 2025 COMPLETED)
+- **Removed**: `src/converters/`, `src/pipeline_old/` directories and related tests
+- **Code Reduction**: ~1000+ lines eliminated, simplified MVP-focused architecture
+- **Migration**: PowerBI/Tableau functionality replaced by universal export system
 
 #### Unified Data Repository (Day 4 COMPLETED)
 - `python -c "from src.database.sqlite.repository import UnifiedDataRepository; repo = UnifiedDataRepository(); print('Unified repo ready')"` - Test unified data access
@@ -267,10 +273,10 @@ and automation, work in progress.
    - **SQLite**: Metadata and configuration (`sqlite/repository.py`, `dataset_config.py`)
    - **Unified Repository**: Facade pattern combining both databases
 
-4. **Data Processing** (`src/converters/`, `src/services/`):
-   - **BaseConverter Architecture**: Unified foundation (`base_converter.py`, `factory.py`)
-   - **PowerBI Integration**: Converter, optimizer, templates (`powerbi_converter.py`, `integrations/powerbi/`)
-   - **Tableau Integration**: Converter and API client (`tableau_converter.py`, `api/tableau_api.py`)
+4. **Data Processing** (`src/export/`, `src/services/`):
+   - **Universal Export System**: Direct CSV/JSON/Parquet export (`universal_exporter.py`, `streaming_exporter.py`)
+   - **Export API Endpoints**: RESTful data export with authentication and rate limiting (`endpoints.py`)
+   - **Data Access Layer**: Unified database integration with DuckDB (`data_access.py`)
    - **Dataflow Analysis**: Modern service with REST endpoints (`services/dataflow_analysis_service.py`)
 
 5. **Utilities & Configuration** (`src/utils/`):
@@ -280,7 +286,7 @@ and automation, work in progress.
 
 ### Data Flow
 1. **ISTAT SDMX API** → **ProductionIstatClient** (with circuit breaker & cache fallback)
-2. **XML Processing** → **BaseConverter** → **PowerBI/Tableau formats**
+2. **ISTAT Data** → **DuckDB Analytics** → **Universal Export** (CSV/JSON/Parquet)
 3. **Storage** → **DuckDB** (analytics) + **SQLite** (metadata) via **Unified Repository**
 4. **Authentication** → **JWT tokens** + **Rate limiting** + **Security middleware**
 
@@ -299,11 +305,11 @@ src/
 │   ├── jwt_manager.py    # JWT tokens
 │   ├── rate_limiter.py   # Rate limiting
 │   └── security_middleware.py # Security headers
-├── converters/        # Data format converters
-│   ├── base_converter.py      # Unified foundation
-│   ├── powerbi_converter.py   # PowerBI formats
-│   ├── tableau_converter.py   # Tableau formats
-│   └── factory.py             # Factory pattern
+├── export/            # Universal data export system (Issue #150)
+│   ├── universal_exporter.py  # Core CSV/JSON/Parquet export
+│   ├── streaming_exporter.py  # Memory-efficient streaming
+│   ├── data_access.py         # Database integration layer
+│   └── endpoints.py           # FastAPI REST endpoints
 ├── database/          # Hybrid database architecture
 │   ├── duckdb/        # Analytics engine
 │   │   ├── manager.py          # Connection management
