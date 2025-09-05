@@ -51,13 +51,11 @@ class TestFinalCoveragePush:
         cb.record_failure()
         assert cb.failure_count == 1
 
+    @pytest.mark.skip(reason="Converters removed - legacy code cleanup")
     def test_converter_initialization_coverage(self):
         """Test converter factory basic functionality."""
-        from src.converters.factory import ConverterFactory
-
-        # Test factory basic functionality
-        targets = ConverterFactory.get_available_targets()
-        assert isinstance(targets, list)
+        # Converters removed as part of legacy code cleanup
+        pass
 
     def test_secure_path_basic_operations(self):
         """Test secure path basic operations."""
@@ -125,26 +123,17 @@ class TestFinalCoveragePush:
             except ImportError:
                 pass  # Module doesn't exist, skip
 
+    @pytest.mark.skip(reason="Converters removed - legacy code cleanup")
     def test_converter_category_edge_cases(self):
         """Test converter factory edge cases."""
-        from src.converters.factory import ConverterFactory
+        # Converters removed as part of legacy code cleanup
+        pass
 
-        # Test unsupported target handling
-        try:
-            ConverterFactory.create_converter("nonexistent_target")
-            assert False, "Should have raised ValueError"
-        except ValueError:
-            # Expected behavior
-            pass
-
+    @pytest.mark.skip(reason="Converters removed - legacy code cleanup")
     def test_error_handling_coverage(self):
         """Test error handling in various modules."""
-        from src.converters.factory import ConverterFactory
-
-        # Test if factory handles empty target list gracefully
-        is_supported = ConverterFactory.is_target_supported("invalid_target")
-        assert isinstance(is_supported, bool)
-        assert not is_supported
+        # Converters removed as part of legacy code cleanup
+        pass
 
     def test_path_validation_edge_cases(self):
         """Test path validation additional cases."""
