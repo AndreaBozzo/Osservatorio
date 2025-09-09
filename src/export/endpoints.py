@@ -28,10 +28,11 @@ from .universal_exporter import UniversalExporter
 logger = get_logger(__name__)
 
 # Create router for export endpoints
-export_router = APIRouter(prefix="/api/datasets", tags=["Export"])
+export_router = APIRouter(prefix="/export", tags=["Export"])
 
 
-@export_router.get("/{dataset_id}/export")
+@export_router.get("/datasets/{dataset_id}")
+@handle_api_errors
 async def export_dataset(
     dataset_id: str = Path(..., description="Dataset ID to export"),
     format: str = Query(..., description="Export format", regex="^(csv|json|parquet)$"),
@@ -61,7 +62,6 @@ async def export_dataset(
     current_user=Depends(get_current_user),
     _rate_limit=Depends(check_rate_limit),
     _log_request=Depends(log_api_request),
-    _error_handler=Depends(handle_api_errors),
 ):
     """
     Export dataset in specified format with optional filtering.
@@ -193,13 +193,13 @@ async def export_dataset(
         )
 
 
-@export_router.get("/{dataset_id}/export/info")
+@export_router.get("/datasets/{dataset_id}/info")
+@handle_api_errors
 async def get_export_info(
     dataset_id: str = Path(..., description="Dataset ID"),
     current_user=Depends(get_current_user),
     _rate_limit=Depends(check_rate_limit),
     _log_request=Depends(log_api_request),
-    _error_handler=Depends(handle_api_errors),
 ):
     """
     Get export information for a dataset including size estimates and available columns.
@@ -261,7 +261,7 @@ async def get_export_info(
         )
 
 
-@export_router.get("/export/formats")
+@export_router.get("/formats")
 async def get_supported_formats(
     current_user=Depends(get_current_user),
     _rate_limit=Depends(check_rate_limit),
@@ -317,7 +317,7 @@ async def get_supported_formats(
 
 
 # TEMPORARY: Test endpoint without authentication for Issue #150 testing
-@export_router.get("/test/{dataset_id}/export")
+@export_router.get("/test/datasets/{dataset_id}")
 async def test_export_dataset(
     dataset_id: str = Path(..., description="Dataset ID to export"),
     format: str = Query(..., description="Export format", regex="^(csv|json|parquet)$"),
