@@ -522,19 +522,38 @@ async def login_user(
 @app.post("/auth/logout", tags=["Authentication"])
 @handle_api_errors
 async def logout_user(
+    request: Request,
     current_user=Depends(get_current_user),
+    jwt_manager=Depends(get_jwt_manager),
 ):
     """
     User logout endpoint.
 
-    For MVP: Simple logout that returns success. JWT tokens expire naturally.
-    In production: implement token blacklisting if needed.
+    Invalidates the JWT token by adding it to blacklist.
     """
-    return {
-        "success": True,
-        "message": "Logout successful",
-        "timestamp": datetime.now().isoformat(),
-    }
+    try:
+        # Extract token from Authorization header
+        auth_header = request.headers.get("Authorization")
+        if auth_header and auth_header.startswith("Bearer "):
+            token = auth_header.split(" ")[1]
+
+            # Blacklist the token
+            success = jwt_manager.blacklist_token(token)
+            if not success:
+                logger.warning("Failed to blacklist token during logout")
+
+        return {
+            "success": True,
+            "message": "Logout successful",
+            "timestamp": datetime.now().isoformat(),
+        }
+    except Exception as e:
+        logger.error(f"Error during logout: {e}")
+        return {
+            "success": True,  # Still return success for user experience
+            "message": "Logout successful",
+            "timestamp": datetime.now().isoformat(),
+        }
 
 
 @app.get("/auth/profile", tags=["Authentication"])
@@ -545,7 +564,7 @@ async def get_user_profile(
     """
     Get current user profile information.
     """
-    # For user-based tokens, get basic info from token
+    # Check if this is a user token (has email field) vs API key token
     if hasattr(current_user, "email") and current_user.email:
         return {
             "success": True,
@@ -558,7 +577,7 @@ async def get_user_profile(
                 else ["read"],
             },
         }
-    else:
+    elif hasattr(current_user, "api_key_name") and current_user.api_key_name:
         # API key based token
         return {
             "success": True,
@@ -571,6 +590,33 @@ async def get_user_profile(
                 else ["read"],
             },
         }
+    else:
+        # Fallback - check user_type attribute
+        user_type = getattr(current_user, "user_type", "unknown")
+        if user_type == "user":
+            return {
+                "success": True,
+                "user": {
+                    "id": current_user.sub,
+                    "email": getattr(current_user, "email", ""),
+                    "user_type": "user",
+                    "scopes": current_user.scope.split()
+                    if current_user.scope
+                    else ["read"],
+                },
+            }
+        else:
+            return {
+                "success": True,
+                "user": {
+                    "id": current_user.sub,
+                    "api_key_name": current_user.api_key_name,
+                    "user_type": "api_key",
+                    "scopes": current_user.scope.split()
+                    if current_user.scope
+                    else ["read"],
+                },
+            }
 
 
 # Dataset Endpoints
@@ -1162,9 +1208,22 @@ async def sync_istat_dataset(
 @app.on_event("startup")
 async def startup_event():
     """Initialize application on startup"""
-    logger.info("Starting Osservatorio ISTAT FastAPI application")
+    import os
+
+    dev_mode = os.getenv("DEVELOPMENT", "false").lower() == "true"
+    logger.info(
+        f"Starting Osservatorio ISTAT FastAPI application (dev_mode={dev_mode})"
+    )
 
     try:
+        if dev_mode:
+            # Fast startup for development - skip heavy initialization
+            logger.info(
+                "Development mode: skipping heavy initialization for hot reload"
+            )
+            app.state.ingestion_pipeline = None
+            return
+
         # Initialize simple ingestion pipeline FIRST (creates schema)
         ingestion_pipeline = create_simple_pipeline()
         app.state.ingestion_pipeline = ingestion_pipeline
@@ -1184,6 +1243,28 @@ async def startup_event():
     except Exception as e:
         logger.error(f"Failed to start application: {e}")
         raise
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Clean up resources on application shutdown"""
+    logger.info("Starting FastAPI application shutdown")
+
+    try:
+        # Force close database connections to prevent reload hanging
+        import gc
+
+        from src.database.sqlite import reset_unified_repository
+
+        # Reset repository singletons
+        reset_unified_repository()
+
+        # Force garbage collection to cleanup connections
+        gc.collect()
+
+        logger.info("FastAPI application shutdown completed")
+    except Exception as e:
+        logger.error(f"Error during application shutdown: {e}")
 
 
 # Issue #149 - Simple Ingestion Pipeline Endpoints
@@ -1332,27 +1413,6 @@ async def get_ingestion_health(request: Request):
                 "message": "Health check failed",
             },
         )
-
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    """Cleanup on application shutdown"""
-    logger.info("Shutting down Osservatorio ISTAT FastAPI application")
-
-    try:
-        # Close repository connections
-        repository = get_unified_repository()
-        repository.close()
-
-        # Close ISTAT client
-        from .dependencies import _istat_client
-
-        if _istat_client:
-            _istat_client.close()
-
-        logger.info("FastAPI application shutdown complete")
-    except Exception as e:
-        logger.error(f"Error during shutdown: {e}")
 
 
 # Development server

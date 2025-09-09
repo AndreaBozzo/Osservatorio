@@ -118,24 +118,10 @@ async def get_current_user(
         # Verify JWT token (supports both API key and user-based tokens)
         token_claims = jwt_manager.verify_token(credentials.credentials)
         if not token_claims:
-            # Try user token verification
-            user_info = jwt_manager.verify_user_token(credentials.credentials)
-            if not user_info:
-                raise HTTPException(
-                    status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail="Invalid or expired token",
-                    headers={"WWW-Authenticate": "Bearer"},
-                )
-
-            # Convert user token info to TokenClaims for compatibility
-            from auth.models import TokenClaims
-
-            token_claims = TokenClaims(
-                sub=user_info["user_id"],
-                email=user_info.get("username"),
-                user_type="user",
-                scope=" ".join(user_info.get("scopes", ["read"])),
-                rate_limit=100,  # Default rate limit for users
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid or expired token",
+                headers={"WWW-Authenticate": "Bearer"},
             )
 
         # Add request context to token claims
