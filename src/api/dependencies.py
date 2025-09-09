@@ -115,24 +115,35 @@ async def get_current_user(
         )
 
     try:
-        # Verify JWT token
+        # Verify JWT token (supports both API key and user-based tokens)
         token_claims = jwt_manager.verify_token(credentials.credentials)
         if not token_claims:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid or expired token",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
+            # Try user token verification
+            user_info = jwt_manager.verify_user_token(credentials.credentials)
+            if not user_info:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Invalid or expired token",
+                    headers={"WWW-Authenticate": "Bearer"},
+                )
 
-        # For API key validation, we rely on JWT validation
-        # The JWT was generated from a valid API key, so we trust the claims
-        # In a more secure implementation, we might still verify the key exists
+            # Convert user token info to TokenClaims for compatibility
+            from auth.models import TokenClaims
+
+            token_claims = TokenClaims(
+                sub=user_info["user_id"],
+                email=user_info.get("username"),
+                user_type="user",
+                scope=" ".join(user_info.get("scopes", ["read"])),
+                rate_limit=100,  # Default rate limit for users
+            )
 
         # Add request context to token claims
         token_claims.client_ip = request.client.host
         token_claims.user_agent = request.headers.get("user-agent")
 
-        logger.debug(f"Authenticated user: {token_claims.api_key_name}")
+        auth_name = token_claims.email or token_claims.api_key_name or token_claims.sub
+        logger.debug(f"Authenticated user: {auth_name}")
         return token_claims
 
     except HTTPException:

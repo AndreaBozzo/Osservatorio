@@ -63,6 +63,9 @@ from .models import (
     HealthCheckResponse,
     TimeSeriesResponse,
     UsageAnalyticsResponse,
+    UserAuthResponse,
+    UserLoginRequest,
+    UserRegisterRequest,
 )
 from .odata import create_odata_router
 
@@ -413,6 +416,106 @@ async def cache_health():
                 "timestamp": datetime.now().isoformat(),
                 "error": str(e),
             },
+        )
+
+
+# User Authentication Endpoints (Issue #132)
+@app.post("/auth/register", response_model=UserAuthResponse, tags=["Authentication"])
+@handle_api_errors
+async def register_user(
+    user_data: UserRegisterRequest,
+    auth_manager=Depends(get_auth_manager),
+    jwt_manager=Depends(get_jwt_manager),
+):
+    """
+    Register a new user account.
+
+    Creates a new user with email/password and returns JWT token for immediate use.
+    No admin approval required for MVP.
+    """
+    try:
+        # Create user
+        user = auth_manager.create_user(user_data.email, user_data.password)
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Failed to create user account",
+            )
+
+        # Generate JWT token for immediate use
+        token = jwt_manager.create_token_for_user(
+            user_id=str(user.id),
+            username=user.email,
+            scopes=["read"],  # Default scope for regular users
+        )
+
+        return UserAuthResponse(
+            success=True,
+            message="User registered successfully",
+            access_token=token,
+            token_type="bearer",
+            expires_in=3600,
+            user_info={
+                "id": user.id,
+                "email": user.email,
+                "is_active": user.is_active,
+                "created_at": user.created_at.isoformat() if user.created_at else None,
+            },
+        )
+
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except Exception as e:
+        logger.error(f"Registration failed: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Registration failed",
+        )
+
+
+@app.post("/auth/login", response_model=UserAuthResponse, tags=["Authentication"])
+@handle_api_errors
+async def login_user(
+    credentials: UserLoginRequest,
+    auth_manager=Depends(get_auth_manager),
+    jwt_manager=Depends(get_jwt_manager),
+):
+    """
+    User login with email/password.
+
+    Returns JWT token for API access. Token valid for 1 hour.
+    """
+    try:
+        # Verify user credentials
+        user = auth_manager.verify_user(credentials.email, credentials.password)
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid email or password",
+            )
+
+        # Generate JWT token
+        token = jwt_manager.create_token_for_user(
+            user_id=str(user.id),
+            username=user.email,
+            scopes=["read"],  # Default scope for regular users
+        )
+
+        return UserAuthResponse(
+            success=True,
+            message="Login successful",
+            access_token=token,
+            token_type="bearer",
+            expires_in=3600,
+            user_info={"id": user.id, "email": user.email, "is_active": user.is_active},
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Login failed: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Login failed"
         )
 
 
