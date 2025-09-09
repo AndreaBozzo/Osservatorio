@@ -25,8 +25,6 @@ except ImportError:
 
 from .config import get_connection_string, get_duckdb_config
 
-# from utils.security_enhanced import security_manager
-
 logger = get_logger(__name__)
 
 
