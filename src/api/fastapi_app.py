@@ -519,6 +519,60 @@ async def login_user(
         )
 
 
+@app.post("/auth/logout", tags=["Authentication"])
+@handle_api_errors
+async def logout_user(
+    current_user=Depends(get_current_user),
+):
+    """
+    User logout endpoint.
+
+    For MVP: Simple logout that returns success. JWT tokens expire naturally.
+    In production: implement token blacklisting if needed.
+    """
+    return {
+        "success": True,
+        "message": "Logout successful",
+        "timestamp": datetime.now().isoformat(),
+    }
+
+
+@app.get("/auth/profile", tags=["Authentication"])
+@handle_api_errors
+async def get_user_profile(
+    current_user=Depends(get_current_user),
+):
+    """
+    Get current user profile information.
+    """
+    # For user-based tokens, get basic info from token
+    if hasattr(current_user, "email") and current_user.email:
+        return {
+            "success": True,
+            "user": {
+                "id": current_user.sub,
+                "email": current_user.email,
+                "user_type": getattr(current_user, "user_type", "user"),
+                "scopes": current_user.scope.split()
+                if current_user.scope
+                else ["read"],
+            },
+        }
+    else:
+        # API key based token
+        return {
+            "success": True,
+            "user": {
+                "id": current_user.sub,
+                "api_key_name": current_user.api_key_name,
+                "user_type": "api_key",
+                "scopes": current_user.scope.split()
+                if current_user.scope
+                else ["read"],
+            },
+        }
+
+
 # Dataset Endpoints
 @app.get("/datasets", response_model=DatasetListResponse, tags=["Datasets"])
 @handle_api_errors
