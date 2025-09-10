@@ -35,13 +35,6 @@ from .simple_adapter import (
     create_temp_adapter,
 )
 
-# from .query_optimizer import QueryOptimizer, QueryType, create_optimizer
-# from .partitioning import (
-#     PartitionManager, YearPartitionStrategy, TerritoryPartitionStrategy,
-#     HybridPartitionStrategy, create_partition_manager
-# )
-
-
 __all__ = [
     # Configuration
     "get_duckdb_config",

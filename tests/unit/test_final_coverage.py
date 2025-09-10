@@ -9,6 +9,7 @@ import pytest
 class TestFinalCoveragePush:
     """Simple tests that should pass and increase coverage."""
 
+    @pytest.mark.skip(reason="temp_file_manager module removed - legacy test")
     def test_temp_manager_singleton_usage(self):
         """Test temp manager singleton behavior."""
         from src.utils.temp_file_manager import get_temp_manager

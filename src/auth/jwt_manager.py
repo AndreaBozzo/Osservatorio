@@ -62,6 +62,9 @@ class JWTManager:
             "jwt_access_token_expire_minutes", self.DEFAULT_ACCESS_TOKEN_EXPIRE_MINUTES
         )
 
+        # Simple in-memory token blacklist for logout
+        self._blacklisted_tokens = set()
+
         logger.info("Simplified JWT Manager initialized for MVP - Issue #153")
 
     def _init_secret_key(self, secret_key: Optional[str]):
@@ -147,6 +150,12 @@ class JWTManager:
                 options={"verify_aud": False},  # Disable audience verification for MVP
             )
 
+            # Check if token is blacklisted (logout invalidation)
+            jti = payload.get("jti")
+            if jti and self.is_token_blacklisted(jti):
+                logger.warning("Token is blacklisted (logged out)")
+                return None
+
             # Extract claims (fixed field names for TokenClaims model)
             token_claims = TokenClaims(
                 sub=payload.get("sub"),
@@ -160,6 +169,8 @@ class JWTManager:
                 else None,
                 scope=payload.get("scope", "read"),
                 api_key_name=payload.get("api_key_name"),
+                email=payload.get("email"),
+                user_type=payload.get("user_type", "api_key"),
             )
 
             logger.debug(
@@ -197,6 +208,8 @@ class JWTManager:
             claims = {
                 "sub": user_id,
                 "username": username,
+                "email": username,  # username is email for users
+                "user_type": "user",
                 "exp": expires_at,
                 "iat": now,
                 "iss": "osservatorio-istat",
@@ -271,6 +284,25 @@ class JWTManager:
         """
         logger.info("Token cleanup called but not implemented in MVP - Issue #153")
         return 0
+
+    def blacklist_token(self, token: str) -> bool:
+        """Add token to blacklist to invalidate it"""
+        try:
+            # Extract jti from token for blacklisting
+            payload = jwt.decode(token, self.secret_key, algorithms=[self.algorithm])
+            jti = payload.get("jti")
+            if jti:
+                self._blacklisted_tokens.add(jti)
+                logger.debug(f"Token blacklisted: {jti}")
+                return True
+            return False
+        except Exception as e:
+            logger.error(f"Failed to blacklist token: {e}")
+            return False
+
+    def is_token_blacklisted(self, jti: str) -> bool:
+        """Check if token is blacklisted"""
+        return jti in self._blacklisted_tokens
 
 
 # Convenience functions for backward compatibility

@@ -337,3 +337,35 @@ class HealthCheckResponse(BaseModel):
     )
 
     model_config = ConfigDict(json_encoders={datetime: lambda v: v.isoformat()})
+
+
+# User Authentication Models
+class UserRegisterRequest(BaseModel):
+    """User registration request"""
+
+    email: str = Field(..., description="User email address")
+    password: str = Field(
+        ..., min_length=6, description="Password (minimum 6 characters)"
+    )
+
+    @validator("email")
+    def validate_email(cls, v):
+        if "@" not in v or "." not in v:
+            raise ValueError("Invalid email format")
+        return v.lower().strip()
+
+
+class UserLoginRequest(BaseModel):
+    """User login request"""
+
+    email: str = Field(..., description="User email address")
+    password: str = Field(..., description="Password")
+
+
+class UserAuthResponse(APIResponse):
+    """User authentication response"""
+
+    access_token: str = Field(..., description="JWT access token")
+    token_type: str = Field("bearer", description="Token type")
+    expires_in: int = Field(3600, description="Token expiration in seconds")
+    user_info: dict = Field(..., description="Basic user information")

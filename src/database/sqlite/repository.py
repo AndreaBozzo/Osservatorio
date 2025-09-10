@@ -459,25 +459,48 @@ class UnifiedDataRepository:
 
             where_clause = " AND " + " AND ".join(conditions) if conditions else ""
 
-            # Execute time series query - safe construction with predefined conditions
+            # Execute time series query - updated for correct schema
             base_query = """
                 SELECT
-                    d.year,
-                    d.time_period,
-                    o.territory_code,
-                    o.territory_name,
-                    o.measure_code,
-                    o.measure_name,
+                    o.dataset_id,
+                    o.time_period,
                     o.obs_value,
-                    o.obs_status
-                FROM istat.istat_datasets d
-                JOIN istat_observations o ON d.id = o.dataset_id
-                WHERE d.dataset_id = ?"""
+                    o.record_id,
+                    o.ingestion_timestamp,
+                    o.additional_attributes
+                FROM istat_observations o
+                WHERE o.dataset_id = ?"""
+
+            # Update conditions for correct field names (since we don't have the JOIN anymore)
+            conditions = []
+            query_params = [dataset_id]
+
+            if territory_code:
+                conditions.append(
+                    "JSON_EXTRACT(o.additional_attributes, '$.territory_code') = ?"
+                )
+                query_params.append(territory_code)
+
+            if measure_code:
+                conditions.append(
+                    "JSON_EXTRACT(o.additional_attributes, '$.measure_code') = ?"
+                )
+                query_params.append(measure_code)
+
+            if start_year:
+                conditions.append("CAST(o.time_period AS INTEGER) >= ?")
+                query_params.append(start_year)
+
+            if end_year:
+                conditions.append("CAST(o.time_period AS INTEGER) <= ?")
+                query_params.append(end_year)
+
+            where_clause = " AND " + " AND ".join(conditions) if conditions else ""
 
             query = (
                 base_query
                 + where_clause
-                + " ORDER BY d.year ASC, o.territory_code ASC, o.measure_code ASC"
+                + " ORDER BY o.time_period ASC, o.record_id ASC"
             )
 
             results = self.analytics_manager.execute_query(query, query_params)
@@ -485,16 +508,29 @@ class UnifiedDataRepository:
             # Convert to dictionary format
             time_series = []
             for row in results:
+                # Parse additional attributes if available
+                additional_attrs = {}
+                try:
+                    import json
+
+                    additional_attrs = json.loads(row[5]) if row[5] else {}
+                except (json.JSONDecodeError, TypeError, AttributeError):
+                    additional_attrs = {}
+
                 time_series.append(
                     {
-                        "year": row[0],
+                        "dataset_id": row[0],
                         "time_period": row[1],
-                        "territory_code": row[2],
-                        "territory_name": row[3],
-                        "measure_code": row[4],
-                        "measure_name": row[5],
-                        "obs_value": row[6],
-                        "obs_status": row[7],
+                        "year": int(row[1]) if row[1].isdigit() else None,
+                        "obs_value": row[2],
+                        "record_id": row[3],
+                        "ingestion_timestamp": row[4],
+                        "territory_code": additional_attrs.get("territory_code"),
+                        "territory_name": additional_attrs.get("territory_name"),
+                        "measure_code": additional_attrs.get("measure_code"),
+                        "measure_name": additional_attrs.get("measure_name"),
+                        "obs_status": additional_attrs.get("obs_status"),
+                        "additional_attributes": additional_attrs,
                     }
                 )
 

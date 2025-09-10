@@ -115,7 +115,7 @@ async def get_current_user(
         )
 
     try:
-        # Verify JWT token
+        # Verify JWT token (supports both API key and user-based tokens)
         token_claims = jwt_manager.verify_token(credentials.credentials)
         if not token_claims:
             raise HTTPException(
@@ -124,15 +124,12 @@ async def get_current_user(
                 headers={"WWW-Authenticate": "Bearer"},
             )
 
-        # For API key validation, we rely on JWT validation
-        # The JWT was generated from a valid API key, so we trust the claims
-        # In a more secure implementation, we might still verify the key exists
-
         # Add request context to token claims
         token_claims.client_ip = request.client.host
         token_claims.user_agent = request.headers.get("user-agent")
 
-        logger.debug(f"Authenticated user: {token_claims.api_key_name}")
+        auth_name = token_claims.email or token_claims.api_key_name or token_claims.sub
+        logger.debug(f"Authenticated user: {auth_name}")
         return token_claims
 
     except HTTPException:
