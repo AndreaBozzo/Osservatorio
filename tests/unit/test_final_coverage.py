@@ -3,14 +3,13 @@ Final coverage push to reach 60% target.
 Simple working tests for missing coverage.
 """
 
-from unittest.mock import Mock, patch
-
-from src.utils.circuit_breaker import CircuitState
+import pytest
 
 
 class TestFinalCoveragePush:
     """Simple tests that should pass and increase coverage."""
 
+    @pytest.mark.skip(reason="temp_file_manager module removed - legacy test")
     def test_temp_manager_singleton_usage(self):
         """Test temp manager singleton behavior."""
         from src.utils.temp_file_manager import get_temp_manager
@@ -21,6 +20,7 @@ class TestFinalCoveragePush:
         # Should be same instance (singleton)
         assert manager1 is manager2
 
+    @pytest.mark.skip(reason="Issue #153: security_enhanced module removed for MVP")
     def test_security_manager_additional_methods(self):
         """Test additional security manager methods."""
         from src.utils.security_enhanced import security_manager
@@ -39,34 +39,24 @@ class TestFinalCoveragePush:
 
     def test_circuit_breaker_basic_functionality(self):
         """Test circuit breaker basic operations."""
-        from src.utils.circuit_breaker import CircuitBreaker
+        from src.api.production_istat_client import CircuitBreaker
 
         # Test basic initialization and state
         cb = CircuitBreaker(failure_threshold=3)
 
         # Initial state
-        assert cb.state == CircuitState.CLOSED
+        assert cb.state == "closed"
 
-        # Test stats retrieval
-        stats = cb.get_stats()
-        assert isinstance(stats, dict)
-        assert "state" in stats
-        assert "failure_count" in stats
+        # Test basic operations
+        assert cb.can_proceed()
+        cb.record_failure()
+        assert cb.failure_count == 1
 
+    @pytest.mark.skip(reason="Converters removed - legacy code cleanup")
     def test_converter_initialization_coverage(self):
-        """Test converter initialization edge cases."""
-        from src.converters.powerbi_converter import IstatXMLToPowerBIConverter
-        from src.converters.tableau_converter import IstatXMLtoTableauConverter
-
-        # Test PowerBI converter
-        powerbi_conv = IstatXMLToPowerBIConverter()
-        assert hasattr(powerbi_conv, "path_validator")
-        assert hasattr(powerbi_conv, "datasets_config")
-
-        # Test Tableau converter
-        tableau_conv = IstatXMLtoTableauConverter()
-        assert hasattr(tableau_conv, "path_validator")
-        assert hasattr(tableau_conv, "datasets_config")
+        """Test converter factory basic functionality."""
+        # Converters removed as part of legacy code cleanup
+        pass
 
     def test_secure_path_basic_operations(self):
         """Test secure path basic operations."""
@@ -107,21 +97,13 @@ class TestFinalCoveragePush:
         logger2 = get_logger("different_module")
         assert logger2 is not None
 
-    @patch("requests.Session")
-    def test_powerbi_api_basic_operations(self, mock_session_class):
-        """Test PowerBI API basic functionality."""
-        mock_session = Mock()
-        mock_session_class.return_value = mock_session
+    def test_api_basic_operations(self):
+        """Test basic API operations (MVP focused)."""
+        # Test basic API client functionality
+        from src.api.production_istat_client import ProductionIstatClient
 
-        # Import and test basic initialization
-        try:
-            from src.api.powerbi_api import PowerBIAPITester
-
-            tester = PowerBIAPITester()
-            assert hasattr(tester, "base_url")
-        except ImportError:
-            # If class doesn't exist, test passes anyway
-            pass
+        client = ProductionIstatClient()
+        assert hasattr(client, "base_url")
 
     def test_additional_import_coverage(self):
         """Test additional imports for coverage."""
@@ -142,40 +124,17 @@ class TestFinalCoveragePush:
             except ImportError:
                 pass  # Module doesn't exist, skip
 
+    @pytest.mark.skip(reason="Converters removed - legacy code cleanup")
     def test_converter_category_edge_cases(self):
-        """Test converter categorization edge cases."""
-        from src.converters.powerbi_converter import IstatXMLToPowerBIConverter
+        """Test converter factory edge cases."""
+        # Converters removed as part of legacy code cleanup
+        pass
 
-        converter = IstatXMLToPowerBIConverter()
-
-        # Test various dataset IDs
-        test_cases = [
-            ("DCIS_POPRES1", "Test Population"),
-            ("DCCN_PIL", "Test Economy"),
-            ("RANDOM_ID", "Random Dataset"),
-        ]
-
-        for dataset_id, dataset_name in test_cases:
-            category, priority = converter._categorize_dataset(dataset_id, dataset_name)
-            assert isinstance(category, str)
-            assert isinstance(priority, int)
-            assert priority >= 1
-
+    @pytest.mark.skip(reason="Converters removed - legacy code cleanup")
     def test_error_handling_coverage(self):
         """Test error handling in various modules."""
-        from src.converters.tableau_converter import IstatXMLtoTableauConverter
-
-        converter = IstatXMLtoTableauConverter()
-
-        # Test with minimal valid XML that should not crash
-        minimal_xml = '<?xml version="1.0"?><root></root>'
-
-        try:
-            result = converter._parse_xml_content(minimal_xml)
-            assert result is not None
-        except Exception:
-            # If it raises an exception, that's also fine for coverage
-            pass
+        # Converters removed as part of legacy code cleanup
+        pass
 
     def test_path_validation_edge_cases(self):
         """Test path validation additional cases."""

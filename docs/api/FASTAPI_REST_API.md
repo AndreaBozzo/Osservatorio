@@ -28,7 +28,7 @@ The Osservatorio FastAPI REST API provides comprehensive access to Italian stati
 
 ### 🏗️ Architecture Features
 - **JWT Authentication**: Secure API key-based authentication with scope-based access control
-- **OData v4 Endpoint**: Direct PowerBI integration with real-time Direct Query
+- **OData v4 Endpoint**: Universal data export with standardized query interface
 - **Production ISTAT Client**: Circuit breaker pattern with quality validation
 - **Rate Limiting**: Configurable per-API-key rate limiting with SQLite persistence
 - **Audit Logging**: Complete request tracking and usage analytics

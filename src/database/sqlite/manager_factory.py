@@ -7,7 +7,10 @@ with proper configuration and singleton behavior.
 
 from typing import Optional
 
-from src.utils.logger import get_logger
+try:
+    from utils.logger import get_logger
+except ImportError:
+    from src.utils.logger import get_logger
 
 from .audit_manager import AuditManager
 from .base_manager import BaseSQLiteManager

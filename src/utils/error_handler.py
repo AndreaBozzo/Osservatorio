@@ -17,7 +17,10 @@ from typing import Any, Optional
 from fastapi import HTTPException
 from pydantic import BaseModel
 
-from src.utils.logger import get_logger
+try:
+    from utils.logger import get_logger
+except ImportError:
+    from src.utils.logger import get_logger
 
 logger = get_logger(__name__)
 

@@ -8,7 +8,7 @@ Test scenarios:
 - Basic API endpoints (<100ms target)
 - Authentication flow
 - Dataset querying
-- OData endpoints for PowerBI
+- OData endpoints for export formats
 - Concurrent user simulation (1-1000 users)
 """
 
@@ -136,7 +136,7 @@ class APIUser(HttpUser):
 
     @task(1)
     def test_odata_query(self):
-        """Test OData endpoint for PowerBI - should be <500ms for 10k records."""
+        """Test OData endpoint for export - should be <500ms for 10k records."""
         # Test OData datasets endpoint instead
         odata_params = {"$top": "100", "$skip": "0"}
 
@@ -167,13 +167,13 @@ class APIUser(HttpUser):
                 response.failure(f"OData query failed: {response.status_code}")
 
 
-class PowerBIUser(HttpUser):
-    """PowerBI-specific user for testing OData scenarios."""
+class ExportUser(HttpUser):
+    """Export-specific user for testing OData scenarios."""
 
     wait_time = between(2, 5)
 
     def on_start(self):
-        """Setup PowerBI user session."""
+        """Setup export user session."""
         try:
             if not hasattr(self.__class__, "_jwt_generator"):
                 self.__class__._jwt_generator = PerformanceJWTGenerator()
@@ -181,15 +181,15 @@ class PowerBIUser(HttpUser):
             token = self.__class__._jwt_generator.generate_jwt_token(
                 scopes=["read", "odata"]
             )
-            self.api_key = token if token else "fallback-powerbi-token"
+            self.api_key = token if token else "fallback-export-token"
         except Exception as e:
-            print(f"Failed to get PowerBI token: {e}")
-            self.api_key = "fallback-powerbi-token"
+            print(f"Failed to get export token: {e}")
+            self.api_key = "fallback-export-token"
 
         self.headers = {
             "Authorization": f"Bearer {self.api_key}",
             "Accept": "application/json",
-            "User-Agent": "PowerBI/1.0",
+            "User-Agent": "Export/1.0",
         }
 
     @task(4)
@@ -210,10 +210,10 @@ class PowerBIUser(HttpUser):
 
     @task(6)
     def test_odata_batch_query(self):
-        """Test OData batch query for PowerBI."""
+        """Test OData batch query for export."""
         random.choice(SAMPLE_DATASETS)
 
-        # Simulate PowerBI batch queries
+        # Simulate export batch queries
         queries = [
             {"$top": "100", "$skip": "0"},
             {"$top": "100", "$skip": "100"},

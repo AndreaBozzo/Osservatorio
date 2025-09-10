@@ -1,12 +1,12 @@
 """
-OData v4 Endpoint for PowerBI Direct Query Integration
+OData v4 Endpoint for Universal Data Export
 
-Implements OData v4 protocol for seamless PowerBI Direct Query connectivity.
-Provides standardized REST interface for business intelligence tools.
+Implements OData v4 protocol for universal data export capabilities.
+Provides standardized REST interface for data analysis tools.
 
 Features:
 - OData v4 compliant metadata and query endpoints
-- PowerBI optimized entity models
+- Universal entity models for data export
 - Efficient query translation to DuckDB
 - Automatic pagination and filtering
 - Performance optimizations for large datasets
@@ -21,7 +21,10 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse, PlainTextResponse
 
-from src.utils.logger import get_logger
+try:
+    from utils.logger import get_logger
+except ImportError:
+    from src.utils.logger import get_logger
 
 from .dependencies import (
     check_rate_limit,
@@ -39,7 +42,7 @@ ODATA_CONTAINER = "ISTATDataContainer"
 
 
 def create_odata_router() -> APIRouter:
-    """Create OData v4 router for PowerBI integration"""
+    """Create OData v4 router for universal data export"""
 
     router = APIRouter()
 

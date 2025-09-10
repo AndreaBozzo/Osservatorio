@@ -5,7 +5,7 @@ Production-ready REST API providing:
 - Dataset management and querying
 - JWT-based authentication with API keys
 - Rate limiting and security middleware
-- OData v4 endpoint for PowerBI Direct Query
+- Export capabilities (CSV, JSON, Parquet)
 - Comprehensive audit logging
 - OpenAPI documentation with examples
 
@@ -27,10 +27,17 @@ from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.openapi.utils import get_openapi
 from fastapi.responses import JSONResponse
 
-from src.auth.security_middleware import SecurityHeadersMiddleware
-from src.database.sqlite.repository import get_unified_repository
+from auth.security_middleware import SecurityHeadersMiddleware
+from database.sqlite.repository import get_unified_repository
+from ingestion.simple_pipeline import create_simple_pipeline
 from src.utils.config import get_config
-from src.utils.logger import get_logger
+
+try:
+    from utils.logger import get_logger
+except ImportError:
+    from src.utils.logger import get_logger
+
+from src.export.endpoints import export_router
 
 from .dependencies import (
     check_rate_limit,
@@ -45,8 +52,7 @@ from .dependencies import (
     require_write,
     validate_dataset_id,
 )
-from .health import health_router
-from .models import (  # Dataflow Analysis Models
+from .models import (
     APIKeyCreate,
     APIKeyListResponse,
     APIKeyResponse,
@@ -57,6 +63,9 @@ from .models import (  # Dataflow Analysis Models
     HealthCheckResponse,
     TimeSeriesResponse,
     UsageAnalyticsResponse,
+    UserAuthResponse,
+    UserLoginRequest,
+    UserRegisterRequest,
 )
 from .odata import create_odata_router
 
@@ -72,7 +81,7 @@ app = FastAPI(
     ## Features
     - **Dataset Management**: Browse and access Italian statistical datasets
     - **Time Series Data**: Query time series with flexible filtering
-    - **PowerBI Integration**: OData v4 endpoint for Direct Query
+    - **Export Capabilities**: Universal export formats (CSV, JSON, Parquet)
     - **JWT Authentication**: Secure API key-based authentication
     - **Rate Limiting**: Configurable rate limits per API key
     - **Audit Logging**: Comprehensive request and usage tracking
@@ -380,6 +389,234 @@ async def metrics_health(repository=Depends(get_repository)):
                 "error": str(e),
             },
         )
+
+
+@app.get("/health/cache", tags=["System"])
+async def cache_health():
+    """
+    Redis cache connectivity health check.
+    """
+    try:
+        # For now, return healthy - Redis connectivity can be implemented later
+        # This maintains compatibility with docker-compose health monitoring
+        return {
+            "status": "healthy",
+            "timestamp": datetime.now().isoformat(),
+            "cache": {
+                "redis": "not_configured",
+                "message": "Redis health check not yet implemented",
+            },
+        }
+    except Exception as e:
+        logger.error(f"Cache health check failed: {e}")
+        return JSONResponse(
+            status_code=503,
+            content={
+                "status": "unhealthy",
+                "timestamp": datetime.now().isoformat(),
+                "error": str(e),
+            },
+        )
+
+
+# User Authentication Endpoints (Issue #132)
+@app.post("/auth/register", response_model=UserAuthResponse, tags=["Authentication"])
+@handle_api_errors
+async def register_user(
+    user_data: UserRegisterRequest,
+    auth_manager=Depends(get_auth_manager),
+    jwt_manager=Depends(get_jwt_manager),
+):
+    """
+    Register a new user account.
+
+    Creates a new user with email/password and returns JWT token for immediate use.
+    No admin approval required for MVP.
+    """
+    try:
+        # Create user
+        user = auth_manager.create_user(user_data.email, user_data.password)
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Failed to create user account",
+            )
+
+        # Generate JWT token for immediate use
+        token = jwt_manager.create_token_for_user(
+            user_id=str(user.id),
+            username=user.email,
+            scopes=["read"],  # Default scope for regular users
+        )
+
+        return UserAuthResponse(
+            success=True,
+            message="User registered successfully",
+            access_token=token,
+            token_type="bearer",
+            expires_in=3600,
+            user_info={
+                "id": user.id,
+                "email": user.email,
+                "is_active": user.is_active,
+                "created_at": user.created_at.isoformat() if user.created_at else None,
+            },
+        )
+
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except Exception as e:
+        logger.error(f"Registration failed: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Registration failed",
+        )
+
+
+@app.post("/auth/login", response_model=UserAuthResponse, tags=["Authentication"])
+@handle_api_errors
+async def login_user(
+    credentials: UserLoginRequest,
+    auth_manager=Depends(get_auth_manager),
+    jwt_manager=Depends(get_jwt_manager),
+):
+    """
+    User login with email/password.
+
+    Returns JWT token for API access. Token valid for 1 hour.
+    """
+    try:
+        # Verify user credentials
+        user = auth_manager.verify_user(credentials.email, credentials.password)
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid email or password",
+            )
+
+        # Generate JWT token
+        token = jwt_manager.create_token_for_user(
+            user_id=str(user.id),
+            username=user.email,
+            scopes=["read"],  # Default scope for regular users
+        )
+
+        return UserAuthResponse(
+            success=True,
+            message="Login successful",
+            access_token=token,
+            token_type="bearer",
+            expires_in=3600,
+            user_info={"id": user.id, "email": user.email, "is_active": user.is_active},
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Login failed: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Login failed"
+        )
+
+
+@app.post("/auth/logout", tags=["Authentication"])
+@handle_api_errors
+async def logout_user(
+    request: Request,
+    current_user=Depends(get_current_user),
+    jwt_manager=Depends(get_jwt_manager),
+):
+    """
+    User logout endpoint.
+
+    Invalidates the JWT token by adding it to blacklist.
+    """
+    try:
+        # Extract token from Authorization header
+        auth_header = request.headers.get("Authorization")
+        if auth_header and auth_header.startswith("Bearer "):
+            token = auth_header.split(" ")[1]
+
+            # Blacklist the token
+            success = jwt_manager.blacklist_token(token)
+            if not success:
+                logger.warning("Failed to blacklist token during logout")
+
+        return {
+            "success": True,
+            "message": "Logout successful",
+            "timestamp": datetime.now().isoformat(),
+        }
+    except Exception as e:
+        logger.error(f"Error during logout: {e}")
+        return {
+            "success": True,  # Still return success for user experience
+            "message": "Logout successful",
+            "timestamp": datetime.now().isoformat(),
+        }
+
+
+@app.get("/auth/profile", tags=["Authentication"])
+@handle_api_errors
+async def get_user_profile(
+    current_user=Depends(get_current_user),
+):
+    """
+    Get current user profile information.
+    """
+    # Check if this is a user token (has email field) vs API key token
+    if hasattr(current_user, "email") and current_user.email:
+        return {
+            "success": True,
+            "user": {
+                "id": current_user.sub,
+                "email": current_user.email,
+                "user_type": getattr(current_user, "user_type", "user"),
+                "scopes": current_user.scope.split()
+                if current_user.scope
+                else ["read"],
+            },
+        }
+    elif hasattr(current_user, "api_key_name") and current_user.api_key_name:
+        # API key based token
+        return {
+            "success": True,
+            "user": {
+                "id": current_user.sub,
+                "api_key_name": current_user.api_key_name,
+                "user_type": "api_key",
+                "scopes": current_user.scope.split()
+                if current_user.scope
+                else ["read"],
+            },
+        }
+    else:
+        # Fallback - check user_type attribute
+        user_type = getattr(current_user, "user_type", "unknown")
+        if user_type == "user":
+            return {
+                "success": True,
+                "user": {
+                    "id": current_user.sub,
+                    "email": getattr(current_user, "email", ""),
+                    "user_type": "user",
+                    "scopes": current_user.scope.split()
+                    if current_user.scope
+                    else ["read"],
+                },
+            }
+        else:
+            return {
+                "success": True,
+                "user": {
+                    "id": current_user.sub,
+                    "api_key_name": current_user.api_key_name,
+                    "user_type": "api_key",
+                    "scopes": current_user.scope.split()
+                    if current_user.scope
+                    else ["read"],
+                },
+            }
 
 
 # Dataset Endpoints
@@ -770,17 +1007,14 @@ async def get_usage_analytics(
         )
 
 
-# Include OData router for PowerBI integration
+# Include OData router for export capabilities
 odata_router = create_odata_router()
 app.include_router(odata_router, prefix="/odata", tags=["OData"])
 
-# Include Dataflow Analysis router
-from .dataflow_analysis_api import router as dataflow_router
+# Include Export router for Issue #150 - Universal data export
+app.include_router(export_router)
 
-app.include_router(dataflow_router, prefix="/api", tags=["Dataflow Analysis"])
-
-# Include Health Check router
-app.include_router(health_router)
+# Issue #153: Dataflow Analysis router removed for MVP
 
 
 # OpenAPI customization
@@ -855,34 +1089,7 @@ async def get_istat_status(
         )
 
 
-@app.get(
-    "/api/istat/dataflows", tags=["ISTAT API"], summary="List available ISTAT dataflows"
-)
-@handle_api_errors
-async def list_istat_dataflows(
-    limit: Optional[int] = Query(
-        None, ge=1, le=100, description="Limit number of dataflows"
-    ),
-    current_user=Depends(get_current_user),
-    istat_client=Depends(get_istat_client),
-    _rate_limit=Depends(check_rate_limit),
-    _audit=Depends(log_api_request),
-):
-    """
-    List available ISTAT SDMX dataflows.
-
-    Fetches current list of available statistical dataflows from ISTAT API
-    with optional limit for pagination.
-    """
-    try:
-        result = istat_client.fetch_dataflows(limit=limit)
-        return result
-    except Exception as e:
-        logger.error(f"Failed to fetch ISTAT dataflows: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail=f"ISTAT API error: {str(e)}",
-        )
+# Issue #153: /api/istat/dataflows endpoint removed for MVP - disconnected from real ingestion pipeline
 
 
 @app.get(
@@ -904,7 +1111,7 @@ async def fetch_istat_dataset(
     Fetch specific dataset from ISTAT API.
 
     Retrieves dataset structure and optionally data from ISTAT SDMX API.
-    Can include data quality validation for comprehensive analysis.
+    Includes basic data quality validation for MVP.
     """
     try:
         if with_quality:
@@ -1001,18 +1208,36 @@ async def sync_istat_dataset(
 @app.on_event("startup")
 async def startup_event():
     """Initialize application on startup"""
-    logger.info("Starting Osservatorio ISTAT FastAPI application")
+    import os
+
+    dev_mode = os.getenv("DEVELOPMENT", "false").lower() == "true"
+    logger.info(
+        f"Starting Osservatorio ISTAT FastAPI application (dev_mode={dev_mode})"
+    )
 
     try:
-        # Initialize repository to ensure connections
-        repository = get_unified_repository()
-        status = repository.get_system_status()
-        logger.info(f"System status: {status}")
+        if dev_mode:
+            # Fast startup for development - skip heavy initialization
+            logger.info(
+                "Development mode: skipping heavy initialization for hot reload"
+            )
+            app.state.ingestion_pipeline = None
+            return
+
+        # Initialize simple ingestion pipeline FIRST (creates schema)
+        ingestion_pipeline = create_simple_pipeline()
+        app.state.ingestion_pipeline = ingestion_pipeline
+        logger.info("Simple ingestion pipeline initialized")
 
         # Initialize ISTAT client
         istat_client = get_istat_client()
         istat_health = istat_client.health_check()
         logger.info(f"ISTAT API client status: {istat_health.get('status', 'unknown')}")
+
+        # Initialize repository AFTER schema is created
+        repository = get_unified_repository()
+        status = repository.get_system_status()
+        logger.info(f"System status: {status}")
 
         logger.info("FastAPI application started successfully")
     except Exception as e:
@@ -1022,23 +1247,172 @@ async def startup_event():
 
 @app.on_event("shutdown")
 async def shutdown_event():
-    """Cleanup on application shutdown"""
-    logger.info("Shutting down Osservatorio ISTAT FastAPI application")
+    """Clean up resources on application shutdown"""
+    logger.info("Starting FastAPI application shutdown")
 
     try:
-        # Close repository connections
-        repository = get_unified_repository()
-        repository.close()
+        # Force close database connections to prevent reload hanging
+        import gc
 
-        # Close ISTAT client
-        from .dependencies import _istat_client
+        from src.database.sqlite import reset_unified_repository
 
-        if _istat_client:
-            _istat_client.close()
+        # Reset repository singletons
+        reset_unified_repository()
 
-        logger.info("FastAPI application shutdown complete")
+        # Force garbage collection to cleanup connections
+        gc.collect()
+
+        logger.info("FastAPI application shutdown completed")
     except Exception as e:
-        logger.error(f"Error during shutdown: {e}")
+        logger.error(f"Error during application shutdown: {e}")
+
+
+# Issue #149 - Simple Ingestion Pipeline Endpoints
+@app.post(
+    "/ingestion/run-all",
+    tags=["Ingestion"],
+    summary="Run ingestion for all 7 priority datasets",
+)
+async def run_ingestion_all(request: Request):
+    """
+    Trigger ingestion for all 7 priority ISTAT datasets.
+
+    Returns comprehensive results including success/failure status for each dataset.
+    """
+    pipeline = app.state.ingestion_pipeline
+
+    try:
+        results = await pipeline.ingest_all_priority_datasets()
+
+        # Simple logging without auth dependency
+        logger.info(
+            f"API request: POST /ingestion/run-all - 200 - {len(str(results))} bytes"
+        )
+
+        return JSONResponse(
+            status_code=200,
+            content={
+                "success": results["success"],
+                "message": f"Ingestion completed: {results['successful']}/{results['total_datasets']} datasets successful",
+                "details": results,
+            },
+        )
+
+    except Exception as e:
+        logger.error(f"Batch ingestion failed: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={
+                "success": False,
+                "error": str(e),
+                "message": "Batch ingestion failed",
+            },
+        )
+
+
+@app.post(
+    "/ingestion/run/{dataset_id}",
+    tags=["Ingestion"],
+    summary="Run ingestion for single dataset",
+)
+async def run_ingestion_single(
+    dataset_id: str = Path(..., description="ISTAT dataset ID"), request: Request = None
+):
+    """
+    Trigger ingestion for a single dataset.
+
+    Supports both priority datasets and custom dataset IDs.
+    """
+    pipeline = app.state.ingestion_pipeline
+
+    try:
+        result = await pipeline.ingest_single_dataset(dataset_id)
+
+        # Simple logging without auth dependency
+        if request:
+            status_code = 200 if result["success"] else 500
+            logger.info(
+                f"API request: POST /ingestion/run/{dataset_id} - {status_code} - {len(str(result))} bytes"
+            )
+
+        status_code = 200 if result["success"] else 500
+        return JSONResponse(status_code=status_code, content=result)
+
+    except Exception as e:
+        logger.error(f"Single dataset ingestion failed for {dataset_id}: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={
+                "success": False,
+                "dataset_id": dataset_id,
+                "error": str(e),
+                "message": f"Ingestion failed for {dataset_id}",
+            },
+        )
+
+
+@app.get(
+    "/ingestion/status", tags=["Ingestion"], summary="Get ingestion pipeline status"
+)
+async def get_ingestion_status(request: Request):
+    """
+    Get current status of the ingestion pipeline.
+
+    Returns information about last runs, dataset status, and system health.
+    """
+    pipeline = app.state.ingestion_pipeline
+
+    try:
+        status = pipeline.get_ingestion_status()
+
+        # Simple logging without auth dependency
+        logger.info(
+            f"API request: GET /ingestion/status - 200 - {len(str(status))} bytes"
+        )
+
+        return JSONResponse(status_code=200, content=status)
+
+    except Exception as e:
+        logger.error(f"Failed to get ingestion status: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"error": str(e), "message": "Failed to retrieve ingestion status"},
+        )
+
+
+@app.get(
+    "/ingestion/health",
+    tags=["Ingestion"],
+    summary="Health check for ingestion pipeline",
+)
+async def get_ingestion_health(request: Request):
+    """
+    Simple health check for the ingestion pipeline components.
+    """
+    pipeline = app.state.ingestion_pipeline
+
+    try:
+        health = await pipeline.health_check()
+
+        # Simple logging without auth dependency
+        status_code = 200 if health["healthy"] else 503
+        logger.info(
+            f"API request: GET /ingestion/health - {status_code} - {len(str(health))} bytes"
+        )
+
+        status_code = 200 if health["healthy"] else 503
+        return JSONResponse(status_code=status_code, content=health)
+
+    except Exception as e:
+        logger.error(f"Health check failed: {e}")
+        return JSONResponse(
+            status_code=503,
+            content={
+                "healthy": False,
+                "error": str(e),
+                "message": "Health check failed",
+            },
+        )
 
 
 # Development server

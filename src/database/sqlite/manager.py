@@ -31,8 +31,14 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Optional
 
-from src.utils.logger import get_logger
-from src.utils.security_enhanced import SecurityManager
+try:
+    from utils.logger import get_logger
+except ImportError:
+    from src.utils.logger import get_logger
+try:
+    from utils.mvp_security import security
+except ImportError:
+    from src.utils.mvp_security import security
 
 from .schema import MetadataSchema, create_metadata_schema
 
@@ -64,7 +70,7 @@ sqlite3.register_adapter(datetime, adapt_datetime)
 sqlite3.register_converter("timestamp", convert_datetime)
 
 logger = get_logger(__name__)
-security = SecurityManager()
+# Security manager imported above
 
 
 class SQLiteMetadataManager:
@@ -83,7 +89,7 @@ class SQLiteMetadataManager:
         manager.register_dataset(...)
 
         # New (recommended):
-        from src.database.sqlite.manager_factory import get_dataset_manager
+        from database.sqlite.manager_factory import get_dataset_manager
         dataset_manager = get_dataset_manager()
         dataset_manager.register_dataset(...)
     """
@@ -95,7 +101,7 @@ class SQLiteMetadataManager:
 
         ⚠️ DEPRECATED: This class is deprecated. Use specialized managers instead:
 
-        from src.database.sqlite.manager_factory import (
+        from database.sqlite.manager_factory import (
             get_dataset_manager, get_configuration_manager,
             get_user_manager, get_audit_manager
         )

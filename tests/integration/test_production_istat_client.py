@@ -375,8 +375,8 @@ class TestErrorHandling:
 
     def test_circuit_breaker_integration(self, client):
         """Test circuit breaker with real requests."""
-        # Force circuit breaker to open by simulating failures
-        for _ in range(5):
+        # Force circuit breaker to open by simulating failures (default threshold is 10)
+        for _ in range(10):
             client.circuit_breaker.record_failure()
 
         assert client.circuit_breaker.state == "open"

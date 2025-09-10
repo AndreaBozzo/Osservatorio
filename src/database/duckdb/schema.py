@@ -11,7 +11,10 @@ from typing import Any, Optional, cast
 
 import pandas as pd
 
-from src.utils.logger import get_logger
+try:
+    from utils.logger import get_logger
+except ImportError:
+    from src.utils.logger import get_logger
 
 from .config import get_schema_config
 from .manager import DuckDBManager

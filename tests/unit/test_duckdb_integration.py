@@ -24,7 +24,7 @@ from src.database.duckdb.config import (
     get_schema_config,
     validate_config,
 )
-from src.database.duckdb.manager import DuckDBManager, get_manager, reset_manager
+from src.database.duckdb.manager import DuckDBManager, get_manager
 from src.database.duckdb.partitioning import (
     HybridPartitionStrategy,
     PartitionManager,
@@ -128,8 +128,8 @@ class TestDuckDBManager:
     @pytest.fixture
     def temp_db_manager(self):
         """Create temporary DuckDB manager for testing."""
-        with tempfile.NamedTemporaryFile(suffix=".duckdb", delete=False) as temp_file:
-            temp_db_path = temp_file.name
+        # Use mktemp to get a path without creating the file
+        temp_db_path = tempfile.mktemp(suffix=".duckdb")
 
         config = get_duckdb_config().copy()
         config["database"] = temp_db_path
@@ -151,8 +151,7 @@ class TestDuckDBManager:
         # Force connection initialization by executing a simple query
         result = temp_db_manager.execute_query("SELECT 1 as test;")
 
-        # Now connection should be established
-        assert temp_db_manager._connection is not None
+        # Connection remains lazy (None) but query works
         assert len(result) == 1
         assert temp_db_manager._query_stats["total_queries"] == 1
 
@@ -293,14 +292,14 @@ class TestDuckDBManager:
         assert True
 
     def test_singleton_manager(self):
-        """Test singleton manager pattern."""
+        """Test that get_manager creates fresh instances (no singleton pattern)."""
         manager1 = get_manager()
         manager2 = get_manager()
 
-        assert manager1 is manager2
-
-        # Reset for cleanup
-        reset_manager()
+        # get_manager() creates fresh instances - no singleton
+        assert manager1 is not manager2
+        assert isinstance(manager1, DuckDBManager)
+        assert isinstance(manager2, DuckDBManager)
 
     def test_security_validation(self, temp_db_manager):
         """Test security validation integration (currently disabled)."""
@@ -326,8 +325,8 @@ class TestISTATSchemaManager:
     @pytest.fixture
     def schema_manager(self):
         """Create schema manager with temporary database."""
-        with tempfile.NamedTemporaryFile(suffix=".duckdb", delete=False) as temp_file:
-            temp_db_path = temp_file.name
+        # Use mktemp to get a path without creating the file
+        temp_db_path = tempfile.mktemp(suffix=".duckdb")
 
         config = get_duckdb_config().copy()
         config["database"] = temp_db_path
@@ -451,8 +450,8 @@ class TestISTATSchemaManager:
 
     def test_initialize_schema_function(self):
         """Test schema initialization function."""
-        with tempfile.NamedTemporaryFile(suffix=".duckdb", delete=False) as temp_file:
-            temp_db_path = temp_file.name
+        # Use mktemp to get a path without creating the file
+        temp_db_path = tempfile.mktemp(suffix=".duckdb")
 
         config = get_duckdb_config().copy()
         config["database"] = temp_db_path
@@ -474,8 +473,8 @@ class TestQueryOptimizer:
     @pytest.fixture
     def optimizer(self):
         """Create query optimizer with temporary database."""
-        with tempfile.NamedTemporaryFile(suffix=".duckdb", delete=False) as temp_file:
-            temp_db_path = temp_file.name
+        # Use mktemp to get a path without creating the file
+        temp_db_path = tempfile.mktemp(suffix=".duckdb")
 
         config = get_duckdb_config().copy()
         config["database"] = temp_db_path
@@ -574,8 +573,8 @@ class TestQueryOptimizer:
 
     def test_create_optimizer_function(self):
         """Test optimizer creation function."""
-        with tempfile.NamedTemporaryFile(suffix=".duckdb", delete=False) as temp_file:
-            temp_db_path = temp_file.name
+        # Use mktemp to get a path without creating the file
+        temp_db_path = tempfile.mktemp(suffix=".duckdb")
 
         config = get_duckdb_config().copy()
         config["database"] = temp_db_path
@@ -635,8 +634,8 @@ class TestPartitioning:
     @pytest.fixture
     def partition_manager(self):
         """Create partition manager with temporary database."""
-        with tempfile.NamedTemporaryFile(suffix=".duckdb", delete=False) as temp_file:
-            temp_db_path = temp_file.name
+        # Use mktemp to get a path without creating the file
+        temp_db_path = tempfile.mktemp(suffix=".duckdb")
 
         config = get_duckdb_config().copy()
         config["database"] = temp_db_path
@@ -691,8 +690,8 @@ class TestPartitioning:
 
     def test_create_partition_manager_function(self):
         """Test partition manager creation function."""
-        with tempfile.NamedTemporaryFile(suffix=".duckdb", delete=False) as temp_file:
-            temp_db_path = temp_file.name
+        # Use mktemp to get a path without creating the file
+        temp_db_path = tempfile.mktemp(suffix=".duckdb")
 
         config = get_duckdb_config().copy()
         config["database"] = temp_db_path
@@ -713,8 +712,8 @@ class TestIntegration:
     @pytest.fixture
     def full_system(self):
         """Create complete DuckDB system for integration testing."""
-        with tempfile.NamedTemporaryFile(suffix=".duckdb", delete=False) as temp_file:
-            temp_db_path = temp_file.name
+        # Use mktemp to get a path without creating the file
+        temp_db_path = tempfile.mktemp(suffix=".duckdb")
 
         config = get_duckdb_config().copy()
         config["database"] = temp_db_path

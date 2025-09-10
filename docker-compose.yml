@@ -1,8 +1,6 @@
 # Osservatorio ISTAT Data Platform - Enhanced Docker Compose Configuration
 # Development and testing environment with advanced health monitoring and build optimization
 
-version: '3.8'
-
 services:
   # Main FastAPI application
   osservatorio-api:
@@ -38,7 +36,7 @@ services:
       - REDIS_URL=redis://redis:6379/0
       - CACHE_TTL=300
       - HEALTH_CHECK_TIMEOUT=10
-    
+
     # Enhanced health check with dependency validation
     healthcheck:
       test: |
@@ -47,18 +45,18 @@ services:
       timeout: 15s
       retries: 3
       start_period: 45s
-    
+
     depends_on:
       redis:
         condition: service_healthy
       postgres:
         condition: service_healthy
-    
+
     networks:
       - osservatorio-network
-    
+
     restart: unless-stopped
-    
+
     # Resource limits for development
     deploy:
       resources:
@@ -76,15 +74,15 @@ services:
     restart: unless-stopped
     depends_on:
       - osservatorio-api
-    
+
     command: |
       sh -c '
         echo "=== Osservatorio Health Monitor Started ==="
-        
+
         while true; do
           TIMESTAMP=$$(date "+%Y-%m-%d %H:%M:%S")
           echo "=== Health Check Report $$TIMESTAMP ==="
-          
+
           # Liveness Check (Basic API Response)
           if curl -s -f --max-time 10 http://osservatorio-api:8000/health/live > /dev/null 2>&1; then
             echo "✅ LIVENESS: API responding ($$TIMESTAMP)"
@@ -93,7 +91,7 @@ services:
             echo "❌ LIVENESS: API not responding ($$TIMESTAMP)"
             LIVE_STATUS="unhealthy"
           fi
-          
+
           # Readiness Check (Dependencies + API Ready)
           READY_RESPONSE=$$(curl -s --max-time 15 http://osservatorio-api:8000/health/ready 2>/dev/null || echo "failed")
           if echo "$$READY_RESPONSE" | grep -q "ready\|healthy"; then
@@ -103,10 +101,10 @@ services:
             echo "❌ READINESS: API not ready - dependencies may be down ($$TIMESTAMP)"
             READY_STATUS="not_ready"
           fi
-          
+
           # Individual Dependency Checks
           echo "--- Dependency Status Check ($$TIMESTAMP) ---"
-          
+
           # Database Health (SQLite + PostgreSQL)
           DB_HEALTH=$$(curl -s --max-time 10 http://osservatorio-api:8000/health/db 2>/dev/null || echo "failed")
           if echo "$$DB_HEALTH" | grep -q "healthy"; then
@@ -114,7 +112,7 @@ services:
           else
             echo "❌ DATABASE: Database connection issues detected"
           fi
-          
+
           # Redis Cache Health
           CACHE_HEALTH=$$(curl -s --max-time 10 http://osservatorio-api:8000/health/cache 2>/dev/null || echo "failed")
           if echo "$$CACHE_HEALTH" | grep -q "healthy"; then
@@ -122,7 +120,7 @@ services:
           else
             echo "❌ REDIS CACHE: Connection issues detected"
           fi
-          
+
           # External Dependencies (ISTAT APIs, etc.)
           EXT_HEALTH=$$(curl -s --max-time 15 http://osservatorio-api:8000/health/external 2>/dev/null || echo "failed")
           if echo "$$EXT_HEALTH" | grep -q "healthy"; then
@@ -130,7 +128,7 @@ services:
           else
             echo "⚠️  EXTERNAL APIS: Some external services may be unavailable"
           fi
-          
+
           # System Resources Check
           METRICS_HEALTH=$$(curl -s --max-time 10 http://osservatorio-api:8000/health/metrics 2>/dev/null || echo "failed")
           if echo "$$METRICS_HEALTH" | grep -q "healthy"; then
@@ -138,28 +136,28 @@ services:
           else
             echo "⚠️  SYSTEM METRICS: High resource usage detected"
           fi
-          
+
           # Generate health summary
           echo "--- Health Summary ($$TIMESTAMP) ---"
           echo "Live Status: $$LIVE_STATUS"
           echo "Ready Status: $$READY_STATUS"
-          
+
           # Log to file for persistence
           echo "$$TIMESTAMP,$$LIVE_STATUS,$$READY_STATUS" >> /tmp/health_logs/health_summary.csv
-          
+
           echo "=== End Health Report ==="
           echo ""
-          
+
           sleep 60
         done
       '
-    
+
     networks:
       - osservatorio-network
-    
+
     volumes:
       - health_logs:/tmp/health_logs
-    
+
     profiles:
       - monitoring
 
@@ -172,7 +170,7 @@ services:
     volumes:
       - redis-data:/data
     command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
-    
+
     # Redis health check
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
@@ -180,7 +178,7 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
-    
+
     networks:
       - osservatorio-network
     restart: unless-stopped
@@ -199,7 +197,7 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
       - ./scripts/sql:/docker-entrypoint-initdb.d
-    
+
     # PostgreSQL health check
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U osservatorio -d osservatorio"]
@@ -207,7 +205,7 @@ services:
       timeout: 5s
       retries: 5
       start_period: 30s
-    
+
     networks:
       - osservatorio-network
     restart: unless-stopped
@@ -235,7 +233,7 @@ services:
       - STREAMLIT_SERVER_HEADLESS=true
       - STREAMLIT_BROWSER_GATHER_USAGE_STATS=false
     command: streamlit run dashboard/app.py
-    
+
     # Dashboard health check
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8501/_stcore/health"]
@@ -243,7 +241,7 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
-    
+
     depends_on:
       osservatorio-api:
         condition: service_healthy
@@ -262,7 +260,7 @@ services:
       - ./docker/nginx.conf:/etc/nginx/nginx.conf.d/:ro
       - ./docker/ssl:/etc/nginx/ssl/:ro
       - nginx_logs:/var/log/nginx
-    
+
     # Nginx health check
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/health"]
@@ -270,7 +268,7 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
-    
+
     depends_on:
       osservatorio-api:
         condition: service_healthy
@@ -289,31 +287,31 @@ services:
     container_name: osservatorio-build-benchmark
     profiles:
       - benchmark
-    
+
     environment:
       - BENCHMARK_OUTPUT=/benchmark/results
       - DOCKER_BUILDKIT=1
       - BUILD_TARGET=${BUILD_TARGET:-development}
       - VERSION=${VERSION:-1.0.0-dev}
-    
+
     volumes:
       - .:/source:ro
       - benchmark_results:/benchmark/results
       - /var/run/docker.sock:/var/run/docker.sock
-    
+
     command: |
       sh -c '
         echo "=== Osservatorio Docker Build Benchmark Starting ==="
         echo "Timestamp: $$(date)"
         echo "Build Target: $${BUILD_TARGET:-development}"
         echo "Version: $${VERSION:-1.0.0-dev}"
-        
+
         # Ensure benchmark results directory exists
         mkdir -p /benchmark/results
-        
+
         # Clean previous builds for accurate benchmarking
         docker system prune -f --volumes=false
-        
+
         # Benchmark 1: Cold Build (no cache)
         echo ""
         echo "--- Cold Build Benchmark (No Cache) ---"
@@ -326,9 +324,9 @@ services:
           -t osservatorio/api:benchmark-cold /source
         COLD_END_TIME=$$(date +%s.%N)
         COLD_BUILD_TIME=$$(echo "$$COLD_END_TIME - $$START_TIME" | bc -l)
-        
+
         echo "Cold build completed in: $${COLD_BUILD_TIME} seconds"
-        
+
         # Benchmark 2: Warm Build (with cache)
         echo ""
         echo "--- Warm Build Benchmark (With Cache) ---"
@@ -343,21 +341,21 @@ services:
           -t osservatorio/api:benchmark-warm /source
         WARM_END_TIME=$$(date +%s.%N)
         WARM_BUILD_TIME=$$(echo "$$WARM_END_TIME - $$START_TIME" | bc -l)
-        
+
         echo "Warm build completed in: $${WARM_BUILD_TIME} seconds"
-        
+
         # Analyze image
         IMAGE_SIZE=$$(docker image inspect osservatorio/api:benchmark-warm --format="{{.Size}}" | awk "{printf \"%.2f\", \$$1/1024/1024}")
         LAYERS_COUNT=$$(docker history osservatorio/api:benchmark-warm --no-trunc --format "table {{.ID}}" | wc -l)
         LAYERS_COUNT=$$((LAYERS_COUNT - 1)) # Remove header
-        
+
         # Calculate cache efficiency
         if [ "$$(echo "$$COLD_BUILD_TIME > 0" | bc -l)" -eq 1 ]; then
           CACHE_EFFICIENCY=$$(echo "scale=2; ($$COLD_BUILD_TIME - $$WARM_BUILD_TIME) / $$COLD_BUILD_TIME * 100" | bc -l)
         else
           CACHE_EFFICIENCY=0
         fi
-        
+
         # Generate comprehensive benchmark report
         REPORT_FILE="/benchmark/results/build_benchmark_$$(date +%Y%m%d_%H%M%S).json"
         cat > "$$REPORT_FILE" << EOF
@@ -387,7 +385,7 @@ services:
           }
         }
         EOF
-        
+
         # Display results
         echo ""
         echo "=== Build Benchmark Results ==="
@@ -399,7 +397,7 @@ services:
         echo ""
         echo "Full report saved to: $$REPORT_FILE"
         echo "=== Benchmark Complete ==="
-        
+
         # Keep container running for log inspection
         tail -f /dev/null
       '
@@ -452,11 +450,11 @@ x-environment-configs:
   development: &dev-config
     OSSERVATORIO_ENV: development
     OSSERVATORIO_LOG_LEVEL: DEBUG
-    
+
   staging: &staging-config
     OSSERVATORIO_ENV: staging
     OSSERVATORIO_LOG_LEVEL: INFO
-    
+
   production: &prod-config
     OSSERVATORIO_ENV: production
     OSSERVATORIO_LOG_LEVEL: WARNING

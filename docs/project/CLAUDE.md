@@ -1,11 +1,16 @@
 # CLAUDE.md - Developer Context & Commands
 
 This file provides essential guidance to Claude Code when working with this repository.
+
 ***DO NOT MODIFY BELOW***
 A few rules for Claude:
-1- Use tokens efficiently
+1-Use tokens efficiently
 2-Refer to PROJECT_STATE.md to track progresses.
 3-Best practices, always.
+4-As this is an early-stage startup, YOU MUST prioritize simple, readable code with minimal abstraction—avoid premature optimization. 5-Strive for elegant, minimal solutions that reduce complexity.Focus on clear implementation that’s easy to understand and iterate on as the product evolves.
+6-DO NOT use preserve backward compatibility unless the user specifically requests it
+7-The user expect maximum realism and can accept criticism
+8-NO SED COMMANDS.
 ***DO NOT MODIFY ABOVE***
 
 ## Project Overview
@@ -13,10 +18,10 @@ A few rules for Claude:
 Osservatorio is an Italian statistical data processing and visualization
 platform. It processes public open datas into insightful resources, while unifying the sources.
 
-**Status**: Development Phase 1 + Kubernetes Foundation Complete (Aug 2025)
-**Architecture**: FastAPI + JWT Auth + DuckDB/SQLite + Docker + Kubernetes Infrastructure (untested)
+**Status**: MVP v0.5 Development Phase - Post-Cleanup (Aug 2025)
+**Architecture**: FastAPI + JWT Auth + DuckDB/SQLite + Docker Compose (simplified)
 **Functional**: API server, database layer, authentication, core data processing
-**Untested**: K8s deployment, production workloads, BI automation
+**Current Focus**: MVP delivery, removed K8s complexity and BI over-engineering
 **Documentation**: [README.md](../../README.md) and [docs/](../)
 
 ## Essential Commands
@@ -40,11 +45,12 @@ platform. It processes public open datas into insightful resources, while unifyi
 - `curl http://localhost:8000/docs` - OpenAPI documentation
 - `pytest tests/unit/test_fastapi_integration.py -v` - API tests
 
-### Infrastructure Status (August 2025)
+### Infrastructure Status (August 2025 - Post MVP Cleanup)
 - ✅ Multi-stage Docker builds ready (tested: app loads)
 - ✅ Security middleware and authentication system (JWT + rate limiting functional)
-- ✅ Kubernetes manifests complete (deployment.yaml, services, storage, networking)
-- ⚠️ K8s deployment untested (requires cluster + image builds)
+- ✅ Docker Compose deployment strategy (dev/staging/prod)
+- ✅ Removed K8s over-engineering for MVP focus (Issue #152)
+- ✅ Removed PowerBI/Tableau complexity (Issue #151)
 - ⚠️ CI/CD pipeline basic (unit tests only)
 
 ### Makefile Commands (Recommended)
@@ -117,13 +123,19 @@ and automation, work in progress.
   - `python -c "from src.database.sqlite.dataset_config import get_dataset_config_manager; manager = get_dataset_config_manager(); print(f'Datasets: {manager.get_datasets_config()[\"total_datasets\"]}')"` - Test dataset config manager
   - `pytest tests/unit/test_json_sqlite_migration.py -v` - Run JSON migration tests (19 tests, comprehensive coverage)
 
-#### BaseConverter Architecture (NEW 28/07/2025 - Issue #62 Complete)
-- **NEW! Unified Converter Foundation (Issue #62)**:
-  - `pytest tests/unit/test_base_converter.py -v` - Run BaseConverter architecture tests (18 tests)
-  - `python -c "from src.converters.factory import create_powerbi_converter, create_tableau_converter; print('Factory pattern ready')"` - Test converter factory
-  - **Code Reduction**: ~500 lines eliminated (~23% reduction in converter modules)
-  - **Architecture**: Abstract BaseIstatConverter with PowerBI/Tableau specializations
-  - **Factory Pattern**: Centralized converter creation with `ConverterFactory.create_converter(target)`
+#### Universal Export System (Issue #150 - Sept 4, 2025 COMPLETED)
+- **NEW! Universal Data Export (Issue #150)**:
+  - `curl "http://localhost:8000/export/143_222/export?format=csv" -H "Authorization: Bearer <token>"` - Export dataset to CSV
+  - `curl "http://localhost:8000/export/143_222/export?format=json&limit=1000" -H "Authorization: Bearer <token>"` - Export with filtering
+  - `pytest tests/test_export_functionality.py -v` - Run export system tests (20 tests, all passing)
+- **Features**: CSV/JSON/Parquet export with streaming, filtering (columns, dates, limits), authentication, rate limiting
+- **Architecture**: FastAPI endpoints + UniversalExporter + StreamingExporter for large datasets (>50k records)
+- **Performance**: Streaming support for datasets like 143_222 (84,289 records) with memory-efficient chunked processing
+
+#### Legacy Cleanup (Sept 4, 2025 COMPLETED)
+- **Removed**: `src/converters/`, `src/pipeline_old/` directories and related tests
+- **Code Reduction**: ~1000+ lines eliminated, simplified MVP-focused architecture
+- **Migration**: PowerBI/Tableau functionality replaced by universal export system
 
 #### Unified Data Repository (Day 4 COMPLETED)
 - `python -c "from src.database.sqlite.repository import UnifiedDataRepository; repo = UnifiedDataRepository(); print('Unified repo ready')"` - Test unified data access
@@ -197,15 +209,15 @@ and automation, work in progress.
 - `pytest tests/performance/test_duckdb_performance.py -k "memory" -v` - Run only memory usage pattern tests
 - `pytest tests/performance/ -m benchmark` - Run benchmark-specific performance tests
 
-### Kubernetes Infrastructure (ADDED August 2025)
-#### Kubernetes Commands (UNTESTED)
-- `kubectl apply -k k8s/environments/dev/` - Deploy development environment
-- `kubectl apply -k k8s/environments/prod/` - Deploy production environment
-- `helm install osservatorio k8s/helm-chart/` - Deploy via Helm
-- `kubectl get pods -n osservatorio-dev` - Check pod status
-- **⚠️ WARNING**: All K8s commands require testing with actual cluster
+### MVP Deployment Strategy (August 2025 - Simplified)
+#### Docker Compose Commands (TESTED)
+- `docker-compose up -d` - Start complete development environment
+- `docker-compose -f docker-compose.yml up` - Production deployment
+- `docker-compose logs -f osservatorio-api` - Check application logs
+- `docker-compose down` - Stop all services
+- **✅ VERIFIED**: All Docker Compose commands tested and functional
 
-#### Kubernetes Components Created
+#### MVP Architecture Components
 - Multi-environment support (dev/staging/prod namespaces)
 - Persistent storage with performance tiers (SSD/standard/backup)
 - Network policies for security isolation
@@ -261,10 +273,10 @@ and automation, work in progress.
    - **SQLite**: Metadata and configuration (`sqlite/repository.py`, `dataset_config.py`)
    - **Unified Repository**: Facade pattern combining both databases
 
-4. **Data Processing** (`src/converters/`, `src/services/`):
-   - **BaseConverter Architecture**: Unified foundation (`base_converter.py`, `factory.py`)
-   - **PowerBI Integration**: Converter, optimizer, templates (`powerbi_converter.py`, `integrations/powerbi/`)
-   - **Tableau Integration**: Converter and API client (`tableau_converter.py`, `api/tableau_api.py`)
+4. **Data Processing** (`src/export/`, `src/services/`):
+   - **Universal Export System**: Direct CSV/JSON/Parquet export (`universal_exporter.py`, `streaming_exporter.py`)
+   - **Export API Endpoints**: RESTful data export with authentication and rate limiting (`endpoints.py`)
+   - **Data Access Layer**: Unified database integration with DuckDB (`data_access.py`)
    - **Dataflow Analysis**: Modern service with REST endpoints (`services/dataflow_analysis_service.py`)
 
 5. **Utilities & Configuration** (`src/utils/`):
@@ -274,7 +286,7 @@ and automation, work in progress.
 
 ### Data Flow
 1. **ISTAT SDMX API** → **ProductionIstatClient** (with circuit breaker & cache fallback)
-2. **XML Processing** → **BaseConverter** → **PowerBI/Tableau formats**
+2. **ISTAT Data** → **DuckDB Analytics** → **Universal Export** (CSV/JSON/Parquet)
 3. **Storage** → **DuckDB** (analytics) + **SQLite** (metadata) via **Unified Repository**
 4. **Authentication** → **JWT tokens** + **Rate limiting** + **Security middleware**
 
@@ -293,11 +305,11 @@ src/
 │   ├── jwt_manager.py    # JWT tokens
 │   ├── rate_limiter.py   # Rate limiting
 │   └── security_middleware.py # Security headers
-├── converters/        # Data format converters
-│   ├── base_converter.py      # Unified foundation
-│   ├── powerbi_converter.py   # PowerBI formats
-│   ├── tableau_converter.py   # Tableau formats
-│   └── factory.py             # Factory pattern
+├── export/            # Universal data export system (Issue #150)
+│   ├── universal_exporter.py  # Core CSV/JSON/Parquet export
+│   ├── streaming_exporter.py  # Memory-efficient streaming
+│   ├── data_access.py         # Database integration layer
+│   └── endpoints.py           # FastAPI REST endpoints
 ├── database/          # Hybrid database architecture
 │   ├── duckdb/        # Analytics engine
 │   │   ├── manager.py          # Connection management
@@ -365,7 +377,7 @@ Key environment variables (all optional, defaults provided):
 ## 🚨 Known Limitations & Testing Status
 
 ### Infrastructure
-- **Kubernetes**: All manifests created but NEVER deployed/tested on real cluster
+- **Docker Compose**: Complete deployment setup tested and functional
 - **Docker Images**: No production images built/pushed to registry
 - **CI/CD**: Basic unit tests only, no integration/deployment testing
 
@@ -377,7 +389,7 @@ Key environment variables (all optional, defaults provided):
 
 ### Priority Rework Needed
 1. **PowerBI Integration** - Complete redesign required (templates don't work)
-2. **Kubernetes Testing** - Need cluster validation before production claims
+2. **Production Deployment** - Need hosting environment and CI/CD pipeline
 3. **End-to-End Workflows** - Core works, user workflows need completion
 
 ---

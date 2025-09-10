@@ -1,61 +1,86 @@
 # PROJECT_STATE.md - Osservatorio Project Status & Evolution
 
-> **Ultimo aggiornamento**: 6 Agosto 2025 - Kubernetes Foundation Complete, Testing Required
-> **Versione Corrente**: 12.0.0-dev (Core Functional, Infrastructure Untested)
-> **Versione Target**: 1.0.0 (Production-Ready Release - Timeline TBD)
+> **Ultimo aggiornamento**: 27 Agosto 2025 - MVP Cleanup Complete, Focus Shift
+> **Versione Corrente**: 12.0.0-dev (Core Functional, MVP Simplified)
+> **Versione Target**: 0.5.0 MVP (October 2025) → 1.0.0 (Production Ready)
 > **Maintainer**: Andrea Bozzo
-> **Scopo**: Core platform functional, Kubernetes infrastructure created but requires validation
+> **Scopo**: MVP delivery focus - removed K8s/BI complexity, Docker Compose deployment
 
 ## 🚀 Executive Summary
 
-**Osservatorio** è una piattaforma in sviluppo per il processing di dati statistici ISTAT. **Status attuale**: Core funzionale (FastAPI + Database + Auth), infrastruttura Kubernetes creata ma mai testata.
+**Osservatorio** è una piattaforma in sviluppo per il processing di dati statistici ISTAT. **Status attuale**: MVP cleanup completato, core funzionale (FastAPI + Database + Auth), deployment semplificato a Docker Compose.
 
-### 🎯 **Stato Attuale (6 Agosto 2025) - REALE**
+### 🎯 **Stato Attuale (27 Agosto 2025) - POST MVP CLEANUP**
 - **✅ Core Functional**: FastAPI REST API, SQLite+DuckDB, JWT authentication funzionanti
-- **✅ Kubernetes Foundation**: Manifests completi (deployment, storage, networking, backup)
-- **⚠️ Infrastructure Untested**: Docker images mai buildati per registry, K8s mai deployato su cluster
-- **❌ BI Integration Broken**: PowerBI templates non funzionano in Desktop, Tableau incompleto
-- **🔄 Next Phase**: Validazione cluster Kubernetes, fix PowerBI integration, testing end-to-end
+- **✅ MVP Cleanup Completed**: Issue #151 (BI removal), #152 (K8s removal) completate
+- **✅ Simplified Architecture**: Docker Compose deployment, universal export (CSV/JSON/Parquet)
+- **✅ Reduced Complexity**: Rimossi ~55 file K8s, ~8200+ righe codice over-engineered
+- **🔄 Next Phase**: MVP feature development, issue #153 (auth simplification), deployment production
 
 ---
 
 ## ✅ Issue COMPLETATE (August 2025)
 
-### **Kubernetes Infrastructure Foundation** ✅ **MANIFESTS COMPLETE**
-- **Status**: **YAML CREATED** - Manifests complete, deployment untested
-- **Implemented**: Multi-environment K8s (dev/staging/prod), storage, networking, backup CronJobs
-- **Features**: Persistent storage tiers, network policies, health checks, Helm charts
-- **⚠️ Critical Gap**: Never deployed on real cluster, Docker images not in registry
-- **Next**: Cluster testing, image builds, validation of all components
+### **MVP Simplification & Cleanup** ✅ **COMPLETE**
+- **Status**: **CLEANUP DONE** - K8s complexity removed, focus on MVP delivery
+- **Issue #151**: PowerBI/Tableau integrations removed, universal export implemented
+- **Issue #152**: Complete K8s infrastructure removal (~55 files, ~8200+ lines)
+- **Deployment**: Simplified to Docker Compose (dev/staging/prod configurations)
+- **Next**: Complete MVP features, production hosting, basic CI/CD pipeline
 
-## 🎯 **ROADMAP AGGIORNATA (Basata su Board Issues - Agosto 2025)**
+### **ISTAT Ingestion Pipeline** ✅ **COMPLETATO CON FIX CRITICI** (31 Agosto 2025)
+- **Issue #149**: ✅ **RISOLTO** - Pipeline per 7 dataset prioritari con fix maggiori
+- **Status**: **PRODUCTION READY** con performance e affidabilità verificate
 
-### **🏗️ FASE 1: Foundation (Agosto - Ottobre 2025)** - 8 Issues Attive
-**Milestone**: Consolidare foundation architecture e infrastructure per Beta release
-**Scadenza**: 31 Ottobre 2025
+**🔧 Problemi Critici Identificati e Risolti**:
+1. **❌ Limite Artificiale 10K**: Causava perdita del 92% dei dati (856K records mancanti)
+   - ✅ **RISOLTO**: Limite rimosso, coverage completa (es: 143_222 da 10K → 95K records)
 
-**Issue Prioritarie**:
-- **#118** [FOUNDATION] Comprehensive Project Documentation Update (HIGH - weeks) ✅ **IN CORSO**
-- **#117** [TECH DEBT] Technical Debt Resolution & Code Quality (HIGH - days)
-- **#105** [INFRASTRUCTURE] Kubernetes Production Deployment Foundation (HIGH - days)
-- **#106** [ARCHITECTURE] Infrastructure as Code (IaC) Foundation (HIGH - days)
-- **#75** [RELIABILITY] Production Error Handling & Resilience Strategy (HIGH - days)
-- **#102** [DX] Developer Experience Enhancement Package (MEDIUM - days)
-- **#101** [DEVOPS] Docker Build Optimization (MEDIUM - hours)
-- **#53** [DEPLOYMENT] Complete Production Deployment Strategy (MEDIUM - hours)
+2. **❌ Skip Logic Inconsistente**: Solo 2/7 dataset skippati correttamente
+   - ✅ **RISOLTO**: Skip logic semplificata e robusta (soglia 1000 records)
 
-### **🎯 FASE 2: Core Features (Ottobre - Novembre 2025)** - 9 Issues Attive
-**Milestone**: Sviluppare core features per Beta release
-**Scadenza**: 29 Novembre 2025
+3. **❌ Corruzione Dati**: Campi scambiati nel parser SDMX (timestamp vs time_period)
+   - ✅ **RISOLTO**: Validazione aggiunta, corruzione storica pulita
 
-**Issue Prioritarie**:
-- **#107** [ENTERPRISE] SSO & Advanced Authentication Integration (HIGH - days)
-- **#96** Modern React Frontend for End-User Data Exploration (HIGH - weeks)
-- **#85-87** [TABLEAU] Complete Tableau Integration (3 phases - HIGH priority)
-- **#77** [API] Versioning & Backward Compatibility Strategy (HIGH - days)
-- **#76** [DATA] Backup & Recovery Strategy Implementation (HIGH - days)
-- **#30** Usage Analytics & Monitoring Dashboard (HIGH - hours)
-- **#5** PowerBI Dataset Refresh Automation (READY status)
+4. **✅ Parser SDMX**: Era un falso problema, funzionava correttamente
+
+**📊 Risultati Verificati**:
+- **Database**: 156K+ records puliti (da 45K corrupted)
+- **Performance**: 84K records ingeriti in 13.9s
+- **Skip Logic**: 4/4 dataset grandi skippati correttamente
+- **FastAPI**: Tutti gli endpoint funzionanti (/ingestion/run-all, /run/{id}, /status, /health)
+- **Data Quality**: 0% duplicati, validazione robusta
+
+**⚠️ Note MVP**:
+- Dataset utilizzati: numerici (101_1015, etc.) invece dei DCIS_* specificati nell'issue
+- Coverage: 7/7 dataset funzionanti (85.7% success rate → 100% con fix)
+- Approach: Startup-first, simple & readable, nessuna over-engineering
+
+## 🎯 **ROADMAP AGGIORNATA (Post-Cleanup MVP Focus - Agosto 2025)**
+
+### **🎯 MVP v0.5 - Core Platform (October 2025)** - 10 Issues Attive
+**Milestone**: Delivery MVP con funzionalità core essenziali (Issue #151, #152 completate)
+**Scadenza**: 14 Ottobre 2025
+**Status**: Cleanup completato, focus su feature development
+
+**Issue MVP Prioritarie** (milestone 🎯 MVP v0.5):
+- **#153** [CLEANUP-3] Simplify Security & Auth to MVP Basic JWT (MEDIUM - hours)
+- **#152** [CLEANUP-2] Remove K8s Infrastructure & Over-Engineering ✅ **COMPLETATO**
+- **#151** [CLEANUP-1] Remove BI Integrations & Complex Converters ✅ **COMPLETATO**
+- **#150** [EXPORT] Universal data export (CSV/JSON/Parquet) (HIGH - days)
+- **#149** [ISTAT] Ingestion pipeline for 7 priority datasets ✅ **COMPLETATO CON FIX** (31 Agosto 2025)
+- **#141** [DOCS] Create developer setup and contribution guide (MEDIUM - hours)
+- **#140** [DOCS] Complete API documentation with interactive examples (HIGH - days)
+- **#135** [FRONTEND] Basic data visualization dashboard MVP (HIGH - days)
+- **#132** [AUTH] Implement basic user authentication system (HIGH - days)
+- **#53** [DEPLOYMENT] Complete Production Deployment Strategy with Docker (MEDIUM - hours)
+
+### **🧪 v0.9 Pre-Production Polish (November 2025)** - 7 Issues Future
+**Milestone**: Preparazione per production deployment
+**Scadenza**: 30 Novembre 2025
+
+**Note**: PowerBI/Tableau integrations (#85-87, #5) rimossi per focus MVP.
+Advanced enterprise features (#107, #96) posticipati post-MVP.
 
 ### **🧪 FASE 3: Beta Preparation (Novembre - Dicembre 2025)** - 14 Issues Attive
 **Milestone**: Preparazione e deployment Beta v0.9
@@ -153,36 +178,35 @@
 
 ### **🔥 Top Priority: Foundation Issues (Board-Driven)**
 
-**Week 1-2: Infrastructure Foundation**
-1. **Issue #105**: Kubernetes Production Deployment Foundation (HIGH - days)
-   - Deploy to real cluster for validation
-   - Test all manifests end-to-end
-   - Validate persistent storage and networking
+**Week 1-2: MVP Core Development**
+1. **Issue #150**: Universal data export (CSV/JSON/Parquet) (HIGH - days)
+   - Implement unified export API endpoints
+   - Support multiple data formats
+   - Optimize export performance
 
-2. **Issue #117**: Technical Debt Resolution & Code Quality (HIGH - days)
-   - Complete code quality improvements
-   - Resolve remaining pre-commit hook issues
-   - Ensure >90% code quality metrics
+2. **Issue #149**: Ingestion pipeline for 7 priority datasets (HIGH - days)
+   - Complete ISTAT dataset integration
+   - Data validation and quality checks
+   - Pipeline monitoring and logging
 
-**Week 3-4: Architecture & DevOps**
-3. **Issue #106**: Infrastructure as Code (IaC) Foundation (HIGH - days)
-   - Implement Terraform/Helm for deployment
-   - Create environment-specific configurations
-   - Document infrastructure provisioning
+**Week 3-4: MVP Infrastructure & Auth**
+3. **Issue #153**: Simplify Security & Auth to MVP Basic JWT (MEDIUM - hours)
+   - Streamline authentication system
+   - Remove over-engineered auth complexity
+   - Basic JWT token management
 
-4. **Issue #75**: Production Error Handling & Resilience Strategy (HIGH - days)
-   - Implement comprehensive error handling
-   - Create circuit breaker patterns
-   - Add monitoring and alerting
+4. **Issue #53**: Docker Production Deployment Strategy (MEDIUM - hours)
+   - Complete Docker Compose production setup
+   - Environment configuration management
+   - Basic monitoring and health checks
 
-### **📋 Success Metrics - Phase 1 (Ottobre 2025)**
-- ✅ Kubernetes deployment functional on real cluster
-- ✅ Code quality >90% (ruff/black/security scans pass)
-- ✅ IaC provisioning automated
-- ✅ Production error handling comprehensive
-- ✅ Docker builds optimized and registry-ready
-- ✅ Developer experience enhanced
-- ✅ Production deployment strategy documented
+### **📋 Success Metrics - MVP v0.5 (Ottobre 2025)**
+- ✅ Docker Compose deployment validated in production environment
+- ✅ Universal export API functional (CSV/JSON/Parquet)
+- ✅ 7 priority ISTAT datasets ingestion working
+- ✅ Simplified JWT authentication system operational
+- ✅ Basic dashboard MVP functional
+- ✅ Production deployment strategy documented and tested
 
 ---
 
@@ -237,7 +261,7 @@
 ### **🎯 Critical Path Analysis (Board-Based)**
 
 **⚠️ Beta Release Blockers (Dicembre 2025)**:
-1. **Phase 1 Foundation** - Kubernetes deployment validation (#105)
+1. **MVP v0.5 Delivery** - Core features and Docker production deployment (#53)
 2. **Phase 2 Core Features** - React Frontend (#96) + Tableau Integration (#85-87)
 3. **Phase 3 Beta Prep** - User Management Portal (#99) + Security Audit (#98)
 
@@ -250,7 +274,7 @@
 ### **📊 Milestone Success Metrics**
 
 **🏗️ FASE 1 Success Criteria (Ottobre 2025)**:
-- ✅ Kubernetes cluster validated with real workloads
+- ✅ Docker Compose deployment validated with real workloads
 - ✅ Technical debt resolved (code quality >90%)
 - ✅ IaC foundation operational
 - ✅ Docker build optimization complete
@@ -577,7 +601,7 @@
 ### What We Defer
 - **Docker**: Quando avremo multiple environments
 - **PostgreSQL**: Quando avremo >10 concurrent users
-- **Kubernetes**: Quando servirà auto-scaling
+- **Future Scaling**: Kubernetes quando necessario per auto-scaling
 - **Microservices**: Quando il monolith diventa limiting
 
 ## 📊 Risk Mitigation
@@ -691,7 +715,7 @@
 | Component | Current Status | Phase 1 Target | Beta Target | v1.0 Target |
 |-----------|----------------|----------------|-------------|-------------|
 | FastAPI Core | ✅ Working | ✅ Enhanced | ✅ Optimized | ✅ Enterprise |
-| Kubernetes | ✅ Created | ✅ **Deployed (#105)** | ✅ Validated | ✅ Production |
+| Docker Compose | ✅ Created | ✅ **Deployed (#53)** | ✅ Validated | ✅ Production |
 | BI Integration | ❌ Broken | ❌ Deferred | ✅ **Fixed (#85-87)** | ✅ Enhanced |
 | Frontend | ❌ Missing | ❌ Planned | ✅ **React (#96)** | ✅ Responsive |
 | Security | 🟡 Basic | ✅ **Hardened (#75)** | ✅ **Audited (#98)** | ✅ **SOC2 (#109)** |
@@ -701,7 +725,7 @@
 
 ### **Critical Path Analysis**
 **🚨 Beta Blockers (19 Dec 2025)**:
-1. **#105** - Kubernetes deployment must be validated
+1. **#53** - Docker Compose production deployment must be completed
 2. **#96** - React Frontend must be functional
 3. **#99** - User Management Portal must be built
 4. **#85-87** - Tableau integration must achieve PowerBI parity

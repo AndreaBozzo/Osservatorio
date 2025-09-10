@@ -14,8 +14,12 @@ import hashlib
 from datetime import datetime, timedelta
 from typing import Optional
 
-from src.database.sqlite.manager_factory import get_audit_manager
-from src.utils.logger import get_logger
+from database.sqlite.manager_factory import get_audit_manager
+
+try:
+    from utils.logger import get_logger
+except ImportError:
+    from src.utils.logger import get_logger
 
 from .models import APIKey
 
@@ -78,8 +82,7 @@ class SQLiteRateLimiter:
         "write": RateLimitConfig(30, 500, 5000, 5),
         "admin": RateLimitConfig(120, 2000, 20000, 20),
         "analytics": RateLimitConfig(100, 1500, 15000, 15),
-        "powerbi": RateLimitConfig(200, 3000, 30000, 30),
-        "tableau": RateLimitConfig(200, 3000, 30000, 30),
+        "export": RateLimitConfig(200, 3000, 30000, 30),
     }
 
     # Time window types
@@ -252,10 +255,8 @@ class SQLiteRateLimiter:
         # Use highest scope's limits
         if "admin" in api_key.scopes:
             return self.DEFAULT_LIMITS["admin"]
-        elif "powerbi" in api_key.scopes:
-            return self.DEFAULT_LIMITS["powerbi"]
-        elif "tableau" in api_key.scopes:
-            return self.DEFAULT_LIMITS["tableau"]
+        elif "export" in api_key.scopes:
+            return self.DEFAULT_LIMITS["export"]
         elif "analytics" in api_key.scopes:
             return self.DEFAULT_LIMITS["analytics"]
         elif "write" in api_key.scopes:

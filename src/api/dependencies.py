@@ -12,13 +12,17 @@ from typing import Optional
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
-from src.auth.jwt_manager import JWTManager
-from src.auth.models import APIKey, TokenClaims
-from src.auth.rate_limiter import SQLiteRateLimiter
-from src.auth.sqlite_auth import SQLiteAuthManager
-from src.database.sqlite.repository import get_unified_repository
+from auth.jwt_manager import JWTManager
+from auth.models import APIKey, TokenClaims
+from auth.rate_limiter import SQLiteRateLimiter
+from auth.sqlite_auth import SQLiteAuthManager
+from database.sqlite.repository import get_unified_repository
 from src.utils.config import get_config
-from src.utils.logger import get_logger
+
+try:
+    from utils.logger import get_logger
+except ImportError:
+    from src.utils.logger import get_logger
 
 from .models import APIScope
 from .production_istat_client import ProductionIstatClient
@@ -111,7 +115,7 @@ async def get_current_user(
         )
 
     try:
-        # Verify JWT token
+        # Verify JWT token (supports both API key and user-based tokens)
         token_claims = jwt_manager.verify_token(credentials.credentials)
         if not token_claims:
             raise HTTPException(
@@ -120,15 +124,12 @@ async def get_current_user(
                 headers={"WWW-Authenticate": "Bearer"},
             )
 
-        # For API key validation, we rely on JWT validation
-        # The JWT was generated from a valid API key, so we trust the claims
-        # In a more secure implementation, we might still verify the key exists
-
         # Add request context to token claims
         token_claims.client_ip = request.client.host
         token_claims.user_agent = request.headers.get("user-agent")
 
-        logger.debug(f"Authenticated user: {token_claims.api_key_name}")
+        auth_name = token_claims.email or token_claims.api_key_name or token_claims.sub
+        logger.debug(f"Authenticated user: {auth_name}")
         return token_claims
 
     except HTTPException:
@@ -374,13 +375,6 @@ def handle_api_errors(func):
             )
 
     return wrapper
-
-
-def get_dataflow_service():
-    """Get DataflowAnalysisService instance as FastAPI dependency."""
-    from src.services.service_factory import get_dataflow_analysis_service
-
-    return get_dataflow_analysis_service()
 
 
 def reset_dependency_singletons():
