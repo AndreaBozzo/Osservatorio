@@ -27,17 +27,12 @@ from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.openapi.utils import get_openapi
 from fastapi.responses import JSONResponse
 
-from auth.security_middleware import SecurityHeadersMiddleware
-from database.sqlite.repository import get_unified_repository
-from ingestion.simple_pipeline import create_simple_pipeline
-from src.utils.config import get_config
-
-try:
-    from utils.logger import get_logger
-except ImportError:
-    from src.utils.logger import get_logger
-
+from src.auth.security_middleware import SecurityHeadersMiddleware
+from src.database.sqlite.repository import get_unified_repository
 from src.export.endpoints import export_router
+from src.ingestion.simple_pipeline import create_simple_pipeline
+from src.utils.config import get_config
+from src.utils.logger import get_logger
 
 from .dependencies import (
     check_rate_limit,

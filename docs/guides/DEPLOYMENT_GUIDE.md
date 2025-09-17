@@ -1,590 +1,209 @@
-# 🚀 Osservatorio Deployment Guide
+# 🚀 Osservatorio ISTAT Data Platform - Deployment Guide
 
-> **Comprehensive deployment guide for production, staging, and development environments**
-> **Version**: 10.2.0
-> **Date**: July 28, 2025
-> **Status**: Enterprise Ready - Architecture Consolidation Complete
+> **Docker-focused deployment guide for FastAPI backend and React frontend**
+> **Version**: 1.0.0
+> **Date**: September 10, 2025
+> **Status**: Production Ready - Issue #53 Complete
 
 ---
 
 ## 📋 Table of Contents
 
 1. [Overview](#-overview)
-2. [Production Deployment](#-production-deployment)
-3. [Staging Deployment](#-staging-deployment)
-4. [Local Development](#-local-development)
-5. [Docker Deployment](#-docker-deployment)
-6. [CI/CD Pipeline](#-cicd-pipeline)
-7. [Environment Configuration](#-environment-configuration)
-8. [Security Configuration](#-security-configuration)
-9. [Monitoring & Health Checks](#-monitoring--health-checks)
-10. [Troubleshooting](#-troubleshooting)
+2. [Docker Deployment](#-docker-deployment)
+3. [Environment Configuration](#-environment-configuration)
+4. [Authentication Setup](#-authentication-setup)
+5. [Health Checks & Monitoring](#-health-checks--monitoring)
+6. [Troubleshooting](#-troubleshooting)
 
 ---
 
 ## 🎯 Overview
 
-Osservatorio supports multiple deployment strategies to accommodate different environments and requirements:
+Osservatorio ISTAT Data Platform is a comprehensive statistical data platform with advanced architecture:
 
-- **🌐 Production**: Streamlit Cloud (live at https://osservatorio-dashboard.streamlit.app/)
-- **🔧 Staging**: GitHub Actions with preview deployments
-- **💻 Local**: Direct Python execution for development
-- **🐳 Docker**: Containerized deployment (planned)
-- **☁️ Cloud**: Multi-cloud support (planned)
+- **🐳 Docker**: Multi-stage containerized deployment with orchestration
+- **🔧 FastAPI**: High-performance async REST API with OpenAPI documentation
+- **🏗️ Multi-Database**: SQLite (metadata) + DuckDB (analytics) + PostgreSQL (production)
+- **🔐 Authentication**: Complete JWT system with bcrypt, rate limiting, API keys
+- **📊 Data Pipeline**: ISTAT SDMX integration with ingestion and export systems
+- **🚀 Export System**: Universal data export (CSV, JSON, XML, Excel, OData)
+- **⚛️ React**: Modern frontend (coming soon)
+- **📈 Monitoring**: Comprehensive health checks, metrics, and performance monitoring
 
-### 🏗️ Deployment Architecture
+### 🏗️ Detailed System Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                    🌐 Production (Streamlit Cloud)             │
-│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐ │
-│  │   Load          │  │   Application   │  │   Static        │ │
-│  │   Balancer      │  │   Instance      │  │   Assets        │ │
-│  └─────────────────┘  └─────────────────┘  └─────────────────┘ │
-└─────────────────────────────────────────────────────────────────┘
-                                │
-                                ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                    🔧 CI/CD Pipeline (GitHub Actions)          │
-│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐ │
-│  │   Build &       │  │   Test &        │  │   Deploy &      │ │
-│  │   Validate      │  │   Security      │  │   Monitor       │ │
-│  └─────────────────┘  └─────────────────┘  └─────────────────┘ │
-└─────────────────────────────────────────────────────────────────┘
-                                │
-                                ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                    💻 Local Development                        │
-│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐ │
-│  │   Python        │  │   Streamlit     │  │   Hot           │ │
-│  │   Environment   │  │   Dev Server    │  │   Reload        │ │
-│  └─────────────────┘  └─────────────────┘  └─────────────────┘ │
-└─────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## 🌐 Production Deployment
-
-### ✅ Current Production Status
-- **🌐 Live URL**: [https://osservatorio-dashboard.streamlit.app/](https://osservatorio-dashboard.streamlit.app/)
-- **🔄 Auto-deployment**: Enabled on `main` branch
-- **📊 Monitoring**: Health checks and performance monitoring
-- **🔒 Security**: Enterprise-grade security implementation
-
-### 🚀 Streamlit Cloud Deployment
-
-#### 1. **Prerequisites**
-- ✅ GitHub repository (public or Streamlit Pro account)
-- ✅ Streamlit Cloud account at [share.streamlit.io](https://share.streamlit.io/)
-- ✅ Production-ready code on `main` branch
-
-#### 2. **Deployment Configuration**
-
-**Repository Settings:**
-```yaml
-Repository: AndreaBozzo/Osservatorio
-Branch: main
-Main file: dashboard/app.py
-Python version: 3.9
-```
-
-**Requirements File:** `dashboard/requirements.txt`
-```txt
-streamlit>=1.32.0
-plotly>=5.17.0
-pandas>=2.0.0
-numpy>=1.24.0
-matplotlib>=3.7.0
-seaborn>=0.12.0
-openpyxl>=3.1.0
-pyarrow>=13.0.0
-requests>=2.31.0
-loguru>=0.7.0
-python-dotenv>=1.0.0
-lxml>=4.9.0
-```
-
-**Streamlit Configuration:** `.streamlit/config.toml`
-```toml
-[theme]
-primaryColor = \"#0066CC\"
-backgroundColor = \"#FFFFFF\"
-secondaryBackgroundColor = \"#F0F2F6\"
-textColor = \"#262730\"
-font = \"sans serif\"
-
-[server]
-headless = true
-enableCORS = false
-port = 8501
-maxUploadSize = 200
-
-[browser]
-gatherUsageStats = false
-
-[logger]
-level = \"info\"
-```
-
-#### 3. **Deployment Steps**
-
-1. **Connect to Streamlit Cloud**
-   ```bash
-   # Ensure code is on main branch
-   git checkout main
-   git push origin main
-   ```
-
-2. **Configure Streamlit Cloud**
-   - Go to [share.streamlit.io](https://share.streamlit.io/)
-   - Click \"Deploy an app\"
-   - Connect GitHub account
-   - Select repository: `AndreaBozzo/Osservatorio`
-   - Set main file path: `dashboard/app.py`
-
-3. **Advanced Settings**
-   - Python version: `3.9`
-   - Requirements file: `dashboard/requirements.txt`
-   - Secrets: Configure environment variables if needed
-
-4. **Deploy**
-   - Click \"Deploy!\"
-   - Monitor deployment logs
-   - Verify app is accessible
-
-#### 4. **Production Features**
-- **🔄 Auto-deployment**: Triggered on every push to `main`
-- **📊 Health Monitoring**: Automatic uptime monitoring
-- **🔒 Security**: HTTPS, security headers, rate limiting
-- **⚡ Performance**: <5s load time, cached data
-- **📱 Responsive**: Desktop and mobile optimized
-
-### 🔧 Production Environment Variables
-
-```bash
-# Optional: Configure via Streamlit Cloud secrets
-ISTAT_API_BASE_URL=https://sdmx.istat.it/SDMXWS/rest/
-ISTAT_API_TIMEOUT=30
-LOG_LEVEL=INFO
-ENABLE_CACHE=true
-CACHE_TTL=3600
-```
-
----
-
-## 🔧 Staging Deployment
-
-### 🎯 Staging Environment Features
-- **🔄 Preview Deployments**: For pull requests
-- **🧪 Test Environment**: Safe testing of new features
-- **📊 Performance Testing**: Load and stress testing
-- **🔒 Security Testing**: Vulnerability scanning
-
-### 🚀 GitHub Actions Staging Pipeline
-
-**Workflow File:** `.github/workflows/staging-deploy.yml`
-```yaml
-name: Staging Deployment
-
-on:
-  pull_request:
-    branches: [main]
-  push:
-    branches: [staging, develop]
-
-jobs:
-  staging-deploy:
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.9'
-        cache: 'pip'
-
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install -r dashboard/requirements.txt
-
-    - name: Run tests
-      run: |
-        pytest tests/ -v --tb=short
-
-    - name: Security scan
-      run: |
-        pip install bandit safety
-        bandit -r src/ -f json -o bandit-report.json
-        safety check
-
-    - name: Performance tests
-      run: |
-        pytest tests/performance/ -v
-
-    - name: Deploy to staging
-      run: |
-        echo \"🚀 Staging deployment completed\"
-        echo \"Preview URL: https://staging-osservatorio.streamlit.app/\"
-
-    - name: Create deployment comment
-      if: github.event_name == 'pull_request'
-      uses: actions/github-script@v6
-      with:
-        script: |
-          github.rest.issues.createComment({
-            issue_number: context.issue.number,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            body: '🚀 Staging deployment successful!\\n\\nPreview URL: https://staging-osservatorio.streamlit.app/'
-          })
-```
-
----
-
-## 💻 Local Development
-
-### 🔧 Development Environment Setup
-
-#### 1. **Prerequisites**
-- Python 3.8+ installed
-- Git installed
-- Virtual environment tool (venv, conda, etc.)
-
-#### 2. **Installation**
-```bash
-# Clone repository
-git clone https://github.com/AndreaBozzo/Osservatorio.git
-cd Osservatorio
-
-# Create virtual environment
-python -m venv venv
-
-# Activate virtual environment
-# Windows:
-venv\\Scripts\\activate
-# macOS/Linux:
-source venv/bin/activate
-
-# Install dependencies
-pip install -r requirements.txt
-pip install -r dashboard/requirements.txt
-
-# Install development dependencies
-pip install -r requirements-dev.txt
-```
-
-#### 3. **Development Server**
-```bash
-# Start dashboard
-streamlit run dashboard/app.py
-
-# Access at http://localhost:8501
-
-# Enable debug mode
-streamlit run dashboard/app.py --server.enableCORS=false --server.enableXsrfProtection=false
-```
-
-#### 4. **Development Configuration**
-
-**Environment Variables:** `.env`
-```bash
-# Development settings
-LOG_LEVEL=DEBUG
-ENABLE_CACHE=false
-STREAMLIT_SERVER_PORT=8501
-STREAMLIT_SERVER_HEADLESS=false
-
-# API settings
-ISTAT_API_BASE_URL=https://sdmx.istat.it/SDMXWS/rest/
-ISTAT_API_TIMEOUT=30
-```
-
-**Development Config:** `.streamlit/config.toml`
-```toml
-[server]
-headless = false
-enableCORS = false
-port = 8501
-maxUploadSize = 200
-
-[browser]
-gatherUsageStats = false
-
-[logger]
-level = \"debug\"
-
-[runner]
-magicEnabled = true
-installTracer = true
-```
-
-### 🧪 Development Workflow
-
-#### 1. **Code Quality**
-```bash
-# Format code
-black .
-
-# Sort imports
-isort .
-
-# Lint code
-flake8 .
-
-# Run pre-commit hooks
-pre-commit run --all-files
-```
-
-#### 2. **Testing**
-```bash
-# Run all tests
-pytest tests/ -v
-
-# Run specific test categories
-pytest tests/unit/ -v
-pytest tests/integration/ -v
-pytest tests/performance/ -v
-
-# Run with coverage
-pytest --cov=src tests/ --cov-report=html
-```
-
-#### 3. **Security Testing**
-```bash
-# Security scan
-bandit -r src/
-
-# Check dependencies
-safety check
-
-# Run security tests
-pytest tests/unit/test_security_enhanced.py -v
+┌─────────────────────────────────────────────────────────────────────────────────────────────┐
+│                           🌐 PRODUCTION ENVIRONMENT                                        │
+│                                                                                             │
+│  ┌─────────────────────┐   ┌──────────────────────────┐   ┌─────────────────────────────┐  │
+│  │   🌐 NGINX          │   │   🔧 FASTAPI BACKEND      │   │   ⚛️ REACT FRONTEND      │  │
+│  │   • SSL Termination │   │   • REST API Endpoints    │   │   • SPA with React 18      │  │
+│  │   • Load Balancing  │   │   • OpenAPI/Swagger Docs  │   │   • Data Visualization     │  │
+│  │   • Rate Limiting   │   │   • Authentication System │   │   • Export Interface       │  │
+│  │   • Security Headers│   │   • Data Export System    │   │   • Dashboard UI           │  │
+│  │   • CORS Handling   │   │   • Health Monitoring     │   │   • User Management        │  │
+│  └─────────────────────┘   └──────────────────────────┘   └─────────────────────────────┘  │
+│           │                              │                              │                    │
+│           └──────────────────────────────┼──────────────────────────────┘                    │
+└─────────────────────────────────────────┼─────────────────────────────────────────────────────┘
+                                          │
+                                          ▼
+┌─────────────────────────────────────────┼─────────────────────────────────────────────────────┐
+│                    🔧 FASTAPI APPLICATION LAYER                                            │
+│                                         │                                                   │
+│  ┌─────────────────┐  ┌─────────────────┼─────────────────┐  ┌─────────────────────────┐    │
+│  │ 🔐 AUTH SYSTEM  │  │ 📊 DATA PIPELINE│SYSTEM           │  │ 🚀 EXPORT SYSTEM       │    │
+│  │ • JWT Tokens    │  │ • ISTAT SDMX    │                 │  │ • Universal Exporter    │    │
+│  │ • User Management│  │ • Data Ingestion│                 │  │ • Multiple Formats      │    │
+│  │ • API Keys      │  │ • Transformation│                 │  │ • OData Protocol        │    │
+│  │ • Rate Limiting │  │ • Validation    │                 │  │ • Streaming Export      │    │
+│  │ • Bcrypt Hash   │  │ • Error Handling│                 │  │ • Compression Support  │    │
+│  └─────────────────┘  └─────────────────┼─────────────────┘  └─────────────────────────┘    │
+│                                         │                                                   │
+└─────────────────────────────────────────┼─────────────────────────────────────────────────────┘
+                                          │
+                                          ▼
+┌─────────────────────────────────────────┼─────────────────────────────────────────────────────┐
+│                    💾 DATA PERSISTENCE LAYER                                               │
+│                                         │                                                   │
+│  ┌───────────────────┐  ┌──────────────┼────────────────┐  ┌─────────────────────────────┐ │
+│  │ 📊 SQLITE         │  │ 🏗️ DUCKDB    │                │  │ 🐘 POSTGRESQL              │ │
+│  │ • Metadata Store  │  │ • Analytics  │                │  │ • Production Database      │ │
+│  │ • User Data       │  │ • Time Series│                │  │ • High Availability        │ │
+│  │ • API Keys        │  │ • OLAP Queries│                │  │ • Backup & Recovery        │ │
+│  │ • Auth Sessions   │  │ • Aggregations│                │  │ • Connection Pooling       │ │
+│  │ • Configuration   │  │ • Performance │                │  │ • Transaction Support     │ │
+│  └───────────────────┘  └──────────────┼────────────────┘  └─────────────────────────────┘ │
+│                                        │                                                    │
+└────────────────────────────────────────┼────────────────────────────────────────────────────┘
+                                         │
+                                         ▼
+┌────────────────────────────────────────┼────────────────────────────────────────────────────┐
+│                    🔄 CACHING & EXTERNAL SYSTEMS                                          │
+│                                        │                                                   │
+│  ┌─────────────────────┐  ┌────────────┼──────────────┐  ┌───────────────────────────────┐ │
+│  │ 🚀 REDIS            │  │ 🌐 ISTAT │ APIS             │  │ 📈 MONITORING                │ │
+│  │ • API Response Cache│  │ • SDMX   │                  │  │ • Health Checks               │ │
+│  │ • Session Storage   │  │ • REST   │                  │  │ • Performance Metrics        │ │
+│  │ • Rate Limit Data   │  │ • Data   │                  │  │ • Error Tracking             │ │
+│  │ • Pub/Sub Messages  │  │ • Metadata│                 │  │ • Resource Monitoring        │ │
+│  │ • Background Jobs   │  │ • Validation│               │  │ • Log Aggregation            │ │
+│  └─────────────────────┘  └────────────┼──────────────┘  └───────────────────────────────┘ │
+└────────────────────────────────────────┼────────────────────────────────────────────────────┘
+                                         │
+                                         ▼
+┌────────────────────────────────────────┼────────────────────────────────────────────────────┐
+│                    🐳 DOCKER ORCHESTRATION                                                │
+│                                        │                                                   │
+│  • Multi-stage builds (builder → production → development)                                │
+│  • Health checks and service dependencies                                                 │
+│  • Volume management and data persistence                                                 │
+│  • Network isolation and service discovery                                                │
+│  • Resource limits and auto-scaling capabilities                                          │
+│  • Rolling updates and zero-downtime deployment                                           │
+│  • Environment-specific configurations                                                    │
+│  • Security hardening and non-root execution                                              │
+└────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
 ## 🐳 Docker Deployment
 
-### 🏗️ Docker Configuration
+The primary deployment method for Osservatorio ISTAT Data Platform.
 
-**Dockerfile:**
-```dockerfile
-FROM python:3.9-slim
+### 🏗️ Multi-Stage Docker Build
 
-WORKDIR /app
+Our `Dockerfile` supports multiple build targets:
+- **`builder`**: Build dependencies and virtual environment
+- **`production`**: Optimized production runtime
+- **`development`**: Development with hot reload
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \\
-    build-essential \\
-    curl \\
-    && rm -rf /var/lib/apt/lists/*
+### 🚀 Quick Start
 
-# Copy requirements
-COPY requirements.txt dashboard/requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy application code
-COPY . .
-
-# Create non-root user
-RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
-USER appuser
-
-# Expose port
-EXPOSE 8501
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \\
-    CMD curl -f http://localhost:8501/healthz || exit 1
-
-# Run application
-CMD [\"streamlit\", \"run\", \"dashboard/app.py\", \"--server.port=8501\", \"--server.address=0.0.0.0\"]
-```
-
-**Docker Compose:** `docker-compose.yml`
-```yaml
-version: '3.8'
-
-services:
-  osservatorio:
-    build: .
-    ports:
-      - \"8501:8501\"
-    environment:
-      - LOG_LEVEL=INFO
-      - ENABLE_CACHE=true
-    volumes:
-      - ./data:/app/data
-      - ./logs:/app/logs
-    restart: unless-stopped
-    healthcheck:
-      test: [\"CMD\", \"curl\", \"-f\", \"http://localhost:8501/healthz\"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-
-  # Optional: Add database services for advanced deployments
-  # Note: Current architecture uses SQLite + DuckDB hybrid approach
-  # These are optional for specialized deployments only
-
-  # Future enhancement - Redis for caching
-  redis:
-    image: redis:7-alpine
-    restart: unless-stopped
-    volumes:
-      - redis_data:/data
-    command: redis-server --appendonly yes
-
-volumes:
-  redis_data:
-```
-
-### 🚀 Docker Deployment Commands
-
+#### Development Environment
 ```bash
-# Build image
-docker build -t osservatorio:latest .
-
-# Run container
-docker run -d -p 8501:8501 --name osservatorio osservatorio:latest
-
-# Use Docker Compose
+# Start development environment
 docker-compose up -d
 
 # View logs
-docker logs osservatorio
+docker-compose logs -f osservatorio-api
 
-# Stop container
-docker stop osservatorio
-
-# Remove container
-docker rm osservatorio
+# Access API: http://localhost:8000
+# Access Docs: http://localhost:8000/docs
 ```
 
----
+#### Production Environment
+```bash
+# Set production target
+BUILD_TARGET=production docker-compose up -d
 
-## 🔄 CI/CD Pipeline
-
-### 🎯 GitHub Actions Workflow
-
-**Main Workflow:** `.github/workflows/deploy.yml`
-```yaml
-name: Deploy Dashboard
-
-on:
-  push:
-    branches: [main, feature/dashboard]
-  pull_request:
-    branches: [main]
-
-env:
-  PYTHON_VERSION: '3.9'
-  NODE_VERSION: '18'
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-
-    strategy:
-      matrix:
-        python-version: [3.9, '3.10']
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
-      with:
-        python-version: ${{ matrix.python-version }}
-        cache: 'pip'
-
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install -r dashboard/requirements.txt
-
-    - name: Run tests
-      run: |
-        pytest tests/ -v --tb=short --cov=src --cov-report=xml
-
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
-      with:
-        file: ./coverage.xml
-        flags: unittests
-        name: codecov-umbrella
-
-    - name: Security scan
-      run: |
-        pip install bandit safety
-        bandit -r src/ -f json -o bandit-report.json
-        safety check
-
-    - name: Upload security report
-      uses: actions/upload-artifact@v3
-      with:
-        name: security-report
-        path: bandit-report.json
-
-  deploy:
-    needs: test
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Deploy to Streamlit Cloud
-      run: |
-        echo \"🚀 Deploying to Streamlit Cloud\"
-        echo \"Live URL: https://osservatorio-dashboard.streamlit.app/\"
-
-    - name: Create deployment badge
-      run: |
-        mkdir -p .github/badges
-        echo \"![Dashboard](https://img.shields.io/badge/Dashboard-Live-brightgreen)\" > .github/badges/dashboard.md
-
-    - name: Notify deployment
-      run: |
-        echo \"✅ Deployment successful\"
-        echo \"Dashboard URL: https://osservatorio-dashboard.streamlit.app/\"
+# Custom configuration
+API_PORT=8080 docker-compose up -d
 ```
 
-### 📊 Pipeline Stages
+### 🔧 Docker Services Architecture
 
-1. **🔍 Code Quality**
-   - Code formatting (Black)
-   - Import sorting (isort)
-   - Linting (flake8)
-   - Type checking (mypy)
+The Docker Compose stack provides a comprehensive microservices architecture:
 
-2. **🧪 Testing**
-   - Unit tests (pytest)
-   - Integration tests
-   - Performance tests
-   - Security tests
+| Service | Description | Port | CPU/Memory | Health Check | Dependencies |
+|---------|-------------|------|------------|--------------|-------------|
+| `osservatorio-api` | FastAPI Backend with Authentication, Export, Monitoring | 8000 | 2C/2GB | `/health/live` | redis, postgres |
+| `postgres` | PostgreSQL Production Database with optimization | 5432 | 2C/2GB | `pg_isready` | None |
+| `redis` | Redis Cache, Session Storage, Rate Limiting | 6379 | 1C/1GB | `redis-cli ping` | None |
+| `nginx` | Reverse Proxy with SSL, Load Balancing, Security | 80/443 | 1C/512MB | HTTP status | osservatorio-api |
+| `health-monitor` | Advanced Health Monitoring with Alerting | - | 0.1C/64MB | Internal checks | All services |
+| `build-benchmark` | Docker Build Performance Testing | - | Variable | Build metrics | None |
+| `performance-monitor` | System Resource Monitoring (Prometheus) | 9100 | 0.2C/128MB | Metrics endpoint | None |
 
-3. **🔒 Security**
-   - Vulnerability scanning (Bandit)
-   - Dependency checking (Safety)
-   - Security test suite
+#### Service Communication Flow
+```
+🌐 Internet → 🔒 Nginx (SSL/Proxy) → 🔧 FastAPI Backend → 📊 Databases
+                    ↓                        ↓              ↓
+                🛡️ Security              🔐 Auth System    💾 Data Layer
+                🚦 Rate Limiting         📈 Monitoring     🚀 Cache (Redis)
+                📊 Load Balancing        🚀 Export API     🏗️ Analytics (DuckDB)
+```
 
-4. **🚀 Deployment**
-   - Streamlit Cloud deployment
-   - Health check verification
-   - Performance monitoring
+### 📊 Monitoring and Profiles
+
+```bash
+# Start with monitoring
+docker-compose --profile monitoring up -d
+
+# Run performance benchmarks
+docker-compose --profile benchmark up build-benchmark
+
+# View benchmark results
+docker-compose exec build-benchmark cat /benchmark/results/build_benchmark_*.json
+```
+
+### 🛠️ Docker Management Commands
+
+```bash
+# Build and start services
+docker-compose up --build -d
+
+# View service status
+docker-compose ps
+
+# View logs
+docker-compose logs -f [service-name]
+
+# Execute commands in running container
+docker-compose exec osservatorio-api bash
+
+# Stop all services
+docker-compose down
+
+# Stop and remove volumes
+docker-compose down -v
+
+# Scale services
+docker-compose up -d --scale osservatorio-api=3
+```
 
 ---
 
@@ -592,244 +211,294 @@ jobs:
 
 ### 🌐 Environment Variables
 
-#### Production Environment
+#### Production Environment (`.env.production`)
 ```bash
-# Application
-LOG_LEVEL=INFO
-ENABLE_CACHE=true
-CACHE_TTL=3600
+# =============================================================================
+# APPLICATION CONFIGURATION (Production)
+# =============================================================================
+OSSERVATORIO_ENV=production
+OSSERVATORIO_LOG_LEVEL=WARNING
+OSSERVATORIO_DEBUG=false
 
-# ISTAT API
+# Build Configuration
+BUILD_TARGET=production
+VERSION=1.0.0
+BUILD_DATE=
+GIT_COMMIT_HASH=
+
+# =============================================================================
+# MULTI-DATABASE ARCHITECTURE
+# =============================================================================
+# SQLite (Primary metadata storage - Fast, reliable, embedded)
+DATABASE_URL=sqlite:///data/databases/osservatorio_metadata.db
+
+# DuckDB (Analytics and time series - OLAP optimized)
+DUCKDB_URL=data/databases/osservatorio.duckdb
+DUCKDB_MEMORY_LIMIT=4GB
+DUCKDB_THREADS=4
+
+# PostgreSQL (Production scalability - Optional for large deployments)
+POSTGRES_URL=postgresql://osservatorio:${DB_PASSWORD}@postgres:5432/osservatorio
+POSTGRES_POOL_SIZE=20
+POSTGRES_MAX_CONNECTIONS=200
+
+# =============================================================================
+# AUTHENTICATION & SECURITY SYSTEM (Issue #132)
+# =============================================================================
+# JWT Configuration - MUST BE CHANGED FOR PRODUCTION
+JWT_SECRET_KEY=__CHANGE_THIS_SUPER_SECRET_JWT_KEY_FOR_PRODUCTION__
+JWT_ALGORITHM=HS256
+JWT_ACCESS_TOKEN_EXPIRE_MINUTES=60
+JWT_REFRESH_TOKEN_EXPIRE_DAYS=7
+
+# API Key System
+API_KEY_PREFIX=osv_prod_
+DEFAULT_RATE_LIMIT=1000
+API_KEY_EXPIRY_DAYS=365
+
+# Password Security
+PASSWORD_MIN_LENGTH=8
+BCRYPT_ROUNDS=12
+
+# Rate Limiting Configuration
+RATE_LIMIT_REQUESTS_PER_MINUTE=1000
+RATE_LIMIT_BURST=50
+RATE_LIMIT_WINDOW=3600
+
+# =============================================================================
+# ISTAT DATA PIPELINE INTEGRATION
+# =============================================================================
 ISTAT_API_BASE_URL=https://sdmx.istat.it/SDMXWS/rest/
-ISTAT_API_TIMEOUT=30
+ISTAT_API_TIMEOUT=120
+ISTAT_API_RATE_LIMIT=50
+ISTAT_API_RETRY_ATTEMPTS=3
+ISTAT_API_RETRY_DELAY=5
 
-# Security
-SECURITY_RATE_LIMIT_REQUESTS=100
-SECURITY_RATE_LIMIT_WINDOW=3600
-SECURITY_BLOCKED_IPS=
+# Data Ingestion Configuration
+INGESTION_BATCH_SIZE=5000
+INGESTION_CONCURRENCY=8
+INGESTION_TIMEOUT=300
 
-# PowerBI (optional)
-POWERBI_CLIENT_ID=
-POWERBI_CLIENT_SECRET=
-POWERBI_TENANT_ID=
-POWERBI_WORKSPACE_ID=
+# =============================================================================
+# EXPORT SYSTEM CONFIGURATION (Issue #150)
+# =============================================================================
+EXPORT_MAX_ROWS=1000000
+EXPORT_TIMEOUT=600
+EXPORT_FORMATS=["csv", "json", "xml", "xlsx", "odata"]
+EXPORT_COMPRESSION_ENABLED=true
+EXPORT_STREAMING_ENABLED=true
 
-# Tableau (optional)
-TABLEAU_SERVER_URL=
-TABLEAU_USERNAME=
-TABLEAU_PASSWORD=
+# OData Configuration
+ODATA_MAX_PAGE_SIZE=10000
+ODATA_DEFAULT_PAGE_SIZE=100
+
+# =============================================================================
+# CACHING & PERFORMANCE
+# =============================================================================
+# Redis Configuration
+REDIS_URL=redis://redis:6379/0
+REDIS_MAXMEMORY=2gb
+REDIS_MAXMEMORY_POLICY=allkeys-lru
+REDIS_PERSISTENCE=yes
+
+# Application Caching
+ENABLE_CACHE=true
+CACHE_TTL=7200
+CACHE_MAX_SIZE=1000
+
+# Performance Settings
+QUERY_MAX_TIME_MS=3000
+BULK_INSERT_MAX_TIME_MS=15000
+API_RESPONSE_MAX_TIME_MS=1000
+
+# =============================================================================
+# MONITORING & HEALTH CHECKS
+# =============================================================================
+HEALTH_CHECK_TIMEOUT=30
+HEALTH_CHECK_INTERVAL=60
+ENABLE_METRICS=true
+METRICS_RETENTION_DAYS=90
+LOG_RETENTION_DAYS=30
+
+# =============================================================================
+# CONTAINER RESOURCE LIMITS
+# =============================================================================
+API_CPU_LIMIT=4.0
+API_MEMORY_LIMIT=4G
+API_CPU_RESERVATION=1.0
+API_MEMORY_RESERVATION=1G
+
+DB_CPU_LIMIT=2.0
+DB_MEMORY_LIMIT=2G
+REDIS_CPU_LIMIT=1.0
+REDIS_MEMORY_LIMIT=1G
 ```
 
-#### Development Environment
+#### Development Environment (`.env`)
 ```bash
 # Application
-LOG_LEVEL=DEBUG
+OSSERVATORIO_ENV=development
+OSSERVATORIO_LOG_LEVEL=DEBUG
+OSSERVATORIO_DEBUG=true
+
+# Build Configuration
+BUILD_TARGET=development
+VERSION=1.0.0-dev
+
+# Database
+DATABASE_URL=sqlite:///data/databases/osservatorio_dev.db
+
+# Security (Development Only)
+JWT_SECRET_KEY=dev-secret-key-not-for-production
+JWT_ACCESS_TOKEN_EXPIRE_MINUTES=1440  # 24 hours
+
+# Cache
 ENABLE_CACHE=false
 CACHE_TTL=300
-
-# Development
-STREAMLIT_SERVER_PORT=8501
-STREAMLIT_SERVER_HEADLESS=false
-STREAMLIT_SERVER_ENABLE_CORS=false
-
-# Testing
-PYTEST_TIMEOUT=30
-PYTEST_VERBOSE=true
 ```
 
-### 📁 Configuration Files
+### 📁 Docker Compose Environment Variables
 
-#### `config.py`
-```python
-import os
-from typing import Optional
+```bash
+# Ports
+API_PORT=8000
+REDIS_PORT=6379
+POSTGRES_PORT=5432
 
-class Config:
-    # Application settings
-    LOG_LEVEL: str = os.getenv(\"LOG_LEVEL\", \"INFO\")
-    ENABLE_CACHE: bool = os.getenv(\"ENABLE_CACHE\", \"true\").lower() == \"true\"
-    CACHE_TTL: int = int(os.getenv(\"CACHE_TTL\", \"3600\"))
+# Database
+DB_PASSWORD=secure_production_password
 
-    # ISTAT API settings
-    ISTAT_API_BASE_URL: str = os.getenv(
-        \"ISTAT_API_BASE_URL\",
-        \"https://sdmx.istat.it/SDMXWS/rest/\"
-    )
-    ISTAT_API_TIMEOUT: int = int(os.getenv(\"ISTAT_API_TIMEOUT\", \"30\"))
-
-    # Security settings
-    SECURITY_RATE_LIMIT_REQUESTS: int = int(os.getenv(\"SECURITY_RATE_LIMIT_REQUESTS\", \"100\"))
-    SECURITY_RATE_LIMIT_WINDOW: int = int(os.getenv(\"SECURITY_RATE_LIMIT_WINDOW\", \"3600\"))
-
-    # PowerBI settings
-    POWERBI_CLIENT_ID: Optional[str] = os.getenv(\"POWERBI_CLIENT_ID\")
-    POWERBI_CLIENT_SECRET: Optional[str] = os.getenv(\"POWERBI_CLIENT_SECRET\")
-    POWERBI_TENANT_ID: Optional[str] = os.getenv(\"POWERBI_TENANT_ID\")
-
-    @classmethod
-    def validate(cls) -> bool:
-        \"\"\"Validate configuration settings.\"\"\"
-        required_settings = [
-            \"ISTAT_API_BASE_URL\",
-            \"ISTAT_API_TIMEOUT\",
-        ]
-
-        for setting in required_settings:
-            if not getattr(cls, setting, None):
-                raise ValueError(f\"Missing required configuration: {setting}\")
-
-        return True
+# Build
+BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+VCS_REF=$(git rev-parse --short HEAD)
 ```
 
 ---
 
-## 🔒 Security Configuration
+## 🔐 Authentication Setup
 
-### 🛡️ Security Settings
+Complete JWT-based authentication system (Issue #132).
 
-#### Security Headers
-```python
-SECURITY_HEADERS = {
-    'X-Content-Type-Options': 'nosniff',
-    'X-Frame-Options': 'DENY',
-    'X-XSS-Protection': '1; mode=block',
-    'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
-    'Content-Security-Policy': \"default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';\",
-    'Referrer-Policy': 'strict-origin-when-cross-origin',
-    'Permissions-Policy': 'geolocation=(), microphone=(), camera=()'
-}
+### 🔑 User Registration & Login
+
+#### Register New User
+```bash
+curl -X POST "http://localhost:8000/auth/register" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "user@example.com",
+    "password": "secure_password123"
+  }'
 ```
 
-#### Rate Limiting Configuration
-```python
-RATE_LIMITS = {
-    'istat_api': {
-        'requests': 50,
-        'window': 3600  # 1 hour
-    },
-    'powerbi_api': {
-        'requests': 100,
-        'window': 3600  # 1 hour
-    },
-    'general': {
-        'requests': 1000,
-        'window': 3600  # 1 hour
-    }
-}
+#### Login User
+```bash
+curl -X POST "http://localhost:8000/auth/login" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "user@example.com",
+    "password": "secure_password123"
+  }'
 ```
 
-#### Circuit Breaker Configuration
-```python
-CIRCUIT_BREAKER_CONFIG = {
-    'failure_threshold': 5,
-    'recovery_timeout': 60,
-    'expected_exception': Exception
-}
+#### Use JWT Token
+```bash
+# Get user profile
+curl -X GET "http://localhost:8000/auth/profile" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+
+# Access protected endpoints
+curl -X GET "http://localhost:8000/datasets" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
 ```
+
+### 🔒 Authentication Configuration
+
+#### JWT Settings
+- **Algorithm**: HS256
+- **Expiration**: 1 hour (configurable)
+- **Blacklist**: Token invalidation on logout
+- **Refresh**: Not implemented in MVP (Issue #153)
+
+#### Password Security
+- **Hashing**: bcrypt with automatic salt
+- **Validation**: Email format and password strength
+- **Session**: Stateless JWT tokens
+
+### 🛡️ Security Features
+
+- ✅ Bcrypt password hashing
+- ✅ JWT token validation
+- ✅ Token blacklisting for logout
+- ✅ Rate limiting per endpoint
+- ✅ Input validation and sanitization
+- ✅ CORS configuration
 
 ---
 
-## 📊 Monitoring & Health Checks
+## 📊 Health Checks & Monitoring
 
-### 🔍 Health Check Endpoint
+### 🔍 Health Check Endpoints
 
-```python
-# dashboard/health.py
-import streamlit as st
-from datetime import datetime
-import requests
-import psutil
+```bash
+# Basic API health
+curl http://localhost:8000/health/live
 
-def health_check():
-    \"\"\"Application health check.\"\"\"
-    checks = {
-        'timestamp': datetime.now().isoformat(),
-        'status': 'healthy',
-        'checks': {}
-    }
+# Readiness check (dependencies)
+curl http://localhost:8000/health/ready
 
-    # Check memory usage
-    memory = psutil.virtual_memory()
-    checks['checks']['memory'] = {
-        'status': 'healthy' if memory.percent < 90 else 'warning',
-        'usage_percent': memory.percent,
-        'available_gb': memory.available / (1024**3)
-    }
+# Database health
+curl http://localhost:8000/health/db
 
-    # Check disk space
-    disk = psutil.disk_usage('/')
-    checks['checks']['disk'] = {
-        'status': 'healthy' if disk.percent < 90 else 'warning',
-        'usage_percent': disk.percent,
-        'free_gb': disk.free / (1024**3)
-    }
+# Cache health (Redis)
+curl http://localhost:8000/health/cache
 
-    # Check ISTAT API
-    try:
-        response = requests.get(
-            'https://sdmx.istat.it/SDMXWS/rest/dataflow/IT1',
-            timeout=10
-        )
-        checks['checks']['istat_api'] = {
-            'status': 'healthy' if response.status_code == 200 else 'unhealthy',
-            'response_time': response.elapsed.total_seconds(),
-            'status_code': response.status_code
-        }
-    except Exception as e:
-        checks['checks']['istat_api'] = {
-            'status': 'unhealthy',
-            'error': str(e)
-        }
+# External APIs health
+curl http://localhost:8000/health/external
 
-    # Overall status
-    if any(check['status'] == 'unhealthy' for check in checks['checks'].values()):
-        checks['status'] = 'unhealthy'
-    elif any(check['status'] == 'warning' for check in checks['checks'].values()):
-        checks['status'] = 'warning'
-
-    return checks
+# System metrics
+curl http://localhost:8000/health/metrics
 ```
 
-### 📈 Monitoring Dashboard
+### 📈 Docker Health Monitoring
 
-```python
-# dashboard/monitoring.py
-import streamlit as st
-import plotly.graph_objects as go
-from datetime import datetime, timedelta
+```bash
+# View health monitor logs
+docker-compose logs -f health-monitor
 
-def render_monitoring_dashboard():
-    \"\"\"Render system monitoring dashboard.\"\"\"
-    st.title(\"🔍 System Monitoring\")
+# Check container health status
+docker-compose ps
 
-    # Health status
-    health = health_check()
+# Health check details
+docker inspect osservatorio-api | grep -A 10 "Health"
+```
 
-    # Status indicator
-    status_color = {
-        'healthy': 'green',
-        'warning': 'orange',
-        'unhealthy': 'red'
-    }
+### 🎯 Health Check Configuration
 
-    st.markdown(f\"## System Status: :{status_color[health['status']]}_circle: {health['status'].title()}\")
+Each service has optimized health checks:
 
-    # Metrics
-    col1, col2, col3 = st.columns(3)
+```yaml
+# API Health Check
+healthcheck:
+  test: curl -f http://localhost:8000/health/live || exit 1
+  interval: 30s
+  timeout: 15s
+  retries: 3
+  start_period: 45s
 
-    with col1:
-        st.metric(\"Memory Usage\", f\"{health['checks']['memory']['usage_percent']:.1f}%\")
+# Redis Health Check
+healthcheck:
+  test: ["CMD", "redis-cli", "ping"]
+  interval: 10s
+  timeout: 5s
+  retries: 5
 
-    with col2:
-        st.metric(\"Disk Usage\", f\"{health['checks']['disk']['usage_percent']:.1f}%\")
-
-    with col3:
-        api_status = health['checks']['istat_api']['status']
-        st.metric(\"API Status\", api_status.title())
-
-    # Detailed checks
-    st.subheader(\"Detailed Health Checks\")
-    st.json(health)
+# PostgreSQL Health Check
+healthcheck:
+  test: ["CMD-SHELL", "pg_isready -U osservatorio -d osservatorio"]
+  interval: 10s
+  timeout: 5s
+  retries: 5
 ```
 
 ---
@@ -838,218 +507,150 @@ def render_monitoring_dashboard():
 
 ### 🚨 Common Issues
 
-#### 1. **Deployment Fails**
+#### 1. **Docker Build Fails**
 ```bash
-# Check logs
-streamlit logs
+# Check Docker daemon
+docker --version
+docker info
 
-# Common causes:
-# - Missing dependencies in requirements.txt
-# - Python version mismatch
-# - Import errors
+# Clear build cache
+docker builder prune -a
 
-# Solutions:
-# - Update requirements.txt
-# - Use Python 3.9
-# - Fix import paths
+# Rebuild from scratch
+docker-compose build --no-cache
 ```
 
-#### 2. **Performance Issues**
+#### 2. **Container Health Check Fails**
+```bash
+# Check health status
+docker-compose ps
+docker inspect [container-name] | grep -A 20 "Health"
+
+# Check logs
+docker-compose logs -f [service-name]
+
+# Test health endpoint manually
+docker-compose exec osservatorio-api curl http://localhost:8000/health/live
+```
+
+#### 3. **Authentication Issues**
+```bash
+# Verify JWT configuration
+docker-compose exec osservatorio-api env | grep JWT
+
+# Test registration
+curl -X POST http://localhost:8000/auth/register -H "Content-Type: application/json" -d '{"email":"test@test.com","password":"test123"}'
+
+# Check authentication logs
+docker-compose logs -f osservatorio-api | grep -i auth
+```
+
+#### 4. **Database Connection Issues**
+```bash
+# Check database container
+docker-compose exec postgres pg_isready -U osservatorio
+
+# Test database connection from API
+docker-compose exec osservatorio-api python -c "
+from src.database.sqlite.manager import SQLiteMetadataManager
+manager = SQLiteMetadataManager()
+print('Database connection:', 'OK' if manager else 'FAILED')
+"
+```
+
+#### 5. **Performance Issues**
 ```bash
 # Check resource usage
-htop  # or top on Mac/Linux
-taskmgr  # on Windows
+docker stats
 
-# Common causes:
-# - Large datasets in memory
-# - Inefficient data processing
-# - Missing caching
+# View performance metrics
+curl http://localhost:8000/health/metrics
 
-# Solutions:
-# - Implement data pagination
-# - Use @st.cache_data
-# - Optimize data processing
+# Check logs for slow queries
+docker-compose logs osservatorio-api | grep -i "slow\|timeout"
 ```
 
-#### 3. **Security Errors**
+### 🔧 Debug Mode
+
+Enable debug logging:
 ```bash
-# Check security logs
-tail -f logs/security.log
+# Development environment
+OSSERVATORIO_LOG_LEVEL=DEBUG docker-compose up -d
 
-# Common causes:
-# - Rate limit exceeded
-# - Invalid file paths
-# - Blocked IPs
-
-# Solutions:
-# - Implement proper rate limiting
-# - Validate all inputs
-# - Review IP blocking rules
+# View debug logs
+docker-compose logs -f osservatorio-api | grep DEBUG
 ```
 
-#### 4. **API Connection Issues**
+### 📊 Container Resource Monitoring
+
 ```bash
-# Test API connectivity
-curl -I https://sdmx.istat.it/SDMXWS/rest/dataflow/IT1
+# Monitor all containers
+docker stats
 
-# Common causes:
-# - Network connectivity
-# - API rate limiting
-# - Invalid credentials
+# Monitor specific service
+docker stats osservatorio-api
 
-# Solutions:
-# - Check network configuration
-# - Implement retry logic
-# - Verify API credentials
-```
+# Check memory usage
+docker-compose exec osservatorio-api free -h
 
-### 🔍 Debug Mode
-
-```python
-# Enable debug mode
-import streamlit as st
-
-if st.query_params.get('debug') == 'true':
-    st.set_option('client.showErrorDetails', True)
-    st.set_option('runner.magicEnabled', True)
-```
-
-### 📊 Performance Profiling
-
-```python
-# Profile performance
-import cProfile
-import pstats
-import io
-
-def profile_function(func):
-    \"\"\"Profile a function's performance.\"\"\"
-    pr = cProfile.Profile()
-    pr.enable()
-    result = func()
-    pr.disable()
-
-    s = io.StringIO()
-    ps = pstats.Stats(pr, stream=s).sort_stats('cumulative')
-    ps.print_stats()
-
-    st.text(s.getvalue())
-    return result
+# Check disk usage
+docker-compose exec osservatorio-api df -h
 ```
 
 ---
 
-## 📈 Performance Optimization
-
-### ⚡ Optimization Strategies
-
-#### 1. **Data Caching**
-```python
-import streamlit as st
-
-@st.cache_data(ttl=3600)
-def expensive_computation():
-    # Expensive operation
-    return result
-
-# Use session state for user-specific data
-if 'user_data' not in st.session_state:
-    st.session_state.user_data = load_user_data()
-```
-
-#### 2. **Lazy Loading**
-```python
-def load_data_on_demand(category):
-    \"\"\"Load data only when needed.\"\"\"
-    if category not in st.session_state:
-        with st.spinner(f'Loading {category} data...'):
-            st.session_state[category] = fetch_data(category)
-    return st.session_state[category]
-```
-
-#### 3. **Memory Management**
-```python
-import gc
-
-def cleanup_memory():
-    \"\"\"Clean up memory usage.\"\"\"
-    # Clear caches
-    st.cache_data.clear()
-
-    # Force garbage collection
-    gc.collect()
-
-    # Clear session state if needed
-    for key in list(st.session_state.keys()):
-        if key.startswith('temp_'):
-            del st.session_state[key]
-```
-
----
-
-## 🎯 Deployment Checklist
+## 🎯 Production Deployment Checklist
 
 ### ✅ Pre-Deployment Checklist
 
-#### Code Quality
-- [ ] All tests pass (192/192)
-- [ ] Code formatted with Black
-- [ ] Imports sorted with isort
-- [ ] Linting passes (flake8)
-- [ ] Security scan clean (Bandit)
-- [ ] Dependencies updated (Safety)
-
 #### Security
-- [ ] Security headers configured
-- [ ] Rate limiting implemented
-- [ ] Input validation active
-- [ ] Path traversal protection
-- [ ] Circuit breakers configured
-- [ ] Error handling comprehensive
+- [ ] JWT_SECRET_KEY changed from default
+- [ ] DB_PASSWORD set to secure value
+- [ ] CORS origins configured for production domains
+- [ ] Rate limiting configured appropriately
+- [ ] SSL certificates configured (if applicable)
 
-#### Performance
-- [ ] Caching implemented
-- [ ] Memory usage optimized
-- [ ] Load time <5 seconds
-- [ ] Responsive design verified
-- [ ] Mobile compatibility tested
+#### Configuration
+- [ ] BUILD_TARGET=production set
+- [ ] Environment variables configured
+- [ ] Database persistence volumes mounted
+- [ ] Log retention configured
+- [ ] Health checks validated
 
-#### Documentation
-- [ ] README updated
-- [ ] API documentation current
-- [ ] Deployment guide updated
-- [ ] Architecture documented
-- [ ] Change log updated
-
-### ✅ Post-Deployment Checklist
-
-#### Verification
-- [ ] Application accessible
-- [ ] All features working
-- [ ] Performance metrics acceptable
-- [ ] Security headers present
+#### Testing
+- [ ] All services start successfully
+- [ ] Authentication flow working
 - [ ] Health checks passing
+- [ ] API endpoints responding
+- [ ] Database connections stable
+
+### ✅ Post-Deployment Verification
+
+#### API Health
+- [ ] `curl http://localhost:8000/health/live` returns 200
+- [ ] `curl http://localhost:8000/health/ready` returns 200
+- [ ] `curl http://localhost:8000/docs` loads OpenAPI documentation
+
+#### Authentication
+- [ ] User registration working
+- [ ] User login returning JWT token
+- [ ] Protected endpoints require authentication
+- [ ] Token expiration working correctly
 
 #### Monitoring
-- [ ] Monitoring dashboard active
-- [ ] Alert system configured
-- [ ] Log aggregation working
-- [ ] Performance tracking enabled
-- [ ] Error tracking active
-
-#### Backup
-- [ ] Data backup verified
-- [ ] Configuration backed up
-- [ ] Rollback plan tested
-- [ ] Recovery procedures documented
+- [ ] Health monitor container running
+- [ ] Logs being generated and accessible
+- [ ] Resource usage within acceptable limits
+- [ ] All containers showing healthy status
 
 ---
 
 ## 🔗 Related Documentation
 
-- **[README.md](README.md)**: Project overview and quick start
-- **[ARCHITECTURE.md](ARCHITECTURE.md)**: Detailed system architecture
-- **[API_REFERENCE.md](API_REFERENCE.md)**: Complete API documentation
+- **[DEPLOYMENT.md](../core/DEPLOYMENT.md)**: Quick Docker commands
+- **[README.md](../../README.md)**: Project overview and setup
+- **Issue #53**: Complete Production Deployment Strategy with Docker
+- **Issue #132**: User Authentication System Implementation
 
 ---
 
@@ -1058,10 +659,9 @@ def cleanup_memory():
 For deployment support:
 - **GitHub Issues**: [Report deployment issues](https://github.com/AndreaBozzo/Osservatorio/issues)
 - **Documentation**: [Complete documentation](https://github.com/AndreaBozzo/Osservatorio)
-- **Live Dashboard**: [https://osservatorio-dashboard.streamlit.app/](https://osservatorio-dashboard.streamlit.app/)
 
 ---
 
-**🚀 Deployment Status**: ✅ **Production Ready** | 🔄 **Actively Maintained** | 🚀 **Auto-Deployed**
+**🚀 Deployment Status**: ✅ **Production Ready** | 🔄 **Docker Native** | 🔐 **Authentication Complete**
 
-*Last updated: January 18, 2025*
+*Last updated: September 10, 2025*

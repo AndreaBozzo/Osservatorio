@@ -2,7 +2,7 @@
 # Production-ready FastAPI application with optimized performance
 
 # Build stage
-FROM python:3.11-slim as builder
+FROM python:3.11-slim AS builder
 
 # Set build arguments
 ARG BUILD_DATE
@@ -46,7 +46,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY pyproject.toml ./
 
 # Production stage
-FROM python:3.11-slim as production
+FROM python:3.11-slim AS production
 
 # Install runtime system dependencies and create user in one layer
 RUN apt-get update && apt-get install -y \
@@ -101,7 +101,7 @@ HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
 CMD ["uvicorn", "src.api.fastapi_app:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]
 
 # Development stage
-FROM production as development
+FROM production AS development
 
 USER root
 

@@ -38,6 +38,7 @@ python-multipart>=0.0.6
 
 # Authentication and security
 python-jose[cryptography]>=3.3.0
+PyJWT>=2.8.0
 passlib[bcrypt]>=1.7.4
 
 # Export functionality already covered by pyarrow above
