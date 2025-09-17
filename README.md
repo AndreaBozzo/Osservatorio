@@ -11,6 +11,8 @@
 
 **Osservatorio** is a platform for accessing and analyzing Italian statistical data from ISTAT.
 The project provides modern REST APIs to query over 500 statistical datasets with scalable architecture.
+Our goal is to unify multiple italian sources, allowing analysts, data scientist and anyone else to utilize them with ease
+and on the same platform.
 
 **⚠️ STATUS: MVP in active development**
 
@@ -37,5 +39,10 @@ docker-compose up -d
 
 ## 📚 Documentation
 
+- [Architecture](docs/core/ARCHITECTURE.md) - Current and planned
+architecture
 - [Deployment Guide](docs/core/DEPLOYMENT.md) - Docker setup and production
 - [Project Status](docs/project/PROJECT_STATE.md) - Current development state
+- [Ingestion](docs/guides/INGESTION_PIPELINE_GUIDE.md)  - Current
+ingestion guidelines
+- [REST API](docs/api/FASTAPI_REST_API.md)  - REST API Guide
