@@ -17,18 +17,22 @@ from typing import Optional
 
 import bcrypt
 
-from src.database.sqlite.manager_factory import (
+from database.sqlite.manager_factory import (
     get_audit_manager,
     get_configuration_manager,
     get_user_manager,
 )
-from src.utils.logger import get_logger
-from src.utils.security_enhanced import SecurityManager
 
-from .models import APIKey
+try:
+    from utils.logger import get_logger
+except ImportError:
+    from src.utils.logger import get_logger
+from src.utils.mvp_security import security
+
+from .models import APIKey, User
 
 logger = get_logger(__name__)
-security = SecurityManager()
+# Security manager imported above
 
 
 class SQLiteAuthManager:
@@ -116,6 +120,20 @@ class SQLiteAuthManager:
                         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                         UNIQUE(api_key_id, endpoint, window_start),
                         FOREIGN KEY (api_key_id) REFERENCES api_credentials (id)
+                    )
+                """
+                )
+
+                # Create users table for basic authentication
+                cursor.execute(
+                    """
+                    CREATE TABLE IF NOT EXISTS users (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        email TEXT NOT NULL UNIQUE,
+                        password_hash TEXT NOT NULL,
+                        is_active INTEGER DEFAULT 1,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                     )
                 """
                 )
@@ -508,3 +526,107 @@ class SQLiteAuthManager:
 
         except Exception as e:
             logger.error(f"Failed to log auth event: {e}")
+
+    def create_user(self, email: str, password: str) -> Optional[User]:
+        """Create a new user with email and password
+
+        Args:
+            email: User email address
+            password: Plain text password (will be hashed)
+
+        Returns:
+            User object if created successfully, None otherwise
+        """
+        try:
+            # Validate email format
+            if "@" not in email or "." not in email:
+                raise ValueError("Invalid email format")
+
+            # Hash password
+            password_hash = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+
+            with self.audit_manager.transaction() as conn:
+                cursor = conn.cursor()
+
+                # Check if user already exists
+                cursor.execute("SELECT id FROM users WHERE email = ?", (email,))
+                if cursor.fetchone():
+                    raise ValueError("User already exists")
+
+                # Create user
+                cursor.execute(
+                    """
+                    INSERT INTO users (email, password_hash, is_active, created_at, updated_at)
+                    VALUES (?, ?, ?, ?, ?)
+                    """,
+                    (email, password_hash, True, datetime.now(), datetime.now()),
+                )
+
+                user_id = cursor.lastrowid
+                conn.commit()
+
+                # Log creation
+                self._log_auth_event(
+                    "user_created", f"user:{user_id}", {"email": email}
+                )
+
+                return User(
+                    id=user_id,
+                    email=email,
+                    password_hash=password_hash,
+                    is_active=True,
+                    created_at=datetime.now(),
+                    updated_at=datetime.now(),
+                )
+
+        except ValueError:
+            raise
+        except Exception as e:
+            logger.error(f"Failed to create user: {e}")
+            return None
+
+    def verify_user(self, email: str, password: str) -> Optional[User]:
+        """Verify user credentials
+
+        Args:
+            email: User email
+            password: Plain text password
+
+        Returns:
+            User object if credentials are valid, None otherwise
+        """
+        try:
+            with self.audit_manager.transaction() as conn:
+                cursor = conn.cursor()
+
+                cursor.execute(
+                    "SELECT id, email, password_hash, is_active, created_at, updated_at FROM users WHERE email = ? AND is_active = 1",
+                    (email,),
+                )
+
+                row = cursor.fetchone()
+                if not row:
+                    return None
+
+                user_id, email, password_hash, is_active, created_at, updated_at = row
+
+                # Verify password
+                if bcrypt.checkpw(password.encode(), password_hash.encode()):
+                    self._log_auth_event(
+                        "user_login", f"user:{user_id}", {"email": email}
+                    )
+
+                    return User(
+                        id=user_id,
+                        email=email,
+                        password_hash=password_hash,
+                        is_active=is_active,
+                        created_at=created_at,
+                        updated_at=updated_at,
+                    )
+
+            return None
+
+        except Exception as e:
+            logger.error(f"Failed to verify user: {e}")
+            return None

@@ -11,7 +11,28 @@ from typing import Any, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, validator
 
-from src.services.models import ConnectionType, DataflowCategory, RefreshFrequency
+
+# Core enums for MVP API
+class DataflowCategory(str, Enum):
+    """Dataflow categories for ISTAT data organization"""
+
+    POPOLAZIONE = "popolazione"
+    ECONOMIA = "economia"
+    LAVORO = "lavoro"
+    TERRITORIO = "territorio"
+    ISTRUZIONE = "istruzione"
+    SALUTE = "salute"
+    ALTRO = "altro"
+
+
+class RefreshFrequency(str, Enum):
+    """Data refresh frequency options"""
+
+    DAILY = "daily"
+    WEEKLY = "weekly"
+    MONTHLY = "monthly"
+    QUARTERLY = "quarterly"
+    YEARLY = "yearly"
 
 
 class APIScope(str, Enum):
@@ -318,180 +339,33 @@ class HealthCheckResponse(BaseModel):
     model_config = ConfigDict(json_encoders={datetime: lambda v: v.isoformat()})
 
 
-# Dataflow Analysis Models
-class DataflowAnalysisRequest(BaseModel):
-    """Request model for dataflow analysis"""
+# User Authentication Models
+class UserRegisterRequest(BaseModel):
+    """User registration request"""
 
-    xml_content: Optional[str] = Field(None, description="XML content to analyze")
-    xml_file_path: Optional[str] = Field(None, description="Path to XML file")
-    categories: Optional[list[DataflowCategory]] = Field(
-        None, description="Filter by categories"
-    )
-    min_relevance_score: int = Field(0, description="Minimum relevance score")
-    max_results: int = Field(100, description="Maximum number of results")
-    include_tests: bool = Field(
-        True, description="Whether to include data access tests"
-    )
-    only_tableau_ready: bool = Field(
-        False, description="Only return Tableau-ready dataflows"
+    email: str = Field(..., description="User email address")
+    password: str = Field(
+        ..., min_length=6, description="Password (minimum 6 characters)"
     )
 
-    @validator("max_results")
-    def validate_max_results(cls, v):
-        return min(max(1, v), 1000)
+    @validator("email")
+    def validate_email(cls, v):
+        if "@" not in v or "." not in v:
+            raise ValueError("Invalid email format")
+        return v.lower().strip()
 
 
-class DataflowInfo(BaseModel):
-    """Dataflow information model"""
+class UserLoginRequest(BaseModel):
+    """User login request"""
 
-    id: str = Field(..., description="ISTAT dataflow identifier")
-    name_it: Optional[str] = Field(None, description="Italian name")
-    name_en: Optional[str] = Field(None, description="English name")
-    display_name: str = Field(..., description="Display name")
-    description: Optional[str] = Field("", description="Dataflow description")
-    category: DataflowCategory = Field(..., description="Assigned category")
-    relevance_score: int = Field(0, description="Calculated relevance score")
-    created_at: Optional[datetime] = Field(None, description="Analysis timestamp")
+    email: str = Field(..., description="User email address")
+    password: str = Field(..., description="Password")
 
 
-class DataflowTestInfo(BaseModel):
-    """Dataflow test results model"""
+class UserAuthResponse(APIResponse):
+    """User authentication response"""
 
-    dataflow_id: str = Field(..., description="Tested dataflow ID")
-    data_access_success: bool = Field(False, description="Whether data is accessible")
-    status_code: Optional[int] = Field(None, description="HTTP status code")
-    size_bytes: int = Field(0, description="Data size in bytes")
-    size_mb: float = Field(0.0, description="Data size in megabytes")
-    observations_count: int = Field(0, description="Number of observations found")
-    sample_file: Optional[str] = Field(None, description="Path to saved sample file")
-    parse_error: bool = Field(False, description="Whether XML parsing failed")
-    error_message: Optional[str] = Field(None, description="Error details if any")
-    tested_at: datetime = Field(
-        default_factory=datetime.now, description="Test timestamp"
-    )
-    is_successful: bool = Field(
-        False, description="Whether the test was successful overall"
-    )
-
-
-class TableauReadyDataflow(BaseModel):
-    """Tableau-ready dataflow model"""
-
-    dataflow: DataflowInfo = Field(..., description="Dataflow information")
-    test: DataflowTestInfo = Field(..., description="Test results")
-    tableau_ready: bool = Field(
-        False, description="Whether ready for Tableau integration"
-    )
-    suggested_connection: ConnectionType = Field(ConnectionType.DIRECT_CONNECTION)
-    suggested_refresh: RefreshFrequency = Field(RefreshFrequency.QUARTERLY)
-    priority: float = Field(0.0, description="Calculated priority score")
-
-
-class DataflowAnalysisResponse(APIResponse):
-    """Response model for dataflow analysis"""
-
-    total_analyzed: int = Field(..., description="Total dataflows analyzed")
-    categorized_dataflows: dict[str, list[DataflowInfo]] = Field(
-        default_factory=dict, description="Dataflows grouped by category"
-    )
-    test_results: list[TableauReadyDataflow] = Field(
-        default_factory=list, description="Test results for analyzed dataflows"
-    )
-    tableau_ready_count: int = Field(0, description="Number of Tableau-ready dataflows")
-    analysis_timestamp: datetime = Field(
-        default_factory=datetime.now, description="When analysis was performed"
-    )
-    performance_metrics: dict[str, Any] = Field(
-        default_factory=dict, description="Performance metrics from analysis"
-    )
-
-
-# Categorization Rules Models
-class CategorizationRuleCreate(BaseModel):
-    """Request model for creating categorization rules"""
-
-    rule_id: str = Field(..., description="Unique rule identifier", min_length=1)
-    category: DataflowCategory = Field(..., description="Target category")
-    keywords: list[str] = Field(
-        ..., description="List of keywords for matching", min_items=1
-    )
-    priority: int = Field(5, description="Rule priority (higher = more important)")
-    description: Optional[str] = Field(None, description="Rule description")
-
-    @validator("keywords")
-    def validate_keywords(cls, v):
-        """Ensure keywords are non-empty and stripped."""
-        return [keyword.strip() for keyword in v if keyword.strip()]
-
-
-class CategorizationRuleUpdate(BaseModel):
-    """Request model for updating categorization rules"""
-
-    keywords: Optional[list[str]] = Field(None, description="Updated keywords list")
-    priority: Optional[int] = Field(None, description="Updated priority")
-    is_active: Optional[bool] = Field(None, description="Whether rule is active")
-    description: Optional[str] = Field(None, description="Updated description")
-
-    @validator("keywords")
-    def validate_keywords(cls, v):
-        if v is not None:
-            return [keyword.strip() for keyword in v if keyword.strip()]
-        return v
-
-
-class CategorizationRuleResponse(BaseModel):
-    """Response model for categorization rules"""
-
-    id: Optional[int] = Field(None, description="Database ID")
-    rule_id: str = Field(..., description="Rule identifier")
-    category: DataflowCategory = Field(..., description="Target category")
-    keywords: list[str] = Field(..., description="Keywords for matching")
-    priority: int = Field(..., description="Rule priority")
-    is_active: bool = Field(True, description="Whether rule is active")
-    description: Optional[str] = Field(None, description="Rule description")
-    created_at: Optional[datetime] = Field(None, description="Creation timestamp")
-    updated_at: Optional[datetime] = Field(None, description="Last update timestamp")
-
-
-class CategorizationRulesListResponse(APIResponse):
-    """Response model for categorization rules list"""
-
-    rules: list[CategorizationRuleResponse] = Field(
-        ..., description="List of categorization rules"
-    )
-    total_count: int = Field(..., description="Total number of rules")
-    active_count: int = Field(..., description="Number of active rules")
-
-
-# Bulk Operations Models
-class BulkAnalysisRequest(BaseModel):
-    """Request model for bulk dataflow analysis"""
-
-    dataflow_ids: list[str] = Field(
-        ..., description="List of dataflow IDs to analyze", min_items=1
-    )
-    include_tests: bool = Field(True, description="Whether to run data access tests")
-    save_samples: bool = Field(False, description="Whether to save sample data files")
-    max_concurrent: int = Field(5, description="Maximum concurrent requests")
-
-    @validator("max_concurrent")
-    def validate_concurrent_limit(cls, v):
-        return min(max(1, v), 10)
-
-    @validator("dataflow_ids")
-    def validate_dataflow_ids(cls, v):
-        if len(v) > 50:  # Reasonable limit for bulk operations
-            raise ValueError("Maximum 50 dataflow IDs allowed per bulk request")
-        return v
-
-
-class BulkAnalysisResponse(APIResponse):
-    """Response model for bulk dataflow analysis"""
-
-    requested_count: int = Field(..., description="Number of dataflows requested")
-    successful_count: int = Field(..., description="Number of successful analyses")
-    failed_count: int = Field(..., description="Number of failed analyses")
-    results: list[TableauReadyDataflow] = Field(..., description="Analysis results")
-    errors: list[str] = Field(
-        default_factory=list, description="Error messages for failed analyses"
-    )
+    access_token: str = Field(..., description="JWT access token")
+    token_type: str = Field("bearer", description="Token type")
+    expires_in: int = Field(3600, description="Token expiration in seconds")
+    user_info: dict = Field(..., description="Basic user information")

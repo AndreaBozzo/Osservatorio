@@ -70,18 +70,6 @@ def unified_repository():
         repo.close()
 
 
-@pytest.fixture
-def dataflow_analysis_service():
-    """Create a DataflowAnalysisService for testing."""
-    from src.services.service_factory import get_dataflow_analysis_service
-
-    service = get_dataflow_analysis_service()
-    yield service
-    # Cleanup if needed
-    if hasattr(service, "close"):
-        service.close()
-
-
 @pytest.fixture(autouse=True)
 def silent_temp_file_manager():
     """Enable silent mode for TempFileManager during tests."""
@@ -205,8 +193,8 @@ def mock_config():
 
 
 @pytest.fixture
-def sample_tableau_datasets():
-    """Sample Tableau-ready datasets for testing."""
+def sample_export_datasets():
+    """Sample export-ready datasets for testing."""
     return [
         {
             "dataflow_id": "101_12",
@@ -230,8 +218,8 @@ def sample_tableau_datasets():
 
 
 @pytest.fixture
-def sample_powerbi_datasets():
-    """Sample PowerBI-ready datasets for testing."""
+def sample_universal_datasets():
+    """Sample universal export datasets for testing."""
     return [
         {
             "id": "101_12",
@@ -239,10 +227,10 @@ def sample_powerbi_datasets():
             "category": "popolazione",
             "formats": ["csv", "excel", "parquet", "json"],
             "file_paths": {
-                "csv": "data/processed/powerbi/popolazione_101_12.csv",
-                "excel": "data/processed/powerbi/popolazione_101_12.xlsx",
-                "parquet": "data/processed/powerbi/popolazione_101_12.parquet",
-                "json": "data/processed/powerbi/popolazione_101_12.json",
+                "csv": "data/processed/export/popolazione_101_12.csv",
+                "excel": "data/processed/export/popolazione_101_12.xlsx",
+                "parquet": "data/processed/export/popolazione_101_12.parquet",
+                "json": "data/processed/export/popolazione_101_12.json",
             },
         }
     ]
@@ -319,32 +307,15 @@ def category_keywords():
     }
 
 
-@pytest.fixture
-def mock_powerbi_client():
-    """Mock PowerBI client for testing."""
-    with patch("src.api.powerbi_api.PowerBIAPI") as mock_client:
-        mock_instance = Mock()
-        mock_client.return_value = mock_instance
-
-        # Mock successful authentication
-        mock_instance.authenticate.return_value = True
-        mock_instance.get_workspaces.return_value = [
-            {"id": "test-workspace-id", "name": "Test Workspace"}
-        ]
-        mock_instance.create_dataset.return_value = {"id": "test-dataset-id"}
-
-        yield mock_instance
-
-
 # Day 6: Centralized test data fixtures for hardcoded data elimination
 
 
 @pytest.fixture
-def sample_powerbi_test_data():
-    """Centralized fixture for PowerBI integration test data."""
+def sample_export_test_data():
+    """Centralized fixture for export integration test data."""
     return [
         {
-            "dataset_id": "TEST_POWERBI_DATASET",
+            "dataset_id": "TEST_EXPORT_DATASET",
             "year": 2023,
             "territory_code": "01",
             "territory_name": "Piemonte",
@@ -355,7 +326,7 @@ def sample_powerbi_test_data():
             "last_updated": "2023-01-01T10:00:00",
         },
         {
-            "dataset_id": "TEST_POWERBI_DATASET",
+            "dataset_id": "TEST_EXPORT_DATASET",
             "year": 2023,
             "territory_code": "02",
             "territory_name": "Valle d'Aosta",
@@ -366,7 +337,7 @@ def sample_powerbi_test_data():
             "last_updated": "2023-01-01T10:00:00",
         },
         {
-            "dataset_id": "TEST_POWERBI_DATASET",
+            "dataset_id": "TEST_EXPORT_DATASET",
             "year": 2024,
             "territory_code": "01",
             "territory_name": "Piemonte",
@@ -426,7 +397,6 @@ def sample_api_test_urls():
         "redis_url": "redis://localhost:6379/0",
         "test_redis_url": "redis://localhost:6379/1",
         "cors_origins": ["https://localhost:3000", "http://localhost:3000"],
-        "powerbi_base_url": "https://api.powerbi.com/v1.0/",
     }
 
 
@@ -612,6 +582,13 @@ def temp_db_class():
         yield db_path
 
 
+# Simple fixtures for simple_pipeline testing
+@pytest.fixture
+def simple_mock_sdmx():
+    """Simple SDMX data for testing."""
+    return "<GenericData><DataSet><Obs><ObsValue value='1000'/></Obs></DataSet></GenericData>"
+
+
 # Test markers for different test categories
 def pytest_configure(config):
     """Configure pytest markers."""
@@ -622,3 +599,6 @@ def pytest_configure(config):
     config.addinivalue_line("markers", "performance: Performance and scalability tests")
     config.addinivalue_line("markers", "slow: Slow running tests")
     config.addinivalue_line("markers", "api: Tests requiring API access")
+    config.addinivalue_line(
+        "markers", "simple_pipeline: Tests specific to SimpleIngestionPipeline"
+    )

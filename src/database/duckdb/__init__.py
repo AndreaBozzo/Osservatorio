@@ -14,7 +14,7 @@ from .config import (
     get_table_config,
     validate_config,
 )
-from .manager import DuckDBManager, get_manager, reset_manager
+from .manager import DuckDBManager, get_manager
 from .query_builder import (
     AggregateFunction,
     DuckDBQueryBuilder,
@@ -35,13 +35,6 @@ from .simple_adapter import (
     create_temp_adapter,
 )
 
-# from .query_optimizer import QueryOptimizer, QueryType, create_optimizer
-# from .partitioning import (
-#     PartitionManager, YearPartitionStrategy, TerritoryPartitionStrategy,
-#     HybridPartitionStrategy, create_partition_manager
-# )
-
-
 __all__ = [
     # Configuration
     "get_duckdb_config",
@@ -60,7 +53,6 @@ __all__ = [
     # Core components
     "DuckDBManager",
     "get_manager",
-    "reset_manager",
     "ISTATSchemaManager",
     "initialize_schema",
     # Query Builder

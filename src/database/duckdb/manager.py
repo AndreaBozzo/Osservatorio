@@ -8,6 +8,7 @@ This module provides a high-level database manager that handles:
 """
 
 import atexit
+import os
 import time
 from contextlib import contextmanager
 from pathlib import Path
@@ -17,11 +18,12 @@ from typing import Any, Optional, Union
 import duckdb
 import pandas as pd
 
-from src.utils.logger import get_logger
+try:
+    from utils.logger import get_logger
+except ImportError:
+    from src.utils.logger import get_logger
 
 from .config import get_connection_string, get_duckdb_config
-
-# from src.utils.security_enhanced import security_manager
 
 logger = get_logger(__name__)
 
@@ -77,22 +79,26 @@ class DuckDBManager:
             return  # Already connected
 
         try:
-            # Ensure the database path is properly encoded as string
-            db_path_str = str(self.connection_string).replace("\\", "/")
+            # Ensure the database path is properly encoded for Windows
+            db_path_str = str(self.connection_string)
 
-            # Handle database path - if it exists and is invalid, remove it
+            # Handle Windows path properly - keep backslashes for Windows
+            if os.name == "nt":  # Windows
+                db_path_str = os.path.normpath(db_path_str)
+            else:
+                db_path_str = db_path_str.replace("\\", "/")
+
+            # Handle database path
             db_path = Path(db_path_str)
             db_path.parent.mkdir(parents=True, exist_ok=True)
 
-            # If database file exists but is empty/invalid, remove it
-            if db_path.exists() and db_path.stat().st_size == 0:
-                db_path.unlink()
+            # Let DuckDB handle its own file validation - no manual corruption detection
 
             print(f"Connecting to database: {db_path_str}")
 
-            # Create connection with minimal config for stability
+            # Create connection with proper encoding handling
             self._connection = duckdb.connect(
-                database=db_path_str,
+                database=str(db_path_str),  # Ensure string conversion
                 read_only=self.config.get("read_only", False),
                 config={"enable_object_cache": False},
             )
@@ -120,22 +126,25 @@ class DuckDBManager:
     def get_connection(self):
         """Get database connection with automatic cleanup.
 
-        Yields:
-            DuckDB connection object
+        STABLE PATTERN: Always create fresh connection per context.
+        This prevents lock issues and ensures clean state.
         """
-        # Simplified connection management to avoid deadlocks
+        conn = None
         try:
-            if self._connection is None:
-                print("Initializing connection...")
-                self._initialize_connection()
-            print("Yielding connection...")
-            yield self._connection
-            print("Connection context exited successfully")
+            # Always create fresh connection - no shared state
+            db_path_str = self.connection_string
+            conn = duckdb.connect(database=str(db_path_str))
+            yield conn
         except Exception as e:
             print(f"Connection error: {e}")
-            # Reset connection on error
-            self._connection = None
             raise
+        finally:
+            # Always clean up connection
+            if conn:
+                try:
+                    conn.close()
+                except Exception:
+                    pass  # Ignore close errors
 
     def execute_query(
         self, query: str, parameters: Optional[dict[str, Any]] = None
@@ -243,11 +252,33 @@ class DuckDBManager:
                     if not part.replace("_", "").isalnum() or not part.islower():
                         raise ValueError(f"Invalid table name component: {part}")
 
-                conn.register("temp_df", data)
-                # Table name validated above - safe for f-string usage
-                insert_query = f"INSERT INTO {table_name} SELECT * FROM temp_df"  # nosec B608
-                conn.execute(insert_query)
-                conn.unregister("temp_df")
+                # Get table schema and reorder DataFrame to match
+                schema_query = f"DESCRIBE {table_name}"
+                table_columns = [
+                    row[0] for row in conn.execute(schema_query).fetchall()
+                ]
+                df_columns = list(data.columns)
+                available_columns = [col for col in table_columns if col in df_columns]
+
+                if not available_columns:
+                    raise ValueError(
+                        f"No matching columns found between DataFrame and table {table_name}"
+                    )
+
+                # Reorder DataFrame to match table schema order
+                data_reordered = data[available_columns]
+
+                # Insert with reordered data
+                try:
+                    conn.register("temp_df", data_reordered)
+                    insert_query = f"INSERT INTO {table_name} SELECT * FROM temp_df"  # nosec B608
+                    conn.execute(insert_query)
+                finally:
+                    # Always cleanup temp registration
+                    try:
+                        conn.unregister("temp_df")
+                    except Exception:
+                        pass  # Ignore cleanup errors
 
                 execution_time = time.time() - start_time
                 self._update_query_stats(execution_time, success=True)
@@ -460,32 +491,10 @@ class DuckDBManager:
             print(f"Error during connection cleanup: {e}")
 
 
-# Global manager instance
-_manager_instance = None
-_manager_lock = Lock()
-
-
 def get_manager() -> DuckDBManager:
-    """Get global DuckDB manager instance (singleton pattern).
+    """Get new DuckDB manager instance (no singleton - always fresh).
 
     Returns:
-        Global DuckDBManager instance
+        New DuckDBManager instance
     """
-    global _manager_instance
-
-    if _manager_instance is None:
-        with _manager_lock:
-            if _manager_instance is None:
-                _manager_instance = DuckDBManager()
-
-    return _manager_instance
-
-
-def reset_manager() -> None:
-    """Reset global manager instance (mainly for testing)."""
-    global _manager_instance
-
-    with _manager_lock:
-        if _manager_instance:
-            _manager_instance.close()
-        _manager_instance = None
+    return DuckDBManager()
