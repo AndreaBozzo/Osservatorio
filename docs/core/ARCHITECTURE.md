@@ -296,3 +296,28 @@ src/
 
 *Last Updated: August 6, 2025*
 *Version: 12.0.0-dev*
+
+```markdown
+### Example: Component Interaction
+
+```python
+# This demonstrates how API, Database, and PowerBI interact.
+
+from src.api.istat_api import IstatAPITester
+from src.database.duckdb.manager import DuckDBManager
+from src.integrations.powerbi.templates import TemplateGenerator
+
+# Initialize components
+api = IstatAPITester()
+db = DuckDBManager()
+template = TemplateGenerator(repository=None, optimizer=None)
+
+# Fetch data and insert into DB
+data = api.fetch_dataset_data("DCIS_POPRES1")
+db.execute_optimized_query("CREATE TABLE IF NOT EXISTS istat_data AS SELECT * FROM data")
+
+# Export to PowerBI template
+template.create_pbit_file(template, "output.pbit")
+
+print("✅ Example run completed successfully.")
+```

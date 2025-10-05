@@ -236,6 +236,32 @@ def fetch_dataset_data(dataset_id: str) -> str
 **Returns:**
 - `str`: XML data content
 
+### Example: Fetch and process ISTAT data
+```python
+from src.api.istat_api import IstatAPITester
+
+# Initialize the API tester
+api = IstatAPITester()
+
+# Fetch a dataset (e.g. population data)
+data = api.fetch_dataset_data("DCIS_POPRES1")
+
+print(f"✅ Retrieved {len(data)} records from ISTAT API.")
+```
+
+### Example: Query optimization with DuckDB
+```python
+from src.database.duckdb.manager import DuckDBManager
+
+# Create a database manager
+manager = DuckDBManager()
+
+# Run an optimized query
+result = manager.execute_optimized_query("SELECT * FROM istat_observations LIMIT 10")
+
+print(result)
+```
+
 **Example:**
 ```python
 xml_data = client.fetch_dataset_data(\"DCIS_POPRES1\")
