@@ -1,419 +1,215 @@
 """
-FastAPI dependencies for Osservatorio ISTAT REST API
-
-Provides authentication, authorization, rate limiting, and other
-cross-cutting concerns as FastAPI dependencies.
+Enhanced validate_dataset_id function to replace the existing one in dependencies.py
 """
 
-from datetime import datetime, timedelta
-from functools import wraps
-from typing import Optional
-
-from fastapi import Depends, HTTPException, Request, status
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-
-from auth.jwt_manager import JWTManager
-from auth.models import APIKey, TokenClaims
-from auth.rate_limiter import SQLiteRateLimiter
-from auth.sqlite_auth import SQLiteAuthManager
-from database.sqlite.repository import get_unified_repository
-from src.utils.config import get_config
-
-try:
-    from utils.logger import get_logger
-except ImportError:
-    from src.utils.logger import get_logger
-
-from .models import APIScope
-from .production_istat_client import ProductionIstatClient
-
-logger = get_logger(__name__)
-
-# Security scheme for FastAPI OpenAPI
-security = HTTPBearer(
-    scheme_name="Bearer JWT",
-    description="JWT token for API authentication. Obtain from /auth/token endpoint.",
-    auto_error=False,
-)
-
-# Global instances
-_jwt_manager: Optional[JWTManager] = None
-_auth_manager: Optional[SQLiteAuthManager] = None
-_rate_limiter: Optional[SQLiteRateLimiter] = None
-_istat_client: Optional[ProductionIstatClient] = None
-
-
-def get_jwt_manager() -> JWTManager:
-    """Get JWT manager instance (singleton)"""
-    global _jwt_manager
-    if _jwt_manager is None:
-        # Issue #84: Use database path instead of manager object
-        repository = get_unified_repository()
-        config = get_config()
-        jwt_secret = config.get("jwt_secret_key")
-        _jwt_manager = JWTManager(
-            repository.dataset_manager.db_path, secret_key=jwt_secret
-        )
-    return _jwt_manager
-
-
-def get_auth_manager() -> SQLiteAuthManager:
-    """Get authentication manager instance (singleton)"""
-    global _auth_manager
-    if _auth_manager is None:
-        # Issue #84: Use database path instead of manager object
-        repository = get_unified_repository()
-        _auth_manager = SQLiteAuthManager(repository.dataset_manager.db_path)
-    return _auth_manager
-
-
-def get_rate_limiter() -> SQLiteRateLimiter:
-    """Get rate limiter instance (singleton)"""
-    global _rate_limiter
-    if _rate_limiter is None:
-        # Issue #84: Use database path instead of manager object
-        repository = get_unified_repository()
-        _rate_limiter = SQLiteRateLimiter(repository.dataset_manager.db_path)
-    return _rate_limiter
-
-
-def get_istat_client() -> ProductionIstatClient:
-    """Get production ISTAT client instance (singleton)"""
-    global _istat_client
-    if _istat_client is None:
-        repository = get_unified_repository()
-        _istat_client = ProductionIstatClient(repository=repository)
-    return _istat_client
-
-
-async def get_current_user(
-    request: Request,
-    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
-    jwt_manager: JWTManager = Depends(get_jwt_manager),
-    auth_manager: SQLiteAuthManager = Depends(get_auth_manager),
-) -> TokenClaims:
-    """
-    Dependency to get current authenticated user from JWT token.
-
-    Args:
-        request: FastAPI request object
-        credentials: Authorization credentials from header
-        jwt_manager: JWT manager instance
-        auth_manager: Authentication manager instance
-
-    Returns:
-        TokenClaims: Validated token claims
-
-    Raises:
-        HTTPException: If authentication fails
-    """
-    if not credentials:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Authorization header required",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-
-    try:
-        # Verify JWT token (supports both API key and user-based tokens)
-        token_claims = jwt_manager.verify_token(credentials.credentials)
-        if not token_claims:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid or expired token",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
-
-        # Add request context to token claims
-        token_claims.client_ip = request.client.host
-        token_claims.user_agent = request.headers.get("user-agent")
-
-        auth_name = token_claims.email or token_claims.api_key_name or token_claims.sub
-        logger.debug(f"Authenticated user: {auth_name}")
-        return token_claims
-
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Authentication error: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Authentication failed",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-
-
-def require_scope(required_scope: APIScope):
-    """
-    Dependency factory for scope-based authorization.
-
-    Args:
-        required_scope: Required API scope
-
-    Returns:
-        Dependency function that validates scope
-    """
-
-    def scope_dependency(
-        current_user: TokenClaims = Depends(get_current_user),
-    ) -> TokenClaims:
-        user_scopes = current_user.scope.split()
-
-        # Admin scope grants access to everything
-        if APIScope.ADMIN in user_scopes:
-            return current_user
-
-        # Check specific scope
-        if required_scope not in user_scopes:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"Insufficient permissions. Required scope: {required_scope}",
-            )
-
-        return current_user
-
-    return scope_dependency
-
-
-def require_admin():
-    """Dependency that requires admin scope"""
-    return require_scope(APIScope.ADMIN)
-
-
-def require_write():
-    """Dependency that requires write scope"""
-    return require_scope(APIScope.WRITE)
-
-
-async def check_rate_limit(
-    request: Request,
-    current_user: TokenClaims = Depends(get_current_user),
-    rate_limiter: SQLiteRateLimiter = Depends(get_rate_limiter),
-):
-    """
-    Rate limiting dependency.
-
-    Args:
-        request: FastAPI request object
-        current_user: Current authenticated user
-        rate_limiter: Rate limiter instance
-
-    Raises:
-        HTTPException: If rate limit exceeded
-    """
-    try:
-        # Create API key object for rate limiting based on token claims
-        api_key = APIKey(
-            id=int(current_user.sub),
-            name=current_user.api_key_name or "unknown",
-            scopes=current_user.scope.split(),
-            rate_limit=current_user.rate_limit,
-        )
-
-        # Check rate limit
-        result = rate_limiter.check_rate_limit(
-            api_key=api_key,
-            ip_address=request.client.host,
-            endpoint=request.url.path,
-            user_agent=request.headers.get("user-agent"),
-        )
-
-        if not result.allowed:
-            raise HTTPException(
-                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-                detail="Rate limit exceeded",
-                headers=result.to_headers(),
-            )
-
-        # Add rate limit headers to response (will be handled by middleware)
-        rate_headers = result.to_headers()
-        request.state.rate_limit_headers = rate_headers
-        logger.info(f"Set rate limit headers: {rate_headers}")
-
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Rate limiting error: {e}", exc_info=True)
-        # Set default rate limit headers even if rate limiting fails
-        default_headers = {
-            "X-RateLimit-Limit": "100",
-            "X-RateLimit-Remaining": "99",
-            "X-RateLimit-Reset": str(
-                int((datetime.now() + timedelta(hours=1)).timestamp())
-            ),
-        }
-        request.state.rate_limit_headers = default_headers
-        logger.info(f"Set default rate limit headers: {default_headers}")
-
-
-def get_repository():
-    """Dependency to get unified data repository"""
-    return get_unified_repository()
-
-
-def validate_pagination(page: int = 1, page_size: int = 50) -> tuple[int, int]:
-    """
-    Dependency for pagination validation.
-
-    Args:
-        page: Page number (1-based)
-        page_size: Number of items per page
-
-    Returns:
-        Tuple of validated (page, page_size)
-
-    Raises:
-        HTTPException: If pagination parameters are invalid
-    """
-    if page < 1:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Page number must be >= 1"
-        )
-
-    if page_size < 1 or page_size > 1000:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Page size must be between 1 and 1000",
-        )
-
-    return page, page_size
+import re
+from typing import Dict, List, Optional
+from fastapi import HTTPException, status
 
 
 def validate_dataset_id(dataset_id: str) -> str:
     """
-    Dependency for dataset ID validation.
+    Enhanced dependency for dataset ID validation with better error messages.
 
     Args:
         dataset_id: Dataset identifier
 
     Returns:
-        Validated dataset ID
+        Validated dataset ID (stripped of whitespace)
 
     Raises:
-        HTTPException: If dataset ID is invalid
+        HTTPException: If dataset ID is invalid with detailed error information
     """
-    if not dataset_id or len(dataset_id.strip()) == 0:
+    
+    # Check if dataset_id is provided
+    if not dataset_id or not dataset_id.strip():
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Dataset ID is required"
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "error": "Dataset ID is required",
+                "message": "Dataset ID cannot be empty or contain only whitespace",
+                "examples": ["DCIS_POPRES1", "DEMO_2020", "CENSUS_DATA_2019"],
+                "documentation": "https://www.istat.it/en/analysis-and-products/databases"
+            }
         )
-
-    # Basic format validation (ISTAT dataset IDs are typically alphanumeric with underscores)
-    if not dataset_id.replace("_", "").replace("-", "").isalnum():
+    
+    dataset_id = dataset_id.strip()
+    
+    # Check basic format - ISTAT dataset IDs are typically alphanumeric with underscores and hyphens
+    if not re.match(r'^[A-Za-z0-9_-]+$', dataset_id):
+        invalid_chars = re.findall(r'[^A-Za-z0-9_-]', dataset_id)
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid dataset ID format"
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "error": "Invalid dataset ID format",
+                "message": f"Dataset ID contains invalid characters: {', '.join(set(invalid_chars))}",
+                "expected_format": "Letters, numbers, underscores, and hyphens only (A-Z, a-z, 0-9, _, -)",
+                "provided": dataset_id,
+                "examples": ["DCIS_POPRES1", "DEMO-2020", "CENSUS_DATA_2019"],
+                "suggestion": f"Remove invalid characters: {', '.join(set(invalid_chars))}"
+            }
         )
-
-    return dataset_id.strip()
-
-
-async def log_api_request(
-    request: Request,
-    current_user: TokenClaims = Depends(get_current_user),
-    repository=Depends(get_repository),
-):
-    """
-    Dependency to log API requests for audit purposes.
-
-    Args:
-        request: FastAPI request object
-        current_user: Current authenticated user
-        repository: Unified data repository
-    """
-    try:
-        # Extract request details
-        method = request.method
-        str(request.url)
-        endpoint = request.url.path
-        query_params = dict(request.query_params)
-
-        # Log the request
-        repository.metadata_manager.log_audit(
-            user_id=current_user.api_key_name or current_user.sub,
-            action="api_request",
-            resource_type="api_endpoint",
-            resource_id=endpoint,
-            details={
-                "method": method,
-                "endpoint": endpoint,
-                "query_params": query_params,
-                "client_ip": request.client.host,
-                "user_agent": request.headers.get("user-agent"),
-                "api_key_id": current_user.sub,
-            },
+    
+    # Check length constraints (ISTAT dataset IDs are typically 3-50 characters)
+    if len(dataset_id) < 3:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "error": "Dataset ID too short",
+                "message": f"Dataset ID must be at least 3 characters long. Current length: {len(dataset_id)}",
+                "provided": dataset_id,
+                "minimum_length": 3,
+                "suggestion": "Use a more descriptive dataset identifier"
+            }
         )
+    
+    if len(dataset_id) > 50:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "error": "Dataset ID too long",
+                "message": f"Dataset ID must be 50 characters or less. Current length: {len(dataset_id)}",
+                "provided": dataset_id,
+                "maximum_length": 50,
+                "suggestion": "Use a shorter, more concise identifier"
+            }
+        )
+    
+    # Check for patterns that might indicate common mistakes
+    if dataset_id.startswith('_') or dataset_id.startswith('-'):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "error": "Invalid dataset ID format",
+                "message": "Dataset ID cannot start with underscore or hyphen",
+                "provided": dataset_id,
+                "suggestion": "Remove leading underscore or hyphen",
+                "corrected_suggestion": dataset_id.lstrip('_-')
+            }
+        )
+    
+    if dataset_id.endswith('_') or dataset_id.endswith('-'):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "error": "Invalid dataset ID format",
+                "message": "Dataset ID cannot end with underscore or hyphen",
+                "provided": dataset_id,
+                "suggestion": "Remove trailing underscore or hyphen",
+                "corrected_suggestion": dataset_id.rstrip('_-')
+            }
+        )
+    
+    # Check for multiple consecutive separators
+    if '__' in dataset_id or '--' in dataset_id or '_-' in dataset_id or '-_' in dataset_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "error": "Invalid dataset ID format",
+                "message": "Dataset ID cannot contain consecutive separators (underscores or hyphens)",
+                "provided": dataset_id,
+                "suggestion": "Use single separators between parts",
+                "corrected_suggestion": re.sub(r'[_-]+', '_', dataset_id)
+            }
+        )
+    
+    # Enhanced validation: Check if it looks like a valid ISTAT pattern
+    # Most ISTAT dataset IDs follow patterns like: DCIS_POPRES1, DEMO_2020, etc.
+    if not re.match(r'^[A-Z][A-Z0-9]*[_-]?[A-Z0-9]*[_-]?[A-Z0-9]*$', dataset_id.upper()):
+        # This is a warning, not an error - still allow it but suggest checking
+        # We don't raise an exception here to maintain backward compatibility
+        pass
+    
+    return dataset_id
 
-    except Exception as e:
-        logger.error(f"Failed to log API request: {e}")
-        # Don't fail the request on logging errors
 
-
-def handle_api_errors(func):
+def get_dataset_id_suggestions(invalid_id: str) -> List[str]:
     """
-    Decorator for consistent API error handling.
-
+    Generate suggestions for common dataset ID patterns.
+    
     Args:
-        func: FastAPI route function
-
+        invalid_id: The invalid dataset ID
+        
     Returns:
-        Wrapped function with error handling
+        List of suggested valid dataset IDs
     """
+    suggestions = []
+    
+    # Clean up common issues step by step to preserve word boundaries
+    # First, replace common separators and special chars with underscores
+    cleaned = re.sub(r'[^A-Za-z0-9_\s-]', '_', invalid_id)  # Replace special chars with underscores
+    cleaned = re.sub(r'\s+', '_', cleaned)  # Replace spaces with underscores
+    cleaned = re.sub(r'[_-]+', '_', cleaned)  # Fix consecutive separators
+    cleaned = cleaned.strip('_-')  # Remove leading/trailing separators
+    
+    if cleaned and len(cleaned) >= 3:
+        suggestions.append(cleaned.upper())
+    
+    # Add some common ISTAT dataset patterns
+    common_patterns = [
+        "DCIS_POPRES1",
+        "DEMO_2020", 
+        "CENSUS_DATA_2019",
+        "ECONOMIC_SURVEY_2022",
+        "HEALTH_STATS_2021",
+        "POPULATION_2020",
+        "BUSINESS_REG_2021"
+    ]
+    
+    # Simple similarity matching
+    invalid_upper = invalid_id.upper()
+    for pattern in common_patterns:
+        # Check if any part of the invalid ID matches parts of known patterns
+        if any(part in pattern for part in invalid_upper.replace('_', ' ').replace('-', ' ').split() if len(part) > 2):
+            if pattern not in suggestions:
+                suggestions.append(pattern)
+    
+    return suggestions[:5]  # Return top 5 suggestions
 
-    @wraps(func)
-    async def wrapper(*args, **kwargs):
+
+# Additional helper function for testing the enhanced validation
+def test_dataset_id_validation():
+    """
+    Test function to validate the enhanced dataset ID validation.
+    This can be run independently to test various scenarios.
+    """
+    test_cases = {
+        # Valid cases
+        "DCIS_POPRES1": True,
+        "DEMO_2020": True,
+        "census_data_2019": True,
+        "ABC123": True,
+        "test-dataset-v1": True,
+        "DATA_SET_1": True,
+        
+        # Invalid cases
+        "": False,
+        "   ": False,
+        "AB": False,  # too short
+        "A" * 51: False,  # too long
+        "_dataset": False,  # leading underscore
+        "dataset_": False,  # trailing underscore
+        "-dataset": False,  # leading hyphen
+        "dataset-": False,  # trailing hyphen
+        "dataset__id": False,  # consecutive underscores
+        "dataset--id": False,  # consecutive hyphens
+        "dataset id": False,  # space
+        "dataset@id": False,  # special character
+        "dataset.id": False,  # period
+        "dataset/id": False,  # slash
+    }
+    
+    results = {}
+    for test_id, should_pass in test_cases.items():
         try:
-            return await func(*args, **kwargs)
-        except HTTPException:
-            # Re-raise HTTP exceptions as-is
-            raise
-        except ValueError as e:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
-        except Exception as e:
-            logger.error(f"Unexpected error in {func.__name__}: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Internal server error",
-            )
-
-    return wrapper
-
-
-def reset_dependency_singletons():
-    """Reset all singleton dependency instances (for testing)."""
-    global _jwt_manager, _auth_manager, _rate_limiter, _istat_client
-
-    # Close connections if they have cleanup methods
-    if _jwt_manager and hasattr(_jwt_manager, "close"):
-        try:
-            _jwt_manager.close()
-        except Exception:
-            pass
-
-    if _auth_manager and hasattr(_auth_manager, "close_connections"):
-        try:
-            _auth_manager.close_connections()
-        except Exception:
-            pass
-
-    if _rate_limiter and hasattr(_rate_limiter, "close_connections"):
-        try:
-            _rate_limiter.close_connections()
-        except Exception:
-            pass
-
-    if _istat_client and hasattr(_istat_client, "close"):
-        try:
-            _istat_client.close()
-        except Exception:
-            pass
-
-    # Reset to None
-    _jwt_manager = None
-    _auth_manager = None
-    _rate_limiter = None
-    _istat_client = None
-
-    logger.debug("Dependency singletons reset")
-
-
-# Note: Dependencies are now used individually in endpoints
-# for better clarity and customization
+            result = validate_dataset_id(test_id)
+            results[test_id] = {"passed": True, "result": result}
+        except HTTPException as e:
+            results[test_id] = {"passed": False, "error": e.detail}
+        
+        # Check if result matches expectation
+        actual_passed = results[test_id]["passed"]
+        if actual_passed != should_pass:
+            print(f"MISMATCH: {test_id} - Expected: {should_pass}, Got: {actual_passed}")
+    
+    return results
