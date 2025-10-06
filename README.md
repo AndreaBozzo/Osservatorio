@@ -49,21 +49,11 @@ docker-compose up -d
 
 Thanks to all the people who have contributed to this project! 🎉
 
-<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
-<!-- prettier-ignore-start -->
-<!-- markdownlint-disable -->
-<table>
-  <tbody>
-    <tr>
-      <td align="center" valign="top" width="14.28%"><a href="https://github.com/AndreaBozzo"><img src="https://avatars.githubusercontent.com/AndreaBozzo?s=100" width="100px;" alt="Andrea Bozzo"/><br /><sub><b>Andrea Bozzo</b></sub></a><br /><a href="https://github.com/AndreaBozzo/Osservatorio/commits?author=AndreaBozzo" title="Code">💻</a> <a href="#design-AndreaBozzo" title="Design">🎨</a> <a href="#ideas-AndreaBozzo" title="Ideas & Planning">🤔</a> <a href="#projectManagement-AndreaBozzo" title="Project Management">📆</a> <a href="https://github.com/AndreaBozzo/Osservatorio/commits?author=AndreaBozzo" title="Documentation">📖</a></td>
-    </tr>
-  </tbody>
-</table>
+<a href="https://github.com/AndreaBozzo/Osservatorio/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=AndreaBozzo/Osservatorio" alt="Contributors" />
+</a>
 
-<!-- markdownlint-restore -->
-<!-- prettier-ignore-end -->
-
-<!-- ALL-CONTRIBUTORS-LIST:END -->
+Made with [contrib.rocks](https://contrib.rocks).
 
 ### 🤝 How to Contribute
 
