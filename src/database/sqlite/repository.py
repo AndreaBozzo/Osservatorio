@@ -517,12 +517,26 @@ class UnifiedDataRepository:
                 except (json.JSONDecodeError, TypeError, AttributeError):
                     additional_attrs = {}
 
+                # Parse obs_value to float, handle non-numeric values
+                obs_value = row[2]
+                try:
+                    obs_value_float = (
+                        float(obs_value) if obs_value is not None else None
+                    )
+                except (ValueError, TypeError):
+                    # If value is not numeric, keep as status flag
+                    obs_value_float = None
+                    if obs_value and not additional_attrs.get("obs_status"):
+                        additional_attrs["obs_status"] = obs_value
+
                 time_series.append(
                     {
                         "dataset_id": row[0],
                         "time_period": row[1],
-                        "year": int(row[1]) if row[1].isdigit() else None,
-                        "obs_value": row[2],
+                        "year": int(row[1])
+                        if row[1] and str(row[1]).isdigit()
+                        else None,
+                        "obs_value": obs_value_float,
                         "record_id": row[3],
                         "ingestion_timestamp": row[4],
                         "territory_code": additional_attrs.get("territory_code"),
