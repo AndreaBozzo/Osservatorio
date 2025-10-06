@@ -17,14 +17,15 @@ repos:
       - id: check-xml
       - id: detect-private-key
 
-  # Modern Python formatters and linters - CHECK ONLY mode (aligned with CI)
+  # Modern Python formatters and linters - CHECK ONLY mode
+  # NOTE: Keep these aligned with .github/workflows/ci.yml
   - repo: https://github.com/charliermarsh/ruff-pre-commit
     rev: v0.12.7
     hooks:
       - id: ruff
-        # No args needed - 'ruff check' is default behavior (no auto-fix)
+        # Equivalent to: ruff check .
       - id: ruff-format
-        args: [--check]  # Check only, no auto-format
+        args: [--check]  # Equivalent to: ruff format --check .
 
 # Black disabled - using ruff-format instead which is faster and compatible
   # - repo: https://github.com/psf/black
@@ -38,7 +39,8 @@ repos:
     rev: 6.0.1
     hooks:
       - id: isort
-        args: [--check-only, --profile=black, --line-length=88]  # Check only mode
+        # Equivalent to: isort --check-only --profile=black --line-length=88 .
+        args: [--check-only, --profile=black, --line-length=88]
 
   # flake8 temporarily disabled - ruff provides similar functionality
   # - repo: https://github.com/pycqa/flake8

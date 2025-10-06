@@ -12,8 +12,9 @@ from pathlib import Path
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from src.api.production_istat_client import ProductionIstatClient
 from src.pipeline import PipelineConfig, PipelineService
+
+from src.api.production_istat_client import ProductionIstatClient
 from src.utils.logger import get_logger
 
 logger = get_logger(__name__)

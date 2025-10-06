@@ -242,7 +242,8 @@ select = [
     "UP", # pyupgrade
 ]
 ignore = [
-    "E501",  # line too long, handled by black
+    "E501",  # line too long, handled by ruff format
+    "I001",  # import sorting handled by isort (avoid conflicts)
     "B008",  # do not perform function calls in argument defaults
     "C901",  # too complex
     "B904",  # raise-without-from-inside-except (many legacy patterns)

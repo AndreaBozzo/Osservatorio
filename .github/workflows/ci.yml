@@ -33,10 +33,11 @@ jobs:
           pytest -c pytest-ci.ini tests/unit/ -v
 
       - name: Check code formatting
+        # NOTE: Keep these commands aligned with .pre-commit-config.yaml
         run: |
           ruff check .
           ruff format --check .
-          isort --check-only --profile=black .
+          isort --check-only --profile=black --line-length=88 .
 
       - name: Basic security scan
         run: |

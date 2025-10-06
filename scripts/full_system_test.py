@@ -17,6 +17,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # Project imports (after path modification)
 from src.pipeline import PipelineConfig, PipelineService
+
 from src.utils.logger import get_logger
 
 logger = get_logger(__name__)
