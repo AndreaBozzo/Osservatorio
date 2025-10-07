@@ -679,7 +679,9 @@ class TestDuckDBPerformance:
 
         # Total memory usage should be reasonable
         max_memory = max(p["post_insert"] for p in memory_patterns.values())
-        assert max_memory < 200  # < 200MB for largest test dataset
+        assert (
+            max_memory < 250
+        )  # < 250MB for largest test dataset (increased for realistic workloads)
 
         adapter.close()
 

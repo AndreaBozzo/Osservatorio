@@ -152,12 +152,12 @@ class DatasetDetailResponse(APIResponse):
 class TimeSeriesPoint(BaseModel):
     """Time series data point"""
 
-    year: int = Field(..., description="Year")
+    year: Optional[int] = Field(None, description="Year")
     time_period: Optional[str] = Field(None, description="Time period (e.g., Q1, M01)")
-    territory_code: str = Field(..., description="Territory code")
-    territory_name: str = Field(..., description="Territory name")
-    measure_code: str = Field(..., description="Measure code")
-    measure_name: str = Field(..., description="Measure name")
+    territory_code: Optional[str] = Field(None, description="Territory code")
+    territory_name: Optional[str] = Field(None, description="Territory name")
+    measure_code: Optional[str] = Field(None, description="Measure code")
+    measure_name: Optional[str] = Field(None, description="Measure name")
     obs_value: Optional[float] = Field(None, description="Observation value")
     obs_status: Optional[str] = Field(None, description="Observation status")
 

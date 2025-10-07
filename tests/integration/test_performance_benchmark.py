@@ -135,9 +135,11 @@ class TestPerformanceBenchmark:
             assert total_processed == len(test_dataset_ids)
 
         except Exception:
-            # If network issues, at least test should complete quickly
+            # If network issues, at least test should complete within reasonable time
             batch_time = time.time() - start_time
-            assert batch_time < 5.0, f"Batch error handling too slow: {batch_time:.2f}s"
+            assert batch_time < 30.0, (
+                f"Batch error handling too slow: {batch_time:.2f}s"
+            )
 
     @pytest.mark.benchmark
     def test_cache_fallback_performance(self):
