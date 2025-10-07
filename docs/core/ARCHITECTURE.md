@@ -296,3 +296,25 @@ src/
 
 *Last Updated: August 6, 2025*
 *Version: 12.0.0-dev*
+
+### Example: Component Interaction
+
+```python
+from src.api.dataset_api import DatasetAPI
+from src.database.duckdb.manager import DuckDBManager
+from src.pipeline.orchestrator import PipelineOrchestrator
+
+# Initialize components
+api = DatasetAPI()
+db = DuckDBManager()
+pipeline = PipelineOrchestrator()
+
+# Fetch, process, and store data
+data = api.fetch_data("population_data")
+db.execute_query("CREATE TABLE IF NOT EXISTS population AS SELECT * FROM data")
+
+# Run pipeline
+pipeline.run("population_ingest")
+
+print("✅ Example run completed successfully.")
+```

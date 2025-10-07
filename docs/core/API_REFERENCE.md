@@ -236,9 +236,22 @@ def fetch_dataset_data(dataset_id: str) -> str
 **Returns:**
 - `str`: XML data content
 
-**Example:**
+### Example: Fetch and Analyze Data
 ```python
-xml_data = client.fetch_dataset_data(\"DCIS_POPRES1\")
+from src.api.dataset_api import DatasetAPI
+from src.database.duckdb.manager import DuckDBManager
+
+# Initialize components
+api = DatasetAPI()
+db = DuckDBManager()
+
+# Fetch and store dataset
+data = api.fetch_data("population_data")
+db.execute_query("CREATE TABLE IF NOT EXISTS population AS SELECT * FROM data")
+
+# Query analysis
+result = db.execute_query("SELECT AVG(value) AS avg_value FROM population")
+print(f"Average Value: {result}")
 ```
 
 ##### `test_api_connectivity()`
@@ -623,7 +636,6 @@ Validates file paths against security threats.
 ```python
 def validate_path(path: str, base_dir: Optional[str] = None) -> bool
 ```
-
 **Parameters:**
 - `path` (str): File path to validate
 - `base_dir` (Optional[str]): Base directory restriction
