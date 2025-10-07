@@ -1,25 +1,26 @@
-﻿```markdown
-# Example Demos
-
-This folder contains runnable demo scripts that show how to use core components of the project.
-
----
-
-### 🧠 ISTAT API Example
+﻿# Example.Demos
+### 🧠 Dataset API Example
 ```python
-from src.api.istat_api import IstatAPITester
-api = IstatAPITester()
-data = api.fetch_dataset_data("DCIS_POPRES1")
+from src.api.dataset_api import DatasetAPI
+
+api = DatasetAPI()
+data = api.fetch_data("population_data")
 print(f"Retrieved {len(data)} records")
 ```
+
+### 🗃️ DuckDB Query Example
 ```python
 from src.database.duckdb.manager import DuckDBManager
+
 manager = DuckDBManager()
-result = manager.execute_optimized_query("SELECT * FROM istat_observations LIMIT 10")
+result = manager.execute_query("SELECT * FROM population LIMIT 10")
 print(result)
 ```
+
+### ⚙️ Pipeline Example
 ```python
-from src.integrations.powerbi.templates import TemplateGenerator
-template = TemplateGenerator(repository=None, optimizer=None)
-template.create_pbit_file(template, "output.pbit")
+from src.pipeline.orchestrator import PipelineOrchestrator
+
+pipeline = PipelineOrchestrator()
+pipeline.run("population_ingest")
 ```

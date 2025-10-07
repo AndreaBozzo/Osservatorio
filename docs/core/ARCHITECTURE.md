@@ -297,27 +297,24 @@ src/
 *Last Updated: August 6, 2025*
 *Version: 12.0.0-dev*
 
-```markdown
 ### Example: Component Interaction
 
 ```python
-# This demonstrates how API, Database, and PowerBI interact.
-
-from src.api.istat_api import IstatAPITester
+from src.api.dataset_api import DatasetAPI
 from src.database.duckdb.manager import DuckDBManager
-from src.integrations.powerbi.templates import TemplateGenerator
+from src.pipeline.orchestrator import PipelineOrchestrator
 
 # Initialize components
-api = IstatAPITester()
+api = DatasetAPI()
 db = DuckDBManager()
-template = TemplateGenerator(repository=None, optimizer=None)
+pipeline = PipelineOrchestrator()
 
-# Fetch data and insert into DB
-data = api.fetch_dataset_data("DCIS_POPRES1")
-db.execute_optimized_query("CREATE TABLE IF NOT EXISTS istat_data AS SELECT * FROM data")
+# Fetch, process, and store data
+data = api.fetch_data("population_data")
+db.execute_query("CREATE TABLE IF NOT EXISTS population AS SELECT * FROM data")
 
-# Export to PowerBI template
-template.create_pbit_file(template, "output.pbit")
+# Run pipeline
+pipeline.run("population_ingest")
 
 print("✅ Example run completed successfully.")
 ```

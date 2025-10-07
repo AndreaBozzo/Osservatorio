@@ -236,35 +236,22 @@ def fetch_dataset_data(dataset_id: str) -> str
 **Returns:**
 - `str`: XML data content
 
-### Example: Fetch and process ISTAT data
+### Example: Fetch and Analyze Data
 ```python
-from src.api.istat_api import IstatAPITester
-
-# Initialize the API tester
-api = IstatAPITester()
-
-# Fetch a dataset (e.g. population data)
-data = api.fetch_dataset_data("DCIS_POPRES1")
-
-print(f"✅ Retrieved {len(data)} records from ISTAT API.")
-```
-
-### Example: Query optimization with DuckDB
-```python
+from src.api.dataset_api import DatasetAPI
 from src.database.duckdb.manager import DuckDBManager
 
-# Create a database manager
-manager = DuckDBManager()
+# Initialize components
+api = DatasetAPI()
+db = DuckDBManager()
 
-# Run an optimized query
-result = manager.execute_optimized_query("SELECT * FROM istat_observations LIMIT 10")
+# Fetch and store dataset
+data = api.fetch_data("population_data")
+db.execute_query("CREATE TABLE IF NOT EXISTS population AS SELECT * FROM data")
 
-print(result)
-```
-
-**Example:**
-```python
-xml_data = client.fetch_dataset_data(\"DCIS_POPRES1\")
+# Query analysis
+result = db.execute_query("SELECT AVG(value) AS avg_value FROM population")
+print(f"Average Value: {result}")
 ```
 
 ##### `test_api_connectivity()`
@@ -649,7 +636,6 @@ Validates file paths against security threats.
 ```python
 def validate_path(path: str, base_dir: Optional[str] = None) -> bool
 ```
-
 **Parameters:**
 - `path` (str): File path to validate
 - `base_dir` (Optional[str]): Base directory restriction
