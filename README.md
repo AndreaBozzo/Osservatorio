@@ -14,6 +14,14 @@ The project provides modern REST APIs to query over 500 statistical datasets wit
 Our goal is to unify multiple italian sources, allowing analysts, data scientist and anyone else to utilize them with ease
 and on the same platform.
 
+### ✨ Current Status
+- **🚀 Core API**: FastAPI backend functional with JWT authentication
+- **⚡ Database**: DuckDB analytics + SQLite metadata hybrid working
+- **🛡️ Security**: JWT auth, rate limiting, security middleware implemented
+- **🐳 Docker**: Multi-stage builds ready (image deployment untested)
+- **☸️ Kubernetes**: Infrastructure manifests complete (cluster deployment untested)
+- **📤 Export Formats**: Universal data export (CSV, JSON, Parquet) implemented
+
 **⚠️ STATUS: MVP in active development**
 
 ## 🚀 Quick Start

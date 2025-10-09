@@ -271,14 +271,20 @@ class TestExportDataAccess:
 
     def test_get_dataset_data_with_mock(self):
         """Test dataset data retrieval with proper mocking."""
-        # Mock DuckDBManager where it's imported inside the method
-        with patch("database.duckdb.manager.DuckDBManager") as mock_duckdb_class:
-            # Setup mock instance
-            mock_duckdb = Mock()
-            mock_duckdb.execute_query.return_value = pd.DataFrame(
+        # Mock the repository methods properly
+        with (
+            patch.object(
+                self.data_access.repository, "get_dataset_complete"
+            ) as mock_info,
+            patch.object(
+                self.data_access.repository, "execute_analytics_query"
+            ) as mock_query,
+        ):
+            # Setup mocks
+            mock_info.return_value = {"name": "Test Dataset"}
+            mock_query.return_value = pd.DataFrame(
                 {"Time": ["2023-01-01", "2023-01-02"], "Value": [100, 200]}
             )
-            mock_duckdb_class.return_value = mock_duckdb
 
             # Test data retrieval
             df = self.data_access.get_dataset_data("test_dataset")
@@ -345,30 +351,30 @@ class TestExportIntegration:
     """Integration tests for complete export workflow."""
 
     @pytest.mark.integration
-    def test_full_export_workflow(self):
+    @patch("src.export.data_access.get_unified_repository")
+    def test_full_export_workflow(self, mock_get_repo):
         """Test complete export workflow from API to file."""
-        # Mock DuckDBManager to return test data
-        with patch("database.duckdb.manager.DuckDBManager") as mock_duckdb_class:
-            # Setup mock instance
-            mock_duckdb = Mock()
-            mock_duckdb.execute_query.return_value = pd.DataFrame(
-                {
-                    "Time": ["2023-01-01", "2023-01-02", "2023-01-03"],
-                    "Value": [100, 200, 300],
-                    "TERRITORIO": ["IT", "IT", "IT"],
-                }
-            )
-            mock_duckdb_class.return_value = mock_duckdb
+        # Mock repository with test data
+        mock_repo = Mock()
+        mock_repo.get_dataset_complete.return_value = {"name": "Test Dataset"}
+        mock_repo.execute_analytics_query.return_value = pd.DataFrame(
+            {
+                "Time": ["2023-01-01", "2023-01-02", "2023-01-03"],
+                "Value": [100, 200, 300],
+                "TERRITORIO": ["IT", "IT", "IT"],
+            }
+        )
+        mock_get_repo.return_value = mock_repo
 
-            # Test data access
-            data_access = ExportDataAccess()
-            df = data_access.get_dataset_data("integration_test")
+        # Test data access
+        data_access = ExportDataAccess()
+        df = data_access.get_dataset_data("integration_test")
 
-            # Test export
-            exporter = UniversalExporter()
-            csv_result = exporter.export_dataframe(df, "csv", "integration_test")
+        # Test export
+        exporter = UniversalExporter()
+        csv_result = exporter.export_dataframe(df, "csv", "integration_test")
 
-            # Verify end-to-end functionality
-            assert "Time,Value,TERRITORIO" in csv_result
-            assert "2023-01-01,100,IT" in csv_result
-            assert len(csv_result.split("\n")) == 5  # Header + 3 rows + empty line
+        # Verify end-to-end functionality
+        assert "Time,Value,TERRITORIO" in csv_result
+        assert "2023-01-01,100,IT" in csv_result
+        assert len(csv_result.split("\n")) == 5  # Header + 3 rows + empty line

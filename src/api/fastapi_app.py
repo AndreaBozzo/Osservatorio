@@ -27,17 +27,16 @@ from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.openapi.utils import get_openapi
 from fastapi.responses import JSONResponse
 
-from auth.security_middleware import SecurityHeadersMiddleware
-from database.sqlite.repository import get_unified_repository
-from ingestion.simple_pipeline import create_simple_pipeline
+from src.auth.security_middleware import SecurityHeadersMiddleware
+from src.database.sqlite.repository import get_unified_repository
+from src.export.endpoints import export_router
+from src.ingestion.simple_pipeline import create_simple_pipeline
 from src.utils.config import get_config
 
 try:
     from utils.logger import get_logger
 except ImportError:
     from src.utils.logger import get_logger
-
-from src.export.endpoints import export_router
 
 from .dependencies import (
     check_rate_limit,
@@ -1245,28 +1244,6 @@ async def startup_event():
         raise
 
 
-@app.on_event("shutdown")
-async def shutdown_event():
-    """Clean up resources on application shutdown"""
-    logger.info("Starting FastAPI application shutdown")
-
-    try:
-        # Force close database connections to prevent reload hanging
-        import gc
-
-        from src.database.sqlite import reset_unified_repository
-
-        # Reset repository singletons
-        reset_unified_repository()
-
-        # Force garbage collection to cleanup connections
-        gc.collect()
-
-        logger.info("FastAPI application shutdown completed")
-    except Exception as e:
-        logger.error(f"Error during application shutdown: {e}")
-
-
 # Issue #149 - Simple Ingestion Pipeline Endpoints
 @app.post(
     "/ingestion/run-all",
@@ -1413,6 +1390,28 @@ async def get_ingestion_health(request: Request):
                 "message": "Health check failed",
             },
         )
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Clean up resources on application shutdown"""
+    logger.info("Starting FastAPI application shutdown")
+
+    try:
+        # Force close database connections to prevent reload hanging
+        import gc
+
+        from src.database.sqlite import reset_unified_repository
+
+        # Reset repository singletons
+        reset_unified_repository()
+
+        # Force garbage collection to cleanup connections
+        gc.collect()
+
+        logger.info("FastAPI application shutdown completed")
+    except Exception as e:
+        logger.error(f"Error during application shutdown: {e}")
 
 
 # Development server
