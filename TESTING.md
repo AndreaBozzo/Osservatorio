@@ -27,7 +27,7 @@ This document describes testing guidelines for the Osservatorio ISTAT Data Platf
 | **Unit** | Single function/class | <100ms | 70%+ | ✅ Active |
 | **Integration** | Multiple components | <5s | Key flows | ✅ Active |
 | **Smoke** | Basic functionality | <10s | Critical paths | ✅ Active |
-| **Performance** | System performance | <30s | N/A | ❌ Archived (Issue #159) |
+| **Performance** | System performance | <30s | N/A | ❌ Archived ([#159](https://github.com/AndreaBozzo/Osservatorio/issues/159); revisit after MVP validation or when user base exceeds 1,000 active users) |
 
 **Test Suite Metrics (After Issue #159):**
 
@@ -77,7 +77,14 @@ tests/
 └── test_export_functionality.py
 ```
 
-**Note:** Performance tests were removed in Issue #159. They can be reintroduced when the product reaches scale requiring optimization.
+**Note:** Performance tests were removed in [Issue #159](https://github.com/AndreaBozzo/Osservatorio/issues/159).
+
+**When to reintroduce performance tests:**
+
+- After successful MVP validation with real users
+- User base exceeds 1,000 active users
+- Response times become a critical business requirement
+- Team has bandwidth for maintaining complex test infrastructure
 
 ## ✅ Unit Testing
 
