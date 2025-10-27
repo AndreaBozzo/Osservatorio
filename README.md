@@ -2,7 +2,7 @@
 
 > **Modern platform for accessing and analyzing Italian statistical data**
 
-[![Status](https://img.shields.io/badge/Status-MVP%20in%20Development-orange.svg)]()
+![Status](https://img.shields.io/badge/Status-MVP%20in%20Development-orange.svg)
 [![Python](https://img.shields.io/badge/Python-3.11-blue.svg)](pyproject.toml)
 [![FastAPI](https://img.shields.io/badge/FastAPI-Latest-green.svg)](src/api/fastapi_app.py)
 [![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](Dockerfile)
@@ -15,43 +15,83 @@ Our goal is to unify multiple italian sources, allowing analysts, data scientist
 and on the same platform.
 
 ### ✨ Current Status
-- **🚀 Core API**: FastAPI backend functional with JWT authentication
-- **⚡ Database**: DuckDB analytics + SQLite metadata hybrid working
-- **🛡️ Security**: JWT auth, rate limiting, security middleware implemented
-- **🐳 Docker**: Multi-stage builds ready (image deployment untested)
-- **☸️ Kubernetes**: Infrastructure manifests complete (cluster deployment untested)
-- **📤 Export Formats**: Universal data export (CSV, JSON, Parquet) implemented
 
-**⚠️ STATUS: MVP in active development**
+**Core Features:**
+
+- ✅ **FastAPI Backend**: REST API with JWT authentication and rate limiting
+- ✅ **Hybrid Database**: DuckDB (analytics) + SQLite (metadata)
+- ✅ **Data Export**: Multiple formats (CSV, JSON, Parquet, Excel)
+- ✅ **ISTAT Integration**: Production client for ISTAT SDMX API
+- ✅ **Security**: JWT auth, rate limiting, OWASP middleware
+
+**Development Status:**
+
+- 🔧 **Test Suite**: Simplified and focused on MVP essentials ([#159](https://github.com/AndreaBozzo/Osservatorio/issues/159))
+- 📊 **Coverage**: 58%+ on core components
+- 🐳 **Docker**: Development setup ready
+- 📚 **Documentation**: Core guides available
+
+**⚠️ MVP in Active Development** - Not ready for production use yet
 
 ## 🚀 Quick Start
 
+### Development Setup
+
 ```bash
-# Clone and run with Docker
+# Clone repository
 git clone https://github.com/AndreaBozzo/Osservatorio.git
 cd Osservatorio
+
+# Install dependencies (Python 3.11+)
+pip install -e .
+
+# Run tests
+pytest tests/unit tests/integration -v
+
+# Start development server
+python -m uvicorn src.api.fastapi_app:app --reload
+
+# Access API documentation
+# http://localhost:8000/docs
+```
+
+### Docker Setup (Alternative)
+
+```bash
+# Build and run with Docker Compose
 docker-compose up -d
 
-# Access:
-# - API: http://localhost:8000
-# - Documentation: http://localhost:8000/docs
+# Access API
+# http://localhost:8000
+# http://localhost:8000/docs
 ```
 
 ## 🏗️ Architecture
 
-- **FastAPI Backend**: Async REST API with OpenAPI documentation
-- **Hybrid Database**: DuckDB (analytics) + SQLite (metadata) + Redis (cache)
-- **Authentication**: JWT with rate limiting
-- **Docker**: Multi-stage builds for development and production
-- **Security**: OWASP middleware, vulnerability scanning
+**Technology Stack:**
+
+- **Backend**: FastAPI (async REST API with OpenAPI docs)
+- **Analytics DB**: DuckDB (columnar, fast aggregations)
+- **Metadata DB**: SQLite (lightweight, reliable)
+- **Authentication**: JWT tokens with rate limiting
+- **Data Sources**: ISTAT SDMX API integration
+- **Export**: CSV, JSON, Parquet, Excel formats
+- **Security**: OWASP middleware, input validation
 
 ## 📚 Documentation
 
-- [Architecture](docs/core/ARCHITECTURE.md) - Current and planned architecture
-- [Deployment Guide](docs/core/DEPLOYMENT.md) - Docker setup and production
+**Core Guides:**
+
+- [Architecture](docs/core/ARCHITECTURE.md) - System design and architecture
+- [Testing](TESTING.md) - Test strategy and guidelines
+- [Contributing](CONTRIBUTING.md) - How to contribute
+- [Security](SECURITY.md) - Security policy and reporting
+
+**Technical Docs:**
+
+- [REST API](docs/api/FASTAPI_REST_API.md) - API endpoints and usage
+- [Ingestion Pipeline](docs/guides/INGESTION_PIPELINE_GUIDE.md) - Data ingestion guide
 - [Project Status](docs/project/PROJECT_STATE.md) - Current development state
-- [Ingestion](docs/guides/INGESTION_PIPELINE_GUIDE.md) - Current ingestion guidelines
-- [REST API](docs/api/FASTAPI_REST_API.md) - REST API Guide
 
 ## 👥 Contributors
 
