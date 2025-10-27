@@ -2,30 +2,38 @@
 
 ## 🧪 Testing Overview
 
-Questo documento descrive le linee guida per il testing nel progetto Osservatorio ISTAT Data Platform. Un testing completo garantisce la qualità, affidabilità e maintainability del codice.
+This document describes testing guidelines for the Osservatorio ISTAT Data Platform. A focused testing strategy ensures quality, reliability, and maintainability while keeping the test suite manageable for an MVP.
 
-## 📋 Test Strategy
+**Note:** This testing strategy was simplified in Issue #159 to focus on MVP essentials. Performance tests were removed as premature optimization for a startup-stage project.
 
-### Test Pyramid
+## 📋 Test Strategy (Simplified for MVP)
 
-```
+### Test Pyramid - MVP Focus
+
+```text
         /\
-       /  \    E2E Tests (Few)
+       /  \    Integration Tests (Few - Critical paths only)
       /____\
-     /      \  Integration Tests (Some)
+     /      \
     /________\
-   /          \ Unit Tests (Many)
+   /          \ Unit Tests (Many - Core functionality)
   /__________\
 ```
 
 ### Test Categories
 
-| Test Type | Scope | Speed | Coverage |
-|-----------|-------|--------|----------|
-| **Unit** | Single function/class | <100ms | 80%+ |
-| **Integration** | Multiple components | <5s | 60%+ |
-| **Performance** | System performance | <30s | Key paths |
-| **E2E** | Full user workflows | <2min | Critical paths |
+| Test Type | Scope | Speed | Coverage | Status |
+|-----------|-------|--------|----------|--------|
+| **Unit** | Single function/class | <100ms | 70%+ | ✅ Active |
+| **Integration** | Multiple components | <5s | Key flows | ✅ Active |
+| **Smoke** | Basic functionality | <10s | Critical paths | ✅ Active |
+| **Performance** | System performance | <30s | N/A | ❌ Archived ([#159](https://github.com/AndreaBozzo/Osservatorio/issues/159); revisit after MVP validation or when user base exceeds 1,000 active users) |
+
+**Test Suite Metrics (After Issue #159):**
+
+- Total lines: ~12,890 (reduced from 20,406)
+- Collection time: ~14s (reduced from 25s)
+- Total tests: ~519 (focused on essentials)
 
 ## 🚀 Quick Start
 
@@ -36,38 +44,47 @@ Questo documento descrive le linee guida per il testing nel progetto Osservatori
 pip install -e .
 pip install pytest pytest-cov pytest-asyncio httpx
 
-# Run all tests
-python -m pytest
+# Run all tests (excluding manual/slow tests)
+python -m pytest tests/unit tests/integration -v
 
 # Run with coverage
-python -m pytest --cov=src --cov-report=html
+python -m pytest tests/unit --cov=src --cov-report=html
 
 # Run specific test category
 python -m pytest tests/unit/ -v
-python -m pytest tests/integration/ -v
-python -m pytest tests/performance/ -v
+python -m pytest tests/integration/ -v -m "not slow"
+
+# Run slow/API tests (optional, requires real API access)
+python -m pytest -m "slow or api" -v
 ```
 
 ### Test Structure
 
-```
+```text
 tests/
-├── unit/                    # Unit tests (fast, isolated)
-│   ├── test_database/      # Database layer tests
-│   ├── test_api/           # API endpoint tests
-│   ├── test_auth/          # Authentication tests
-│   └── test_utils/         # Utility function tests
-├── integration/            # Integration tests (real components)
-│   ├── test_fastapi_integration.py
-│   ├── test_database_integration.py
-│   └── test_pipeline_integration.py
-├── performance/            # Performance tests
-│   ├── test_api_performance.py
-│   └── test_database_performance.py
-└── fixtures/               # Test data and fixtures
-    ├── sample_datasets.json
-    └── test_data.sql
+├── conftest.py             # Shared fixtures (simplified for MVP)
+├── unit/                   # Unit tests (fast, isolated)
+│   ├── test_audit_manager.py
+│   ├── test_config_manager.py
+│   ├── test_dataset_manager.py
+│   └── ... (core component tests)
+├── integration/            # Integration tests (minimal)
+│   ├── test_simple_pipeline_smoke.py  # Smoke tests
+│   ├── test_production_istat_client.py
+│   └── test_api_integration.py
+├── manual/                 # Manual/exploratory tests
+│   └── test_production_client_real_api.py
+└── test_export_functionality.py
 ```
+
+**Note:** Performance tests were removed in [Issue #159](https://github.com/AndreaBozzo/Osservatorio/issues/159).
+
+**When to reintroduce performance tests:**
+
+- After successful MVP validation with real users
+- User base exceeds 1,000 active users
+- Response times become a critical business requirement
+- Team has bandwidth for maintaining complex test infrastructure
 
 ## ✅ Unit Testing
 
