@@ -6,7 +6,7 @@ services:
   osservatorio-api:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: config/docker/Dockerfile
       target: ${BUILD_TARGET:-development}
       args:
         BUILD_DATE: ${BUILD_DATE:-$(date -u +'%Y-%m-%dT%H:%M:%SZ')}
@@ -214,7 +214,7 @@ services:
   osservatorio-dashboard:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: config/docker/Dockerfile
       target: ${BUILD_TARGET:-development}
       args:
         BUILD_DATE: ${BUILD_DATE:-$(date -u +'%Y-%m-%dT%H:%M:%SZ')}
@@ -282,7 +282,7 @@ services:
   build-benchmark:
     build:
       context: .
-      dockerfile: Dockerfile.benchmark
+      dockerfile: config/docker/Dockerfile.benchmark
     image: osservatorio/benchmark:latest
     container_name: osservatorio-build-benchmark
     profiles:

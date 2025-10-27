@@ -75,7 +75,7 @@ repos:
         always_run: true
         args:
           - -c
-          - pytest-fast.ini
+          - config/pytest-fast.ini
           - tests/unit/test_sqlite_metadata.py::TestSQLiteMetadataManager::test_dataset_registration
           - tests/integration/test_unified_repository.py::TestUnifiedDataRepository::test_complete_dataset_registration
           - --tb=short
@@ -90,7 +90,7 @@ repos:
         stages: [manual]
         args:
           - -c
-          - pytest-fast.ini
+          - config/pytest-fast.ini
           - tests/unit/
           - -k
           - "not slow and not performance"

@@ -5,19 +5,19 @@ on:
     branches: [main, feature/dashboard]
     paths:
       - 'dashboard/app.py'
-      - 'streamlit_app.py'
+      - 'scripts/streamlit_app.py'
       - 'src/**'
       - '.streamlit/**'
-      - 'requirements.txt'
+      - 'config/requirements/**'
       - '.github/workflows/dashboard-deploy.yml'
   pull_request:
     branches: [main]
     paths:
       - 'dashboard/app.py'
-      - 'streamlit_app.py'
+      - 'scripts/streamlit_app.py'
       - 'src/**'
       - '.streamlit/**'
-      - 'requirements.txt'
+      - 'config/requirements/**'
 
 jobs:
   test:
@@ -41,14 +41,14 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('config/requirements/base.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install -r config/requirements/base.txt
 
       - name: Run CI tests
         timeout-minutes: 8
@@ -63,7 +63,7 @@ jobs:
 
       - name: Check dashboard structure
         run: |
-          ls -la streamlit_app.py
+          ls -la scripts/streamlit_app.py
           ls -la dashboard/app.py
           ls -la .streamlit/ || echo "⚠️  .streamlit directory not found"
 
@@ -91,7 +91,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: '🚀 Dashboard preview will be available after merge to main branch.\n\nTo test locally:\n```bash\nstreamlit run dashboard/app.py\n# OR use the entry point:\nstreamlit run streamlit_app.py\n```'
+              body: '🚀 Dashboard preview will be available after merge to main branch.\n\nTo test locally:\n```bash\nstreamlit run dashboard/app.py\n# OR use the entry point:\nstreamlit run scripts/streamlit_app.py\n```'
             })
 
   deploy-prod:
@@ -112,7 +112,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install -r config/requirements/base.txt
 
       - name: Generate production data
         run: |
@@ -122,10 +122,10 @@ jobs:
         run: |
           echo "🚀 Ready for Streamlit Cloud deployment"
           echo "Connect this repository to https://share.streamlit.io/"
-          echo "Entry point: streamlit_app.py (imports from dashboard/app.py)"
+          echo "Entry point: scripts/streamlit_app.py (imports from dashboard/app.py)"
           echo ""
           echo "Entry point file:"
-          ls -la streamlit_app.py
+          ls -la scripts/streamlit_app.py
           echo ""
           echo "Main app file:"
           ls -la dashboard/app.py
@@ -134,7 +134,7 @@ jobs:
           ls -la .streamlit/ || echo "No .streamlit config found"
           echo ""
           echo "Dependencies:"
-          head -20 requirements.txt
+          head -20 config/requirements/base.txt
 
       - name: Create deployment badge
         run: |
@@ -147,6 +147,6 @@ jobs:
           echo "✅ Dashboard deployment completed successfully"
           echo "Next steps:"
           echo "1. Connect repository to Streamlit Cloud"
-          echo "2. Set app path to: streamlit_app.py"
+          echo "2. Set app path to: scripts/streamlit_app.py"
           echo "3. Deploy automatically on push to main"
           echo "4. Entry point will import from dashboard/app.py"

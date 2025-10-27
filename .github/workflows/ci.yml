@@ -30,7 +30,7 @@ jobs:
 
       - name: Run basic tests
         run: |
-          pytest -c pytest-ci.ini tests/unit/ -v
+          pytest -c config/pytest-ci.ini tests/unit/ -v
 
       - name: Check code formatting
         # NOTE: Keep these commands aligned with .pre-commit-config.yaml

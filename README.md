@@ -78,20 +78,42 @@ docker-compose up -d
 - **Export**: CSV, JSON, Parquet, Excel formats
 - **Security**: OWASP middleware, input validation
 
+## 📁 Project Structure
+
+```
+osservatorio/
+├── config/                  # Configuration files
+│   ├── docker/             # Docker configurations
+│   ├── requirements/       # Python dependencies
+│   ├── pytest.ini          # Pytest configuration
+│   ├── pytest-ci.ini       # CI pytest config
+│   └── pytest-fast.ini     # Fast pytest config
+├── src/                    # Source code
+├── tests/                  # Test suite
+├── docs/                   # Documentation
+├── scripts/                # Utility scripts
+├── data/                   # Data storage
+├── examples/               # Usage examples
+├── dashboard/              # Streamlit dashboard
+└── bin/                    # External binaries (gitignored)
+```
+
 ## 📚 Documentation
 
 **Core Guides:**
 
 - [Architecture](docs/core/ARCHITECTURE.md) - System design and architecture
-- [Testing](TESTING.md) - Test strategy and guidelines
+- [Testing](docs/TESTING.md) - Test strategy and guidelines
 - [Contributing](CONTRIBUTING.md) - How to contribute
 - [Security](SECURITY.md) - Security policy and reporting
+- [Changelog](docs/CHANGELOG.md) - Version history
 
 **Technical Docs:**
 
 - [REST API](docs/api/FASTAPI_REST_API.md) - API endpoints and usage
 - [Ingestion Pipeline](docs/guides/INGESTION_PIPELINE_GUIDE.md) - Data ingestion guide
 - [Project Status](docs/project/PROJECT_STATE.md) - Current development state
+- [Collaborator Guide](docs/COLLABORATOR_README.md) - For project collaborators
 
 ## 👥 Contributors
 
