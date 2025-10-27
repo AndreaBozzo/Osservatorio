@@ -1,0 +1,2074 @@
+{
+  "errors": [],
+  "generated_at": "2025-10-27T08:27:06Z",
+  "metrics": {
+    "_totals": {
+      "CONFIDENCE.HIGH": 23,
+      "CONFIDENCE.LOW": 29,
+      "CONFIDENCE.MEDIUM": 5,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 22,
+      "SEVERITY.MEDIUM": 35,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 14098,
+      "nosec": 0,
+      "skipped_tests": 1
+    },
+    "src\\api\\__init__.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 0,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "src\\api\\dependencies.py": {
+      "CONFIDENCE.HIGH": 4,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 4,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 430,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "src\\api\\fastapi_app.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 3,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 2,
+      "SEVERITY.MEDIUM": 1,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 1161,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "src\\api\\mock_istat_data.py": {
+      "CONFIDENCE.HIGH": 8,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 8,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 251,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "src\\api\\models.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 256,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "src\\api\\odata.py": {
+      "CONFIDENCE.HIGH": 1,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 1,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 646,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "src\\api\\production_istat_client.py": {
+      "CONFIDENCE.HIGH": 3,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 1,
+      "SEVERITY.MEDIUM": 2,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 571,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "src\\auth\\__init__.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 11,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "src\\auth\\jwt_manager.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 1,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 1,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 244,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "src\\auth\\models.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 65,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "src\\auth\\rate_limiter.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 466,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "src\\auth\\security_config.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 75,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "src\\auth\\security_middleware.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 49,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "src\\auth\\sqlite_auth.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 495,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "src\\database\\__init__.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 54,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "src\\database\\duckdb\\__init__.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 57,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "src\\database\\duckdb\\config.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 150,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "src\\database\\duckdb\\manager.py": {
+      "CONFIDENCE.HIGH": 2,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 2,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 358,
+      "nosec": 0,
+      "skipped_tests": 1
+    },
+    "src\\database\\duckdb\\partitioning.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 3,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 3,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 463,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "src\\database\\duckdb\\query_builder.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 686,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "src\\database\\duckdb\\query_optimizer.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 4,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 4,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 473,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "src\\database\\duckdb\\schema.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 6,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 6,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 462,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "src\\database\\duckdb\\simple_adapter.py": {
+      "CONFIDENCE.HIGH": 1,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 1,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 396,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "src\\database\\sqlite\\__init__.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 60,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "src\\database\\sqlite\\audit_manager.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 5,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 5,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 382,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "src\\database\\sqlite\\base_manager.py": {
+      "CONFIDENCE.HIGH": 1,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 1,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 110,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "src\\database\\sqlite\\config_manager.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 281,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "src\\database\\sqlite\\dataset_config.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 3,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 3,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 294,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "src\\database\\sqlite\\dataset_manager.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 3,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 3,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 295,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "src\\database\\sqlite\\manager.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 3,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 3,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 940,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "src\\database\\sqlite\\manager_factory.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 154,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "src\\database\\sqlite\\repository.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 669,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "src\\database\\sqlite\\schema.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 510,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "src\\database\\sqlite\\user_manager.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 318,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "src\\export\\__init__.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 11,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "src\\export\\data_access.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 2,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 2,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 191,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "src\\export\\endpoints.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 341,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "src\\export\\streaming_exporter.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 167,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "src\\export\\universal_exporter.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 161,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "src\\ingestion\\__init__.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 6,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "src\\ingestion\\simple_pipeline.py": {
+      "CONFIDENCE.HIGH": 3,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 1,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 2,
+      "SEVERITY.MEDIUM": 2,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 627,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "src\\utils\\config.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 163,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "src\\utils\\error_handler.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 234,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "src\\utils\\logger.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 21,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "src\\utils\\mvp_security.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 50,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "src\\utils\\secure_path.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 294,
+      "nosec": 0,
+      "skipped_tests": 0
+    }
+  },
+  "results": [
+    {
+      "code": "534             _jwt_manager.close()\n535         except Exception:\n536             pass\n537 \n",
+      "col_offset": 8,
+      "end_col_offset": 16,
+      "filename": "src\\api\\dependencies.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 703,
+        "link": "https://cwe.mitre.org/data/definitions/703.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Try, Except, Pass detected.",
+      "line_number": 535,
+      "line_range": [
+        535,
+        536
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b110_try_except_pass.html",
+      "test_id": "B110",
+      "test_name": "try_except_pass"
+    },
+    {
+      "code": "540             _auth_manager.close_connections()\n541         except Exception:\n542             pass\n543 \n",
+      "col_offset": 8,
+      "end_col_offset": 16,
+      "filename": "src\\api\\dependencies.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 703,
+        "link": "https://cwe.mitre.org/data/definitions/703.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Try, Except, Pass detected.",
+      "line_number": 541,
+      "line_range": [
+        541,
+        542
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b110_try_except_pass.html",
+      "test_id": "B110",
+      "test_name": "try_except_pass"
+    },
+    {
+      "code": "546             _rate_limiter.close_connections()\n547         except Exception:\n548             pass\n549 \n",
+      "col_offset": 8,
+      "end_col_offset": 16,
+      "filename": "src\\api\\dependencies.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 703,
+        "link": "https://cwe.mitre.org/data/definitions/703.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Try, Except, Pass detected.",
+      "line_number": 547,
+      "line_range": [
+        547,
+        548
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b110_try_except_pass.html",
+      "test_id": "B110",
+      "test_name": "try_except_pass"
+    },
+    {
+      "code": "552             _istat_client.close()\n553         except Exception:\n554             pass\n555 \n",
+      "col_offset": 8,
+      "end_col_offset": 16,
+      "filename": "src\\api\\dependencies.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 703,
+        "link": "https://cwe.mitre.org/data/definitions/703.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Try, Except, Pass detected.",
+      "line_number": 553,
+      "line_range": [
+        553,
+        554
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b110_try_except_pass.html",
+      "test_id": "B110",
+      "test_name": "try_except_pass"
+    },
+    {
+      "code": "450 \n451         return UserAuthResponse(\n452             success=True,\n453             message=\"User registered successfully\",\n454             access_token=token,\n455             token_type=\"bearer\",\n456             expires_in=3600,\n457             user_info={\n458                 \"id\": user.id,\n459                 \"email\": user.email,\n460                 \"is_active\": user.is_active,\n461                 \"created_at\": user.created_at.isoformat() if user.created_at else None,\n462             },\n463         )\n464 \n",
+      "col_offset": 15,
+      "end_col_offset": 9,
+      "filename": "src\\api\\fastapi_app.py",
+      "issue_confidence": "MEDIUM",
+      "issue_cwe": {
+        "id": 259,
+        "link": "https://cwe.mitre.org/data/definitions/259.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Possible hardcoded password: 'bearer'",
+      "line_number": 451,
+      "line_range": [
+        451,
+        452,
+        453,
+        454,
+        455,
+        456,
+        457,
+        458,
+        459,
+        460,
+        461,
+        462,
+        463
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b106_hardcoded_password_funcarg.html",
+      "test_id": "B106",
+      "test_name": "hardcoded_password_funcarg"
+    },
+    {
+      "code": "502 \n503         return UserAuthResponse(\n504             success=True,\n505             message=\"Login successful\",\n506             access_token=token,\n507             token_type=\"bearer\",\n508             expires_in=3600,\n509             user_info={\"id\": user.id, \"email\": user.email, \"is_active\": user.is_active},\n510         )\n511 \n",
+      "col_offset": 15,
+      "end_col_offset": 9,
+      "filename": "src\\api\\fastapi_app.py",
+      "issue_confidence": "MEDIUM",
+      "issue_cwe": {
+        "id": 259,
+        "link": "https://cwe.mitre.org/data/definitions/259.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Possible hardcoded password: 'bearer'",
+      "line_number": 503,
+      "line_range": [
+        503,
+        504,
+        505,
+        506,
+        507,
+        508,
+        509,
+        510
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b106_hardcoded_password_funcarg.html",
+      "test_id": "B106",
+      "test_name": "hardcoded_password_funcarg"
+    },
+    {
+      "code": "1422         \"src.api.fastapi_app:app\",\n1423         host=\"0.0.0.0\",\n1424         port=8000,\n",
+      "col_offset": 13,
+      "end_col_offset": 22,
+      "filename": "src\\api\\fastapi_app.py",
+      "issue_confidence": "MEDIUM",
+      "issue_cwe": {
+        "id": 605,
+        "link": "https://cwe.mitre.org/data/definitions/605.html"
+      },
+      "issue_severity": "MEDIUM",
+      "issue_text": "Possible binding to all interfaces.",
+      "line_number": 1423,
+      "line_range": [
+        1423
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b104_hardcoded_bind_all_interfaces.html",
+      "test_id": "B104",
+      "test_name": "hardcoded_bind_all_interfaces"
+    },
+    {
+      "code": "231         for _i in range(sample_count):\n232             territory = random.choice(self.territories)\n233             year = random.choice([2021, 2022, 2023])\n",
+      "col_offset": 24,
+      "end_col_offset": 55,
+      "filename": "src\\api\\mock_istat_data.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 330,
+        "link": "https://cwe.mitre.org/data/definitions/330.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Standard pseudo-random generators are not suitable for security/cryptographic purposes.",
+      "line_number": 232,
+      "line_range": [
+        232
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/blacklists/blacklist_calls.html#b311-random",
+      "test_id": "B311",
+      "test_name": "blacklist"
+    },
+    {
+      "code": "232             territory = random.choice(self.territories)\n233             year = random.choice([2021, 2022, 2023])\n234 \n",
+      "col_offset": 19,
+      "end_col_offset": 52,
+      "filename": "src\\api\\mock_istat_data.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 330,
+        "link": "https://cwe.mitre.org/data/definitions/330.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Standard pseudo-random generators are not suitable for security/cryptographic purposes.",
+      "line_number": 233,
+      "line_range": [
+        233
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/blacklists/blacklist_calls.html#b311-random",
+      "test_id": "B311",
+      "test_name": "blacklist"
+    },
+    {
+      "code": "235             if \"POPULATION\" in dataset_info.id:\n236                 value = random.randint(50000, 5000000)\n237             elif \"EMPLOYMENT\" in dataset_info.id:\n",
+      "col_offset": 24,
+      "end_col_offset": 54,
+      "filename": "src\\api\\mock_istat_data.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 330,
+        "link": "https://cwe.mitre.org/data/definitions/330.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Standard pseudo-random generators are not suitable for security/cryptographic purposes.",
+      "line_number": 236,
+      "line_range": [
+        236
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/blacklists/blacklist_calls.html#b311-random",
+      "test_id": "B311",
+      "test_name": "blacklist"
+    },
+    {
+      "code": "237             elif \"EMPLOYMENT\" in dataset_info.id:\n238                 value = round(random.uniform(45.0, 85.0), 1)  # Employment rate %\n239             elif \"GDP\" in dataset_info.id:\n",
+      "col_offset": 30,
+      "end_col_offset": 56,
+      "filename": "src\\api\\mock_istat_data.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 330,
+        "link": "https://cwe.mitre.org/data/definitions/330.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Standard pseudo-random generators are not suitable for security/cryptographic purposes.",
+      "line_number": 238,
+      "line_range": [
+        238
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/blacklists/blacklist_calls.html#b311-random",
+      "test_id": "B311",
+      "test_name": "blacklist"
+    },
+    {
+      "code": "239             elif \"GDP\" in dataset_info.id:\n240                 value = random.randint(20000, 150000)  # GDP per capita\n241             elif \"BUSINESS\" in dataset_info.id:\n",
+      "col_offset": 24,
+      "end_col_offset": 53,
+      "filename": "src\\api\\mock_istat_data.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 330,
+        "link": "https://cwe.mitre.org/data/definitions/330.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Standard pseudo-random generators are not suitable for security/cryptographic purposes.",
+      "line_number": 240,
+      "line_range": [
+        240
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/blacklists/blacklist_calls.html#b311-random",
+      "test_id": "B311",
+      "test_name": "blacklist"
+    },
+    {
+      "code": "241             elif \"BUSINESS\" in dataset_info.id:\n242                 value = round(random.uniform(-5.0, 15.0), 2)  # Business indicator %\n243             elif \"TOURISM\" in dataset_info.id:\n",
+      "col_offset": 30,
+      "end_col_offset": 56,
+      "filename": "src\\api\\mock_istat_data.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 330,
+        "link": "https://cwe.mitre.org/data/definitions/330.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Standard pseudo-random generators are not suitable for security/cryptographic purposes.",
+      "line_number": 242,
+      "line_range": [
+        242
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/blacklists/blacklist_calls.html#b311-random",
+      "test_id": "B311",
+      "test_name": "blacklist"
+    },
+    {
+      "code": "243             elif \"TOURISM\" in dataset_info.id:\n244                 value = random.randint(1000, 500000)  # Tourist arrivals\n245             else:\n",
+      "col_offset": 24,
+      "end_col_offset": 52,
+      "filename": "src\\api\\mock_istat_data.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 330,
+        "link": "https://cwe.mitre.org/data/definitions/330.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Standard pseudo-random generators are not suitable for security/cryptographic purposes.",
+      "line_number": 244,
+      "line_range": [
+        244
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/blacklists/blacklist_calls.html#b311-random",
+      "test_id": "B311",
+      "test_name": "blacklist"
+    },
+    {
+      "code": "245             else:\n246                 value = round(random.uniform(0, 1000), 2)\n247 \n",
+      "col_offset": 30,
+      "end_col_offset": 53,
+      "filename": "src\\api\\mock_istat_data.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 330,
+        "link": "https://cwe.mitre.org/data/definitions/330.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Standard pseudo-random generators are not suitable for security/cryptographic purposes.",
+      "line_number": 246,
+      "line_range": [
+        246
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/blacklists/blacklist_calls.html#b311-random",
+      "test_id": "B311",
+      "test_name": "blacklist"
+    },
+    {
+      "code": "17 from typing import Optional\n18 from xml.etree.ElementTree import Element, SubElement, tostring\n19 \n",
+      "col_offset": 0,
+      "end_col_offset": 63,
+      "filename": "src\\api\\odata.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 20,
+        "link": "https://cwe.mitre.org/data/definitions/20.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Using Element to parse untrusted XML data is known to be vulnerable to XML attacks. Replace Element with the equivalent defusedxml package, or make sure defusedxml.defuse_stdlib() is called.",
+      "line_number": 18,
+      "line_range": [
+        18
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/blacklists/blacklist_imports.html#b405-import-xml-etree",
+      "test_id": "B405",
+      "test_name": "blacklist"
+    },
+    {
+      "code": "10 import time\n11 import xml.etree.ElementTree as ET\n12 from dataclasses import dataclass\n",
+      "col_offset": 0,
+      "end_col_offset": 34,
+      "filename": "src\\api\\production_istat_client.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 20,
+        "link": "https://cwe.mitre.org/data/definitions/20.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Using xml.etree.ElementTree to parse untrusted XML data is known to be vulnerable to XML attacks. Replace xml.etree.ElementTree with the equivalent defusedxml package, or make sure defusedxml.defuse_stdlib() is called.",
+      "line_number": 11,
+      "line_range": [
+        11
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/blacklists/blacklist_imports.html#b405-import-xml-etree",
+      "test_id": "B405",
+      "test_name": "blacklist"
+    },
+    {
+      "code": "332             # Parse XML response\n333             root = ET.fromstring(response.content)\n334             dataflows = []\n",
+      "col_offset": 19,
+      "end_col_offset": 50,
+      "filename": "src\\api\\production_istat_client.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 20,
+        "link": "https://cwe.mitre.org/data/definitions/20.html"
+      },
+      "issue_severity": "MEDIUM",
+      "issue_text": "Using xml.etree.ElementTree.fromstring to parse untrusted XML data is known to be vulnerable to XML attacks. Replace xml.etree.ElementTree.fromstring with its defusedxml equivalent function or make sure defusedxml.defuse_stdlib() is called",
+      "line_number": 333,
+      "line_range": [
+        333
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/blacklists/blacklist_calls.html#b313-b320-xml-bad-elementtree",
+      "test_id": "B314",
+      "test_name": "blacklist"
+    },
+    {
+      "code": "424                         try:\n425                             root = ET.fromstring(data_response.content)\n426                             # Use simpler XPath - find all elements with 'Obs' in name\n",
+      "col_offset": 35,
+      "end_col_offset": 71,
+      "filename": "src\\api\\production_istat_client.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 20,
+        "link": "https://cwe.mitre.org/data/definitions/20.html"
+      },
+      "issue_severity": "MEDIUM",
+      "issue_text": "Using xml.etree.ElementTree.fromstring to parse untrusted XML data is known to be vulnerable to XML attacks. Replace xml.etree.ElementTree.fromstring with its defusedxml equivalent function or make sure defusedxml.defuse_stdlib() is called",
+      "line_number": 425,
+      "line_range": [
+        425
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/blacklists/blacklist_calls.html#b313-b320-xml-bad-elementtree",
+      "test_id": "B314",
+      "test_name": "blacklist"
+    },
+    {
+      "code": "120             # Create AuthToken object (no refresh token for MVP)\n121             token = AuthToken(\n122                 access_token=access_token,\n123                 token_type=\"bearer\",\n124                 expires_in=self.access_token_expire_minutes * 60,\n125                 scope=\" \".join(api_key.scopes) if api_key.scopes else \"read\",\n126             )\n127 \n",
+      "col_offset": 20,
+      "end_col_offset": 13,
+      "filename": "src\\auth\\jwt_manager.py",
+      "issue_confidence": "MEDIUM",
+      "issue_cwe": {
+        "id": 259,
+        "link": "https://cwe.mitre.org/data/definitions/259.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Possible hardcoded password: 'bearer'",
+      "line_number": 121,
+      "line_range": [
+        121,
+        122,
+        123,
+        124,
+        125,
+        126
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b106_hardcoded_password_funcarg.html",
+      "test_id": "B106",
+      "test_name": "hardcoded_password_funcarg"
+    },
+    {
+      "code": "145                     conn.close()\n146                 except Exception:\n147                     pass  # Ignore close errors\n148 \n",
+      "col_offset": 16,
+      "end_col_offset": 24,
+      "filename": "src\\database\\duckdb\\manager.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 703,
+        "link": "https://cwe.mitre.org/data/definitions/703.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Try, Except, Pass detected.",
+      "line_number": 146,
+      "line_range": [
+        146,
+        147
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b110_try_except_pass.html",
+      "test_id": "B110",
+      "test_name": "try_except_pass"
+    },
+    {
+      "code": "279                         conn.unregister(\"temp_df\")\n280                     except Exception:\n281                         pass  # Ignore cleanup errors\n282 \n",
+      "col_offset": 20,
+      "end_col_offset": 28,
+      "filename": "src\\database\\duckdb\\manager.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 703,
+        "link": "https://cwe.mitre.org/data/definitions/703.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Try, Except, Pass detected.",
+      "line_number": 280,
+      "line_range": [
+        280,
+        281
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b110_try_except_pass.html",
+      "test_id": "B110",
+      "test_name": "try_except_pass"
+    },
+    {
+      "code": "357 \n358         query = f\"\"\"\n359         SELECT DISTINCT partition_key\n360         FROM {schema}.istat_datasets_partitioned\n361         ORDER BY partition_key;\n362         \"\"\"\n363 \n",
+      "col_offset": 20,
+      "end_col_offset": 13,
+      "filename": "src\\database\\duckdb\\partitioning.py",
+      "issue_confidence": "LOW",
+      "issue_cwe": {
+        "id": 89,
+        "link": "https://cwe.mitre.org/data/definitions/89.html"
+      },
+      "issue_severity": "MEDIUM",
+      "issue_text": "Possible SQL injection vector through string-based query construction.",
+      "line_number": 358,
+      "line_range": [
+        358,
+        359,
+        360,
+        361,
+        362
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b608_hardcoded_sql_expressions.html",
+      "test_id": "B608",
+      "test_name": "hardcoded_sql_expressions"
+    },
+    {
+      "code": "375 \n376         view_sql = f\"\"\"\n377         CREATE OR REPLACE VIEW {view_name} AS\n378         SELECT\n379             d.*,\n380             o.obs_value,\n381             o.obs_status,\n382             o.value_type,\n383             o.is_estimated,\n384             o.is_provisional\n385         FROM {schema}.istat_datasets_partitioned d\n386         LEFT JOIN {schema}.istat_observations_partitioned o ON d.id = o.dataset_row_id\n387         WHERE d.partition_key = '{partition_key}';\n388         \"\"\"\n389 \n",
+      "col_offset": 23,
+      "end_col_offset": 31,
+      "filename": "src\\database\\duckdb\\partitioning.py",
+      "issue_confidence": "LOW",
+      "issue_cwe": {
+        "id": 89,
+        "link": "https://cwe.mitre.org/data/definitions/89.html"
+      },
+      "issue_severity": "MEDIUM",
+      "issue_text": "Possible SQL injection vector through string-based query construction.",
+      "line_number": 376,
+      "line_range": [
+        376,
+        377,
+        378,
+        379,
+        380,
+        381,
+        382,
+        383,
+        384,
+        385,
+        386,
+        387,
+        388
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b608_hardcoded_sql_expressions.html",
+      "test_id": "B608",
+      "test_name": "hardcoded_sql_expressions"
+    },
+    {
+      "code": "534         try:\n535             stats_query = f\"\"\"\n536             SELECT\n537                 partition_key,\n538                 COUNT(*) as row_count,\n539                 MIN(year) as min_year,\n540                 MAX(year) as max_year,\n541                 COUNT(DISTINCT territory_code) as territory_count\n542             FROM {table}\n543             GROUP BY partition_key\n544             ORDER BY row_count DESC;\n545             \"\"\"\n546 \n",
+      "col_offset": 30,
+      "end_col_offset": 17,
+      "filename": "src\\database\\duckdb\\partitioning.py",
+      "issue_confidence": "LOW",
+      "issue_cwe": {
+        "id": 89,
+        "link": "https://cwe.mitre.org/data/definitions/89.html"
+      },
+      "issue_severity": "MEDIUM",
+      "issue_text": "Possible SQL injection vector through string-based query construction.",
+      "line_number": 535,
+      "line_range": [
+        535,
+        536,
+        537,
+        538,
+        539,
+        540,
+        541,
+        542,
+        543,
+        544,
+        545
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b608_hardcoded_sql_expressions.html",
+      "test_id": "B608",
+      "test_name": "hardcoded_sql_expressions"
+    },
+    {
+      "code": "141 \n142         query = f\"\"\"\n143         SELECT\n144             ts.dataset_id,\n145             ts.year,\n146             ts.time_period,\n147             ts.territory_code,\n148             ts.territory_name,\n149             ts.measure_code,\n150             ts.measure_name,\n151             ts.obs_value,\n152             ts.obs_status,\n153             ts.category,\n154             ts.unit_of_measure\n155         FROM {analytics_schema}.time_series ts\n156         WHERE ts.dataset_id IN ('{dataset_list}')\n157           AND ts.year BETWEEN {start_year} AND {end_year}\n158           {territory_filter}\n159         ORDER BY ts.dataset_id, ts.year, ts.territory_code;\n160         \"\"\"\n161 \n",
+      "col_offset": 20,
+      "end_col_offset": 13,
+      "filename": "src\\database\\duckdb\\query_optimizer.py",
+      "issue_confidence": "LOW",
+      "issue_cwe": {
+        "id": 89,
+        "link": "https://cwe.mitre.org/data/definitions/89.html"
+      },
+      "issue_severity": "MEDIUM",
+      "issue_text": "Possible SQL injection vector through string-based query construction.",
+      "line_number": 142,
+      "line_range": [
+        142,
+        143,
+        144,
+        145,
+        146,
+        147,
+        148,
+        149,
+        150,
+        151,
+        152,
+        153,
+        154,
+        155,
+        156,
+        157,
+        158,
+        159,
+        160
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b608_hardcoded_sql_expressions.html",
+      "test_id": "B608",
+      "test_name": "hardcoded_sql_expressions"
+    },
+    {
+      "code": "206 \n207         query = f\"\"\"\n208         WITH territory_stats AS (\n209             SELECT\n210                 d.territory_code,\n211                 d.territory_name,\n212                 d.measure_code,\n213                 d.measure_name,\n214                 AVG(o.obs_value) as avg_value,\n215                 MIN(o.obs_value) as min_value,\n216                 MAX(o.obs_value) as max_value,\n217                 COUNT(o.obs_value) as obs_count,\n218                 STDDEV(o.obs_value) as std_dev\n219             FROM {schema}.istat_datasets d\n220             JOIN {schema}.istat_observations o ON d.id = o.dataset_row_id\n221             WHERE d.year = {year}\n222               AND d.measure_code IN ('{measure_list}')\n223               {territory_filter}\n224               AND o.obs_value IS NOT NULL\n225             GROUP BY d.territory_code, d.territory_name, d.measure_code, d.measure_name\n226         )\n227         SELECT\n228             *,\n229             RANK() OVER (PARTITION BY measure_code ORDER BY avg_value DESC) as value_rank,\n230             NTILE(4) OVER (PARTITION BY measure_code ORDER BY avg_value) as quartile\n231         FROM territory_stats\n232         ORDER BY measure_code, value_rank;\n233         \"\"\"\n234 \n",
+      "col_offset": 20,
+      "end_col_offset": 17,
+      "filename": "src\\database\\duckdb\\query_optimizer.py",
+      "issue_confidence": "LOW",
+      "issue_cwe": {
+        "id": 89,
+        "link": "https://cwe.mitre.org/data/definitions/89.html"
+      },
+      "issue_severity": "MEDIUM",
+      "issue_text": "Possible SQL injection vector through string-based query construction.",
+      "line_number": 207,
+      "line_range": [
+        207,
+        208,
+        209,
+        210,
+        211,
+        212,
+        213,
+        214,
+        215,
+        216,
+        217,
+        218,
+        219,
+        220,
+        221,
+        222,
+        223,
+        224,
+        225,
+        226,
+        227,
+        228,
+        229,
+        230,
+        231,
+        232,
+        233
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b608_hardcoded_sql_expressions.html",
+      "test_id": "B608",
+      "test_name": "hardcoded_sql_expressions"
+    },
+    {
+      "code": "267 \n268         query = f\"\"\"\n269         WITH yearly_aggregates AS (\n270             SELECT\n271                 m.category,\n272                 d.year,\n273                 COUNT(DISTINCT d.dataset_id) as dataset_count,\n274                 COUNT(o.obs_value) as total_observations,\n275                 AVG(o.obs_value) as avg_value,\n276                 MEDIAN(o.obs_value) as median_value,\n277                 STDDEV(o.obs_value) as std_dev\n278             FROM {schema}.dataset_metadata m\n279             JOIN {schema}.istat_datasets d ON m.dataset_id = d.dataset_id\n280             JOIN {schema}.istat_observations o ON d.id = o.dataset_row_id\n281             WHERE m.category IN ('{category_list}')\n282               AND d.year BETWEEN {start_year} AND {end_year}\n283               AND o.obs_value IS NOT NULL\n284             GROUP BY m.category, d.year\n285         ),\n286         trend_calculations AS (\n287             SELECT\n288                 *,\n289                 LAG(avg_value) OVER (PARTITION BY category ORDER BY year) as prev_avg_value,\n290                 LEAD(avg_value) OVER (PARTITION BY category ORDER BY year) as next_avg_value\n291             FROM yearly_aggregates\n292         )\n293         SELECT\n294             *,\n295             CASE\n296                 WHEN prev_avg_value IS NULL THEN NULL\n297                 ELSE ((avg_value - prev_avg_value) / prev_avg_value) * 100\n298             END as year_over_year_change,\n299             CASE\n300                 WHEN ROW_NUMBER() OVER (PARTITION BY category ORDER BY year) >= 3 THEN\n301                     AVG(avg_value) OVER (\n302                         PARTITION BY category\n303                         ORDER BY year\n304                         ROWS BETWEEN 2 PRECEDING AND CURRENT ROW\n305                     )\n306             END as moving_avg_3yr\n307         FROM trend_calculations\n308         ORDER BY category, year;\n309         \"\"\"\n310 \n",
+      "col_offset": 20,
+      "end_col_offset": 17,
+      "filename": "src\\database\\duckdb\\query_optimizer.py",
+      "issue_confidence": "LOW",
+      "issue_cwe": {
+        "id": 89,
+        "link": "https://cwe.mitre.org/data/definitions/89.html"
+      },
+      "issue_severity": "MEDIUM",
+      "issue_text": "Possible SQL injection vector through string-based query construction.",
+      "line_number": 268,
+      "line_range": [
+        268,
+        269,
+        270,
+        271,
+        272,
+        273,
+        274,
+        275,
+        276,
+        277,
+        278,
+        279,
+        280,
+        281,
+        282,
+        283,
+        284,
+        285,
+        286,
+        287,
+        288,
+        289,
+        290,
+        291,
+        292,
+        293,
+        294,
+        295,
+        296,
+        297,
+        298,
+        299,
+        300,
+        301,
+        302,
+        303,
+        304,
+        305,
+        306,
+        307,
+        308,
+        309
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b608_hardcoded_sql_expressions.html",
+      "test_id": "B608",
+      "test_name": "hardcoded_sql_expressions"
+    },
+    {
+      "code": "341 \n342         query = f\"\"\"\n343         SELECT\n344             d.territory_code,\n345             d.territory_name,\n346             d.measure_code,\n347             d.measure_name,\n348             AVG(o.obs_value) as avg_value,\n349             COUNT(o.obs_value) as obs_count,\n350             m.unit_of_measure,\n351             RANK() OVER (ORDER BY AVG(o.obs_value) DESC) as rank\n352         FROM {schema}.dataset_metadata m\n353         JOIN {schema}.istat_datasets d ON m.dataset_id = d.dataset_id\n354         JOIN {schema}.istat_observations o ON d.id = o.dataset_row_id\n355         WHERE m.category = '{category}'\n356           AND d.measure_code = '{measure_code}'\n357           AND d.year = {year}\n358           AND o.obs_value IS NOT NULL\n359         GROUP BY d.territory_code, d.territory_name, d.measure_code,\n360                  d.measure_name, m.unit_of_measure\n361         ORDER BY avg_value DESC\n362         LIMIT {limit};\n363         \"\"\"\n364 \n",
+      "col_offset": 20,
+      "end_col_offset": 13,
+      "filename": "src\\database\\duckdb\\query_optimizer.py",
+      "issue_confidence": "LOW",
+      "issue_cwe": {
+        "id": 89,
+        "link": "https://cwe.mitre.org/data/definitions/89.html"
+      },
+      "issue_severity": "MEDIUM",
+      "issue_text": "Possible SQL injection vector through string-based query construction.",
+      "line_number": 342,
+      "line_range": [
+        342,
+        343,
+        344,
+        345,
+        346,
+        347,
+        348,
+        349,
+        350,
+        351,
+        352,
+        353,
+        354,
+        355,
+        356,
+        357,
+        358,
+        359,
+        360,
+        361,
+        362,
+        363
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b608_hardcoded_sql_expressions.html",
+      "test_id": "B608",
+      "test_name": "hardcoded_sql_expressions"
+    },
+    {
+      "code": "272         # Create analytics view for common aggregations\n273         view_sql = f\"\"\"\n274         CREATE OR REPLACE VIEW {analytics_schema}.dataset_summary AS\n275         SELECT\n276             m.dataset_id,\n277             m.dataset_name,\n278             m.category,\n279             m.priority,\n280             COUNT(o.id) as total_observations,\n281             MIN(d.year) as min_year,\n282             MAX(d.year) as max_year,\n283             COUNT(DISTINCT d.territory_code) as territory_count,\n284             AVG(o.obs_value) as avg_value,\n285             MIN(o.obs_value) as min_value,\n286             MAX(o.obs_value) as max_value,\n287             m.completeness_score,\n288             m.data_quality_score,\n289             m.updated_at\n290         FROM {main_schema}.dataset_metadata m\n291         LEFT JOIN {main_schema}.istat_datasets d ON m.dataset_id = d.dataset_id\n292         LEFT JOIN {main_schema}.istat_observations o ON d.id = o.dataset_row_id\n293         GROUP BY m.dataset_id, m.dataset_name, m.category, m.priority,\n294                  m.completeness_score, m.data_quality_score, m.updated_at;\n295         \"\"\"\n296 \n",
+      "col_offset": 23,
+      "end_col_offset": 31,
+      "filename": "src\\database\\duckdb\\schema.py",
+      "issue_confidence": "LOW",
+      "issue_cwe": {
+        "id": 89,
+        "link": "https://cwe.mitre.org/data/definitions/89.html"
+      },
+      "issue_severity": "MEDIUM",
+      "issue_text": "Possible SQL injection vector through string-based query construction.",
+      "line_number": 273,
+      "line_range": [
+        273,
+        274,
+        275,
+        276,
+        277,
+        278,
+        279,
+        280,
+        281,
+        282,
+        283,
+        284,
+        285,
+        286,
+        287,
+        288,
+        289,
+        290,
+        291,
+        292,
+        293,
+        294,
+        295
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b608_hardcoded_sql_expressions.html",
+      "test_id": "B608",
+      "test_name": "hardcoded_sql_expressions"
+    },
+    {
+      "code": "299         # Create time series view\n300         time_series_view = f\"\"\"\n301         CREATE OR REPLACE VIEW {analytics_schema}.time_series AS\n302         SELECT\n303             d.dataset_id,\n304             d.year,\n305             d.time_period,\n306             d.territory_code,\n307             d.territory_name,\n308             d.measure_code,\n309             d.measure_name,\n310             o.obs_value,\n311             o.obs_status,\n312             m.category,\n313             m.unit_of_measure\n314         FROM {main_schema}.istat_datasets d\n315         JOIN {main_schema}.istat_observations o ON d.id = o.dataset_row_id\n316         JOIN {main_schema}.dataset_metadata m ON d.dataset_id = m.dataset_id\n317         WHERE o.obs_value IS NOT NULL\n318         ORDER BY d.dataset_id, d.year, d.time_period;\n319         \"\"\"\n320 \n",
+      "col_offset": 31,
+      "end_col_offset": 31,
+      "filename": "src\\database\\duckdb\\schema.py",
+      "issue_confidence": "LOW",
+      "issue_cwe": {
+        "id": 89,
+        "link": "https://cwe.mitre.org/data/definitions/89.html"
+      },
+      "issue_severity": "MEDIUM",
+      "issue_text": "Possible SQL injection vector through string-based query construction.",
+      "line_number": 300,
+      "line_range": [
+        300,
+        301,
+        302,
+        303,
+        304,
+        305,
+        306,
+        307,
+        308,
+        309,
+        310,
+        311,
+        312,
+        313,
+        314,
+        315,
+        316,
+        317,
+        318,
+        319
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b608_hardcoded_sql_expressions.html",
+      "test_id": "B608",
+      "test_name": "hardcoded_sql_expressions"
+    },
+    {
+      "code": "323         # Create territory aggregation view\n324         territory_view = f\"\"\"\n325         CREATE OR REPLACE VIEW {analytics_schema}.territory_aggregates AS\n326         SELECT\n327             d.territory_code,\n328             d.territory_name,\n329             d.year,\n330             m.category,\n331             COUNT(*) as indicator_count,\n332             AVG(o.obs_value) as avg_value,\n333             SUM(CASE WHEN o.obs_value IS NOT NULL THEN 1 ELSE 0 END) as non_null_count,\n334             COUNT(*) as total_count,\n335             (SUM(CASE WHEN o.obs_value IS NOT NULL THEN 1 ELSE 0 END) * 100.0 / COUNT(*)) as completeness_pct\n336         FROM {main_schema}.istat_datasets d\n337         JOIN {main_schema}.istat_observations o ON d.id = o.dataset_row_id\n338         JOIN {main_schema}.dataset_metadata m ON d.dataset_id = m.dataset_id\n339         GROUP BY d.territory_code, d.territory_name, d.year, m.category;\n340         \"\"\"\n341 \n",
+      "col_offset": 29,
+      "end_col_offset": 31,
+      "filename": "src\\database\\duckdb\\schema.py",
+      "issue_confidence": "LOW",
+      "issue_cwe": {
+        "id": 89,
+        "link": "https://cwe.mitre.org/data/definitions/89.html"
+      },
+      "issue_severity": "MEDIUM",
+      "issue_text": "Possible SQL injection vector through string-based query construction.",
+      "line_number": 324,
+      "line_range": [
+        324,
+        325,
+        326,
+        327,
+        328,
+        329,
+        330,
+        331,
+        332,
+        333,
+        334,
+        335,
+        336,
+        337,
+        338,
+        339,
+        340
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b608_hardcoded_sql_expressions.html",
+      "test_id": "B608",
+      "test_name": "hardcoded_sql_expressions"
+    },
+    {
+      "code": "373         # Use UPSERT pattern for DuckDB\n374         upsert_sql = f\"\"\"\n375         INSERT INTO {table_name} (\n376             dataset_id, dataset_name, category, priority, subcategory,\n377             description, frequency, unit_of_measure, geographic_level,\n378             completeness_score, data_quality_score, processing_status,\n379             source_file_path, updated_at\n380         ) VALUES (\n381             ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?\n382         ) ON CONFLICT (dataset_id) DO UPDATE SET\n383             dataset_name = EXCLUDED.dataset_name,\n384             category = EXCLUDED.category,\n385             priority = EXCLUDED.priority,\n386             description = EXCLUDED.description,\n387             completeness_score = EXCLUDED.completeness_score,\n388             data_quality_score = EXCLUDED.data_quality_score,\n389             processing_status = EXCLUDED.processing_status,\n390             updated_at = EXCLUDED.updated_at;\n391         \"\"\"\n392 \n",
+      "col_offset": 25,
+      "end_col_offset": 20,
+      "filename": "src\\database\\duckdb\\schema.py",
+      "issue_confidence": "LOW",
+      "issue_cwe": {
+        "id": 89,
+        "link": "https://cwe.mitre.org/data/definitions/89.html"
+      },
+      "issue_severity": "MEDIUM",
+      "issue_text": "Possible SQL injection vector through string-based query construction.",
+      "line_number": 374,
+      "line_range": [
+        374,
+        375,
+        376,
+        377,
+        378,
+        379,
+        380,
+        381,
+        382,
+        383,
+        384,
+        385,
+        386,
+        387,
+        388,
+        389,
+        390,
+        391
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b608_hardcoded_sql_expressions.html",
+      "test_id": "B608",
+      "test_name": "hardcoded_sql_expressions"
+    },
+    {
+      "code": "489             insert_sql = (\n490                 f\"INSERT INTO {table_name} ({columns_str}) VALUES ({placeholders})\"\n491             )\n",
+      "col_offset": 18,
+      "end_col_offset": 30,
+      "filename": "src\\database\\duckdb\\schema.py",
+      "issue_confidence": "LOW",
+      "issue_cwe": {
+        "id": 89,
+        "link": "https://cwe.mitre.org/data/definitions/89.html"
+      },
+      "issue_severity": "MEDIUM",
+      "issue_text": "Possible SQL injection vector through string-based query construction.",
+      "line_number": 490,
+      "line_range": [
+        490
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b608_hardcoded_sql_expressions.html",
+      "test_id": "B608",
+      "test_name": "hardcoded_sql_expressions"
+    },
+    {
+      "code": "513 \n514         stats_query = f\"\"\"\n515         SELECT\n516             'dataset_metadata' as table_name,\n517             COUNT(*) as row_count,\n518             COUNT(DISTINCT category) as categories,\n519             AVG(completeness_score) as avg_completeness\n520         FROM {schema}.dataset_metadata\n521 \n522         UNION ALL\n523 \n524         SELECT\n525             'istat_datasets' as table_name,\n526             COUNT(*) as row_count,\n527             COUNT(DISTINCT dataset_id) as categories,\n528             COUNT(DISTINCT year) as avg_completeness\n529         FROM {schema}.istat_datasets\n530 \n531         UNION ALL\n532 \n533         SELECT\n534             'istat_observations' as table_name,\n535             COUNT(*) as row_count,\n536             COUNT(DISTINCT dataset_id) as categories,\n537             AVG(obs_value) as avg_completeness\n538         FROM {schema}.istat_observations;\n539         \"\"\"\n540 \n",
+      "col_offset": 26,
+      "end_col_offset": 13,
+      "filename": "src\\database\\duckdb\\schema.py",
+      "issue_confidence": "LOW",
+      "issue_cwe": {
+        "id": 89,
+        "link": "https://cwe.mitre.org/data/definitions/89.html"
+      },
+      "issue_severity": "MEDIUM",
+      "issue_text": "Possible SQL injection vector through string-based query construction.",
+      "line_number": 514,
+      "line_range": [
+        514,
+        515,
+        516,
+        517,
+        518,
+        519,
+        520,
+        521,
+        522,
+        523,
+        524,
+        525,
+        526,
+        527,
+        528,
+        529,
+        530,
+        531,
+        532,
+        533,
+        534,
+        535,
+        536,
+        537,
+        538,
+        539
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b608_hardcoded_sql_expressions.html",
+      "test_id": "B608",
+      "test_name": "hardcoded_sql_expressions"
+    },
+    {
+      "code": "427 \n428         database_path = tempfile.mktemp(suffix=\".duckdb\")\n429 \n",
+      "col_offset": 24,
+      "end_col_offset": 57,
+      "filename": "src\\database\\duckdb\\simple_adapter.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 377,
+        "link": "https://cwe.mitre.org/data/definitions/377.html"
+      },
+      "issue_severity": "MEDIUM",
+      "issue_text": "Use of insecure and deprecated function (mktemp).",
+      "line_number": 428,
+      "line_range": [
+        428
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/blacklists/blacklist_calls.html#b306-mktemp-q",
+      "test_id": "B306",
+      "test_name": "blacklist"
+    },
+    {
+      "code": "241 \n242             query = f\"\"\"\n243                 SELECT\n244                     COUNT(*) as total_events,\n245                     COUNT(CASE WHEN success = 1 THEN 1 END) as successful_events,\n246                     COUNT(CASE WHEN success = 0 THEN 1 END) as failed_events,\n247                     COUNT(DISTINCT user_id) as unique_users,\n248                     COUNT(DISTINCT action) as unique_actions,\n249                     COUNT(DISTINCT resource_type) as unique_resource_types,\n250                     AVG(execution_time_ms) as avg_execution_time,\n251                     MAX(timestamp) as last_event_time,\n252                     MIN(timestamp) as first_event_time\n253                 FROM audit_log\n254                 WHERE 1=1{time_filter}\n255             \"\"\"\n256 \n",
+      "col_offset": 24,
+      "end_col_offset": 25,
+      "filename": "src\\database\\sqlite\\audit_manager.py",
+      "issue_confidence": "LOW",
+      "issue_cwe": {
+        "id": 89,
+        "link": "https://cwe.mitre.org/data/definitions/89.html"
+      },
+      "issue_severity": "MEDIUM",
+      "issue_text": "Possible SQL injection vector through string-based query construction.",
+      "line_number": 242,
+      "line_range": [
+        242,
+        243,
+        244,
+        245,
+        246,
+        247,
+        248,
+        249,
+        250,
+        251,
+        252,
+        253,
+        254,
+        255
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b608_hardcoded_sql_expressions.html",
+      "test_id": "B608",
+      "test_name": "hardcoded_sql_expressions"
+    },
+    {
+      "code": "296 \n297             query = f\"\"\"\n298                 SELECT\n299                     action,\n300                     resource_type,\n301                     COUNT(*) as event_count,\n302                     COUNT(CASE WHEN success = 1 THEN 1 END) as success_count,\n303                     COUNT(CASE WHEN success = 0 THEN 1 END) as failure_count,\n304                     AVG(execution_time_ms) as avg_execution_time,\n305                     MAX(timestamp) as last_occurrence\n306                 FROM audit_log\n307                 WHERE 1=1{time_filter}\n308                 GROUP BY action, resource_type\n309                 ORDER BY event_count DESC\n310             \"\"\"\n311 \n",
+      "col_offset": 24,
+      "end_col_offset": 25,
+      "filename": "src\\database\\sqlite\\audit_manager.py",
+      "issue_confidence": "LOW",
+      "issue_cwe": {
+        "id": 89,
+        "link": "https://cwe.mitre.org/data/definitions/89.html"
+      },
+      "issue_severity": "MEDIUM",
+      "issue_text": "Possible SQL injection vector through string-based query construction.",
+      "line_number": 297,
+      "line_range": [
+        297,
+        298,
+        299,
+        300,
+        301,
+        302,
+        303,
+        304,
+        305,
+        306,
+        307,
+        308,
+        309,
+        310
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b608_hardcoded_sql_expressions.html",
+      "test_id": "B608",
+      "test_name": "hardcoded_sql_expressions"
+    },
+    {
+      "code": "352 \n353             query = f\"\"\"\n354                 SELECT action, resource_type, resource_id, success, timestamp, error_message\n355                 FROM audit_log\n356                 WHERE user_id = ?{time_filter}\n357                 ORDER BY timestamp DESC\n358             \"\"\"\n359 \n",
+      "col_offset": 24,
+      "end_col_offset": 33,
+      "filename": "src\\database\\sqlite\\audit_manager.py",
+      "issue_confidence": "LOW",
+      "issue_cwe": {
+        "id": 89,
+        "link": "https://cwe.mitre.org/data/definitions/89.html"
+      },
+      "issue_severity": "MEDIUM",
+      "issue_text": "Possible SQL injection vector through string-based query construction.",
+      "line_number": 353,
+      "line_range": [
+        353,
+        354,
+        355,
+        356,
+        357,
+        358
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b608_hardcoded_sql_expressions.html",
+      "test_id": "B608",
+      "test_name": "hardcoded_sql_expressions"
+    },
+    {
+      "code": "384         try:\n385             query = f\"\"\"\n386                 DELETE FROM audit_log\n387                 WHERE timestamp < datetime('now', '-{days_to_keep} days')\n388             \"\"\"\n389 \n",
+      "col_offset": 24,
+      "end_col_offset": 52,
+      "filename": "src\\database\\sqlite\\audit_manager.py",
+      "issue_confidence": "LOW",
+      "issue_cwe": {
+        "id": 89,
+        "link": "https://cwe.mitre.org/data/definitions/89.html"
+      },
+      "issue_severity": "MEDIUM",
+      "issue_text": "Possible SQL injection vector through string-based query construction.",
+      "line_number": 385,
+      "line_range": [
+        385,
+        386,
+        387,
+        388
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b608_hardcoded_sql_expressions.html",
+      "test_id": "B608",
+      "test_name": "hardcoded_sql_expressions"
+    },
+    {
+      "code": "438             placeholders = \",\".join(\"?\" * len(security_actions))\n439             query = f\"\"\"\n440                 SELECT * FROM audit_log\n441                 WHERE action IN ({placeholders})\n442                 OR success = 0{time_filter}\n443                 ORDER BY timestamp DESC\n444             \"\"\"\n445 \n",
+      "col_offset": 24,
+      "end_col_offset": 33,
+      "filename": "src\\database\\sqlite\\audit_manager.py",
+      "issue_confidence": "LOW",
+      "issue_cwe": {
+        "id": 89,
+        "link": "https://cwe.mitre.org/data/definitions/89.html"
+      },
+      "issue_severity": "MEDIUM",
+      "issue_text": "Possible SQL injection vector through string-based query construction.",
+      "line_number": 439,
+      "line_range": [
+        439,
+        440,
+        441,
+        442,
+        443,
+        444
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b608_hardcoded_sql_expressions.html",
+      "test_id": "B608",
+      "test_name": "hardcoded_sql_expressions"
+    },
+    {
+      "code": "131             self.close_connections()\n132         except Exception:\n133             pass  # Ignore errors during cleanup\n",
+      "col_offset": 8,
+      "end_col_offset": 16,
+      "filename": "src\\database\\sqlite\\base_manager.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 703,
+        "link": "https://cwe.mitre.org/data/definitions/703.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Try, Except, Pass detected.",
+      "line_number": 132,
+      "line_range": [
+        132,
+        133
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b110_try_except_pass.html",
+      "test_id": "B110",
+      "test_name": "try_except_pass"
+    },
+    {
+      "code": "299                     logger.warning(\n300                         f\"No valid fields to update for dataset {dataset_id}\"\n301                     )\n",
+      "col_offset": 26,
+      "end_col_offset": 64,
+      "filename": "src\\database\\sqlite\\dataset_config.py",
+      "issue_confidence": "LOW",
+      "issue_cwe": {
+        "id": 89,
+        "link": "https://cwe.mitre.org/data/definitions/89.html"
+      },
+      "issue_severity": "MEDIUM",
+      "issue_text": "Possible SQL injection vector through string-based query construction.",
+      "line_number": 300,
+      "line_range": [
+        300
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b608_hardcoded_sql_expressions.html",
+      "test_id": "B608",
+      "test_name": "hardcoded_sql_expressions"
+    },
+    {
+      "code": "307                 # Execute update\n308                 update_sql = f\"\"\"\n309                     UPDATE dataset_registry\n310                     SET {\", \".join(update_fields)}\n311                     WHERE dataset_id = ?\n312                 \"\"\"\n313                 update_values.append(dataset_id)\n",
+      "col_offset": 33,
+      "end_col_offset": 24,
+      "filename": "src\\database\\sqlite\\dataset_config.py",
+      "issue_confidence": "LOW",
+      "issue_cwe": {
+        "id": 89,
+        "link": "https://cwe.mitre.org/data/definitions/89.html"
+      },
+      "issue_severity": "MEDIUM",
+      "issue_text": "Possible SQL injection vector through string-based query construction.",
+      "line_number": 308,
+      "line_range": [
+        308,
+        309,
+        310,
+        311,
+        312
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b608_hardcoded_sql_expressions.html",
+      "test_id": "B608",
+      "test_name": "hardcoded_sql_expressions"
+    },
+    {
+      "code": "329         except Exception as e:\n330             logger.error(f\"Failed to update dataset {dataset_id}: {e}\")\n331             return False\n",
+      "col_offset": 27,
+      "end_col_offset": 52,
+      "filename": "src\\database\\sqlite\\dataset_config.py",
+      "issue_confidence": "LOW",
+      "issue_cwe": {
+        "id": 89,
+        "link": "https://cwe.mitre.org/data/definitions/89.html"
+      },
+      "issue_severity": "MEDIUM",
+      "issue_text": "Possible SQL injection vector through string-based query construction.",
+      "line_number": 330,
+      "line_range": [
+        330
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b608_hardcoded_sql_expressions.html",
+      "test_id": "B608",
+      "test_name": "hardcoded_sql_expressions"
+    },
+    {
+      "code": "260             if not update_fields:\n261                 logger.warning(f\"No stats to update for dataset {dataset_id}\")\n262                 return False\n",
+      "col_offset": 33,
+      "end_col_offset": 64,
+      "filename": "src\\database\\sqlite\\dataset_manager.py",
+      "issue_confidence": "LOW",
+      "issue_cwe": {
+        "id": 89,
+        "link": "https://cwe.mitre.org/data/definitions/89.html"
+      },
+      "issue_severity": "MEDIUM",
+      "issue_text": "Possible SQL injection vector through string-based query construction.",
+      "line_number": 261,
+      "line_range": [
+        261
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b608_hardcoded_sql_expressions.html",
+      "test_id": "B608",
+      "test_name": "hardcoded_sql_expressions"
+    },
+    {
+      "code": "267 \n268             query = f\"\"\"\n269                 UPDATE dataset_registry\n270                 SET {\", \".join(update_fields)}\n271                 WHERE dataset_id = ?\n272             \"\"\"\n273 \n",
+      "col_offset": 24,
+      "end_col_offset": 20,
+      "filename": "src\\database\\sqlite\\dataset_manager.py",
+      "issue_confidence": "LOW",
+      "issue_cwe": {
+        "id": 89,
+        "link": "https://cwe.mitre.org/data/definitions/89.html"
+      },
+      "issue_severity": "MEDIUM",
+      "issue_text": "Possible SQL injection vector through string-based query construction.",
+      "line_number": 268,
+      "line_range": [
+        268,
+        269,
+        270,
+        271,
+        272
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b608_hardcoded_sql_expressions.html",
+      "test_id": "B608",
+      "test_name": "hardcoded_sql_expressions"
+    },
+    {
+      "code": "283         except Exception as e:\n284             logger.error(f\"Failed to update dataset stats {dataset_id}: {e}\")\n285             return False\n",
+      "col_offset": 27,
+      "end_col_offset": 58,
+      "filename": "src\\database\\sqlite\\dataset_manager.py",
+      "issue_confidence": "LOW",
+      "issue_cwe": {
+        "id": 89,
+        "link": "https://cwe.mitre.org/data/definitions/89.html"
+      },
+      "issue_severity": "MEDIUM",
+      "issue_text": "Possible SQL injection vector through string-based query construction.",
+      "line_number": 284,
+      "line_range": [
+        284
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b608_hardcoded_sql_expressions.html",
+      "test_id": "B608",
+      "test_name": "hardcoded_sql_expressions"
+    },
+    {
+      "code": "360                     query = (\n361                         \"UPDATE dataset_registry SET \"\n362                         + \", \".join(updates)\n363                         + \" WHERE dataset_id = ?\"\n",
+      "col_offset": 24,
+      "end_col_offset": 54,
+      "filename": "src\\database\\sqlite\\manager.py",
+      "issue_confidence": "LOW",
+      "issue_cwe": {
+        "id": 89,
+        "link": "https://cwe.mitre.org/data/definitions/89.html"
+      },
+      "issue_severity": "MEDIUM",
+      "issue_text": "Possible SQL injection vector through string-based query construction.",
+      "line_number": 361,
+      "line_range": [
+        361,
+        362
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b608_hardcoded_sql_expressions.html",
+      "test_id": "B608",
+      "test_name": "hardcoded_sql_expressions"
+    },
+    {
+      "code": "372         except Exception as e:\n373             logger.error(f\"Failed to update dataset stats {dataset_id}: {e}\")\n374             return False\n",
+      "col_offset": 27,
+      "end_col_offset": 58,
+      "filename": "src\\database\\sqlite\\manager.py",
+      "issue_confidence": "LOW",
+      "issue_cwe": {
+        "id": 89,
+        "link": "https://cwe.mitre.org/data/definitions/89.html"
+      },
+      "issue_severity": "MEDIUM",
+      "issue_text": "Possible SQL injection vector through string-based query construction.",
+      "line_number": 373,
+      "line_range": [
+        373
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b608_hardcoded_sql_expressions.html",
+      "test_id": "B608",
+      "test_name": "hardcoded_sql_expressions"
+    },
+    {
+      "code": "1048 \n1049             query = f\"UPDATE categorization_rules SET {', '.join(updates)} WHERE rule_id = ?\"\n1050 \n",
+      "col_offset": 22,
+      "end_col_offset": 54,
+      "filename": "src\\database\\sqlite\\manager.py",
+      "issue_confidence": "LOW",
+      "issue_cwe": {
+        "id": 89,
+        "link": "https://cwe.mitre.org/data/definitions/89.html"
+      },
+      "issue_severity": "MEDIUM",
+      "issue_text": "Possible SQL injection vector through string-based query construction.",
+      "line_number": 1049,
+      "line_range": [
+        1049
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b608_hardcoded_sql_expressions.html",
+      "test_id": "B608",
+      "test_name": "hardcoded_sql_expressions"
+    },
+    {
+      "code": "144 \n145         query = f\"SELECT {select_clause} FROM {table_name}\"\n146 \n",
+      "col_offset": 18,
+      "end_col_offset": 25,
+      "filename": "src\\export\\data_access.py",
+      "issue_confidence": "LOW",
+      "issue_cwe": {
+        "id": 89,
+        "link": "https://cwe.mitre.org/data/definitions/89.html"
+      },
+      "issue_severity": "MEDIUM",
+      "issue_text": "Possible SQL injection vector through string-based query construction.",
+      "line_number": 145,
+      "line_range": [
+        145
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b608_hardcoded_sql_expressions.html",
+      "test_id": "B608",
+      "test_name": "hardcoded_sql_expressions"
+    },
+    {
+      "code": "231             table_name = f\"dataset_{dataset_id}\"\n232             count_query = f\"SELECT COUNT(*) as row_count FROM {table_name}\"\n233 \n",
+      "col_offset": 28,
+      "end_col_offset": 62,
+      "filename": "src\\export\\data_access.py",
+      "issue_confidence": "LOW",
+      "issue_cwe": {
+        "id": 89,
+        "link": "https://cwe.mitre.org/data/definitions/89.html"
+      },
+      "issue_severity": "MEDIUM",
+      "issue_text": "Possible SQL injection vector through string-based query construction.",
+      "line_number": 232,
+      "line_range": [
+        232
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b608_hardcoded_sql_expressions.html",
+      "test_id": "B608",
+      "test_name": "hardcoded_sql_expressions"
+    },
+    {
+      "code": "373                 with self.duckdb_manager.get_connection() as conn:\n374                     existing_records = conn.execute(f\"\"\"\n375                         SELECT DISTINCT dataset_id, obs_value, time_period\n376                         FROM main.istat_observations\n377                         WHERE dataset_id = '{dataset_id}'\n378                     \"\"\").df()\n379 \n",
+      "col_offset": 56,
+      "end_col_offset": 44,
+      "filename": "src\\ingestion\\simple_pipeline.py",
+      "issue_confidence": "MEDIUM",
+      "issue_cwe": {
+        "id": 89,
+        "link": "https://cwe.mitre.org/data/definitions/89.html"
+      },
+      "issue_severity": "MEDIUM",
+      "issue_text": "Possible SQL injection vector through string-based query construction.",
+      "line_number": 374,
+      "line_range": [
+        374,
+        375,
+        376,
+        377,
+        378
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b608_hardcoded_sql_expressions.html",
+      "test_id": "B608",
+      "test_name": "hardcoded_sql_expressions"
+    },
+    {
+      "code": "444         \"\"\"\n445         import xml.etree.ElementTree as ET\n446 \n",
+      "col_offset": 8,
+      "end_col_offset": 42,
+      "filename": "src\\ingestion\\simple_pipeline.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 20,
+        "link": "https://cwe.mitre.org/data/definitions/20.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Using xml.etree.ElementTree to parse untrusted XML data is known to be vulnerable to XML attacks. Replace xml.etree.ElementTree with the equivalent defusedxml package, or make sure defusedxml.defuse_stdlib() is called.",
+      "line_number": 445,
+      "line_range": [
+        445
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/blacklists/blacklist_imports.html#b405-import-xml-etree",
+      "test_id": "B405",
+      "test_name": "blacklist"
+    },
+    {
+      "code": "447         try:\n448             root = ET.fromstring(sdmx_data)\n449             records = []\n",
+      "col_offset": 19,
+      "end_col_offset": 43,
+      "filename": "src\\ingestion\\simple_pipeline.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 20,
+        "link": "https://cwe.mitre.org/data/definitions/20.html"
+      },
+      "issue_severity": "MEDIUM",
+      "issue_text": "Using xml.etree.ElementTree.fromstring to parse untrusted XML data is known to be vulnerable to XML attacks. Replace xml.etree.ElementTree.fromstring with its defusedxml equivalent function or make sure defusedxml.defuse_stdlib() is called",
+      "line_number": 448,
+      "line_range": [
+        448
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/blacklists/blacklist_calls.html#b313-b320-xml-bad-elementtree",
+      "test_id": "B314",
+      "test_name": "blacklist"
+    },
+    {
+      "code": "483                         break\n484                 except Exception:\n485                     continue\n486 \n",
+      "col_offset": 16,
+      "end_col_offset": 28,
+      "filename": "src\\ingestion\\simple_pipeline.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 703,
+        "link": "https://cwe.mitre.org/data/definitions/703.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Try, Except, Continue detected.",
+      "line_number": 484,
+      "line_range": [
+        484,
+        485
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.8.6/plugins/b112_try_except_continue.html",
+      "test_id": "B112",
+      "test_name": "try_except_continue"
+    }
+  ]
+}
