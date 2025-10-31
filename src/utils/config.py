@@ -52,8 +52,10 @@ class Config:
     )
 
     # Development URLs - Issue #84: Centralized development configuration
+    # Updated for React integration: Added Vite default port (5173) and Next.js port (3000)
     CORS_ALLOW_ORIGINS = os.getenv(
-        "CORS_ALLOW_ORIGINS", "https://localhost:3000,http://localhost:3000"
+        "CORS_ALLOW_ORIGINS",
+        "http://localhost:3000,https://localhost:3000,http://localhost:5173,https://localhost:5173"
     ).split(",")
     REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 

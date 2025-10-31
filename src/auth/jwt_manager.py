@@ -1,12 +1,12 @@
 """
-Simplified JWT Token Manager for MVP - Issue #153
+JWT Token Manager with Refresh Token Support
 
-Basic JWT token generation and validation for MVP:
-- HS256 JWT token support only (simplified)
-- Basic token expiration
-- No refresh tokens (removed for MVP)
-- No token blacklisting (removed for MVP)
-- Simple claims validation
+JWT token generation and validation:
+- HS256 JWT token support
+- Access and refresh token generation
+- Token expiration and refresh
+- Token blacklisting for logout
+- Claims validation
 """
 
 import secrets
@@ -31,12 +31,13 @@ logger = get_logger(__name__)
 
 
 class JWTManager:
-    """Simplified JWT token manager for MVP - Issue #153"""
+    """JWT token manager with refresh token support"""
 
     # Default token configuration
     DEFAULT_ACCESS_TOKEN_EXPIRE_MINUTES = 60  # 1 hour
+    DEFAULT_REFRESH_TOKEN_EXPIRE_DAYS = 7  # 7 days
 
-    # JWT algorithm (MVP: only HS256)
+    # JWT algorithm
     ALGORITHM_HS256 = "HS256"
 
     def __init__(
@@ -44,7 +45,7 @@ class JWTManager:
         db_path: Optional[str] = None,
         secret_key: Optional[str] = None,
     ):
-        """Initialize simplified JWT manager for MVP
+        """Initialize JWT manager with refresh token support
 
         Args:
             db_path: Optional database path (kept for compatibility)
@@ -53,7 +54,7 @@ class JWTManager:
         self.algorithm = self.ALGORITHM_HS256
         self.logger = logger
 
-        # Initialize secret key only (no RSA for MVP)
+        # Initialize secret key
         self._init_secret_key(secret_key)
 
         # Load configuration
@@ -61,11 +62,14 @@ class JWTManager:
         self.access_token_expire_minutes = config.get(
             "jwt_access_token_expire_minutes", self.DEFAULT_ACCESS_TOKEN_EXPIRE_MINUTES
         )
+        self.refresh_token_expire_days = config.get(
+            "jwt_refresh_token_expire_days", self.DEFAULT_REFRESH_TOKEN_EXPIRE_DAYS
+        )
 
-        # Simple in-memory token blacklist for logout
+        # In-memory token blacklist for logout
         self._blacklisted_tokens = set()
 
-        logger.info("Simplified JWT Manager initialized for MVP - Issue #153")
+        logger.info("JWT Manager initialized with refresh token support")
 
     def _init_secret_key(self, secret_key: Optional[str]):
         """Initialize HMAC secret key for HS256"""
@@ -132,6 +136,83 @@ class JWTManager:
             logger.error(f"Failed to create access token: {e}")
             raise
 
+    def create_refresh_token(
+        self, user_id: str, username: str, scopes: Optional[list] = None
+    ) -> str:
+        """Create refresh token with longer expiration
+
+        Args:
+            user_id: User identifier
+            username: Username (email)
+            scopes: Optional list of scopes
+
+        Returns:
+            JWT refresh token string
+        """
+        try:
+            now = datetime.utcnow()
+            expires_at = now + timedelta(days=self.refresh_token_expire_days)
+
+            claims = {
+                "sub": user_id,
+                "username": username,
+                "email": username,
+                "user_type": "user",
+                "token_type": "refresh",
+                "exp": expires_at,
+                "iat": now,
+                "iss": "osservatorio-istat",
+                "scopes": scopes or ["read"],
+                "jti": secrets.token_urlsafe(16),
+            }
+
+            token = jwt.encode(claims, self.secret_key, algorithm=self.algorithm)
+            logger.debug(f"Refresh token created for: {username}")
+            return token
+
+        except Exception as e:
+            logger.error(f"Failed to create refresh token: {e}")
+            raise
+
+    def verify_refresh_token(self, token: str) -> Optional[dict]:
+        """Verify refresh token and return user info
+
+        Args:
+            token: JWT refresh token string
+
+        Returns:
+            Dict with user info if valid, None if invalid/expired
+        """
+        try:
+            payload = jwt.decode(token, self.secret_key, algorithms=[self.algorithm])
+
+            # Check if token is blacklisted
+            jti = payload.get("jti")
+            if jti and self.is_token_blacklisted(jti):
+                logger.warning("Refresh token is blacklisted")
+                return None
+
+            # Verify it's a refresh token
+            if payload.get("token_type") != "refresh":
+                logger.warning("Token is not a refresh token")
+                return None
+
+            return {
+                "user_id": payload.get("sub"),
+                "username": payload.get("username"),
+                "email": payload.get("email"),
+                "scopes": payload.get("scopes", ["read"]),
+            }
+        except jwt.ExpiredSignatureError:
+            logger.warning("Refresh token has expired")
+            return None
+        except jwt.InvalidTokenError as e:
+            logger.warning(f"Invalid refresh token: {e}")
+            return None
+        except Exception as e:
+            logger.error(f"Refresh token verification failed: {e}")
+            return None
+
     def verify_token(self, token: str) -> Optional[TokenClaims]:
         """Verify and decode JWT token
 
@@ -190,26 +271,28 @@ class JWTManager:
 
     def create_token_for_user(
         self, user_id: str, username: str, scopes: Optional[list] = None
-    ) -> str:
-        """Create simple JWT token for basic user authentication (MVP helper)
+    ) -> dict:
+        """Create access and refresh tokens for user authentication
 
         Args:
             user_id: User identifier
-            username: Username
+            username: Username (email)
             scopes: Optional list of scopes
 
         Returns:
-            JWT token string
+            Dict with access_token and refresh_token
         """
         try:
             now = datetime.utcnow()
             expires_at = now + timedelta(minutes=self.access_token_expire_minutes)
 
-            claims = {
+            # Create access token
+            access_claims = {
                 "sub": user_id,
                 "username": username,
                 "email": username,  # username is email for users
                 "user_type": "user",
+                "token_type": "access",
                 "exp": expires_at,
                 "iat": now,
                 "iss": "osservatorio-istat",
@@ -217,12 +300,21 @@ class JWTManager:
                 "jti": secrets.token_urlsafe(16),
             }
 
-            token = jwt.encode(claims, self.secret_key, algorithm=self.algorithm)
-            logger.debug(f"User token created for: {username}")
-            return token
+            access_token = jwt.encode(access_claims, self.secret_key, algorithm=self.algorithm)
+
+            # Create refresh token
+            refresh_token = self.create_refresh_token(user_id, username, scopes)
+
+            logger.debug(f"User tokens created for: {username}")
+            return {
+                "access_token": access_token,
+                "refresh_token": refresh_token,
+                "token_type": "bearer",
+                "expires_in": self.access_token_expire_minutes * 60,
+            }
 
         except Exception as e:
-            logger.error(f"Failed to create user token: {e}")
+            logger.error(f"Failed to create user tokens: {e}")
             raise
 
     def verify_user_token(self, token: str) -> Optional[dict]:

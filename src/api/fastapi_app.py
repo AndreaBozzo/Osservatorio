@@ -482,7 +482,9 @@ async def login_user(
     """
     User login with email/password.
 
-    Returns JWT token for API access. Token valid for 1 hour.
+    Returns JWT access token and refresh token.
+    - Access token valid for 1 hour
+    - Refresh token valid for 7 days
     """
     try:
         # Verify user credentials
@@ -493,8 +495,8 @@ async def login_user(
                 detail="Invalid email or password",
             )
 
-        # Generate JWT token
-        token = jwt_manager.create_token_for_user(
+        # Generate JWT tokens (access + refresh)
+        tokens = jwt_manager.create_token_for_user(
             user_id=str(user.id),
             username=user.email,
             scopes=["read"],  # Default scope for regular users
@@ -503,9 +505,10 @@ async def login_user(
         return UserAuthResponse(
             success=True,
             message="Login successful",
-            access_token=token,
+            access_token=tokens["access_token"],
+            refresh_token=tokens["refresh_token"],
             token_type="bearer",
-            expires_in=3600,
+            expires_in=tokens["expires_in"],
             user_info={"id": user.id, "email": user.email, "is_active": user.is_active},
         )
 
@@ -553,6 +556,68 @@ async def logout_user(
             "message": "Logout successful",
             "timestamp": datetime.now().isoformat(),
         }
+
+
+@app.post("/auth/refresh", tags=["Authentication"])
+@handle_api_errors
+async def refresh_access_token(
+    request: Request,
+    jwt_manager=Depends(get_jwt_manager),
+):
+    """
+    Refresh access token using a valid refresh token.
+
+    **Request Body**: JSON with "refresh_token" field
+    **Returns**: New access token and refresh token pair
+
+    This endpoint allows React SPAs to maintain user sessions without re-login.
+    Refresh tokens have longer expiration (7 days default) compared to access tokens (1 hour).
+    """
+    try:
+        # Parse request body
+        body = await request.json()
+        refresh_token = body.get("refresh_token")
+
+        if not refresh_token:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="refresh_token is required",
+            )
+
+        # Verify refresh token
+        user_info = jwt_manager.verify_refresh_token(refresh_token)
+
+        if not user_info:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid or expired refresh token",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
+        # Create new token pair
+        tokens = jwt_manager.create_token_for_user(
+            user_id=user_info["user_id"],
+            username=user_info["username"],
+            scopes=user_info.get("scopes", ["read"]),
+        )
+
+        return {
+            "success": True,
+            "message": "Token refreshed successfully",
+            "access_token": tokens["access_token"],
+            "refresh_token": tokens["refresh_token"],
+            "token_type": "bearer",
+            "expires_in": tokens["expires_in"],
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Token refresh failed: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Token refresh failed",
+        )
 
 
 @app.get("/auth/profile", tags=["Authentication"])
@@ -686,6 +751,93 @@ async def list_datasets(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve datasets",
+        )
+
+
+@app.get("/search", response_model=DatasetListResponse, tags=["Datasets"])
+@handle_api_errors
+async def search_datasets(
+    q: str = Query(..., min_length=1, description="Search query string"),
+    category: Optional[str] = Query(None, description="Filter by dataset category"),
+    page: int = Query(1, ge=1, description="Page number"),
+    page_size: int = Query(50, ge=1, le=1000, description="Page size"),
+    repository=Depends(get_repository),
+    current_user=Depends(get_current_user),
+    _rate_limit=Depends(check_rate_limit),
+    _audit=Depends(log_api_request),
+):
+    """
+    Search datasets by name, description, or dataset ID.
+
+    Performs case-insensitive full-text search across:
+    - Dataset name
+    - Dataset description
+    - Dataset ID
+
+    Returns paginated results matching the query.
+
+    **Example queries**:
+    - `q=popolazione` - Find datasets about population
+    - `q=PIL` - Find datasets about GDP
+    - `q=DCIS_POPRES1` - Find specific dataset by ID
+
+    **Performance**: Target <200ms for 1000 datasets
+    """
+    try:
+        # Get all datasets (with optional category filter)
+        datasets = repository.list_datasets_complete(category=category)
+
+        # Perform case-insensitive search
+        search_query = q.lower().strip()
+        filtered_datasets = []
+
+        for dataset in datasets:
+            # Search in name, description, and dataset_id
+            name_match = search_query in dataset.get("name", "").lower()
+            desc_match = search_query in dataset.get("description", "").lower()
+            id_match = search_query in dataset.get("dataset_id", "").lower()
+
+            if name_match or desc_match or id_match:
+                filtered_datasets.append(dataset)
+
+        # Apply pagination
+        total_count = len(filtered_datasets)
+        start_idx = (page - 1) * page_size
+        end_idx = start_idx + page_size
+        paginated_datasets = filtered_datasets[start_idx:end_idx]
+
+        # Convert to response format
+        dataset_models = []
+        for dataset in paginated_datasets:
+            dataset_model = Dataset(
+                dataset_id=dataset["dataset_id"],
+                name=dataset["name"],
+                category=dataset["category"],
+                description=dataset.get("description"),
+                istat_agency=dataset.get("istat_agency"),
+                priority=dataset.get("priority", 5),
+                id=dataset.get("id"),
+                status=dataset.get("status", "active"),
+                analytics_stats=dataset.get("analytics_stats"),
+                has_analytics_data=dataset.get("has_analytics_data", False),
+                created_at=dataset.get("created_at"),
+                updated_at=dataset.get("updated_at"),
+            )
+            dataset_models.append(dataset_model)
+
+        return DatasetListResponse(
+            datasets=dataset_models,
+            total_count=total_count,
+            page=page,
+            page_size=page_size,
+            has_next=end_idx < total_count,
+        )
+
+    except Exception as e:
+        logger.error(f"Failed to search datasets: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to search datasets",
         )
 
 
