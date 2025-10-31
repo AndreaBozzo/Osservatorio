@@ -300,7 +300,9 @@ class JWTManager:
                 "jti": secrets.token_urlsafe(16),
             }
 
-            access_token = jwt.encode(access_claims, self.secret_key, algorithm=self.algorithm)
+            access_token = jwt.encode(
+                access_claims, self.secret_key, algorithm=self.algorithm
+            )
 
             # Create refresh token
             refresh_token = self.create_refresh_token(user_id, username, scopes)
