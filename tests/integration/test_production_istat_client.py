@@ -249,6 +249,7 @@ class TestBatchProcessing:
         """Create client for batch testing."""
         return ProductionIstatClient()
 
+    @pytest.mark.skip(reason="Issue #159 - async tests require pytest-asyncio configuration")
     @pytest.mark.asyncio
     async def test_fetch_dataset_batch(self, client):
         """Test batch dataset fetching."""
@@ -432,6 +433,7 @@ class TestPerformanceAndLoad:
             assert client.metrics["average_response_time"] > 0
             assert client.metrics["last_request_time"] is not None
 
+    @pytest.mark.skip(reason="Issue #159 - async tests require pytest-asyncio configuration")
     @pytest.mark.asyncio
     async def test_concurrent_batch_processing(self, client):
         """Test concurrent processing capabilities."""

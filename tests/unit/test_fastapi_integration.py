@@ -18,7 +18,7 @@ from src.api.fastapi_app import app
 from src.auth.jwt_manager import JWTManager
 from src.auth.rate_limiter import SQLiteRateLimiter
 from src.auth.sqlite_auth import SQLiteAuthManager
-from src.database.sqlite.manager import SQLiteMetadataManager
+from src.database.sqlite import DatasetManager
 from src.database.sqlite.repository import get_unified_repository
 
 
@@ -70,7 +70,7 @@ class TestFastAPIIntegration:
 
         try:
             # Initialize managers with the clean temp database
-            sqlite_manager = SQLiteMetadataManager(temp_db)
+            sqlite_manager = DatasetManager(temp_db)
 
             # Initialize auth manager which will extend the schema with auth columns
             auth_manager = SQLiteAuthManager(temp_db)

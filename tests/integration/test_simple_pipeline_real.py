@@ -14,6 +14,7 @@ import pytest
 class TestSimplePipelineReal:
     """Real API tests - minimal, focused on proving it works."""
 
+    @pytest.mark.skip(reason="Issue #159 - async tests require pytest-asyncio configuration")
     @pytest.mark.asyncio
     async def test_single_working_dataset(self):
         """Test one known working dataset from ISTAT API."""
@@ -52,6 +53,7 @@ class TestSimplePipelineReal:
             print(f"⚠️  Real API test failed (expected): {e}")
             pytest.skip("External API not available")
 
+    @pytest.mark.skip(reason="Issue #159 - async tests require pytest-asyncio configuration")
     @pytest.mark.asyncio
     async def test_pipeline_health_real(self):
         """Test pipeline health with real components."""

@@ -10,7 +10,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from src.database.sqlite.manager import SQLiteMetadataManager
+from src.database.sqlite import DatasetManager, create_metadata_schema
 from src.database.sqlite.repository import UnifiedDataRepository
 from src.database.sqlite.schema import MetadataSchema
 
@@ -25,12 +25,17 @@ class TestCategorizationRulesDatabase:
 
     @pytest.fixture
     def manager(self, temp_db_path):
-        """Create SQLite metadata manager with test database."""
-        return SQLiteMetadataManager(temp_db_path, auto_create_schema=True)
+        """Create unified repository for categorization rules testing."""
+        # Categorization rules are only in UnifiedDataRepository, not in specialized managers
+        create_metadata_schema(temp_db_path)
+        with patch("src.database.duckdb.get_manager") as mock_duckdb:
+            mock_duckdb.return_value = MagicMock()
+            return UnifiedDataRepository(sqlite_db_path=temp_db_path)
 
     @pytest.fixture
     def repository(self, temp_db_path):
         """Create unified repository with test database."""
+        create_metadata_schema(temp_db_path)
         with patch("src.database.duckdb.get_manager") as mock_duckdb:
             mock_duckdb.return_value = MagicMock()
             return UnifiedDataRepository(sqlite_db_path=temp_db_path)

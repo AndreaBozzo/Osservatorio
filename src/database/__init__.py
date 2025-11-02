@@ -27,12 +27,13 @@ from .duckdb import (
 )
 from .sqlite import (
     MetadataSchema,
-    SQLiteMetadataManager,
+    DatasetManager,
+    ConfigurationManager,
+    UserManager,
+    AuditManager,
     UnifiedDataRepository,
     create_metadata_schema,
-    get_metadata_manager,
     get_unified_repository,
-    reset_metadata_manager,
     reset_unified_repository,
 )
 
@@ -48,9 +49,10 @@ __all__ = [
     "get_duckdb_config",
     "DUCKDB_CONFIG",
     # SQLite components
-    "SQLiteMetadataManager",
-    "get_metadata_manager",
-    "reset_metadata_manager",
+    "DatasetManager",
+    "ConfigurationManager",
+    "UserManager",
+    "AuditManager",
     "MetadataSchema",
     "create_metadata_schema",
     # Unified Repository

@@ -29,7 +29,7 @@ from src.auth.security_middleware import (
     SecurityHeadersMiddleware,
 )
 from src.auth.sqlite_auth import SQLiteAuthManager
-from src.database.sqlite.manager import SQLiteMetadataManager
+from src.database.sqlite import DatasetManager, create_metadata_schema
 
 
 class TestAPIKeyManagement(unittest.TestCase):
@@ -40,7 +40,10 @@ class TestAPIKeyManagement(unittest.TestCase):
         self.temp_db = tempfile.NamedTemporaryFile(delete=False, suffix=".db")
         self.temp_db.close()
 
-        self.sqlite_manager = SQLiteMetadataManager(self.temp_db.name)
+        # Create schema first
+        create_metadata_schema(self.temp_db.name)
+
+        self.sqlite_manager = DatasetManager(self.temp_db.name)
         self.auth_manager = SQLiteAuthManager(self.temp_db.name)
 
     def tearDown(self):
@@ -204,7 +207,7 @@ class TestJWTManager(unittest.TestCase):
         self.temp_db = tempfile.NamedTemporaryFile(delete=False, suffix=".db")
         self.temp_db.close()
 
-        self.sqlite_manager = SQLiteMetadataManager(self.temp_db.name)
+        self.sqlite_manager = DatasetManager(self.temp_db.name)
         self.jwt_manager = JWTManager(self.temp_db.name, secret_key="test_secret_key")
 
     def tearDown(self):
@@ -325,7 +328,7 @@ class TestRateLimiter(unittest.TestCase):
         self.temp_db = tempfile.NamedTemporaryFile(delete=False, suffix=".db")
         self.temp_db.close()
 
-        self.sqlite_manager = SQLiteMetadataManager(self.temp_db.name)
+        self.sqlite_manager = DatasetManager(self.temp_db.name)
         self.rate_limiter = SQLiteRateLimiter(self.temp_db.name)
 
         # Create test API key
@@ -488,7 +491,7 @@ class TestAuthenticationIntegration(unittest.TestCase):
         self.temp_db.close()
 
         # Initialize components
-        self.sqlite_manager = SQLiteMetadataManager(self.temp_db.name)
+        self.sqlite_manager = DatasetManager(self.temp_db.name)
         self.auth_manager = SQLiteAuthManager(self.temp_db.name)
         self.jwt_manager = JWTManager(self.temp_db.name, secret_key="test_secret")
         self.rate_limiter = SQLiteRateLimiter(self.temp_db.name)

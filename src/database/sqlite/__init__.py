@@ -18,14 +18,11 @@ Key Components:
 - Factory: Centralized manager instantiation and lifecycle management
 """
 
-# New specialized managers (recommended)
+# Specialized managers
 from .audit_manager import AuditManager
 from .base_manager import BaseSQLiteManager
 from .config_manager import ConfigurationManager
 from .dataset_manager import DatasetManager
-
-# Legacy imports (for backward compatibility)
-from .manager import SQLiteMetadataManager, get_metadata_manager, reset_metadata_manager
 
 # Factory functions (recommended for getting instances)
 from .manager_factory import (
@@ -45,7 +42,7 @@ from .schema import MetadataSchema, create_metadata_schema
 from .user_manager import UserManager
 
 __all__ = [
-    # New specialized managers
+    # Specialized managers
     "BaseSQLiteManager",
     "DatasetManager",
     "ConfigurationManager",
@@ -57,10 +54,7 @@ __all__ = [
     "get_user_manager",
     "get_audit_manager",
     "get_all_managers",
-    # Legacy components (deprecated but maintained for compatibility)
-    "SQLiteMetadataManager",
-    "get_metadata_manager",
-    "reset_metadata_manager",
+    # Schema and repository
     "MetadataSchema",
     "create_metadata_schema",
     "UnifiedDataRepository",

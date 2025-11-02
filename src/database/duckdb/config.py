@@ -196,8 +196,8 @@ def validate_config() -> bool:
 
 # Initialize configuration on import
 try:
-    # validate_config()  # Temporarily disabled for debugging
+    validate_config()
     print("DuckDB configuration module loaded successfully")
 except Exception as e:
     print(f"DuckDB configuration validation failed: {e}")
-    # raise  # Don't raise for now
+    raise

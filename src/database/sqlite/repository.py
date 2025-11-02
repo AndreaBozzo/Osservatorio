@@ -18,6 +18,8 @@ Features:
 - Error handling and resilience
 """
 
+import json
+import sqlite3
 import threading
 from contextlib import contextmanager
 from datetime import datetime
@@ -30,7 +32,6 @@ try:
 except ImportError:
     from src.utils.logger import get_logger
 
-from .manager import get_metadata_manager
 from .manager_factory import (
     get_audit_manager,
     get_configuration_manager,
@@ -63,7 +64,6 @@ class UnifiedDataRepository:
         self.config_manager = get_configuration_manager(sqlite_db_path)
         self.user_manager = get_user_manager(sqlite_db_path)
         self.audit_manager = get_audit_manager(sqlite_db_path)
-        self.metadata_manager = get_metadata_manager(sqlite_db_path)
         self.analytics_manager = get_manager()  # Use singleton
 
         # Cache for frequently accessed data
@@ -575,9 +575,40 @@ class UnifiedDataRepository:
             List of categorization rules
         """
         try:
-            return self.metadata_manager.get_categorization_rules(
-                category=category, active_only=active_only
-            )
+            conn = self.dataset_manager._get_connection()
+
+            # Build query
+            query = "SELECT * FROM categorization_rules WHERE 1=1"
+            params = []
+
+            if category:
+                query += " AND category = ?"
+                params.append(category)
+
+            if active_only:
+                query += " AND is_active = 1"
+
+            query += " ORDER BY priority DESC, created_at ASC"
+
+            cursor = conn.execute(query, params)
+            rules = []
+
+            for row in cursor.fetchall():
+                rule = dict(row)
+                # Parse keywords JSON
+                if rule.get("keywords_json"):
+                    rule["keywords"] = json.loads(rule["keywords_json"])
+                else:
+                    rule["keywords"] = []
+                # Remove the JSON field from output
+                if "keywords_json" in rule:
+                    del rule["keywords_json"]
+                # Convert SQLite integer to boolean
+                rule["is_active"] = bool(rule.get("is_active", 1))
+                rules.append(rule)
+
+            return rules
+
         except Exception as e:
             logger.error(f"Failed to get categorization rules: {e}")
             return []
@@ -603,9 +634,42 @@ class UnifiedDataRepository:
             bool: True if rule created successfully
         """
         try:
-            return self.metadata_manager.create_categorization_rule(
-                rule_id, category, keywords, priority, description
+            # Validate inputs
+            if not rule_id or not category or not keywords:
+                logger.error("rule_id, category, and keywords are required")
+                return False
+
+            # Normalize keywords (lowercase, strip whitespace)
+            normalized_keywords = [kw.lower().strip() for kw in keywords if kw.strip()]
+            if not normalized_keywords:
+                logger.error("At least one valid keyword is required")
+                return False
+
+            conn = self.dataset_manager._get_connection()
+            conn.execute(
+                """INSERT INTO categorization_rules
+                   (rule_id, category, keywords_json, priority, description)
+                   VALUES (?, ?, ?, ?, ?)""",
+                (
+                    rule_id,
+                    category,
+                    json.dumps(normalized_keywords),
+                    priority,
+                    description,
+                ),
             )
+            conn.commit()
+
+            # Log the creation
+            self.audit_manager.log_action(
+                "system",
+                "categorization_rule_create",
+                "categorization_rule",
+                rule_id,
+                {"category": category, "priority": priority},
+            )
+
+            return True
         except Exception as e:
             logger.error(f"Failed to create categorization rule: {e}")
             return False
@@ -631,13 +695,63 @@ class UnifiedDataRepository:
             bool: True if rule updated successfully
         """
         try:
-            return self.metadata_manager.update_categorization_rule(
+            conn = self.dataset_manager._get_connection()
+
+            # Build update query dynamically
+            updates = []
+            params = []
+
+            if keywords is not None:
+                normalized_keywords = [
+                    kw.lower().strip() for kw in keywords if kw.strip()
+                ]
+                updates.append("keywords_json = ?")
+                params.append(json.dumps(normalized_keywords))
+
+            if priority is not None:
+                updates.append("priority = ?")
+                params.append(priority)
+
+            if is_active is not None:
+                updates.append("is_active = ?")
+                params.append(1 if is_active else 0)
+
+            if description is not None:
+                updates.append("description = ?")
+                params.append(description)
+
+            if not updates:
+                logger.warning("No updates provided for rule update")
+                return False
+
+            # Add updated_at timestamp
+            updates.append("updated_at = CURRENT_TIMESTAMP")
+
+            # Add rule_id to params for WHERE clause
+            params.append(rule_id)
+
+            query = f"UPDATE categorization_rules SET {', '.join(updates)} WHERE rule_id = ?"
+
+            cursor = conn.execute(query, params)
+
+            if cursor.rowcount == 0:
+                logger.error(f"Categorization rule not found: {rule_id}")
+                return False
+
+            conn.commit()
+
+            # Log the update
+            self.audit_manager.log_action(
+                "system",
+                "UPDATE",
+                "categorization_rule",
                 rule_id,
-                keywords=keywords,
-                priority=priority,
-                is_active=is_active,
-                description=description,
+                {"updated_fields": len(updates) - 1},
             )
+
+            logger.info(f"Updated categorization rule: {rule_id}")
+            return True
+
         except Exception as e:
             logger.error(f"Failed to update categorization rule: {e}")
             return False
@@ -652,7 +766,24 @@ class UnifiedDataRepository:
             bool: True if rule deleted successfully
         """
         try:
-            return self.metadata_manager.delete_categorization_rule(rule_id)
+            conn = self.dataset_manager._get_connection()
+
+            cursor = conn.execute(
+                "DELETE FROM categorization_rules WHERE rule_id = ?", (rule_id,)
+            )
+
+            if cursor.rowcount == 0:
+                logger.error(f"Categorization rule not found: {rule_id}")
+                return False
+
+            conn.commit()
+
+            # Log the deletion
+            self.audit_manager.log_action("system", "DELETE", "categorization_rule", rule_id, {})
+
+            logger.info(f"Deleted categorization rule: {rule_id}")
+            return True
+
         except Exception as e:
             logger.error(f"Failed to delete categorization rule: {e}")
             return False
@@ -795,7 +926,7 @@ class UnifiedDataRepository:
             self.config_manager.close_connections()
             self.user_manager.close_connections()
             self.audit_manager.close_connections()
-            self.metadata_manager.close_connections()
+            self.dataset_manager.close_connections()
             # DuckDB manager has its own cleanup
             self.clear_cache()
             logger.info("Unified data repository closed")

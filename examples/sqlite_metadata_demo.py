@@ -19,7 +19,10 @@ from pathlib import Path
 
 # Import SQLite components
 from src.database.sqlite import (
-    SQLiteMetadataManager,
+    DatasetManager,
+    ConfigurationManager,
+    UserManager,
+    AuditManager,
     create_metadata_schema,
     get_unified_repository,
 )
@@ -53,7 +56,7 @@ def demo_dataset_registry():
     print("📚 Dataset Registry Demo")
     print("=" * 30)
 
-    manager = SQLiteMetadataManager("data/demo_metadata.db")
+    manager = DatasetManager("data/demo_metadata.db")
 
     try:
         # Register ISTAT datasets
@@ -153,7 +156,7 @@ def demo_user_preferences():
     print("👤 User Preferences Demo")
     print("=" * 30)
 
-    manager = SQLiteMetadataManager("data/demo_metadata.db")
+    manager = UserManager("data/demo_metadata.db")
 
     try:
         # Set various types of preferences
@@ -231,7 +234,7 @@ def demo_api_credentials():
     print("🔐 API Credentials Demo")
     print("=" * 30)
 
-    manager = SQLiteMetadataManager("data/demo_metadata.db")
+    manager = UserManager("data/demo_metadata.db")
 
     try:
         # Store API credentials for various services
@@ -297,7 +300,7 @@ def demo_audit_logging():
     print("📋 Audit Logging Demo")
     print("=" * 25)
 
-    manager = SQLiteMetadataManager("data/demo_metadata.db")
+    manager = AuditManager("data/demo_metadata.db")
 
     try:
         # Log various user activities
@@ -414,7 +417,7 @@ def demo_system_configuration():
     print("⚙️ System Configuration Demo")
     print("=" * 35)
 
-    manager = SQLiteMetadataManager("data/demo_metadata.db")
+    manager = ConfigurationManager("data/demo_metadata.db")
 
     try:
         # Set various system configurations
@@ -582,7 +585,7 @@ def demo_database_statistics():
     print("📊 Database Statistics Summary")
     print("=" * 35)
 
-    manager = SQLiteMetadataManager("data/demo_metadata.db")
+    manager = DatasetManager("data/demo_metadata.db")
 
     try:
         stats = manager.get_database_stats()
