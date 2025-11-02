@@ -778,7 +778,9 @@ class UnifiedDataRepository:
             conn.commit()
 
             # Log the deletion
-            self.audit_manager.log_action("system", "DELETE", "categorization_rule", rule_id, {})
+            self.audit_manager.log_action(
+                "system", "DELETE", "categorization_rule", rule_id, {}
+            )
 
             logger.info(f"Deleted categorization rule: {rule_id}")
             return True

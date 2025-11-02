@@ -25,7 +25,9 @@ from src.database.sqlite.repository import (
 )
 
 
-@pytest.mark.skip(reason="Tests reference removed get_metadata_manager - need refactoring to use specialized managers")
+@pytest.mark.skip(
+    reason="Tests reference removed get_metadata_manager - need refactoring to use specialized managers"
+)
 class TestUnifiedDataRepositoryExtended:
     """Extended test cases for UnifiedDataRepository uncovered methods."""
 

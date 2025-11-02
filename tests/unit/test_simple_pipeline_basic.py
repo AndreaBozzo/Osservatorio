@@ -40,7 +40,9 @@ class TestSimplePipelineBasic:
                     pipeline = create_simple_pipeline()
                     assert pipeline is not None
 
-    @pytest.mark.skip(reason="Issue #159 - async tests require pytest-asyncio configuration")
+    @pytest.mark.skip(
+        reason="Issue #159 - async tests require pytest-asyncio configuration"
+    )
     @pytest.mark.asyncio
     async def test_health_check_structure(self):
         """Test health check returns expected structure."""

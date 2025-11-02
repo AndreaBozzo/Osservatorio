@@ -14,7 +14,9 @@ import pytest
 class TestSimplePipelineSmoke:
     """Smoke tests - verify basic functionality without breaking."""
 
-    @pytest.mark.skip(reason="Issue #159 - async tests require pytest-asyncio configuration")
+    @pytest.mark.skip(
+        reason="Issue #159 - async tests require pytest-asyncio configuration"
+    )
     @pytest.mark.asyncio
     async def test_single_dataset_ingestion_smoke(self):
         """Smoke test: single dataset ingestion doesn't crash."""
@@ -69,7 +71,9 @@ class TestSimplePipelineSmoke:
                     pipeline2 = create_simple_pipeline()
                     assert pipeline2 is not None
 
-    @pytest.mark.skip(reason="Issue #159 - async tests require pytest-asyncio configuration")
+    @pytest.mark.skip(
+        reason="Issue #159 - async tests require pytest-asyncio configuration"
+    )
     @pytest.mark.asyncio
     async def test_health_check_smoke(self):
         """Smoke test: health check works."""

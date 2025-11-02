@@ -183,8 +183,12 @@ class TestSQLiteMetadataManager:
 
         for dataset_id, name, category, desc, agency, priority in datasets_to_register:
             manager.register_dataset(
-                dataset_id, name, category,
-                description=desc, istat_agency=agency, priority=priority
+                dataset_id,
+                name,
+                category,
+                description=desc,
+                istat_agency=agency,
+                priority=priority,
             )
 
         # Test listing all datasets
@@ -260,7 +264,9 @@ class TestSQLiteMetadataManager:
         assert enabled is True
 
         # Set false
-        user_manager.set_user_preference("user1", "notifications_enabled", False, "boolean")
+        user_manager.set_user_preference(
+            "user1", "notifications_enabled", False, "boolean"
+        )
         enabled = user_manager.get_user_preference("user1", "notifications_enabled")
         assert enabled is False
 
@@ -326,7 +332,9 @@ class TestSQLiteMetadataManager:
         """Test API credentials expiration."""
         # Store expired credentials
         past_date = datetime.now() - timedelta(days=1)
-        user_manager.store_api_credentials("expired_api", "key123", expires_at=past_date)
+        user_manager.store_api_credentials(
+            "expired_api", "key123", expires_at=past_date
+        )
 
         # Should fail verification due to expiration
         is_valid = user_manager.verify_api_credentials("expired_api", "key123")
@@ -391,7 +399,9 @@ class TestSQLiteMetadataManager:
         ]
 
         for action, resource_type, user_id, resource_id in events:
-            audit_manager.log_action(action, resource_type, user_id=user_id, resource_id=resource_id)
+            audit_manager.log_action(
+                action, resource_type, user_id=user_id, resource_id=resource_id
+            )
 
         # Test user filter
         user1_logs = audit_manager.get_audit_logs(user_id="user1")
@@ -410,7 +420,9 @@ class TestSQLiteMetadataManager:
 
     # Database Statistics Tests
 
-    def test_database_statistics(self, manager, user_manager, audit_manager, temp_db_path):
+    def test_database_statistics(
+        self, manager, user_manager, audit_manager, temp_db_path
+    ):
         """Test database statistics retrieval."""
         # Add some data using specialized managers
         manager.register_dataset("STATS_TEST", "Statistics Test", "test")
@@ -419,6 +431,7 @@ class TestSQLiteMetadataManager:
 
         # Get statistics by querying the database directly
         import sqlite3
+
         conn = sqlite3.connect(temp_db_path)
         try:
             # Count datasets
@@ -570,9 +583,15 @@ class TestSQLiteIntegration:
                 assert success is True
 
             # 2. Set user preferences
-            user_manager.set_user_preference("analyst1", "favorite_category", "popolazione")
-            user_manager.set_user_preference("analyst1", "dashboard_refresh", 300, "integer")
-            user_manager.set_user_preference("analyst1", "notifications", True, "boolean")
+            user_manager.set_user_preference(
+                "analyst1", "favorite_category", "popolazione"
+            )
+            user_manager.set_user_preference(
+                "analyst1", "dashboard_refresh", 300, "integer"
+            )
+            user_manager.set_user_preference(
+                "analyst1", "notifications", True, "boolean"
+            )
 
             # 3. Store API credentials (SKIPPED - not implemented in UserManager yet)
             # user_manager.store_api_credentials("istat", "api_key_123", "secret_456")
@@ -582,9 +601,18 @@ class TestSQLiteIntegration:
             config_manager.set_config("cache.ttl", "1800", "integer")
 
             # 5. Log some audit events
-            audit_manager.log_action("login", "user", user_id="analyst1", resource_id="analyst1")
-            audit_manager.log_action("dataset_view", "dataset", user_id="analyst1", resource_id="DCIS_POPRES1")
-            audit_manager.log_action("export_data", "dataset", user_id="analyst1", resource_id="DCIS_POPRES1")
+            audit_manager.log_action(
+                "login", "user", user_id="analyst1", resource_id="analyst1"
+            )
+            audit_manager.log_action(
+                "dataset_view",
+                "dataset",
+                user_id="analyst1",
+                resource_id="DCIS_POPRES1",
+            )
+            audit_manager.log_action(
+                "export_data", "dataset", user_id="analyst1", resource_id="DCIS_POPRES1"
+            )
 
             # 6. Verify everything works
             # Check datasets
@@ -615,6 +643,7 @@ class TestSQLiteIntegration:
 
             # Check statistics by querying database directly
             import sqlite3
+
             conn = sqlite3.connect(temp_db_path)
             cursor = conn.execute("SELECT COUNT(*) FROM dataset_registry")
             assert cursor.fetchone()[0] == 3

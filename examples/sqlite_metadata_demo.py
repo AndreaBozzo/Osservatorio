@@ -19,10 +19,10 @@ from pathlib import Path
 
 # Import SQLite components
 from src.database.sqlite import (
-    DatasetManager,
-    ConfigurationManager,
-    UserManager,
     AuditManager,
+    ConfigurationManager,
+    DatasetManager,
+    UserManager,
     create_metadata_schema,
     get_unified_repository,
 )
