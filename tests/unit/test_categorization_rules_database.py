@@ -6,11 +6,12 @@ data validation, and integration with the SQLite metadata manager.
 """
 
 import sqlite3
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
 
-from src.database.sqlite import DatasetManager, create_metadata_schema
+from src.database.sqlite import create_metadata_schema
 from src.database.sqlite.repository import UnifiedDataRepository
 from src.database.sqlite.schema import MetadataSchema
 
@@ -19,12 +20,12 @@ class TestCategorizationRulesDatabase:
     """Test categorization rules database operations."""
 
     @pytest.fixture
-    def temp_db_path(self, tmp_path):
+    def temp_db_path(self, tmp_path: Path) -> str:
         """Create temporary database path."""
         return str(tmp_path / "test_categorization_rules.db")
 
     @pytest.fixture
-    def manager(self, temp_db_path):
+    def manager(self, temp_db_path: str) -> UnifiedDataRepository:
         """Create unified repository for categorization rules testing."""
         # Categorization rules are only in UnifiedDataRepository, not in specialized managers
         create_metadata_schema(temp_db_path)
@@ -33,14 +34,14 @@ class TestCategorizationRulesDatabase:
             return UnifiedDataRepository(sqlite_db_path=temp_db_path)
 
     @pytest.fixture
-    def repository(self, temp_db_path):
+    def repository(self, temp_db_path: str) -> UnifiedDataRepository:
         """Create unified repository with test database."""
         create_metadata_schema(temp_db_path)
         with patch("src.database.duckdb.get_manager") as mock_duckdb:
             mock_duckdb.return_value = MagicMock()
             return UnifiedDataRepository(sqlite_db_path=temp_db_path)
 
-    def test_create_categorization_rule(self, manager):
+    def test_create_categorization_rule(self, manager: UnifiedDataRepository) -> None:
         """Test creating a new categorization rule."""
         success = manager.create_categorization_rule(
             rule_id="test_rule",
@@ -64,7 +65,7 @@ class TestCategorizationRulesDatabase:
         assert test_rule["description"] == "Test population rule"
         assert test_rule["is_active"] is True
 
-    def test_create_duplicate_rule_fails(self, manager):
+    def test_create_duplicate_rule_fails(self, manager: UnifiedDataRepository) -> None:
         """Test that creating a duplicate rule fails."""
         # Create first rule
         success1 = manager.create_categorization_rule(
@@ -77,11 +78,13 @@ class TestCategorizationRulesDatabase:
 
         # Try to create duplicate
         success2 = manager.create_categorization_rule(
-            rule_id="dup_rule", category="lavoro", keywords=["lavoro"], priority=7
+            "dup_rule", category="lavoro", keywords=["lavoro"], priority=7
         )
         assert success2 is False
 
-    def test_get_categorization_rules_filtering(self, manager):
+    def test_get_categorization_rules_filtering(
+        self, manager: UnifiedDataRepository
+    ) -> None:
         """Test filtering categorization rules by category and active status."""
         # Create test rules
         manager.create_categorization_rule("pop_rule", "popolazione", ["pop"], 10)
@@ -108,7 +111,7 @@ class TestCategorizationRulesDatabase:
         all_rule_ids = [r["rule_id"] for r in all_rules]
         assert "inactive_rule" in all_rule_ids
 
-    def test_update_categorization_rule(self, manager):
+    def test_update_categorization_rule(self, manager: UnifiedDataRepository) -> None:
         """Test updating categorization rule fields."""
         # Create test rule
         manager.create_categorization_rule(
@@ -132,14 +135,16 @@ class TestCategorizationRulesDatabase:
         assert updated_rule["priority"] == 8
         assert updated_rule["description"] == "Updated description"
 
-    def test_update_nonexistent_rule_fails(self, manager):
+    def test_update_nonexistent_rule_fails(
+        self, manager: UnifiedDataRepository
+    ) -> None:
         """Test that updating a nonexistent rule fails."""
         success = manager.update_categorization_rule(
             "nonexistent_rule", keywords=["test"]
         )
         assert success is False
 
-    def test_delete_categorization_rule(self, manager):
+    def test_delete_categorization_rule(self, manager: UnifiedDataRepository) -> None:
         """Test deleting a categorization rule."""
         # Create test rule
         manager.create_categorization_rule("delete_rule", "economia", ["delete"], 5)
@@ -156,12 +161,14 @@ class TestCategorizationRulesDatabase:
         rules = manager.get_categorization_rules()
         assert not any(r["rule_id"] == "delete_rule" for r in rules)
 
-    def test_delete_nonexistent_rule_fails(self, manager):
+    def test_delete_nonexistent_rule_fails(
+        self, manager: UnifiedDataRepository
+    ) -> None:
         """Test that deleting a nonexistent rule fails."""
         success = manager.delete_categorization_rule("nonexistent_rule")
         assert success is False
 
-    def test_keywords_normalization(self, manager):
+    def test_keywords_normalization(self, manager: UnifiedDataRepository) -> None:
         """Test that keywords are properly normalized (lowercase, stripped)."""
         success = manager.create_categorization_rule(
             "norm_rule",
@@ -176,7 +183,7 @@ class TestCategorizationRulesDatabase:
         assert norm_rule is not None
         assert norm_rule["keywords"] == ["popolazione", "demo", "residente"]
 
-    def test_empty_keywords_validation(self, manager):
+    def test_empty_keywords_validation(self, manager: UnifiedDataRepository) -> None:
         """Test that rules with empty keywords are rejected."""
         success = manager.create_categorization_rule(
             "empty_rule",
@@ -195,7 +202,9 @@ class TestCategorizationRulesDatabase:
         )
         assert success2 is False
 
-    def test_default_categorization_rules_seeded(self, manager):
+    def test_default_categorization_rules_seeded(
+        self, manager: UnifiedDataRepository
+    ) -> None:
         """Test that default categorization rules are seeded on schema creation."""
         rules = manager.get_categorization_rules()
 
@@ -226,7 +235,7 @@ class TestCategorizationRulesDatabase:
         }
         assert expected_rule_ids.issubset(rule_ids)
 
-    def test_rule_priority_ordering(self, manager):
+    def test_rule_priority_ordering(self, manager: UnifiedDataRepository) -> None:
         """Test that rules are returned in priority order."""
         # Create rules with different priorities
         manager.create_categorization_rule("low_prio", "economia", ["low"], 1)
@@ -239,7 +248,7 @@ class TestCategorizationRulesDatabase:
         priorities = [r["priority"] for r in rules]
         assert priorities == sorted(priorities, reverse=True)
 
-    def test_repository_integration(self, repository):
+    def test_repository_integration(self, repository: UnifiedDataRepository) -> None:
         """Test categorization rules through the unified repository."""
         # Test creating rule through repository
         success = repository.create_categorization_rule(
@@ -276,11 +285,11 @@ class TestCategorizationRulesSchema:
     """Test database schema for categorization rules."""
 
     @pytest.fixture
-    def temp_db_path(self, tmp_path):
+    def temp_db_path(self, tmp_path: Path) -> str:
         """Create temporary database path."""
         return str(tmp_path / "test_schema.db")
 
-    def test_categorization_rules_table_created(self, temp_db_path):
+    def test_categorization_rules_table_created(self, temp_db_path: str) -> None:
         """Test that categorization_rules table is created with correct schema."""
         schema = MetadataSchema(temp_db_path)
         schema.create_schema()
@@ -305,7 +314,7 @@ class TestCategorizationRulesSchema:
         for col in required_columns:
             assert col in column_names
 
-    def test_schema_version_updated(self, temp_db_path):
+    def test_schema_version_updated(self, temp_db_path: str) -> None:
         """Test that schema version is updated to 1.1.0."""
         schema = MetadataSchema(temp_db_path)
         schema.create_schema()
@@ -322,7 +331,7 @@ class TestCategorizationRulesSchema:
         finally:
             conn.close()
 
-    def test_categorization_rules_indexes_created(self, temp_db_path):
+    def test_categorization_rules_indexes_created(self, temp_db_path: str) -> None:
         """Test that indexes for categorization rules are created."""
         schema = MetadataSchema(temp_db_path)
         schema.create_schema()

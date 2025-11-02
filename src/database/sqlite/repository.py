@@ -19,7 +19,6 @@ Features:
 """
 
 import json
-import sqlite3
 import threading
 from contextlib import contextmanager
 from datetime import datetime
