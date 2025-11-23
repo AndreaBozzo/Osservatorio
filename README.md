@@ -1,6 +1,7 @@
 # 🇮🇹 Osservatorio - Italian Statistical Data Platform
 
-> **Modern platform for accessing and analyzing Italian statistical data**
+> **Modern platform for accessing and analyzing Italian statistical data.**
+> **This project has been archived and will be re-made, as it has proved as a good PoC**
 
 ![Status](https://img.shields.io/badge/Status-MVP%20in%20Development-orange.svg)
 [![Python](https://img.shields.io/badge/Python-3.11-blue.svg)](pyproject.toml)
